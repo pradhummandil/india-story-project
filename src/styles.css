@@ -1,0 +1,286 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-gold: var(--gold);
+  --color-gold-foreground: var(--gold-foreground);
+  --color-saffron: var(--saffron);
+
+  --font-display: "Cormorant Garamond", "Playfair Display", Georgia, serif;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+
+  --shadow-glow: 0 0 60px -10px color-mix(in oklab, var(--gold) 40%, transparent);
+  --shadow-elegant: 0 30px 80px -20px oklch(0 0 0 / 0.6);
+  --shadow-soft: 0 12px 40px -16px oklch(0 0 0 / 0.5);
+
+  /* Unified premium easing + timing tokens */
+  --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 220ms;
+  --dur-base: 380ms;
+  --dur-slow: 700ms;
+
+  --gradient-hero: radial-gradient(ellipse at top, color-mix(in oklab, var(--gold) 25%, transparent), transparent 60%), radial-gradient(ellipse at bottom right, color-mix(in oklab, var(--saffron) 18%, transparent), transparent 70%);
+  --gradient-gold: linear-gradient(135deg, oklch(0.65 0.22 28), oklch(0.85 0.08 85));
+  --gradient-text: linear-gradient(135deg, oklch(0.85 0.08 85), oklch(0.65 0.22 28));
+}
+
+@layer base {
+  :root,
+  .dark {
+    --radius: 0.75rem;
+
+    /* Netflix-like: solid black background + white text + red UI */
+    --background: #000000;
+    --foreground: #ffffff;
+
+    --card: #0b0b0b;
+    --card-foreground: #ffffff;
+
+    --popover: #0b0b0b;
+    --popover-foreground: #ffffff;
+
+    /* Red primary for buttons */
+    --primary: #e10600;
+    --primary-foreground: #ffffff;
+
+    /* Keep secondary also red-ish so variants don’t drift */
+    --secondary: #e10600;
+    --secondary-foreground: #ffffff;
+
+    --muted: #141414;
+    --muted-foreground: #b3b3b3;
+
+    --accent: #e10600;
+    --accent-foreground: #ffffff;
+
+    --destructive: #e10600;
+    --destructive-foreground: #ffffff;
+
+    /* Red borders/inputs/rings */
+    --border: color-mix(in oklab, #e10600 55%, transparent);
+    --input: color-mix(in oklab, #e10600 35%, transparent);
+    --ring: #e10600;
+
+    /* Preserve existing gold/saffron variables to avoid breaking gradient tokens elsewhere */
+    --gold: #e10600;
+    --gold-foreground: #ffffff;
+    --saffron: #ff3b30;
+  }
+
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer utilities {
+  .glass {
+    background: color-mix(in oklab, var(--card) 50%, transparent);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid color-mix(in oklab, var(--gold) 12%, transparent);
+  }
+
+  .glass-strong {
+    background: color-mix(in oklab, var(--background) 70%, transparent);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .text-gradient-gold {
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .bg-hero {
+    background-image: var(--gradient-hero);
+  }
+
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .shadow-elegant {
+    box-shadow: var(--shadow-elegant);
+  }
+
+  .hover-lift {
+    transition:
+      transform var(--dur-slow) var(--ease-premium),
+      box-shadow var(--dur-slow) var(--ease-premium),
+      border-color var(--dur-slow) var(--ease-premium);
+    will-change: transform;
+  }
+  .hover-lift:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-elegant);
+    border-color: color-mix(in oklab, var(--gold) 40%, transparent);
+  }
+
+  /* Premium button: glow sweep + subtle scale + ripple-feel press */
+  .btn-premium {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.35s ease, filter 0.35s ease;
+    will-change: transform;
+  }
+  .btn-premium:hover {
+    transform: translateY(-1px) scale(1.02);
+    filter: brightness(1.05);
+    box-shadow: 0 0 50px -8px color-mix(in oklab, var(--gold) 55%, transparent);
+  }
+  .btn-premium:active {
+    transform: translateY(0) scale(0.985);
+  }
+  .btn-premium::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      120deg,
+      transparent 30%,
+      color-mix(in oklab, white 35%, transparent) 50%,
+      transparent 70%
+    );
+    transform: translateX(-120%);
+    transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+    mix-blend-mode: overlay;
+  }
+  .btn-premium:hover::before {
+    transform: translateX(120%);
+  }
+
+  /* Underline reveal link */
+  .story-link {
+    position: relative;
+  }
+  .story-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    height: 1px;
+    width: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--saffron));
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .story-link:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+
+  /* Cinematic image zoom wrapper */
+  .img-cinematic {
+    overflow: hidden;
+  }
+  .img-cinematic > * {
+    transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1),
+      filter 1.2s ease;
+  }
+  .img-cinematic:hover > * {
+    transform: scale(1.08);
+    filter: brightness(1.05) saturate(1.05);
+  }
+
+  /* Smooth route transition wrapper */
+  .page-transition {
+    animation: page-in var(--dur-slow) var(--ease-premium) both;
+  }
+  @keyframes page-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+      filter: blur(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+  }
+
+  /* Refined keyboard focus — never hide it, just make it luxurious */
+  :where(a, button, [role="button"], input, textarea, select):focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 2px var(--background),
+      0 0 0 4px color-mix(in oklab, var(--gold) 70%, transparent);
+    border-radius: 8px;
+  }
+
+  /* Typography refinements */
+  .text-balance { text-wrap: balance; }
+  .text-pretty { text-wrap: pretty; }
+
+  @media (hover: hover) and (pointer: fine) {
+    html,
+    body,
+    a,
+    button {
+      cursor: auto;
+    }
+  }
+
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}
+
