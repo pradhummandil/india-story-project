@@ -60,7 +60,7 @@ export function StoryCard({ story, index = 0 }: { story: Story; index?: number }
                 <div className="absolute inset-0 bg-muted-foreground" />
               )}
               <div className="absolute inset-0 bg-black/20 pointer-events-none" />
-              <div className="absolute inset-0 bg-linear-to-t from-background/80 via-transparent to-transparent pointer-events-none" />
+              {/* <div className="absolute inset-0 bg-linear-to-t from-background/80 via-transparent to-transparent pointer-events-none" /> */}
               <span className="absolute top-4 left-4 text-xs uppercase tracking-widest px-3 py-1 rounded-full glass text-foreground/90 z-10">
                 {story.category}
               </span>

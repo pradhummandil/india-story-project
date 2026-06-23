@@ -1,4 +1,9 @@
 import type { Story } from "@/components/site/StoryCard";
+import jamunaTuduImg from "@/assets/stories/jamuna-tudu.jpg";
+import bImg from "@/assets/stories/b.jpg";
+import aImg from "@/assets/stories/a.jpg";
+import cImg from "@/assets/stories/c.jpg";
+import dImg from "@/assets/stories/d.jpg";
 
 export const stories: Story[] = [
   {
@@ -9,7 +14,7 @@ export const stories: Story[] = [
     category: "स्टार्ट अप",
     region: "Jharkhand",
     readTime: "7 min read",
-    image: "https://indiastoryproject.com/wp-content/uploads/2023/07/2-win-manish-1024x497-1.jpg",
+    image: bImg,
     imageAlt: "Engineers with milk bottles and village storefront",
     content: "दूध बेचने के व्यवसाय के बारे में आपके क्या विचार हैं? मतलब दिमाग में या तो डेयरी आती होगी या फिर तबेला। लेकिन, सोचिए भारत का एक बी टाउन, उसमें एक कॉर्पोरेट ऑफिस, उसमें दो युवा जो मिलकर चला रहे हैं एक स्टार्ट अप। झारखंड की राजधानी रांची की प्युरेश डेली एक ऐसी ही डेयरी है जिसे चलाते हैं दो युवा मनीष पीयूष और आदित्य कुमार।",
     url: "two-engineers-dairy-purity",
@@ -22,7 +27,7 @@ export const stories: Story[] = [
     category: "धरती से",
     region: "Jharkhand",
     readTime: "8 min read",
-    image: "https://indiastoryproject.com/wp-content/uploads/2023/07/Jamuna-Padma-samman-963x1024.jpg",
+    image: jamunaTuduImg,
     imageAlt: "Jamuna Tudu holding a Padma award amidst forest greenery",
     content: "झारखंड और पश्चिम बंगाल की सीमा पर स्थित चाकुलिया में रहने वाली जमुना टुडू का जन्म ओडिशा के मयूरभंज में 19 दिसम्बर 1980 को हुआ। ओडिशा के जिस इलाके से वो आती हैं वहां पेड़-पौधों की तादाद बेहद कम थी और वो इसके चलते होने वाली परेशानियों से अवगत भी थी।",
     url: "jamuna-tudu-forest-conservation",
@@ -35,7 +40,7 @@ export const stories: Story[] = [
     category: "धरती से",
     region: "Madhya Pradesh",
     readTime: "9 min read",
-    image: "https://indiastoryproject.com/wp-content/uploads/2023/07/panchayat-1024x562.jpg",
+    image: aImg,
     imageAlt: "Village meeting around forest conservation in Dindori",
     content: "मध्य प्रदेश का डिंडोरी जिला एक आदिवासी जिला है। यहां रहने वाले अधिकांश लोग आदिवासी समुदाय से आते हैं। इसी जिले का एक छोटा सा गांव है ग्राम पड़रिया डोंगरी। जिला मुख्यालय से सटे इस गांव ने अपनी एक अलग पहचान बनायी है।",
     url: "dindori-village-forest-conservation",
@@ -48,7 +53,7 @@ export const stories: Story[] = [
     category: "बंदे में है दम",
     region: "India",
     readTime: "6 min read",
-    image: "https://indiastoryproject.com/wp-content/uploads/2023/06/alaknanda.jpg",
+    image:  dImg,
     imageAlt: "Alaknanda Dasgupta in a Kathak dance pose",
     content: "अलकनंदा दास गुप्ता को बचपन से ही कला और संस्कृति से जुड़ा हुआ माहौल मिला। अलकनंदा के माता पिता चाहते थे कि वे गायिका बने। संगीत के क्षेत्र में नाम कमाये। लेकिन, अलकनंदा का मन तो नृत्य में लगता था।",
     url: "alaknanda-kathak-dance-cancer",
@@ -61,7 +66,7 @@ export const stories: Story[] = [
     category: "बंदे में है दम",
     region: "Indore",
     readTime: "6 min read",
-    image: "https://indiastoryproject.com/wp-content/uploads/2023/06/BS-3-1024x1024.jpg",
+    image: cImg,
     imageAlt: "Bhavya Shrivastava smiling confidently",
     content: "स्कूल में पढ़ रहा कोई बच्चा आख़िर क्या सोचेगा? यही कि आगे क्या सब्जेक्ट लेना है, कौन से कॉलेज में एडमिशन लेना है। लेकिन, जीवन के अपने कुछ अलग ही प्लान होते हैं।",
     url: "bhavya-stargardt-disease",
