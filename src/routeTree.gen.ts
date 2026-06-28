@@ -17,6 +17,8 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StoriesIndexRouteImport } from './routes/stories/index'
 import { Route as StoriesSlugRouteImport } from './routes/stories/$slug'
+import { Route as ApiStoriesCatalogueDataRouteImport } from './routes/api/stories-catalogue-data'
+import { Route as ApiStoriesCatalogueRouteImport } from './routes/api/stories-catalogue'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
 const StoriesRoute = StoriesRouteImport.update({
@@ -59,6 +61,16 @@ const StoriesSlugRoute = StoriesSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => StoriesRoute,
 } as any)
+const ApiStoriesCatalogueDataRoute = ApiStoriesCatalogueDataRouteImport.update({
+  id: '/api/stories-catalogue-data',
+  path: '/api/stories-catalogue-data',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStoriesCatalogueRoute = ApiStoriesCatalogueRouteImport.update({
+  id: '/api/stories-catalogue',
+  path: '/api/stories-catalogue',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -73,6 +85,8 @@ export interface FileRoutesByFullPath {
   '/join': typeof JoinRoute
   '/stories': typeof StoriesRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/api/stories-catalogue': typeof ApiStoriesCatalogueRoute
+  '/api/stories-catalogue-data': typeof ApiStoriesCatalogueDataRoute
   '/stories/$slug': typeof StoriesSlugRoute
   '/stories/': typeof StoriesIndexRoute
 }
@@ -83,6 +97,8 @@ export interface FileRoutesByTo {
   '/explore': typeof ExploreRoute
   '/join': typeof JoinRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/stories-catalogue': typeof ApiStoriesCatalogueRoute
+  '/api/stories-catalogue-data': typeof ApiStoriesCatalogueDataRoute
   '/stories/$slug': typeof StoriesSlugRoute
   '/stories': typeof StoriesIndexRoute
 }
@@ -95,6 +111,8 @@ export interface FileRoutesById {
   '/join': typeof JoinRoute
   '/stories': typeof StoriesRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/api/stories-catalogue': typeof ApiStoriesCatalogueRoute
+  '/api/stories-catalogue-data': typeof ApiStoriesCatalogueDataRoute
   '/stories/$slug': typeof StoriesSlugRoute
   '/stories/': typeof StoriesIndexRoute
 }
@@ -108,6 +126,8 @@ export interface FileRouteTypes {
     | '/join'
     | '/stories'
     | '/api/chat'
+    | '/api/stories-catalogue'
+    | '/api/stories-catalogue-data'
     | '/stories/$slug'
     | '/stories/'
   fileRoutesByTo: FileRoutesByTo
@@ -118,6 +138,8 @@ export interface FileRouteTypes {
     | '/explore'
     | '/join'
     | '/api/chat'
+    | '/api/stories-catalogue'
+    | '/api/stories-catalogue-data'
     | '/stories/$slug'
     | '/stories'
   id:
@@ -129,6 +151,8 @@ export interface FileRouteTypes {
     | '/join'
     | '/stories'
     | '/api/chat'
+    | '/api/stories-catalogue'
+    | '/api/stories-catalogue-data'
     | '/stories/$slug'
     | '/stories/'
   fileRoutesById: FileRoutesById
@@ -141,6 +165,8 @@ export interface RootRouteChildren {
   JoinRoute: typeof JoinRoute
   StoriesRoute: typeof StoriesRouteWithChildren
   ApiChatRoute: typeof ApiChatRoute
+  ApiStoriesCatalogueRoute: typeof ApiStoriesCatalogueRoute
+  ApiStoriesCatalogueDataRoute: typeof ApiStoriesCatalogueDataRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -201,6 +227,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoriesSlugRouteImport
       parentRoute: typeof StoriesRoute
     }
+    '/api/stories-catalogue-data': {
+      id: '/api/stories-catalogue-data'
+      path: '/api/stories-catalogue-data'
+      fullPath: '/api/stories-catalogue-data'
+      preLoaderRoute: typeof ApiStoriesCatalogueDataRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/stories-catalogue': {
+      id: '/api/stories-catalogue'
+      path: '/api/stories-catalogue'
+      fullPath: '/api/stories-catalogue'
+      preLoaderRoute: typeof ApiStoriesCatalogueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -232,6 +272,8 @@ const rootRouteChildren: RootRouteChildren = {
   JoinRoute: JoinRoute,
   StoriesRoute: StoriesRouteWithChildren,
   ApiChatRoute: ApiChatRoute,
+  ApiStoriesCatalogueRoute: ApiStoriesCatalogueRoute,
+  ApiStoriesCatalogueDataRoute: ApiStoriesCatalogueDataRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

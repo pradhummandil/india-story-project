@@ -1,148 +1,56 @@
 import type { Story } from "@/components/site/StoryCard";
-import jamunaTuduImg from "@/assets/stories/jamuna-tudu.jpg";
-import bImg from "@/assets/stories/b.jpg";
-import aImg from "@/assets/stories/a.jpg";
-import cImg from "@/assets/stories/c.jpg";
-import dImg from "@/assets/stories/d.jpg";
 
-export const stories: Story[] = [
-  {
-    id: "5632",
-    slug: "two-engineers-dairy-purity",
-    title: "दो इंजीनियर्स ने रचा गांव में शुद्धता का इतिहास।",
-    excerpt: "रांची से प्युरेश डेली ने साफ़ दूध पहुंचाने की यात्रा शुरू की और शुद्धता को गांव के हर घर में पहुंचाया।",
-    category: "स्टार्ट अप",
-    region: "Jharkhand",
-    readTime: "7 min read",
-    image: bImg,
-    imageAlt: "Engineers with milk bottles and village storefront",
-    content: "दूध बेचने के व्यवसाय के बारे में आपके क्या विचार हैं? मतलब दिमाग में या तो डेयरी आती होगी या फिर तबेला। लेकिन, सोचिए भारत का एक बी टाउन, उसमें एक कॉर्पोरेट ऑफिस, उसमें दो युवा जो मिलकर चला रहे हैं एक स्टार्ट अप। झारखंड की राजधानी रांची की प्युरेश डेली एक ऐसी ही डेयरी है जिसे चलाते हैं दो युवा मनीष पीयूष और आदित्य कुमार।",
-    url: "two-engineers-dairy-purity",
-  },
-  {
-    id: "5628",
-    slug: "jamuna-tudu-forest-conservation",
-    title: "पेड़ों की ममता, माफिया से महायुद्ध — जानिए जमुना टुडू की हरियाली क्रांति!",
-    excerpt: "जमुना टुडू अपने जंगलों को बचाने के लिए माफियाओं के खिलाफ लड़ रही हैं और अपने इलाके में हरियाली का जश्न मना रही हैं।",
-    category: "धरती से",
-    region: "Jharkhand",
-    readTime: "8 min read",
-    image: jamunaTuduImg,
-    imageAlt: "Jamuna Tudu holding a Padma award amidst forest greenery",
-    content: "झारखंड और पश्चिम बंगाल की सीमा पर स्थित चाकुलिया में रहने वाली जमुना टुडू का जन्म ओडिशा के मयूरभंज में 19 दिसम्बर 1980 को हुआ। ओडिशा के जिस इलाके से वो आती हैं वहां पेड़-पौधों की तादाद बेहद कम थी और वो इसके चलते होने वाली परेशानियों से अवगत भी थी।",
-    url: "jamuna-tudu-forest-conservation",
-  },
-  {
-    id: "5597",
-    slug: "dindori-village-forest-conservation",
-    title: "एक गांव का वन संरक्षण अभियान",
-    excerpt: "मध्य प्रदेश के इस गांव ने जंगल बचाने के लिए सामूहिक रूप से काम किया और जंगल को फिर से हरा-भरा किया।",
-    category: "धरती से",
-    region: "Madhya Pradesh",
-    readTime: "9 min read",
-    image: aImg,
-    imageAlt: "Village meeting around forest conservation in Dindori",
-    content: "मध्य प्रदेश का डिंडोरी जिला एक आदिवासी जिला है। यहां रहने वाले अधिकांश लोग आदिवासी समुदाय से आते हैं। इसी जिले का एक छोटा सा गांव है ग्राम पड़रिया डोंगरी। जिला मुख्यालय से सटे इस गांव ने अपनी एक अलग पहचान बनायी है।",
-    url: "dindori-village-forest-conservation",
-  },
-  {
-    id: "5587",
-    slug: "alaknanda-kathak-dance-cancer",
-    title: "कथक के साथ कैंसर से टक्कर",
-    excerpt: "अलकनंदा ने कथक नृत्य के ज़रिए अपनी लड़ाई, उम्मीद और आत्मविश्वास की कहानी बयां की।",
-    category: "बंदे में है दम",
-    region: "India",
-    readTime: "6 min read",
-    image:  dImg,
-    imageAlt: "Alaknanda Dasgupta in a Kathak dance pose",
-    content: "अलकनंदा दास गुप्ता को बचपन से ही कला और संस्कृति से जुड़ा हुआ माहौल मिला। अलकनंदा के माता पिता चाहते थे कि वे गायिका बने। संगीत के क्षेत्र में नाम कमाये। लेकिन, अलकनंदा का मन तो नृत्य में लगता था।",
-    url: "alaknanda-kathak-dance-cancer",
-  },
-  {
-    id: "5577",
-    slug: "bhavya-stargardt-disease",
-    title: "छोटी सी उम्र, बड़ा हौसला",
-    excerpt: "आंखों की बीमारी के बावजूद भाव्या ने अपनी पढ़ाई और साहस से हर चुनौती को पीछे छोड़ दिया।",
-    category: "बंदे में है दम",
-    region: "Indore",
-    readTime: "6 min read",
-    image: cImg,
-    imageAlt: "Bhavya Shrivastava smiling confidently",
-    content: "स्कूल में पढ़ रहा कोई बच्चा आख़िर क्या सोचेगा? यही कि आगे क्या सब्जेक्ट लेना है, कौन से कॉलेज में एडमिशन लेना है। लेकिन, जीवन के अपने कुछ अलग ही प्लान होते हैं।",
-    url: "bhavya-stargardt-disease",
-  },
-  {
-    id: "5568",
-    slug: "suraj-tiwari-upsc-exam",
-    title: "हादसे में खोये पैर और हाथ, UPSC पास कर बने मिसाल",
-    excerpt: "सूरज तिवारी ने दुर्घटना के बाद भी UPSC पास किया और सबके लिए प्रेरणा बन गए।",
-    category: "बंदे में है दम",
-    region: "Uttar Pradesh",
-    readTime: "8 min read",
-    image: "https://indiastoryproject.com/wp-content/uploads/2023/05/SURAJ-WHEEL-688x1024.jpg",
-    imageAlt: "Suraj Tiwari in a wheelchair with determination",
-    content: "उत्तर प्रदेश के मैनपुरी जिले के रहने वाले सूरज तिवारी जब महज 26 साल के थे तब गाजियाबाद के दादरी में एक ट्रेन दुर्घटना में उन्होंने अपने दोनों पैरों के साथ अपना दाहिना हाथ और बायें हाथ की दो उंगलियों को खो दिया।",
-    url: "suraj-tiwari-upsc-exam",
-  },
-  {
-    id: "5559",
-    slug: "trinity-saioo-lakadong-turmeric",
-    title: "एक स्कूल टीचर की कृषि क्रांति",
-    excerpt: "ट्रिनिटी सायो ने लेकाडॉग हल्दी की खेती से अपने गांव की तक़दीर बदल दी।",
-    category: "खेत-खलिहान",
-    region: "Meghalaya",
-    readTime: "7 min read",
-    image: "https://indiastoryproject.com/wp-content/uploads/2023/05/T-FARM-1024x550.jpg",
-    imageAlt: "Trinity Saioo in turmeric farm field",
-    content: "जैविक खेती हमारे देश की परंपराओं में शामिल है। अधिक उत्पादन के लिए हमने जैविक खेती को छोड़ कर रासायनिक खाद का इस्तेमाल शुरू कर दिया। लेकिन अब हम वापस अपनी जड़ों की तरफ़ लौट रहे हैं।",
-    url: "trinity-saioo-lakadong-turmeric",
-  },
-  {
-    id: "5551",
-    slug: "garvita-water-conservation",
-    title: "जल संरक्षण का युवा संकल्प",
-    excerpt: "गर्विता गुलाटी ने 'गिलास हाफ फुल' अभियान के ज़रिए लाखों लीटर पानी बचाया है।",
-    category: "धरती से",
-    region: "Bangalore",
-    readTime: "5 min read",
-    image: "https://indiastoryproject.com/wp-content/uploads/2023/05/GARVITA-AWARD.jpg",
-    imageAlt: "Garvita Gulhati with water conservation award",
-    content: "गिलास आधा खाली या आधा भरा हुआ? आपके नज़रिये पर निर्भर करने वाले इस विचार को एक नया अर्थ दिया है गर्विता ने। गर्विता गुलाटी कहती हैं कि जब भी आप किसी को पीने के लिए पानी दे तो आधा गिलास ही दे।",
-    url: "garvita-water-conservation",
-  },
-  {
-    id: "5536",
-    slug: "gurcharan-singh-cricket",
-    title: "क्रिकेट के गुरु द्रोण गुरचरण सिंह",
-    excerpt: "88 साल की उम्र में भी क्रिकेट से अपने प्यार को जीवंत रखे हुए हैं गुरचरण सिंह।",
-    category: "खेल की दुनिया",
-    region: "Punjab",
-    readTime: "8 min read",
-    image: "https://indiastoryproject.com/wp-content/uploads/2023/05/GURCHARAN-SINGH-1.jpg",
-    imageAlt: "Gurcharan Singh in cricket academy",
-    content: "88 साल की उम्र लेकिन क्रिकेट से उनका प्यार कम नहीं हुआ। रोज़ सुबह 7 बजे वो अपनी क्रिकेट अकादमी पहुंच जाते हैं। पहले उन्होंने क्रिकेट खेल कर इस खेल को नये आयाम दिये।",
-    url: "gurcharan-singh-cricket",
-  },
-  {
-    id: "5530",
-    slug: "seth-pal-singh-farmer-innovation",
-    title: "सहारनपुर का कर्मयोद्धा किसान",
-    excerpt: "सेठ पाल सिंह ने खेती में नवाचार करके अपने और अन्य किसानों का भाग्य बदला।",
-    category: "खेत-खलिहान",
-    region: "Uttar Pradesh",
-    readTime: "7 min read",
-    image: "https://indiastoryproject.com/wp-content/uploads/2023/05/sethpal-singh-1-683x1024.jpg",
-    imageAlt: "Seth Pal Singh in innovative farm field",
-    content: "किसान खेतों में काम करते हैं तो अन्न उपजते हैं। देश की अर्थव्यवस्था की रीढ़ हैं देश के किसान। समय के साथ खेती में भी बदलाव आ रहा है।",
-    url: "seth-pal-singh-farmer-innovation",
-  },
-];
+import rawJson from "../../stories.json";
 
-export const categories = [
-  "All",
-  "स्टार्ट अप",
-  "धरती से",
-  "बंदे में है दम",
-  "खेत-खलिहान",
-  "खेल की दुनिया",
-] as const;
+type RawStory = {
+  id?: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  category: string;
+  region: string;
+  readTime?: string;
+  image?: string;
+  imageAlt?: string;
+  url?: string;
+  content?: string;
+
+  // Extra fields may exist in the generated JSON (author, publishDate, ...)
+  [key: string]: unknown;
+};
+
+type StoriesJson = {
+  fetchedAt?: string;
+  categories?: readonly string[];
+  stories: RawStory[];
+};
+
+const RAW = rawJson as unknown as StoriesJson;
+
+
+const getStr = (v: unknown): string => (typeof v === "string" ? v : "");
+
+export const stories: Story[] = (RAW.stories ?? []).map((s) => {
+
+  const id = getStr(s.id);
+  const slug = getStr(s.slug);
+
+  return {
+    id,
+    slug,
+    title: getStr(s.title),
+    excerpt: getStr(s.excerpt),
+    category: getStr(s.category) || "All",
+    region: getStr(s.region) || "India",
+    readTime: getStr(s.readTime),
+    image: typeof s.image === "string" && s.image.trim() ? s.image : undefined,
+    imageAlt:
+      typeof s.imageAlt === "string" && s.imageAlt.trim() ? s.imageAlt : undefined,
+    content: typeof s.content === "string" && s.content.length ? s.content : undefined,
+    url: (typeof s.url === "string" && s.url.trim()) || slug,
+  };
+});
+
+export const categories: readonly string[] =
+  (RAW.categories as readonly string[] | undefined) ?? ["All", "कहानी"];
+

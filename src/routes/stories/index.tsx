@@ -1,20 +1,31 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
+
 import { SiteLayout } from "@/components/site/Layout";
 import { StoryCard } from "@/components/site/StoryCard";
 import { Input } from "@/components/ui/input";
 import { YouMayAlsoLike } from "@/components/site/YouMayAlsoLike";
 import { StoryDNA } from "@/components/site/StoryDNA";
-import { stories, categories } from "@/lib/stories-data";
+
+import type { Story } from "@/components/site/StoryCard";
+import { categories as categoriesData, stories as storiesData } from "@/lib/stories-data";
 
 export const Route = createFileRoute("/stories/")({
   head: () => ({
     meta: [
       { title: "Stories — India Story Project" },
-      { name: "description", content: "Browse stories of innovators, changemakers, and unsung heroes across India." },
+      {
+        name: "description",
+        content:
+          "Browse stories of innovators, changemakers, and unsung heroes across India.",
+      },
       { property: "og:title", content: "Stories — India Story Project" },
-      { property: "og:description", content: "Browse stories of innovators, changemakers, and unsung heroes across India." },
+      {
+        property: "og:description",
+        content:
+          "Browse stories of innovators, changemakers, and unsung heroes across India.",
+      },
     ],
   }),
   component: StoriesList,
@@ -24,10 +35,18 @@ function StoriesList() {
   const [query, setQuery] = useState("");
   const [active, setActive] = useState<string>("All");
 
+  // Local-only catalogue
+  const stories: Story[] = storiesData;
+  const categories = categoriesData as unknown as readonly string[];
+
+  useEffect(() => {
+    setActive((prev) => (categories.includes(prev) ? prev : "All"));
+  }, [categories]);
+
   const filtered = useMemo(() => {
+    const q = query.toLowerCase();
     return stories.filter((s) => {
       const matchesCat = active === "All" || s.category === active;
-      const q = query.toLowerCase();
       const matchesQ =
         !q ||
         s.title.toLowerCase().includes(q) ||
@@ -35,7 +54,7 @@ function StoriesList() {
         s.region.toLowerCase().includes(q);
       return matchesCat && matchesQ;
     });
-  }, [query, active]);
+  }, [query, active, stories]);
 
   return (
     <SiteLayout>
@@ -46,8 +65,7 @@ function StoriesList() {
             Every story, <span className="text-gradient-gold italic">every corner</span> of India.
           </h1>
           <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
-            A living archive of long-form stories, profiles, and dispatches from
-            the people reshaping the subcontinent.
+            A living archive of long-form stories, profiles, and dispatches from the people reshaping the subcontinent.
           </p>
         </div>
 
@@ -96,13 +114,13 @@ function StoriesList() {
         </div>
 
         {filtered.length === 0 && (
-          <div className="mt-20 text-center text-muted-foreground">
-            No stories match your search yet.
-          </div>
+          <div className="mt-20 text-center text-muted-foreground">No stories match your search yet.</div>
         )}
       </section>
+
       <StoryDNA />
       <YouMayAlsoLike />
     </SiteLayout>
   );
 }
+

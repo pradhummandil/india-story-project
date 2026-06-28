@@ -1,11 +1,10 @@
 # TODO
 
-- [ ] Inspect current Tailwind/theme color tokens and components using primary/secondary/bg-* to see why gradients/colors mismatch.
-- [ ] Implement Netflix-like dark theme overrides:
-  - [ ] Make page background solid black
-  - [ ] Make default text white
-  - [ ] Make buttons/boxes red (and borders red) while keeping focus/hover usable.
-- [ ] Ensure shadcn/ui primitives (Button, Card, etc.) pick up the overridden tokens.
-- [ ] Remove/disable gradient-based styling where it conflicts (e.g., hero buttons using bg-gradient-to-r).
-- [ ] Verify key screens/components: Navbar, Hero, StoryCard, Layout.
-- [ ] Run dev build/lint to ensure no type errors.
+## Next
+- [ ] Replace the hardcoded in-memory stories dataset (`src/lib/stories-data.ts`) with the new generated `stories.json`.
+- [ ] Update `/stories` list page to load stories from the local `stories.json` instead of `stories-data.ts`.
+- [ ] Update `/stories/$slug` page to resolve story by slug from the same source.
+- [ ] Remove any client-side limits/pagination caps (if present) so all 422 stories can be displayed.
+- [ ] Verify UI behavior: pagination (if any), search, category filter, and individual story pages.
+- [ ] Rebuild the project and ensure no runtime/type errors.
+
