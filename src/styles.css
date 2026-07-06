@@ -49,7 +49,17 @@
   --dur-base: 380ms;
   --dur-slow: 700ms;
 
-  --gradient-hero: radial-gradient(ellipse at top, color-mix(in oklab, var(--gold) 25%, transparent), transparent 60%), radial-gradient(ellipse at bottom right, color-mix(in oklab, var(--saffron) 18%, transparent), transparent 70%);
+  --gradient-hero:
+    radial-gradient(
+      ellipse at top,
+      color-mix(in oklab, var(--gold) 25%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse at bottom right,
+      color-mix(in oklab, var(--saffron) 18%, transparent),
+      transparent 70%
+    );
   --gradient-gold: linear-gradient(135deg, oklch(0.65 0.22 28), oklch(0.85 0.08 85));
   --gradient-text: linear-gradient(135deg, oklch(0.85 0.08 85), oklch(0.65 0.22 28));
 }
@@ -112,7 +122,10 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  h1, h2, h3, h4 {
+  h1,
+  h2,
+  h3,
+  h4 {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
   }
@@ -169,8 +182,10 @@
   .btn-premium {
     position: relative;
     overflow: hidden;
-    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-      box-shadow 0.35s ease, filter 0.35s ease;
+    transition:
+      transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.35s ease,
+      filter 0.35s ease;
     will-change: transform;
   }
   .btn-premium:hover {
@@ -226,7 +241,8 @@
     overflow: hidden;
   }
   .img-cinematic > * {
-    transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1),
+    transition:
+      transform 1.2s cubic-bezier(0.22, 1, 0.36, 1),
       filter 1.2s ease;
   }
   .img-cinematic:hover > * {
@@ -261,8 +277,12 @@
   }
 
   /* Typography refinements */
-  .text-balance { text-wrap: balance; }
-  .text-pretty { text-wrap: pretty; }
+  .text-balance {
+    text-wrap: balance;
+  }
+  .text-pretty {
+    text-wrap: pretty;
+  }
 
   @media (hover: hover) and (pointer: fine) {
     html,
@@ -273,7 +293,6 @@
     }
   }
 
-
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -283,4 +302,3 @@
     }
   }
 }
-

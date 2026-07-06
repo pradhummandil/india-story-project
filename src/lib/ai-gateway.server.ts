@@ -1,4 +1,3 @@
-
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 
 export function createLovableAiGatewayProvider(lovableApiKey: string) {

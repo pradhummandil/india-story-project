@@ -5,27 +5,69 @@ import { StoryCard } from "@/components/site/StoryCard";
 import { useJourney, getRecommendations } from "@/lib/journey-store";
 import { stories } from "@/lib/stories-data";
 
-const MODES = [
-  { id: "all", emoji: "✨", label: "For You", match: () => true },
-  { id: "env", emoji: "🌱", label: "Environmental Heroes", match: (c: string) => c === "Environment" || c === "Sustainability" },
-  { id: "women", emoji: "👩", label: "Women Changemakers", match: (_c: string, t: string) => /woman|women|weaver|her |she /i.test(t) },
-  { id: "innov", emoji: "🚀", label: "Innovation", match: (c: string) => c === "Innovation" || c === "Science" },
-  { id: "edu", emoji: "🏫", label: "Education Leaders", match: (_c: string, t: string) => /school|coding|education|teach/i.test(t) },
-  { id: "humanity", emoji: "❤️", label: "Humanity", match: (c: string) => c === "Culture" || c === "Heritage" },
-  { id: "rural", emoji: "🌍", label: "Rural Transformation", match: (_c: string, t: string) => /village|farm|rural|millet/i.test(t) },
-];
+type Mode = {
+  id: string;
+  emoji: string;
+  label: string;
+  match: (story: { category: string; title: string; excerpt: string }) => boolean;
+};
+
+const emojiForCategory = (category: string) => {
+  const c = category.trim().toLowerCase();
+  if (!c) return "✨";
+  if (c.includes("sustain") || c.includes("env")) return "🌿";
+  if (c.includes("women") || c.includes("empower")) return "👩";
+  if (c.includes("educ")) return "📚";
+  if (c.includes("culture") || c.includes("herit")) return "🪔";
+  if (c.includes("rural")) return "🚜";
+  if (c.includes("innov") || c.includes("science")) return "🚀";
+  return "✨";
+};
+
+function deriveModesFromStories() {
+  // Keep the same UI “modes” shape, but drive them from stories.json.
+  const uniqueCategories = Array.from(new Set(stories.map((s) => s.category).filter(Boolean)));
+
+  const top = uniqueCategories.slice(0, 6);
+
+  const modes: Mode[] = [
+    {
+      id: "all",
+      emoji: "✨",
+      label: "For You",
+      match: () => true,
+    },
+    ...top.map((cat) => ({
+      id: cat,
+      emoji: emojiForCategory(cat),
+      label: cat,
+      match: (st: { category: string }) => st.category === cat,
+    })),
+  ];
+  return modes;
+}
+
 
 export function RecommendedForYou() {
   const { state } = useJourney();
   const [mode, setMode] = useState("all");
   const scrollerRef = useRef<HTMLDivElement>(null);
 
+  const modes = useMemo(() => deriveModesFromStories(), []);
+
   const recs = useMemo(() => {
     if (mode === "all") return getRecommendations(state, 8);
-    const m = MODES.find((x) => x.id === mode)!;
-    const filtered = stories.filter((s) => m.match(s.category, s.title + " " + s.excerpt));
+    const m = modes.find((x) => x.id === mode);
+    if (!m) return getRecommendations(state, 6);
+    const filtered = stories.filter((s) =>
+      m.match({
+        category: s.category,
+        title: s.title,
+        excerpt: s.excerpt,
+      }),
+    );
     return filtered.length ? filtered : getRecommendations(state, 6);
-  }, [mode, state]);
+  }, [mode, state, modes]);
 
   const personalized = state.viewedIds.length > 0 && mode === "all";
 
@@ -70,7 +112,8 @@ export function RecommendedForYou() {
 
       {/* Mode chips */}
       <div className="flex gap-2 overflow-x-auto pb-3 mb-8 -mx-6 px-6 scrollbar-none">
-        {MODES.map((m) => {
+        {modes.map((m: Mode) => {
+
           const active = mode === m.id;
           return (
             <button
@@ -88,6 +131,7 @@ export function RecommendedForYou() {
           );
         })}
       </div>
+
 
       {/* Carousel */}
       <div className="relative">

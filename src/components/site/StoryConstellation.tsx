@@ -17,7 +17,6 @@ type Node = {
   slug: string;
 };
 
-
 function seededNumber(seed: string) {
   // Simple deterministic hash -> [0,1)
   let h = 2166136261;
@@ -38,7 +37,6 @@ function colorForCategory(category: string) {
   return `oklch(${(light / 100).toFixed(2)} ${(chroma / 100).toFixed(2)} ${hue} / ${alpha})`;
 }
 
-
 function dedupeEdges(edges: [string, string][]) {
   const seen = new Set<string>();
   return edges.filter(([a, b]) => {
@@ -57,8 +55,6 @@ export function StoryConstellation() {
     const pick = stories.slice(0, 11);
 
     const nodes: Node[] = pick.map((s, idx) => {
-
-
       const rx = seededNumber(`${s.region}|x|${idx}`);
       const ry = seededNumber(`${s.region}|y|${idx}`);
       const baseX = 10 + rx * 80; // 10..90
@@ -66,14 +62,8 @@ export function StoryConstellation() {
 
       // Preserve a similar spread by nudging around a few anchor positions.
       const anchors = [22, 14, 28, 20, 52, 46, 58, 74, 80, 74, 68];
-      const x = Math.max(
-        6,
-        Math.min(94, baseX * 0.85 + anchors[idx] * 0.15),
-      );
-      const y = Math.max(
-        6,
-        Math.min(94, baseY * 0.85 + (idx % 2 ? 22 : 18) * 0.15),
-      );
+      const x = Math.max(6, Math.min(94, baseX * 0.85 + anchors[idx] * 0.15));
+      const y = Math.max(6, Math.min(94, baseY * 0.85 + (idx % 2 ? 22 : 18) * 0.15));
 
       return {
         id: s.id || s.slug || `c-${idx}`,
@@ -176,9 +166,7 @@ export function StoryConstellation() {
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
           className="text-center mb-16 max-w-3xl mx-auto"
         >
-          <p className="text-xs uppercase tracking-[0.35em] text-gold mb-4">
-            Story Constellation
-          </p>
+          <p className="text-xs uppercase tracking-[0.35em] text-gold mb-4">Story Constellation</p>
           <h2 className="font-display text-4xl md:text-6xl leading-tight">
             Every Story Connects To{" "}
             <span className="italic text-gradient-gold">Something Bigger</span>
@@ -190,20 +178,20 @@ export function StoryConstellation() {
 
         {/* Category legend */}
         <div className="flex flex-wrap justify-center gap-2 mb-8">
-          {Array.from(new Set(nodes.map((n) => n.category))).slice(0, 7).map((c) => (
-
-            <span
-              key={c}
-              className="inline-flex items-center gap-2 glass rounded-full px-3 py-1 text-[10px] uppercase tracking-widest text-muted-foreground"
-            >
+          {Array.from(new Set(nodes.map((n) => n.category)))
+            .slice(0, 7)
+            .map((c) => (
               <span
-                className="size-1.5 rounded-full"
-                style={{ background: colorForCategory(c) }}
-              />
-              {c}
-            </span>
-
-          ))}
+                key={c}
+                className="inline-flex items-center gap-2 glass rounded-full px-3 py-1 text-[10px] uppercase tracking-widest text-muted-foreground"
+              >
+                <span
+                  className="size-1.5 rounded-full"
+                  style={{ background: colorForCategory(c) }}
+                />
+                {c}
+              </span>
+            ))}
         </div>
 
         {/* Constellation canvas */}
@@ -225,11 +213,7 @@ export function StoryConstellation() {
             <defs>
               <linearGradient id="edgeGrad" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0%" stopColor="var(--gold)" stopOpacity="0.6" />
-                <stop
-                  offset="100%"
-                  stopColor="var(--saffron)"
-                  stopOpacity="0.3"
-                />
+                <stop offset="100%" stopColor="var(--saffron)" stopOpacity="0.3" />
               </linearGradient>
             </defs>
 
@@ -269,8 +253,8 @@ export function StoryConstellation() {
             })}
           </svg>
 
-        {/* Nodes */}
-        {nodes.map((n, i) => {
+          {/* Nodes */}
+          {nodes.map((n, i) => {
             const isActive = activeId === n.id;
 
             const isConnected = connected.has(n.id);
@@ -360,16 +344,11 @@ export function StoryConstellation() {
                       className="absolute left-1/2 top-full mt-4 -translate-x-1/2 w-64 glass rounded-xl p-4 text-left z-20 pointer-events-none shadow-elegant"
                     >
                       <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest mb-2">
-                        <span
-                          className="size-1.5 rounded-full"
-                          style={{ background: color }}
-                        />
+                        <span className="size-1.5 rounded-full" style={{ background: color }} />
                         <span style={{ color }}>{n.category}</span>
                         <span className="text-muted-foreground">· {n.state}</span>
                       </div>
-                      <div className="font-display text-base leading-snug">
-                        {n.title}
-                      </div>
+                      <div className="font-display text-base leading-snug">{n.title}</div>
                       <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
                         {n.summary}
                       </p>
@@ -405,14 +384,11 @@ export function StoryConstellation() {
                     style={{ background: colorForCategory(selected.category) }}
                   />
                   <span style={{ color: colorForCategory(selected.category) }}>
-
                     {selected.category}
                   </span>
                   <span className="text-muted-foreground">· {selected.state}</span>
                 </div>
-                <h3 className="font-display text-2xl leading-tight">
-                  {selected.title}
-                </h3>
+                <h3 className="font-display text-2xl leading-tight">{selected.title}</h3>
                 <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
                   {selected.summary}
                 </p>
@@ -467,4 +443,3 @@ export function StoryConstellation() {
     </section>
   );
 }
-

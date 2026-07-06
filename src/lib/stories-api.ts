@@ -19,4 +19,3 @@ export async function fetchStoriesCatalogue(): Promise<StoriesCatalogueResponse>
 
   return (await res.json()) as StoriesCatalogueResponse;
 }
-

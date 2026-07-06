@@ -39,5 +39,3 @@ export function firstStoryForRegion(region: string) {
 export function regionStoryCount(region: string) {
   return stories.filter((s) => s.region === region).length;
 }
-
-

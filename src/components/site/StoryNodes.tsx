@@ -121,12 +121,8 @@ export function StoryNodes({
               <div className="text-[11px] uppercase tracking-widest text-gold leading-none mb-1">
                 {n.category}
               </div>
-              <div className="text-sm font-display leading-tight text-foreground">
-                {n.name}
-              </div>
-              <div className="text-[10px] text-muted-foreground leading-none mt-1">
-                {n.state}
-              </div>
+              <div className="text-sm font-display leading-tight text-foreground">{n.name}</div>
+              <div className="text-[10px] text-muted-foreground leading-none mt-1">{n.state}</div>
             </div>
           </Link>
         </motion.div>
@@ -134,4 +130,3 @@ export function StoryNodes({
     </motion.div>
   );
 }
-

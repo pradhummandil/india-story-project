@@ -18,16 +18,12 @@ async function fetchUrl(url) {
 }
 
 function countLinks(html) {
-  const hrefs = Array.from(html.matchAll(/<a[^>]+href=["']([^"']+)["']/gi)).map(
-    (m) => m[1]
-  );
+  const hrefs = Array.from(html.matchAll(/<a[^>]+href=["']([^"']+)["']/gi)).map((m) => m[1]);
   return hrefs.length;
 }
 
 function countStoryLike(html) {
-  const hrefs = Array.from(html.matchAll(/<a[^>]+href=["']([^"']+)["']/gi)).map(
-    (m) => m[1]
-  );
+  const hrefs = Array.from(html.matchAll(/<a[^>]+href=["']([^"']+)["']/gi)).map((m) => m[1]);
   // heuristic
   return hrefs.filter((h) => {
     if (!h) return false;
@@ -52,4 +48,3 @@ function countStoryLike(html) {
     }
   }
 })();
-

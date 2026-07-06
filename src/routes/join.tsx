@@ -91,8 +91,7 @@ function JoinPage() {
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             className="font-display text-5xl md:text-7xl leading-[1.05]"
           >
-            From reader to{" "}
-            <span className="text-gradient-gold italic">contributor</span>.
+            From reader to <span className="text-gradient-gold italic">contributor</span>.
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 16 }}
@@ -100,8 +99,8 @@ function JoinPage() {
             transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
             className="mt-6 text-lg text-muted-foreground leading-relaxed"
           >
-            Help build India's largest living archive of positive change. Share a
-            story, profile a changemaker, or report from your corner of Bharat.
+            Help build India's largest living archive of positive change. Share a story, profile a
+            changemaker, or report from your corner of Bharat.
           </motion.p>
         </div>
       </section>
@@ -161,7 +160,9 @@ function JoinPage() {
 
           <div className="space-y-6">
             <div className="glass rounded-3xl p-8">
-              <p className="text-xs uppercase tracking-widest text-gold mb-3">Contribution badges</p>
+              <p className="text-xs uppercase tracking-widest text-gold mb-3">
+                Contribution badges
+              </p>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 {badges.map((b, i) => (
                   <motion.div
@@ -229,14 +230,10 @@ function JoinPage() {
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.04 }}
                   className={`flex items-center gap-4 p-3 rounded-xl border ${
-                    (c as { you?: boolean }).you
-                      ? "border-gold/50 bg-gold/5"
-                      : "border-border/40"
+                    (c as { you?: boolean }).you ? "border-gold/50 bg-gold/5" : "border-border/40"
                   }`}
                 >
-                  <span className="font-display text-lg text-gold w-6 text-center">
-                    {i + 1}
-                  </span>
+                  <span className="font-display text-lg text-gold w-6 text-center">{i + 1}</span>
                   <div className="size-9 rounded-full bg-gradient-to-br from-gold to-saffron grid place-items-center text-gold-foreground text-sm font-semibold">
                     {c.name.slice(0, 1)}
                   </div>
@@ -261,7 +258,9 @@ function JoinPage() {
             <div className="glass rounded-3xl p-8">
               <div className="flex items-center gap-2 mb-5">
                 <Flame className="size-4 text-gold" />
-                <p className="text-xs uppercase tracking-widest text-gold">Most impactful stories</p>
+                <p className="text-xs uppercase tracking-widest text-gold">
+                  Most impactful stories
+                </p>
               </div>
               <ul className="space-y-3">
                 {topStories.map((s) => (
@@ -299,7 +298,9 @@ function JoinPage() {
               <div className="glass rounded-3xl p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <Sparkles className="size-4 text-gold" />
-                  <p className="text-xs uppercase tracking-widest text-gold">Emerging changemakers</p>
+                  <p className="text-xs uppercase tracking-widest text-gold">
+                    Emerging changemakers
+                  </p>
                 </div>
                 <ul className="space-y-3">
                   {emerging.map((c) => (
@@ -339,9 +340,7 @@ function JoinPage() {
               />
               <div className="relative">
                 <div className="text-3xl mb-3">{c.emoji}</div>
-                <div className="text-xs uppercase tracking-widest text-gold mb-1">
-                  {c.period}
-                </div>
+                <div className="text-xs uppercase tracking-widest text-gold mb-1">{c.period}</div>
                 <h3 className="font-display text-xl mb-2">{c.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{c.desc}</p>
               </div>

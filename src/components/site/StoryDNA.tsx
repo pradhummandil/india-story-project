@@ -68,8 +68,8 @@ export function StoryDNA() {
           Explore the <span className="text-gradient-gold italic">DNA</span> of change.
         </h2>
         <p className="mt-4 text-muted-foreground leading-relaxed">
-          Every story carries a unique signature — its theme, impact, region, and emotion.
-          Follow the threads to discover a living network of connected change across India.
+          Every story carries a unique signature — its theme, impact, region, and emotion. Follow
+          the threads to discover a living network of connected change across India.
         </p>
       </div>
 
@@ -91,11 +91,17 @@ export function StoryDNA() {
             <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/60 to-background/90 pointer-events-none" />
             <div className="relative">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] uppercase tracking-[0.25em] text-gold">DNA Profile</span>
-                <span className="text-[10px] tracking-widest text-muted-foreground">#{story.id.padStart(4, "0")}</span>
+                <span className="text-[10px] uppercase tracking-[0.25em] text-gold">
+                  DNA Profile
+                </span>
+                <span className="text-[10px] tracking-widest text-muted-foreground">
+                  #{story.id.padStart(4, "0")}
+                </span>
               </div>
               <h3 className="font-display text-2xl leading-tight mb-1">{story.title}</h3>
-              <p className="text-xs text-muted-foreground mb-5">{story.region} · {story.readTime}</p>
+              <p className="text-xs text-muted-foreground mb-5">
+                {story.region} · {story.readTime}
+              </p>
 
               {/* DNA helix bar */}
               <div className="mb-5 h-2 rounded-full overflow-hidden bg-foreground/5 relative">
@@ -116,10 +122,15 @@ export function StoryDNA() {
               </div>
 
               <div className="mt-5">
-                <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">SDG alignment</p>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">
+                  SDG alignment
+                </p>
                 <div className="flex flex-wrap gap-1.5">
                   {dna.sdgs.map((g) => (
-                    <span key={g.id} className="text-[11px] px-2.5 py-1 rounded-full glass text-foreground/90">
+                    <span
+                      key={g.id}
+                      className="text-[11px] px-2.5 py-1 rounded-full glass text-foreground/90"
+                    >
                       SDG {g.id} · {g.label}
                     </span>
                   ))}
@@ -150,12 +161,16 @@ export function StoryDNA() {
                 onClick={() => setZoom((z) => Math.max(0.7, z - 0.15))}
                 className="size-8 rounded-full glass text-sm hover:text-gold transition-colors"
                 aria-label="Zoom out"
-              >−</button>
+              >
+                −
+              </button>
               <button
                 onClick={() => setZoom((z) => Math.min(1.6, z + 0.15))}
                 className="size-8 rounded-full glass text-sm hover:text-gold transition-colors"
                 aria-label="Zoom in"
-              >+</button>
+              >
+                +
+              </button>
             </div>
           </div>
 
@@ -166,7 +181,11 @@ export function StoryDNA() {
               transition={{ type: "spring", stiffness: 120, damping: 18 }}
             >
               {/* SVG connections */}
-              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <svg
+                className="absolute inset-0 w-full h-full"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+              >
                 <defs>
                   <linearGradient id="edge" x1="0" y1="0" x2="1" y2="1">
                     <stop offset="0%" stopColor="oklch(0.85 0.15 80)" stopOpacity="0.6" />
@@ -178,7 +197,10 @@ export function StoryDNA() {
                   return (
                     <motion.line
                       key={n.story.id}
-                      x1={50} y1={50} x2={n.x} y2={n.y}
+                      x1={50}
+                      y1={50}
+                      x2={n.x}
+                      y2={n.y}
                       stroke="url(#edge)"
                       strokeWidth={active ? 0.6 : 0.3}
                       initial={{ pathLength: 0, opacity: 0 }}
@@ -217,14 +239,21 @@ export function StoryDNA() {
                     key={n.story.id}
                     initial={{ opacity: 0, scale: 0 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.15 + i * 0.06, type: "spring", stiffness: 180, damping: 14 }}
+                    transition={{
+                      delay: 0.15 + i * 0.06,
+                      type: "spring",
+                      stiffness: 180,
+                      damping: 14,
+                    }}
                     onMouseEnter={() => setHoveredId(n.story.id)}
                     onMouseLeave={() => setHoveredId(null)}
                     onClick={() => setSelectedId(n.story.id)}
                     className="absolute -translate-x-1/2 -translate-y-1/2 group"
                     style={{ left: `${n.x}%`, top: `${n.y}%` }}
                   >
-                    <span className={`absolute inset-0 rounded-full bg-gold/20 blur-md transition-opacity ${active ? "opacity-100" : "opacity-0"}`} />
+                    <span
+                      className={`absolute inset-0 rounded-full bg-gold/20 blur-md transition-opacity ${active ? "opacity-100" : "opacity-0"}`}
+                    />
                     <div
                       className={`relative size-14 rounded-full grid place-items-center border transition-all ${
                         active ? "border-gold scale-110 shadow-glow" : "border-border/50"
@@ -243,8 +272,12 @@ export function StoryDNA() {
                           exit={{ opacity: 0 }}
                           className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-44 glass rounded-xl p-2.5 text-left z-10"
                         >
-                          <p className="text-[11px] font-display leading-tight mb-1 line-clamp-2">{n.story.title}</p>
-                          <p className="text-[10px] text-gold">{n.reasons.slice(0, 2).join(" · ")}</p>
+                          <p className="text-[11px] font-display leading-tight mb-1 line-clamp-2">
+                            {n.story.title}
+                          </p>
+                          <p className="text-[10px] text-gold">
+                            {n.reasons.slice(0, 2).join(" · ")}
+                          </p>
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -259,10 +292,32 @@ export function StoryDNA() {
       {/* Intelligence layer */}
       <div className="mt-6 grid md:grid-cols-4 gap-3">
         {[
-          { label: "Related Heroes", icon: Users, items: connections.filter((c) => c.reasons.includes("Similar mission")).slice(0, 2) },
-          { label: "Similar Transformations", icon: Wand2, items: connections.filter((c) => c.reasons.includes("Same impact area")).slice(0, 2) },
-          { label: "Similar Innovations", icon: Sparkles, items: connections.filter((c) => c.story.category === "Innovation" || c.story.category === "Science").slice(0, 2) },
-          { label: "Similar Communities", icon: HeartHandshake, items: connections.filter((c) => c.reasons.includes("Same beneficiary") || c.reasons.includes("Same state")).slice(0, 2) },
+          {
+            label: "Related Heroes",
+            icon: Users,
+            items: connections.filter((c) => c.reasons.includes("Similar mission")).slice(0, 2),
+          },
+          {
+            label: "Similar Transformations",
+            icon: Wand2,
+            items: connections.filter((c) => c.reasons.includes("Same impact area")).slice(0, 2),
+          },
+          {
+            label: "Similar Innovations",
+            icon: Sparkles,
+            items: connections
+              .filter((c) => c.story.category === "Innovation" || c.story.category === "Science")
+              .slice(0, 2),
+          },
+          {
+            label: "Similar Communities",
+            icon: HeartHandshake,
+            items: connections
+              .filter(
+                (c) => c.reasons.includes("Same beneficiary") || c.reasons.includes("Same state"),
+              )
+              .slice(0, 2),
+          },
         ].map((col) => (
           <div key={col.label} className="glass rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3 text-gold">

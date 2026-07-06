@@ -90,18 +90,20 @@ function getNextListingUrl($) {
   const relNext = $("a[rel='next']").attr("href");
   if (relNext) return absolutizeUrl(relNext);
 
-  const nextA = $("a").filter((_, a) => {
-    const txt = normalizeText($(a).text());
-    const aria = normalizeText($(a).attr("aria-label"));
-    const rel = $(a).attr("rel");
-    const href = $(a).attr("href") || "";
-    return (
-      rel === "next" ||
-      /\bnext\b/i.test(txt) ||
-      /\bnext\b/i.test(aria) ||
-      /\/page\/\d+\/?/i.test(href)
-    );
-  }).first();
+  const nextA = $("a")
+    .filter((_, a) => {
+      const txt = normalizeText($(a).text());
+      const aria = normalizeText($(a).attr("aria-label"));
+      const rel = $(a).attr("rel");
+      const href = $(a).attr("href") || "";
+      return (
+        rel === "next" ||
+        /\bnext\b/i.test(txt) ||
+        /\bnext\b/i.test(aria) ||
+        /\/page\/\d+\/?/i.test(href)
+      );
+    })
+    .first();
 
   const href = nextA.attr("href");
   return href ? absolutizeUrl(href) : "";
@@ -195,10 +197,7 @@ function extractStoryFromPage($, storyUrl) {
       }
 
       if (!publishDate) {
-        publishDate =
-          normalizeText(obj?.datePublished) ||
-          normalizeText(obj?.dateCreated) ||
-          "";
+        publishDate = normalizeText(obj?.datePublished) || normalizeText(obj?.dateCreated) || "";
       }
     } catch {
       // ignore invalid JSON
@@ -283,7 +282,7 @@ function extractStoryFromPage($, storyUrl) {
     const after = allStoryUrls.size;
 
     console.log(
-      `[LIST] Found story links: ${storyUrls.length}. New unique: ${after - before}. Total unique: ${after}`
+      `[LIST] Found story links: ${storyUrls.length}. New unique: ${after - before}. Total unique: ${after}`,
     );
 
     if (OUTPUT_LIMIT > 0 && allStoryUrls.size >= OUTPUT_LIMIT) {
@@ -344,9 +343,7 @@ function extractStoryFromPage($, storyUrl) {
         console.log(`[S${workerId}] OK ${okCount}/${queue.length}: ${slug}`);
       } catch (e) {
         errCount++;
-        console.log(
-          `[S${workerId}] ERR ${errCount}/${queue.length}: ${slug} (${e?.message || e})`
-        );
+        console.log(`[S${workerId}] ERR ${errCount}/${queue.length}: ${slug} (${e?.message || e})`);
       }
 
       if (OUTPUT_LIMIT > 0 && storyResultsBySlug.size >= OUTPUT_LIMIT) return;
@@ -376,4 +373,3 @@ function extractStoryFromPage($, storyUrl) {
 
   if (!outStories.length) process.exitCode = 1;
 })();
-

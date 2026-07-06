@@ -12,12 +12,32 @@ export interface StoryDNA {
 }
 
 const SDG_BY_CATEGORY: Record<string, { id: number; label: string }[]> = {
-  Heritage: [{ id: 11, label: "Sustainable Cities" }, { id: 8, label: "Decent Work" }],
-  Innovation: [{ id: 9, label: "Industry & Innovation" }, { id: 4, label: "Quality Education" }],
-  Sustainability: [{ id: 12, label: "Responsible Consumption" }, { id: 2, label: "Zero Hunger" }, { id: 15, label: "Life on Land" }],
-  Science: [{ id: 9, label: "Industry & Innovation" }, { id: 4, label: "Quality Education" }],
-  Culture: [{ id: 11, label: "Sustainable Cities" }, { id: 8, label: "Decent Work" }],
-  Environment: [{ id: 13, label: "Climate Action" }, { id: 6, label: "Clean Water" }, { id: 14, label: "Life Below Water" }],
+  Heritage: [
+    { id: 11, label: "Sustainable Cities" },
+    { id: 8, label: "Decent Work" },
+  ],
+  Innovation: [
+    { id: 9, label: "Industry & Innovation" },
+    { id: 4, label: "Quality Education" },
+  ],
+  Sustainability: [
+    { id: 12, label: "Responsible Consumption" },
+    { id: 2, label: "Zero Hunger" },
+    { id: 15, label: "Life on Land" },
+  ],
+  Science: [
+    { id: 9, label: "Industry & Innovation" },
+    { id: 4, label: "Quality Education" },
+  ],
+  Culture: [
+    { id: 11, label: "Sustainable Cities" },
+    { id: 8, label: "Decent Work" },
+  ],
+  Environment: [
+    { id: 13, label: "Climate Action" },
+    { id: 6, label: "Clean Water" },
+    { id: 14, label: "Life Below Water" },
+  ],
 };
 
 const IMPACT_BY_CATEGORY: Record<string, string> = {
@@ -73,14 +93,32 @@ export function getConnections(storyId: string, limit = 6): Connection[] {
     .map((s) => {
       const reasons: string[] = [];
       let score = 0;
-      if (s.category === base.category) { score += 3; reasons.push("Similar mission"); }
-      if (s.region === base.region) { score += 2; reasons.push("Same state"); }
+      if (s.category === base.category) {
+        score += 3;
+        reasons.push("Similar mission");
+      }
+      if (s.region === base.region) {
+        score += 2;
+        reasons.push("Same state");
+      }
       const baseDna = deriveDNA(base);
       const dna = deriveDNA(s);
-      if (dna.impactType === baseDna.impactType) { score += 2; reasons.push("Same impact area"); }
-      if (dna.beneficiary === baseDna.beneficiary) { score += 1.5; reasons.push("Same beneficiary"); }
-      if (dna.emotion === baseDna.emotion) { score += 0.5; reasons.push("Similar tone"); }
-      if (score === 0) { score = 0.1; reasons.push("Adjacent story"); }
+      if (dna.impactType === baseDna.impactType) {
+        score += 2;
+        reasons.push("Same impact area");
+      }
+      if (dna.beneficiary === baseDna.beneficiary) {
+        score += 1.5;
+        reasons.push("Same beneficiary");
+      }
+      if (dna.emotion === baseDna.emotion) {
+        score += 0.5;
+        reasons.push("Similar tone");
+      }
+      if (score === 0) {
+        score = 0.1;
+        reasons.push("Adjacent story");
+      }
       return { story: s, score, reasons };
     })
     .sort((a, b) => b.score - a.score)

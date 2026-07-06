@@ -59,7 +59,9 @@ export function StoryJourney() {
               >
                 <s.icon className="size-4 text-gold mb-3" />
                 <div className="font-display text-3xl">{s.value}</div>
-                <div className="text-xs text-muted-foreground uppercase tracking-widest mt-1">{s.label}</div>
+                <div className="text-xs text-muted-foreground uppercase tracking-widest mt-1">
+                  {s.label}
+                </div>
               </motion.div>
             ))}
           </div>
@@ -68,7 +70,9 @@ export function StoryJourney() {
           <div className="mb-6">
             <div className="flex items-center justify-between text-sm mb-2">
               <span className="text-muted-foreground">Badges earned</span>
-              <span className="text-gold">{earnedCount} / {badges.length}</span>
+              <span className="text-gold">
+                {earnedCount} / {badges.length}
+              </span>
             </div>
             <div className="h-1.5 rounded-full bg-border/40 overflow-hidden">
               <motion.div

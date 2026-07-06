@@ -23,7 +23,9 @@ export interface Story {
 export function StoryCard({ story, index = 0 }: { story: Story; index?: number }) {
   const { trackView } = useJourney();
   const hoverStart = useRef<number | null>(null);
-  const onEnter = () => { hoverStart.current = Date.now(); };
+  const onEnter = () => {
+    hoverStart.current = Date.now();
+  };
   const onLeave = () => {
     if (hoverStart.current && Date.now() - hoverStart.current > 1500) {
       trackView(story, Date.now() - hoverStart.current);

@@ -11,13 +11,8 @@ export const Route = createFileRoute("/stories/$slug")({
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center">
         <h1 className="text-4xl font-bold mb-4">Story Not Found</h1>
-        <p className="text-muted-foreground mb-8">
-          The story you're looking for doesn't exist.
-        </p>
-        <a
-          href="/stories"
-          className="text-gold hover:text-saffron transition-colors"
-        >
+        <p className="text-muted-foreground mb-8">The story you're looking for doesn't exist.</p>
+        <a href="/stories" className="text-gold hover:text-saffron transition-colors">
           Back to Stories
         </a>
       </div>
@@ -51,4 +46,3 @@ function StoryDetailPage() {
 
   return <StoryDetail story={story} />;
 }
-

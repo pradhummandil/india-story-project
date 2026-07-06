@@ -6,16 +6,7 @@ import { Button } from "@/components/ui/button";
 import { LanguageToggle } from "./LanguageToggle";
 import { useI18nStore, getNavText } from "@/lib/i18n";
 
-
-function MagneticLink({
-  to,
-  label,
-  active,
-}: {
-  to: string;
-  label: string;
-  active: boolean;
-}) {
+function MagneticLink({ to, label, active }: { to: string; label: string; active: boolean }) {
   const ref = useRef<HTMLAnchorElement>(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -80,7 +71,6 @@ export function Navbar() {
     { to: "/contact", label: navText.contact },
   ];
 
-
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
@@ -118,11 +108,7 @@ export function Navbar() {
               key={l.to}
               to={l.to}
               label={l.label}
-              active={
-                l.to === "/"
-                  ? location.pathname === "/"
-                  : location.pathname.startsWith(l.to)
-              }
+              active={l.to === "/" ? location.pathname === "/" : location.pathname.startsWith(l.to)}
             />
           ))}
         </nav>
@@ -137,8 +123,6 @@ export function Navbar() {
         </div>
 
         <LanguageToggle />
-
-
 
         <button
           className="md:hidden p-2 text-foreground"
@@ -183,7 +167,6 @@ export function Navbar() {
               <div className="mt-3">
                 <LanguageToggle />
               </div>
-
             </div>
           </motion.div>
         )}

@@ -50,8 +50,7 @@ export function Hero() {
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass text-xs uppercase tracking-widest text-muted-foreground mb-8"
         >
-          <Sparkles className="size-3 text-gold" />
-          A premium storytelling platform
+          <Sparkles className="size-3 text-gold" />A premium storytelling platform
         </motion.div>
 
         <h1 className="font-display text-5xl md:text-7xl lg:text-8xl leading-[1.05] max-w-5xl mx-auto text-balance">
@@ -97,8 +96,8 @@ export function Hero() {
           transition={{ duration: 1, delay: 1.15 }}
           className="mt-8 max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground leading-relaxed"
         >
-          Discover inspiring stories of changemakers, innovators, and heroes
-          across India — told with the depth, craft, and care they deserve.
+          Discover inspiring stories of changemakers, innovators, and heroes across India — told
+          with the depth, craft, and care they deserve.
         </motion.p>
 
         <motion.div

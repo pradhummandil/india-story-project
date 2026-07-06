@@ -17,14 +17,12 @@ export const Route = createFileRoute("/stories/")({
       { title: "Stories — India Story Project" },
       {
         name: "description",
-        content:
-          "Browse stories of innovators, changemakers, and unsung heroes across India.",
+        content: "Browse stories of innovators, changemakers, and unsung heroes across India.",
       },
       { property: "og:title", content: "Stories — India Story Project" },
       {
         property: "og:description",
-        content:
-          "Browse stories of innovators, changemakers, and unsung heroes across India.",
+        content: "Browse stories of innovators, changemakers, and unsung heroes across India.",
       },
     ],
   }),
@@ -65,7 +63,8 @@ function StoriesList() {
             Every story, <span className="text-gradient-gold italic">every corner</span> of India.
           </h1>
           <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
-            A living archive of long-form stories, profiles, and dispatches from the people reshaping the subcontinent.
+            A living archive of long-form stories, profiles, and dispatches from the people
+            reshaping the subcontinent.
           </p>
         </div>
 
@@ -114,7 +113,9 @@ function StoriesList() {
         </div>
 
         {filtered.length === 0 && (
-          <div className="mt-20 text-center text-muted-foreground">No stories match your search yet.</div>
+          <div className="mt-20 text-center text-muted-foreground">
+            No stories match your search yet.
+          </div>
         )}
       </section>
 
@@ -123,4 +124,3 @@ function StoriesList() {
     </SiteLayout>
   );
 }
-

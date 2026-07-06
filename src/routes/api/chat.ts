@@ -42,12 +42,11 @@ export const Route = createFileRoute("/api/chat")({
           )
           .join("\n");
 
-        const ctxLine = context?.route
-          ? `\nThe user is currently on route: ${context.route}.`
-          : "";
-        const langLine = context?.language === "hi"
-          ? "\nUser language preference: Hindi. Reply in Hindi unless they switch."
-          : "";
+        const ctxLine = context?.route ? `\nThe user is currently on route: ${context.route}.` : "";
+        const langLine =
+          context?.language === "hi"
+            ? "\nUser language preference: Hindi. Reply in Hindi unless they switch."
+            : "";
 
         const gateway = createLovableAiGatewayProvider(key);
         const result = streamText({

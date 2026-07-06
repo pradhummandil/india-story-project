@@ -3,7 +3,6 @@ import { BookOpen, Play, Quote, Users } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 
-
 import { Button } from "@/components/ui/button";
 import type { Story } from "@/components/site/StoryCard";
 import { stories } from "@/lib/stories-data";
@@ -77,7 +76,7 @@ function getTheme(s: StoryWithOptionalFields): string {
   // Prefer explicit theme if present in JSON/DB.
   if (typeof s.theme === "string" && s.theme.trim()) return s.theme.trim();
   // Fall back to category if theme isn't available.
-  return (typeof s.category === "string" && s.category.trim()) ? s.category : "All";
+  return typeof s.category === "string" && s.category.trim() ? s.category : "All";
 }
 
 export function HeroOfTheDay() {
@@ -88,9 +87,10 @@ export function HeroOfTheDay() {
   const heroTitle = hero.title;
   const heroExcerpt = hero.excerpt;
 
-  const personName = (typeof hero.personName === "string" && hero.personName.trim())
-    ? hero.personName.trim()
-    : heroTitle;
+  const personName =
+    typeof hero.personName === "string" && hero.personName.trim()
+      ? hero.personName.trim()
+      : heroTitle;
 
   const stateOrRegion = hero.region;
   const theme = getTheme(hero);
@@ -143,9 +143,7 @@ export function HeroOfTheDay() {
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
           className="text-center mb-16"
         >
-          <p className="text-xs uppercase tracking-[0.35em] text-gold mb-4">
-            Featured Today
-          </p>
+          <p className="text-xs uppercase tracking-[0.35em] text-gold mb-4">Featured Today</p>
           <h2 className="font-display text-4xl md:text-6xl">
             Hero <span className="italic text-gradient-gold">Of The Day</span>
           </h2>
@@ -340,7 +338,9 @@ export function HeroOfTheDay() {
             <div className="space-y-12">
               {/* If story includes publishDate, show it as a start marker. */}
               {(() => {
-                const year = publishDate ? String(new Date(parseDate(hero.publishDate)).getFullYear()) : "";
+                const year = publishDate
+                  ? String(new Date(parseDate(hero.publishDate)).getFullYear())
+                  : "";
                 const points = [
                   {
                     year: year || "",
@@ -378,12 +378,35 @@ export function HeroOfTheDay() {
                     desc: s.slice(0, 140),
                   }));
 
-                  return mapped.length ? mapped.map((t, i) => ({
-                    ...t,
-                    year: t.year,
-                    title: t.desc ? (i === 0 ? "Beginning" : i === 1 ? "Turning point" : i === 2 ? "Growth" : "Momentum") : "",
-                    desc: t.desc,
-                  })) : points;
+                  const toTitleFromText = (text: string, idx: number) => {
+                    // Extract a short, content-derived label (no hardcoded timeline titles).
+                    const cleaned = text
+                      .replace(/\s+/g, " ")
+                      .trim()
+                      .replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9]+$/g, "");
+                    if (!cleaned) return "";
+
+                    const words = cleaned
+                      .split(/\s+/)
+                      .map((w) => w.replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9]+$/g, ""))
+                      .filter(Boolean);
+
+                    // Prefer early meaningful words; skip very common tiny tokens.
+                    const skip = new Set(["the", "and", "for", "with", "from", "that", "this", "into", "over", "under"]);
+                    const picked = words.find((w) => w.length >= 4 && !skip.has(w.toLowerCase()));
+                    const candidate = picked ?? words[idx] ?? words[0] ?? "";
+                    return candidate ? candidate.slice(0, 18) : "";
+                  };
+
+                  return mapped.length
+                    ? mapped.map((t, i) => ({
+                        ...t,
+                        year: t.year,
+                        title: t.desc ? toTitleFromText(t.desc, i) : "",
+                        desc: t.desc,
+                      }))
+                    : points;
+
                 }
 
                 return points;
@@ -405,7 +428,9 @@ export function HeroOfTheDay() {
                     <div className={left ? "md:text-right md:pr-8" : "md:pl-8"}>
                       <div className="font-display text-3xl text-gradient-gold">{t.year || ""}</div>
                       <h4 className="font-display text-xl mt-1">{t.title || ""}</h4>
-                      <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{t.desc || ""}</p>
+                      <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                        {t.desc || ""}
+                      </p>
                     </div>
                   </motion.div>
                 );
@@ -500,4 +525,3 @@ export function HeroOfTheDay() {
     </section>
   );
 }
-

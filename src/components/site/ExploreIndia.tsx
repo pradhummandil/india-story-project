@@ -70,9 +70,7 @@ export function ExploreIndia() {
 
     return regions.map((region, idx) => {
       const list = byRegion.get(region)!;
-      const categories = Array.from(
-        new Set(list.map((s) => s.category).filter(Boolean)),
-      );
+      const categories = Array.from(new Set(list.map((s) => s.category).filter(Boolean)));
 
       const featured = list[0];
       const pos = stableMapPositionForRegion(`${region}|${idx}`);
@@ -95,11 +93,8 @@ export function ExploreIndia() {
 
   const journeyPath = useMemo(() => {
     if (journeyPoints.length === 0) return "";
-    return journeyPoints
-      .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
-      .join(" ");
+    return journeyPoints.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
   }, [journeyPoints]);
-
 
   return (
     <section className="relative w-full overflow-hidden py-24 md:py-32">
@@ -173,10 +168,7 @@ export function ExploreIndia() {
           className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 mb-12"
         >
           {STATS.map((s) => (
-            <div
-              key={s.label}
-              className="glass rounded-2xl p-5 text-center border border-gold/10"
-            >
+            <div key={s.label} className="glass rounded-2xl p-5 text-center border border-gold/10">
               <s.icon className="size-5 text-gold mx-auto mb-3" />
               <div className="font-display text-3xl md:text-4xl text-gradient-gold">
                 <AnimatedCounter value={s.value} suffix={s.suffix} />
@@ -472,16 +464,12 @@ export function ExploreIndia() {
                   exit={{ opacity: 0 }}
                   className="glass rounded-3xl p-7 border border-gold/10"
                 >
-                  <p className="text-xs uppercase tracking-widest text-gold mb-3">
-                    A living atlas
-                  </p>
-                  <h3 className="font-display text-2xl leading-tight mb-3">
-                    Tap any glowing node
-                  </h3>
+                  <p className="text-xs uppercase tracking-widest text-gold mb-3">A living atlas</p>
+                  <h3 className="font-display text-2xl leading-tight mb-3">Tap any glowing node</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Each light on the map is a story waiting to be opened — a chef
-                    in Lucknow, a weaver in Assam, an engineer in the Himalayas.
-                    Hover to preview, tap to enter the state.
+                    Each light on the map is a story waiting to be opened — a chef in Lucknow, a
+                    weaver in Assam, an engineer in the Himalayas. Hover to preview, tap to enter
+                    the state.
                   </p>
 
                   <div className="mt-6 space-y-2">

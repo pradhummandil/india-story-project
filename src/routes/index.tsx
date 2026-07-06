@@ -17,7 +17,10 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "India Story Project — Experience India's Stories" },
-      { name: "description", content: "Discover inspiring stories of changemakers, innovators, and heroes across India." },
+      {
+        name: "description",
+        content: "Discover inspiring stories of changemakers, innovators, and heroes across India.",
+      },
       { property: "og:title", content: "India Story Project" },
       { property: "og:description", content: "Experience India's stories, don't just read them." },
     ],
@@ -33,16 +36,17 @@ function iconForCategory(label: string) {
 }
 
 function descForCategory(label: string) {
+  // Deterministic, category-derived micro-copy (no separate dataset).
   const l = label.toLowerCase();
-  if (l.includes("sustain")) return "Quiet revolutions in farming and climate";
-  if (l.includes("innov")) return "Founders and builders reshaping India";
+  if (l.includes("sustain")) return "Stories exploring climate and sustainable futures";
+  if (l.includes("innov")) return "Stories of ideas becoming real change";
   if (l.includes("women") || l.includes("empower")) return "Stories of women reshaping communities";
-  if (l.includes("educ")) return "Learning journeys and classrooms of change";
-  if (l.includes("culture") || l.includes("herit")) return "Food, art, cinema, and identity";
-  if (l.includes("rural")) return "Village innovation and community-led progress";
-  return "Stories from across Bharat";
+  if (l.includes("educ")) return "Stories centered on learning and education";
+  if (l.includes("culture") || l.includes("herit"))
+    return "Stories celebrating heritage, art, and identity";
+  if (l.includes("rural")) return "Stories rooted in villages and community progress";
+  return "Stories across Bharat";
 }
-
 
 function Home() {
   return (
@@ -54,7 +58,6 @@ function Home() {
         <ExploreIndia3D />
       </ClientOnly>
 
-
       {/* FEATURED STORIES */}
       <section className="container mx-auto px-6 py-24">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
@@ -64,7 +67,10 @@ function Home() {
               Stories worth your evening
             </h2>
           </div>
-          <Link to="/stories" className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-2 group">
+          <Link
+            to="/stories"
+            className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-2 group"
+          >
             View all stories
             <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
           </Link>
@@ -113,7 +119,6 @@ function Home() {
               </motion.div>
             ))}
         </div>
-
       </section>
 
       {/* MISSION */}
@@ -123,14 +128,19 @@ function Home() {
           <div className="relative max-w-3xl mx-auto text-center">
             <p className="text-xs uppercase tracking-widest text-gold mb-4">Our mission</p>
             <h2 className="font-display text-4xl md:text-5xl leading-tight">
-              To tell <span className="text-gradient-gold italic">a billion stories</span> with the craft they deserve.
+              To tell <span className="text-gradient-gold italic">a billion stories</span> with the
+              craft they deserve.
             </h2>
             <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
-              India Story Project is a slow journalism initiative — we travel,
-              listen, and document the people quietly building the country's
-              future. No clickbait. No noise. Just stories, beautifully told.
+              India Story Project is a slow journalism initiative — we travel, listen, and document
+              the people quietly building the country's future. No clickbait. No noise. Just
+              stories, beautifully told.
             </p>
-            <Button asChild size="lg" className="mt-10 bg-gradient-to-r from-gold to-saffron text-gold-foreground border-0">
+            <Button
+              asChild
+              size="lg"
+              className="mt-10 bg-gradient-to-r from-gold to-saffron text-gold-foreground border-0"
+            >
               <Link to="/about">
                 Read our story
                 <ArrowRight className="size-4" />

@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, ChevronRight, ChevronLeft, MapPin, Image as ImageIcon, FileText, Send, Sparkles } from "lucide-react";
+import {
+  Check,
+  ChevronRight,
+  ChevronLeft,
+  MapPin,
+  Image as ImageIcon,
+  FileText,
+  Send,
+  Sparkles,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,7 +37,7 @@ export function ShareStoryWizard() {
   const canNext =
     (step === 0 && !!category) ||
     (step === 1 && !!region) ||
-    (step === 2) ||
+    step === 2 ||
     (step === 3 && title.length > 3 && body.length > 20) ||
     step === 4;
 
@@ -80,7 +89,9 @@ export function ShareStoryWizard() {
                   >
                     {complete ? <Check className="size-4" /> : <s.icon className="size-4" />}
                   </span>
-                  <span className="hidden md:inline text-xs uppercase tracking-widest">{s.label}</span>
+                  <span className="hidden md:inline text-xs uppercase tracking-widest">
+                    {s.label}
+                  </span>
                 </motion.div>
                 {i < steps.length - 1 && <div className="flex-1 h-px bg-border/40 mx-2" />}
               </div>
@@ -111,7 +122,8 @@ export function ShareStoryWizard() {
                 </div>
                 <h3 className="font-display text-3xl mb-2">Submitted for review</h3>
                 <p className="text-muted-foreground max-w-md mx-auto">
-                  Your story has joined the archive of changemakers. We'll get back to you when our editors review it.
+                  Your story has joined the archive of changemakers. We'll get back to you when our
+                  editors review it.
                 </p>
                 <Button
                   onClick={handleReset}
@@ -121,27 +133,39 @@ export function ShareStoryWizard() {
                 </Button>
               </motion.div>
             ) : step === 0 ? (
-              <motion.div key="cat" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
+              <motion.div
+                key="cat"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+              >
                 <h3 className="font-display text-2xl mb-1">Choose a category</h3>
                 <p className="text-sm text-muted-foreground mb-5">What kind of story is this?</p>
                 <div className="flex flex-wrap gap-2">
-                  {categories.filter((c) => c !== "All").map((c) => (
-                    <button
-                      key={c}
-                      onClick={() => setCategory(c)}
-                      className={`px-4 py-2 rounded-full text-sm transition-all ${
-                        category === c
-                          ? "bg-gradient-to-r from-gold to-saffron text-gold-foreground shadow-glow"
-                          : "glass text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      {c}
-                    </button>
-                  ))}
+                  {categories
+                    .filter((c) => c !== "All")
+                    .map((c) => (
+                      <button
+                        key={c}
+                        onClick={() => setCategory(c)}
+                        className={`px-4 py-2 rounded-full text-sm transition-all ${
+                          category === c
+                            ? "bg-gradient-to-r from-gold to-saffron text-gold-foreground shadow-glow"
+                            : "glass text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {c}
+                      </button>
+                    ))}
                 </div>
               </motion.div>
             ) : step === 1 ? (
-              <motion.div key="loc" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
+              <motion.div
+                key="loc"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+              >
                 <h3 className="font-display text-2xl mb-1">Where did it happen?</h3>
                 <p className="text-sm text-muted-foreground mb-5">Pick a region of India.</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
@@ -162,9 +186,16 @@ export function ShareStoryWizard() {
                 </div>
               </motion.div>
             ) : step === 2 ? (
-              <motion.div key="med" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
+              <motion.div
+                key="med"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+              >
                 <h3 className="font-display text-2xl mb-1">Add photos or video</h3>
-                <p className="text-sm text-muted-foreground mb-5">Drop in visuals that bring this story to life. (Optional)</p>
+                <p className="text-sm text-muted-foreground mb-5">
+                  Drop in visuals that bring this story to life. (Optional)
+                </p>
                 <label className="block border border-dashed border-border/60 rounded-2xl p-10 text-center cursor-pointer hover:border-gold/60 transition-colors">
                   <input
                     type="file"
@@ -176,15 +207,25 @@ export function ShareStoryWizard() {
                   <ImageIcon className="size-8 text-gold mx-auto mb-3" />
                   <div className="text-sm">Drag files here or click to upload</div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    {media > 0 ? `${media} file${media > 1 ? "s" : ""} attached` : "PNG, JPG, MP4 up to 50MB each"}
+                    {media > 0
+                      ? `${media} file${media > 1 ? "s" : ""} attached`
+                      : "PNG, JPG, MP4 up to 50MB each"}
                   </div>
                 </label>
               </motion.div>
             ) : step === 3 ? (
-              <motion.div key="story" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-4">
+              <motion.div
+                key="story"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                className="space-y-4"
+              >
                 <div>
                   <h3 className="font-display text-2xl mb-1">Tell the story</h3>
-                  <p className="text-sm text-muted-foreground mb-5">A clear title and a few paragraphs are enough to start.</p>
+                  <p className="text-sm text-muted-foreground mb-5">
+                    A clear title and a few paragraphs are enough to start.
+                  </p>
                 </div>
                 <Input
                   value={title}
@@ -201,9 +242,16 @@ export function ShareStoryWizard() {
                 <div className="text-xs text-muted-foreground">{body.length} characters</div>
               </motion.div>
             ) : (
-              <motion.div key="sub" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
+              <motion.div
+                key="sub"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+              >
                 <h3 className="font-display text-2xl mb-1">Review & submit</h3>
-                <p className="text-sm text-muted-foreground mb-5">A quick check before we send it to editors.</p>
+                <p className="text-sm text-muted-foreground mb-5">
+                  A quick check before we send it to editors.
+                </p>
                 <dl className="grid sm:grid-cols-2 gap-3 text-sm">
                   <Row label="Category" value={category} />
                   <Row label="Region" value={region} />
@@ -211,7 +259,9 @@ export function ShareStoryWizard() {
                   <Row label="Title" value={title} />
                   <div className="sm:col-span-2 glass rounded-xl p-4">
                     <div className="text-xs uppercase tracking-widest text-gold mb-2">Story</div>
-                    <p className="text-muted-foreground leading-relaxed text-sm whitespace-pre-wrap">{body}</p>
+                    <p className="text-muted-foreground leading-relaxed text-sm whitespace-pre-wrap">
+                      {body}
+                    </p>
                   </div>
                 </dl>
               </motion.div>

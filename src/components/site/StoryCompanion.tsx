@@ -30,14 +30,16 @@ const LABELS = {
     title: "Story Companion",
     subtitle: "Your AI guide to India's stories",
     placeholder: "Ask anything about India's stories…",
-    empty: "Hi 👋 I'm your Story Companion. Ask me about heroes, regions, themes, or pick a prompt below.",
+    empty:
+      "Hi 👋 I'm your Story Companion. Ask me about heroes, regions, themes, or pick a prompt below.",
     thinking: "Thinking…",
   },
   hi: {
     title: "स्टोरी कम्पैनियन",
     subtitle: "भारत की कहानियों के लिए AI गाइड",
     placeholder: "भारत की कहानियों के बारे में पूछें…",
-    empty: "नमस्ते 👋 मैं आपका स्टोरी कम्पैनियन हूँ। कोई भी सवाल पूछें या नीचे से एक प्रॉम्प्ट चुनें।",
+    empty:
+      "नमस्ते 👋 मैं आपका स्टोरी कम्पैनियन हूँ। कोई भी सवाल पूछें या नीचे से एक प्रॉम्प्ट चुनें।",
     thinking: "सोच रहा हूँ…",
   },
 } as const;
@@ -84,7 +86,9 @@ export function StoryCompanion() {
       if (saved && messages.length === 0) {
         // No direct setter; rely on transport, skip restore.
       }
-    } catch {/* noop */}
+    } catch {
+      /* noop */
+    }
   }, [messages.length]);
 
   const send = (text: string) => {
@@ -157,9 +161,7 @@ export function StoryCompanion() {
                   <div className="font-display text-base leading-tight text-gradient-gold">
                     {LABELS[lang].title}
                   </div>
-                  <div className="text-[11px] text-muted-foreground">
-                    {LABELS[lang].subtitle}
-                  </div>
+                  <div className="text-[11px] text-muted-foreground">{LABELS[lang].subtitle}</div>
                 </div>
                 <button
                   onClick={() => setLang(lang === "en" ? "hi" : "en")}
@@ -272,9 +274,7 @@ export function StoryCompanion() {
 }
 
 function MessageBubble({ message }: { message: UIMessage }) {
-  const text = message.parts
-    .map((p) => (p.type === "text" ? p.text : ""))
-    .join("");
+  const text = message.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
   const isUser = message.role === "user";
 
   return (

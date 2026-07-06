@@ -10,7 +10,6 @@ export function LanguageToggle() {
 
   const next: "en" | "hi" = lang === "en" ? "hi" : "en";
 
-
   return (
     <div className="hidden lg:flex items-center gap-2">
       <Globe className="size-4 text-muted-foreground" />
@@ -27,4 +26,3 @@ export function LanguageToggle() {
     </div>
   );
 }
-

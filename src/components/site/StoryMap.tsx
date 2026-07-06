@@ -38,12 +38,10 @@ function stateCoords(state: string) {
   return { x: cx, y: cy };
 }
 
-
 function pickRepresentativeStory(storyList: typeof stories) {
   // Deterministic: keep first entry.
   return storyList[0];
 }
-
 
 export function StoryMap() {
   const [active, setActive] = useState<Hotspot | null>(null);
@@ -123,8 +121,8 @@ export function StoryMap() {
           transition={{ duration: 0.7, delay: 0.15 }}
           className="mt-6 text-lg text-muted-foreground leading-relaxed"
         >
-          Travel across the country through the lives of changemakers, innovators,
-          and everyday heroes.
+          Travel across the country through the lives of changemakers, innovators, and everyday
+          heroes.
         </motion.p>
       </div>
 
@@ -288,9 +286,7 @@ export function StoryMap() {
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
                   {active.category}
                 </p>
-                <h3 className="font-display text-xl leading-tight mb-2">
-                  {active.title}
-                </h3>
+                <h3 className="font-display text-xl leading-tight mb-2">{active.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
                   {active.preview}
                 </p>
@@ -332,9 +328,7 @@ export function StoryMap() {
                           {h.category}
                         </span>
                       </div>
-                      <p className="font-display text-lg leading-snug truncate">
-                        {h.title}
-                      </p>
+                      <p className="font-display text-lg leading-snug truncate">{h.title}</p>
                     </div>
                     <ArrowRight
                       className={`size-4 shrink-0 transition-all ${

@@ -67,20 +67,17 @@ export function useContributor() {
     [],
   );
 
-  const submit = useCallback(
-    (s: Omit<Submission, "id" | "createdAt" | "impact">) => {
-      const cur = read();
-      const sub: Submission = {
-        ...s,
-        id: crypto.randomUUID(),
-        createdAt: Date.now(),
-        impact: Math.floor(80 + Math.random() * 220),
-      };
-      write({ ...cur, submissions: [sub, ...cur.submissions] });
-      return sub;
-    },
-    [],
-  );
+  const submit = useCallback((s: Omit<Submission, "id" | "createdAt" | "impact">) => {
+    const cur = read();
+    const sub: Submission = {
+      ...s,
+      id: crypto.randomUUID(),
+      createdAt: Date.now(),
+      impact: Math.floor(80 + Math.random() * 220),
+    };
+    write({ ...cur, submissions: [sub, ...cur.submissions] });
+    return sub;
+  }, []);
 
   const reset = useCallback(() => write(initial), []);
 
@@ -100,11 +97,41 @@ export function getContribBadges(s: ContributorState): ContribBadge[] {
   const regions = new Set(s.submissions.map((x) => x.region)).size;
   const impact = s.submissions.reduce((a, b) => a + b.impact, 0);
   return [
-    { id: "scout", emoji: "🏆", label: "Story Scout", desc: "First story submitted", earned: n >= 1 },
-    { id: "reporter", emoji: "🌱", label: "Impact Reporter", desc: "3 stories with impact", earned: n >= 3 },
-    { id: "community", emoji: "❤️", label: "Community Builder", desc: "500+ impact points", earned: impact >= 500 },
-    { id: "catalyst", emoji: "🚀", label: "Change Catalyst", desc: "5 stories submitted", earned: n >= 5 },
-    { id: "bharat", emoji: "🇮🇳", label: "Bharat Storyteller", desc: "Covered 4 regions", earned: regions >= 4 },
+    {
+      id: "scout",
+      emoji: "🏆",
+      label: "Story Scout",
+      desc: "First story submitted",
+      earned: n >= 1,
+    },
+    {
+      id: "reporter",
+      emoji: "🌱",
+      label: "Impact Reporter",
+      desc: "3 stories with impact",
+      earned: n >= 3,
+    },
+    {
+      id: "community",
+      emoji: "❤️",
+      label: "Community Builder",
+      desc: "500+ impact points",
+      earned: impact >= 500,
+    },
+    {
+      id: "catalyst",
+      emoji: "🚀",
+      label: "Change Catalyst",
+      desc: "5 stories submitted",
+      earned: n >= 5,
+    },
+    {
+      id: "bharat",
+      emoji: "🇮🇳",
+      label: "Bharat Storyteller",
+      desc: "Covered 4 regions",
+      earned: regions >= 4,
+    },
   ];
 }
 
@@ -122,11 +149,32 @@ export const seedContributors: SeedContributor[] = [
   { name: "Aarti Menon", handle: "aarti.m", region: "Kerala", stories: 14, impact: 3120 },
   { name: "Devansh Rao", handle: "devansh", region: "Karnataka", stories: 12, impact: 2870 },
   { name: "Ishaan Bhatt", handle: "ishaan.b", region: "Gujarat", stories: 11, impact: 2540 },
-  { name: "Priya Sharma", handle: "priya.s", region: "Uttarakhand", stories: 9, impact: 2210, emerging: true },
+  {
+    name: "Priya Sharma",
+    handle: "priya.s",
+    region: "Uttarakhand",
+    stories: 9,
+    impact: 2210,
+    emerging: true,
+  },
   { name: "Rohit Das", handle: "rohit.d", region: "Assam", stories: 8, impact: 1980 },
-  { name: "Meera Iyer", handle: "meera.i", region: "Tamil Nadu", stories: 7, impact: 1740, emerging: true },
+  {
+    name: "Meera Iyer",
+    handle: "meera.i",
+    region: "Tamil Nadu",
+    stories: 7,
+    impact: 1740,
+    emerging: true,
+  },
   { name: "Kabir Singh", handle: "kabir.s", region: "Punjab", stories: 6, impact: 1520 },
-  { name: "Neha Gupta", handle: "neha.g", region: "Madhya Pradesh", stories: 5, impact: 1320, emerging: true },
+  {
+    name: "Neha Gupta",
+    handle: "neha.g",
+    region: "Madhya Pradesh",
+    stories: 5,
+    impact: 1320,
+    emerging: true,
+  },
 ];
 
 export const regionDots: { region: string; x: number; y: number; count: number }[] = [

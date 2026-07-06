@@ -93,4 +93,3 @@ export function getFooterText(lang: Lang) {
 export function getLanguageLabels(lang: Lang) {
   return uiText[lang].language;
 }
-

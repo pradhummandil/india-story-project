@@ -25,8 +25,6 @@ interface HotspotNode {
   slug: string; // story slug for navigation
 }
 
-
-
 // Approximate India outline polygon — matches the same projected space as hotspots.
 const OUTLINE: Array<[number, number]> = [
   [180, 60],
@@ -162,9 +160,7 @@ function Hotspot({
   return (
     <group ref={ref} position={[px, 1.6, pz]}>
       <mesh ref={beamRef} position={[0, 1.2, 0]}>
-        <cylinderGeometry
-          args={[0.04 * richness, 0.18 * richness, 2.4, 16, 1, true]}
-        />
+        <cylinderGeometry args={[0.04 * richness, 0.18 * richness, 2.4, 16, 1, true]} />
         <meshBasicMaterial
           color={color}
           transparent
@@ -260,9 +256,7 @@ function Scene({
 }) {
   const activeIds = useMemo(() => {
     if (!activeFilter) return new Set<string>();
-    return new Set(
-      hotspots.filter((n) => n.categories.includes(activeFilter)).map((n) => n.id),
-    );
+    return new Set(hotspots.filter((n) => n.categories.includes(activeFilter)).map((n) => n.id));
   }, [activeFilter, hotspots]);
 
   return (
@@ -344,10 +338,25 @@ function Scene({
         />
       </Clouds>
 
-      <Sparkles count={120} size={2} scale={[35, 12, 35]} speed={0.3} color={"#e8b261"} opacity={0.6} />
-      <Sparkles count={60} size={1.2} scale={[25, 6, 25]} speed={0.5} color={"#ffd07a"} opacity={0.5} />
+      <Sparkles
+        count={120}
+        size={2}
+        scale={[35, 12, 35]}
+        speed={0.3}
+        color={"#e8b261"}
+        opacity={0.6}
+      />
+      <Sparkles
+        count={60}
+        size={1.2}
+        scale={[25, 6, 25]}
+        speed={0.5}
+        color={"#ffd07a"}
+        opacity={0.5}
+      />
 
-      {hovered && !selected && (
+      {hovered &&
+        !selected &&
         (() => {
           const [px, pz] = worldFromMap(hovered.x, hovered.y);
           return (
@@ -358,8 +367,7 @@ function Scene({
               </div>
             </Html>
           );
-        })()
-      )}
+        })()}
 
       <OrbitControls
         enablePan={false}
@@ -395,9 +403,6 @@ export function ExploreIndia3D() {
   }, []);
 
   const hotspots = useMemo<HotspotNode[]>(() => {
-
-
-
     // Region-level hotspots (matches original “state beacons” UX).
     const byRegion = new Map<string, typeof stories>();
     for (const s of stories) {
@@ -418,23 +423,22 @@ export function ExploreIndia3D() {
       // Deterministic coords per region + index.
       const coords = storyCoords(region, `${region}|${idx}`);
 
-        // Derive a non-placeholder “hero” label from real story fields.
-        // UI stays identical; the value is no longer the synthetic string "Featured".
-        const heroLabel = featured.category || featured.region || region;
+      // Derive a non-placeholder “hero” label from real story fields.
+      // UI stays identical; the value is no longer the synthetic string "Featured".
+      const heroLabel = featured.category || featured.region || region;
 
-        return {
-          id: region,
-          state: region,
-          x: coords.x,
-          y: coords.y,
-          stories: list.length,
-          hero: heroLabel,
-          categories: categories.slice(0, 3),
-          featuredTitle: featured.title,
-          preview: featured.excerpt,
-          slug: featured.slug,
-        };
-
+      return {
+        id: region,
+        state: region,
+        x: coords.x,
+        y: coords.y,
+        stories: list.length,
+        hero: heroLabel,
+        categories: categories.slice(0, 3),
+        featuredTitle: featured.title,
+        preview: featured.excerpt,
+        slug: featured.slug,
+      };
     });
   }, []);
 
@@ -462,7 +466,8 @@ export function ExploreIndia3D() {
             transition={{ duration: 0.7, delay: 0.05 }}
             className="font-display text-4xl md:text-6xl leading-[1.05]"
           >
-            Travel the country, <span className="text-gradient-gold italic">one story at a time</span>
+            Travel the country,{" "}
+            <span className="text-gradient-gold italic">one story at a time</span>
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 16 }}
@@ -471,8 +476,8 @@ export function ExploreIndia3D() {
             transition={{ duration: 0.7, delay: 0.15 }}
             className="mt-6 text-lg text-muted-foreground leading-relaxed"
           >
-            Drag to orbit. Hover a beacon to glimpse a state's story collection.
-            Click to fly in and meet the heroes shaping India today.
+            Drag to orbit. Hover a beacon to glimpse a state's story collection. Click to fly in and
+            meet the heroes shaping India today.
           </motion.p>
         </div>
 
@@ -481,7 +486,6 @@ export function ExploreIndia3D() {
             <Filter className="size-3.5" /> Filter by theme
           </span>
           {categories.slice(0, 7).map((f) => {
-
             const active = filter === f;
             return (
               <motion.button
@@ -574,8 +578,12 @@ export function ExploreIndia3D() {
                   <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
                     {selected.categories.join(" · ")}
                   </p>
-                  <h3 className="font-display text-xl leading-tight mb-2">{selected.featuredTitle}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed mb-4">{selected.preview}</p>
+                  <h3 className="font-display text-xl leading-tight mb-2">
+                    {selected.featuredTitle}
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                    {selected.preview}
+                  </p>
 
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-xs text-muted-foreground">
@@ -606,4 +614,3 @@ export function ExploreIndia3D() {
 }
 
 export default ExploreIndia3D;
-

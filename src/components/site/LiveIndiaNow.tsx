@@ -64,16 +64,14 @@ function pickSeedStories() {
 
 function getInitialFeed(): FeedItem[] {
   const picked = pickSeedStories();
-  return picked
-    .slice(0, 4)
-    .map((s, i) => ({
-      id: s.id || s.slug || `feed-${i}`,
-      kind: kindForCategory(s.category),
-      emoji: emojiForCategory(s.category),
-      region: s.region,
-      title: s.title,
-      seq: i,
-    }));
+  return picked.slice(0, 4).map((s, i) => ({
+    id: s.id || s.slug || `feed-${i}`,
+    kind: kindForCategory(s.category),
+    emoji: emojiForCategory(s.category),
+    region: s.region,
+    title: s.title,
+    seq: i,
+  }));
 }
 
 function deriveFeedFromStories(seqStart: number, count: number): FeedItem[] {
@@ -122,7 +120,6 @@ export function LiveIndiaNow() {
     return () => clearInterval(id);
   }, []);
 
-
   // Soft illumination rotates independently
   useEffect(() => {
     const id = setInterval(() => {
@@ -157,13 +154,18 @@ export function LiveIndiaNow() {
             India is changing <span className="text-gradient-gold italic">right now</span>
           </h2>
           <p className="mt-3 text-muted-foreground max-w-xl">
-            A living signal of stories surfacing across Bharat — updated as our contributors discover them.
+            A living signal of stories surfacing across Bharat — updated as our contributors
+            discover them.
           </p>
         </div>
         <Button
           size="lg"
           className="bg-gradient-to-r from-gold to-saffron text-gold-foreground border-0 self-start md:self-auto"
-          onClick={() => document.getElementById("live-map")?.scrollIntoView({ behavior: "smooth", block: "center" })}
+          onClick={() =>
+            document
+              .getElementById("live-map")
+              ?.scrollIntoView({ behavior: "smooth", block: "center" })
+          }
         >
           Discover what's happening now
           <ArrowRight className="size-4" />
@@ -285,7 +287,9 @@ export function LiveIndiaNow() {
               <Activity className="size-4 text-gold" />
               <h3 className="font-display text-xl">Live story activity</h3>
             </div>
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Streaming</span>
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              Streaming
+            </span>
           </div>
 
           <div className="relative space-y-2 max-h-[460px] overflow-hidden">
@@ -314,7 +318,9 @@ export function LiveIndiaNow() {
                       {f.title}
                     </p>
                   </div>
-                  <span className="text-[10px] text-muted-foreground whitespace-nowrap">{formatSeqAge(f.seq)}</span>
+                  <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                    {formatSeqAge(f.seq)}
+                  </span>
                 </motion.div>
               ))}
             </AnimatePresence>

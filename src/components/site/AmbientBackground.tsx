@@ -6,10 +6,7 @@ import { motion } from "framer-motion";
  */
 export function AmbientBackground() {
   return (
-    <div
-      aria-hidden
-      className="fixed inset-0 -z-10 overflow-hidden pointer-events-none"
-    >
+    <div aria-hidden className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
       <motion.div
         className="absolute -top-32 -left-32 size-[520px] rounded-full bg-gold/[0.07] blur-3xl"
         animate={{ x: [0, 60, -20, 0], y: [0, 40, 80, 0] }}

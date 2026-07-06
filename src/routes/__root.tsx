@@ -78,7 +78,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "India Story Project — Premium Stories from Modern India" },
-      { name: "description", content: "Experience India's stories of changemakers, innovators, and heroes — told with cinematic depth." },
+      {
+        name: "description",
+        content:
+          "Experience India's stories of changemakers, innovators, and heroes — told with cinematic depth.",
+      },
       { name: "author", content: "India Story Project" },
       { property: "og:title", content: "India Story Project" },
       { property: "og:description", content: "Premium storytelling from across India." },

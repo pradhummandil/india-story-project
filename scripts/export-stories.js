@@ -33,9 +33,9 @@ function toSlugFromUrl(url) {
 }
 
 function extractStoryCardsFromListing(listingHtml) {
-  const links = Array.from(
-    listingHtml.matchAll(/<a[^>]+href=["']([^"']+)["'][^>]*>/gi)
-  ).map((m) => m[1]);
+  const links = Array.from(listingHtml.matchAll(/<a[^>]+href=["']([^"']+)["'][^>]*>/gi)).map(
+    (m) => m[1],
+  );
 
   const storyUrls = links
     .filter((href) => {
@@ -70,43 +70,27 @@ function extractStoryCardsFromListing(listingHtml) {
 
 function extractMetaFromStoryHtml(slug, html) {
   const title =
+    normalizeText((html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)?.[1] ?? "").replace(/<[^>]+>/g, " ")) ||
     normalizeText(
-      (
-        html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)?.[1] ?? ""
-      ).replace(/<[^>]+>/g, " ")
-    ) ||
-    normalizeText(
-      html.match(
-        /<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i
-      )?.[1]
+      html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i)?.[1],
     );
 
   const excerpt =
     normalizeText(
-      html.match(
-        /<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i
-      )?.[1]
+      html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i)?.[1],
     ) ||
     normalizeText(
-      html.match(
-        /<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i
-      )?.[1]
+      html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i)?.[1],
     ) ||
     title;
 
   const image =
-    html.match(
-      /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i
-    )?.[1] ||
-    html.match(
-      /<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i
-    )?.[1];
+    html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)?.[1] ||
+    html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i)?.[1];
 
-  const imageAlt =
-    html.match(/<img[^>]+alt=["']([^"']+)["'][^>]*>/i)?.[1];
+  const imageAlt = html.match(/<img[^>]+alt=["']([^"']+)["'][^>]*>/i)?.[1];
 
-  const articleBlock =
-    html.match(/<article[^>]*>([\s\S]*?)<\/article>/i)?.[1] ?? html;
+  const articleBlock = html.match(/<article[^>]*>([\s\S]*?)<\/article>/i)?.[1] ?? html;
 
   let content = safeHtmlToText(articleBlock);
   content = content.slice(0, 50000);
@@ -116,7 +100,7 @@ function extractMetaFromStoryHtml(slug, html) {
   let readTime = "";
 
   const jsonLdMatch = html.match(
-    /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i
+    /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i,
   );
 
   if (jsonLdMatch?.[1]) {
@@ -126,11 +110,8 @@ function extractMetaFromStoryHtml(slug, html) {
 
       category = normalizeText(obj?.articleSection);
       region =
-        normalizeText(
-          obj?.about?.name ||
-            obj?.address?.addressLocality ||
-            obj?.location?.name
-        ) || "";
+        normalizeText(obj?.about?.name || obj?.address?.addressLocality || obj?.location?.name) ||
+        "";
     } catch {
       // ignore
     }
@@ -206,10 +187,7 @@ async function fetchWithTimeout(url, timeoutMs = 20000, headers = {}) {
     }
   }
 
-  const workers = Array.from(
-    { length: Math.min(concurrency, storyUrls.length) },
-    () => worker()
-  );
+  const workers = Array.from({ length: Math.min(concurrency, storyUrls.length) }, () => worker());
 
   await Promise.all(workers);
 

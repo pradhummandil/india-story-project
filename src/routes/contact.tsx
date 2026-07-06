@@ -128,7 +128,9 @@ function Contact() {
               </div>
             </div>
             <div className="glass rounded-2xl p-8">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-4">Follow the work</p>
+              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-4">
+                Follow the work
+              </p>
               <div className="flex gap-3">
                 {socials.map((s) => (
                   <a

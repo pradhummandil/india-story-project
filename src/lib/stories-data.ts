@@ -46,15 +46,13 @@ export const stories: Story[] = (RAW.stories ?? []).map((s) => {
     region: getStr(s.region) || "India",
     readTime: getStr(s.readTime),
     image: typeof s.image === "string" && s.image.trim() ? s.image : undefined,
-    imageAlt:
-      typeof s.imageAlt === "string" && s.imageAlt.trim() ? s.imageAlt : undefined,
+    imageAlt: typeof s.imageAlt === "string" && s.imageAlt.trim() ? s.imageAlt : undefined,
     content: typeof s.content === "string" && s.content.length ? s.content : undefined,
     url: (typeof s.url === "string" && s.url.trim()) || slug,
   };
 });
 
-export const categories: readonly string[] =
-  (RAW.categories as readonly string[] | undefined) ?? ["All", "कहानी"];
-
-
-
+export const categories: readonly string[] = (RAW.categories as readonly string[] | undefined) ?? [
+  "All",
+  "कहानी",
+];

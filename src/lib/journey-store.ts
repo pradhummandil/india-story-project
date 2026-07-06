@@ -134,9 +134,33 @@ export function getBadges(j: JourneyState): Badge[] {
   const cats = Object.keys(j.categoryCounts).length;
   const regs = Object.keys(j.regionCounts).length;
   return [
-    { id: "explorer", emoji: "🧭", label: "Explorer", desc: "Read your first story", earned: viewed >= 1 },
-    { id: "seeker", emoji: "✨", label: "Changemaker Seeker", desc: "Explored 3 categories", earned: cats >= 3 },
-    { id: "traveler", emoji: "🇮🇳", label: "Bharat Traveler", desc: "Visited 4 regions", earned: regs >= 4 },
-    { id: "enthusiast", emoji: "📖", label: "Story Enthusiast", desc: "Read 8 stories", earned: viewed >= 8 },
+    {
+      id: "explorer",
+      emoji: "🧭",
+      label: "Explorer",
+      desc: "Read your first story",
+      earned: viewed >= 1,
+    },
+    {
+      id: "seeker",
+      emoji: "✨",
+      label: "Changemaker Seeker",
+      desc: "Explored 3 categories",
+      earned: cats >= 3,
+    },
+    {
+      id: "traveler",
+      emoji: "🇮🇳",
+      label: "Bharat Traveler",
+      desc: "Visited 4 regions",
+      earned: regs >= 4,
+    },
+    {
+      id: "enthusiast",
+      emoji: "📖",
+      label: "Story Enthusiast",
+      desc: "Read 8 stories",
+      earned: viewed >= 8,
+    },
   ];
 }

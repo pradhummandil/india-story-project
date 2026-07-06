@@ -14,7 +14,6 @@ export function SiteLayout({ children }: { children: ReactNode }) {
   const { location } = useRouterState();
   return (
     <div lang={lang} className="relative min-h-dvh flex flex-col bg-background text-foreground">
-
       <AmbientBackground />
       <ScrollProgress />
       <CursorGlow />

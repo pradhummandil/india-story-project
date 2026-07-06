@@ -44,8 +44,14 @@ export function ParticleField({
     damping: 20,
   });
 
-  const orbX1 = useSpring(useTransform(mouseX, [-0.5, 0.5], [40, -40]), { stiffness: 30, damping: 20 });
-  const orbY1 = useSpring(useTransform(mouseY, [-0.5, 0.5], [40, -40]), { stiffness: 30, damping: 20 });
+  const orbX1 = useSpring(useTransform(mouseX, [-0.5, 0.5], [40, -40]), {
+    stiffness: 30,
+    damping: 20,
+  });
+  const orbY1 = useSpring(useTransform(mouseY, [-0.5, 0.5], [40, -40]), {
+    stiffness: 30,
+    damping: 20,
+  });
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
