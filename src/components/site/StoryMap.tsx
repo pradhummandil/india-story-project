@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { stories } from "@/lib/stories-data";
 
 interface Hotspot {
   id: string;
@@ -14,86 +15,84 @@ interface Hotspot {
   y: number;
 }
 
-const hotspots: Hotspot[] = [
-  {
-    id: "ut",
-    state: "Uttarakhand",
-    category: "Innovation",
-    title: "Coding Schools in the Himalayas",
-    preview: "A former engineer training tribal youth to build software from a remote mountain village.",
-    x: 268,
-    y: 165,
-  },
-  {
-    id: "as",
-    state: "Assam",
-    category: "Heritage",
-    title: "The Weaver Who Revived a Forgotten Loom",
-    preview: "Bringing back a 400-year-old weaving tradition — one thread at a time.",
-    x: 395,
-    y: 230,
-  },
-  {
-    id: "up",
-    state: "Uttar Pradesh",
-    category: "Culture",
-    title: "Reimagining Royal Awadhi Cuisine",
-    preview: "A young chef from Lucknow blends Nawabi recipes with modern fine dining.",
-    x: 295,
-    y: 230,
-  },
-  {
-    id: "tg",
-    state: "Telangana",
-    category: "Sustainability",
-    title: "The Silent Revolution of Millet Farmers",
-    preview: "Smallholder farmers reshaping India's food future by reviving ancient grains.",
-    x: 280,
-    y: 380,
-  },
-  {
-    id: "ka",
-    state: "Karnataka",
-    category: "Science",
-    title: "Designing a Made-in-India Spacecraft",
-    preview: "Young engineers behind India's most ambitious private space mission.",
-    x: 250,
-    y: 445,
-  },
-  {
-    id: "rj",
-    state: "Rajasthan",
-    category: "Heritage",
-    title: "Guardians of the Thar",
-    preview: "Desert artisans preserving block-print traditions across generations.",
-    x: 215,
-    y: 220,
-  },
-  {
-    id: "kl",
-    state: "Kerala",
-    category: "Environment",
-    title: "The Backwater Restorers",
-    preview: "Fisher communities reviving Kerala's lifeline waterways.",
-    x: 240,
-    y: 510,
-  },
-];
-
-// Pre-defined "story connection" pairs to animate
-const connections: Array<[string, string]> = [
-  ["ut", "as"],
-  ["rj", "tg"],
-  ["ka", "kl"],
-  ["up", "ka"],
-];
-
-function getHotspot(id: string) {
-  return hotspots.find((h) => h.id === id)!;
+function seededNumber(seed: string) {
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return (h >>> 0) / 2 ** 32;
 }
+
+// Deterministic hotspot placement derived from stories.json (region name only).
+// Approximate coordinates aligned to the current SVG viewBox (500x600).
+function stateCoords(state: string) {
+  const rx = seededNumber(`x|${state}`);
+  const ry = seededNumber(`y|${state}`);
+
+  const x = 200 + rx * 220; // 200..420
+  const y = 110 + ry * 390; // 110..500
+
+  const cx = Math.max(60, Math.min(440, x));
+  const cy = Math.max(60, Math.min(540, y));
+  return { x: cx, y: cy };
+}
+
+
+function pickRepresentativeStory(storyList: typeof stories) {
+  // Deterministic: keep first entry.
+  return storyList[0];
+}
+
 
 export function StoryMap() {
   const [active, setActive] = useState<Hotspot | null>(null);
+
+  const derivedHotspots = useMemo<Hotspot[]>(() => {
+    // Every story inherits coords from its state.
+    const byState = new Map<string, typeof stories>();
+    for (const s of stories) {
+      if (!s.region) continue;
+      const list = byState.get(s.region) ?? [];
+      list.push(s);
+      byState.set(s.region, list);
+    }
+
+    const states = Array.from(byState.keys()).sort((a, b) => a.localeCompare(b));
+
+    return states.map((state, idx) => {
+      const list = byState.get(state)!;
+      const rep = pickRepresentativeStory(list);
+      const coords = stateCoords(state);
+      return {
+        id: state,
+        state,
+        category: rep.category,
+        title: rep.title,
+        preview: rep.excerpt,
+        x: coords.x,
+        y: coords.y,
+      };
+    });
+  }, []);
+
+  const connections = useMemo<Array<[Hotspot["id"], Hotspot["id"]]>>(() => {
+    // Connect hotspots that share a category; stable and data-driven.
+    const edges: Array<[Hotspot["id"], Hotspot["id"]]> = [];
+    for (let i = 0; i < derivedHotspots.length; i++) {
+      for (let j = i + 1; j < derivedHotspots.length; j++) {
+        const a = derivedHotspots[i];
+        const b = derivedHotspots[j];
+        if (!a.category || !b.category) continue;
+        if (a.category === b.category) edges.push([a.id, b.id]);
+      }
+    }
+    return edges.slice(0, 10);
+  }, [derivedHotspots]);
+
+  const getHotspot = (id: string) => derivedHotspots.find((h) => h.id === id)!;
+
+  const hotspots = derivedHotspots;
 
   return (
     <section className="relative container mx-auto px-6 py-24 md:py-32">

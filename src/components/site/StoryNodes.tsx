@@ -1,6 +1,10 @@
 import { motion, useSpring, useTransform, type MotionValue } from "framer-motion";
+import { Link } from "@tanstack/react-router";
 
-interface StoryNode {
+import { stories } from "@/lib/stories-data";
+
+type StoryNode = {
+  storySlug: string;
   name: string;
   state: string;
   category: string;
@@ -9,15 +13,43 @@ interface StoryNode {
   left: string;
   /** float animation delay */
   delay: number;
+};
+
+function seededNumber(seed: string) {
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return (h >>> 0) / 2 ** 32;
 }
 
-const nodes: StoryNode[] = [
-  { name: "Ratna Devi", state: "Assam", category: "Heritage", top: "18%", left: "8%", delay: 0 },
-  { name: "Arjun Mehra", state: "Uttarakhand", category: "Innovation", top: "28%", left: "82%", delay: 0.6 },
-  { name: "Lakshmi K.", state: "Telangana", category: "Sustainability", top: "62%", left: "6%", delay: 1.2 },
-  { name: "Vikram S.", state: "Karnataka", category: "Science", top: "70%", left: "84%", delay: 1.8 },
-  { name: "Imran A.", state: "Lucknow", category: "Culture", top: "44%", left: "92%", delay: 2.4 },
-];
+function makeNodes(): StoryNode[] {
+  // Keep the same count / general layout feel (5 nodes) while using real stories.
+  const pick = stories.slice(0, 5);
+  const anchors = [
+    { top: "18%", left: "8%" },
+    { top: "28%", left: "82%" },
+    { top: "62%", left: "6%" },
+    { top: "70%", left: "84%" },
+    { top: "44%", left: "92%" },
+  ];
+
+  return pick.map((s, i) => {
+    const a = anchors[i] ?? anchors[0];
+    const jitter = (v: string, n: number) => v; // keep visuals stable
+
+    return {
+      storySlug: s.slug,
+      name: s.title,
+      state: s.region,
+      category: s.category,
+      top: jitter(a.top, i),
+      left: jitter(a.left, i),
+      delay: seededNumber(`${s.slug}|delay`) * 2.4,
+    };
+  });
+}
 
 export function StoryNodes({
   mouseX,
@@ -27,8 +59,16 @@ export function StoryNodes({
   mouseY: MotionValue<number>;
 }) {
   // gentle parallax shift opposite to particles for depth
-  const px = useSpring(useTransform(mouseX, [-0.5, 0.5], [15, -15]), { stiffness: 40, damping: 18 });
-  const py = useSpring(useTransform(mouseY, [-0.5, 0.5], [15, -15]), { stiffness: 40, damping: 18 });
+  const px = useSpring(useTransform(mouseX, [-0.5, 0.5], [15, -15]), {
+    stiffness: 40,
+    damping: 18,
+  });
+  const py = useSpring(useTransform(mouseY, [-0.5, 0.5], [15, -15]), {
+    stiffness: 40,
+    damping: 18,
+  });
+
+  const nodes = makeNodes();
 
   return (
     <motion.div
@@ -37,7 +77,7 @@ export function StoryNodes({
     >
       {nodes.map((n, i) => (
         <motion.div
-          key={n.name}
+          key={n.storySlug}
           className="absolute"
           style={{ top: n.top, left: n.left }}
           initial={{ opacity: 0, y: 20, scale: 0.8 }}
@@ -47,8 +87,16 @@ export function StoryNodes({
             scale: 1,
           }}
           transition={{
-            opacity: { duration: 1.2, delay: 0.9 + i * 0.18, ease: [0.16, 1, 0.3, 1] },
-            scale: { duration: 1.2, delay: 0.9 + i * 0.18, ease: [0.16, 1, 0.3, 1] },
+            opacity: {
+              duration: 1.2,
+              delay: 0.9 + i * 0.18,
+              ease: [0.16, 1, 0.3, 1],
+            },
+            scale: {
+              duration: 1.2,
+              delay: 0.9 + i * 0.18,
+              ease: [0.16, 1, 0.3, 1],
+            },
             y: {
               duration: 9 + i * 0.6,
               delay: n.delay,
@@ -57,7 +105,12 @@ export function StoryNodes({
             },
           }}
         >
-          <div className="relative group pointer-events-auto cursor-pointer">
+          <Link
+            to="/stories/$slug"
+            params={{ slug: n.storySlug }}
+            search={{}}
+            className="relative group pointer-events-auto cursor-pointer"
+          >
             {/* Pulse ring */}
             <span className="absolute inset-0 -m-2 rounded-full bg-gold/20 animate-ping" />
             <span className="absolute inset-0 size-3 rounded-full bg-gradient-to-br from-gold to-saffron shadow-glow" />
@@ -75,9 +128,10 @@ export function StoryNodes({
                 {n.state}
               </div>
             </div>
-          </div>
+          </Link>
         </motion.div>
       ))}
     </motion.div>
   );
 }
+

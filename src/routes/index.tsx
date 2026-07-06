@@ -25,14 +25,24 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-const categories = [
-  { icon: Landmark, label: "Heritage", desc: "Crafts, traditions, and timeless wisdom" },
-  { icon: Lightbulb, label: "Innovation", desc: "Founders and builders reshaping India" },
-  { icon: Leaf, label: "Sustainability", desc: "Quiet revolutions in farming and climate" },
-  { icon: Sparkles, label: "Culture", desc: "Food, art, cinema, and identity" },
-  { icon: Users, label: "Changemakers", desc: "People moving communities forward" },
-  { icon: Globe2, label: "Diaspora", desc: "India's stories told around the world" },
-];
+const ICONS = [Landmark, Lightbulb, Leaf, Sparkles, Users, Globe2] as const;
+
+function iconForCategory(label: string) {
+  const hash = Array.from(label).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  return ICONS[hash % ICONS.length];
+}
+
+function descForCategory(label: string) {
+  const l = label.toLowerCase();
+  if (l.includes("sustain")) return "Quiet revolutions in farming and climate";
+  if (l.includes("innov")) return "Founders and builders reshaping India";
+  if (l.includes("women") || l.includes("empower")) return "Stories of women reshaping communities";
+  if (l.includes("educ")) return "Learning journeys and classrooms of change";
+  if (l.includes("culture") || l.includes("herit")) return "Food, art, cinema, and identity";
+  if (l.includes("rural")) return "Village innovation and community-led progress";
+  return "Stories from across Bharat";
+}
+
 
 function Home() {
   return (
@@ -79,23 +89,31 @@ function Home() {
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {categories.map((c, i) => (
-            <motion.div
-              key={c.label}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: i * 0.05 }}
-              className="glass rounded-2xl p-6 hover-lift cursor-pointer"
-            >
-              <div className="size-12 rounded-xl bg-gradient-to-br from-gold/20 to-saffron/10 grid place-items-center mb-4 border border-gold/20">
-                <c.icon className="size-5 text-gold" />
-              </div>
-              <h3 className="font-display text-2xl mb-2">{c.label}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{c.desc}</p>
-            </motion.div>
-          ))}
+          {Array.from(new Set(stories.map((s) => s.category).filter(Boolean)))
+            .slice(0, 6)
+            .map((label, i) => (
+              <motion.div
+                key={label}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.05 }}
+                className="glass rounded-2xl p-6 hover-lift cursor-pointer"
+              >
+                <div className="size-12 rounded-xl bg-gradient-to-br from-gold/20 to-saffron/10 grid place-items-center mb-4 border border-gold/20">
+                  {(() => {
+                    const Icon = iconForCategory(label);
+                    return <Icon className="size-5 text-gold" />;
+                  })()}
+                </div>
+                <h3 className="font-display text-2xl mb-2">{label}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {descForCategory(label)}
+                </p>
+              </motion.div>
+            ))}
         </div>
+
       </section>
 
       {/* MISSION */}

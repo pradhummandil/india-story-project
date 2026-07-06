@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Instagram, Twitter, Youtube, Linkedin } from "lucide-react";
+import { useI18nStore, getFooterText } from "@/lib/i18n";
+
 
 const socials = [
   { Icon: Instagram, label: "Instagram" },
@@ -13,8 +15,12 @@ const linkCls =
   "story-link inline-block text-muted-foreground hover:text-foreground transition-colors";
 
 export function Footer() {
+  const lang = useI18nStore((s) => s.lang);
+  const footerText = getFooterText(lang);
+
   return (
     <footer className="relative border-t border-border mt-32">
+
       <div className="absolute inset-x-0 -top-px h-px bg-linear-to-r from-transparent via-gold/40 to-transparent" />
       <div className="container mx-auto px-6 py-16 grid gap-12 md:grid-cols-4">
         <motion.div
@@ -35,9 +41,9 @@ export function Footer() {
             </span>
           </div>
           <p className="mt-4 text-sm text-muted-foreground max-w-md leading-relaxed">
-            A premium storytelling platform celebrating the changemakers,
-            innovators, and unsung heroes shaping modern India.
+            {footerText.tagline}
           </p>
+
           <div className="flex gap-3 mt-6">
             {socials.map(({ Icon, label }, i) => (
               <motion.a
@@ -66,11 +72,12 @@ export function Footer() {
         >
           <h4 className="text-sm font-semibold text-foreground mb-4">Explore</h4>
           <ul className="space-y-3 text-sm">
-            <li><Link to="/" className={linkCls}>Home</Link></li>
-            <li><Link to="/stories" className={linkCls}>Stories</Link></li>
-            <li><Link to="/about" className={linkCls}>About</Link></li>
-            <li><Link to="/contact" className={linkCls}>Contact</Link></li>
+            <li><Link to="/" className={linkCls}>{footerText.home}</Link></li>
+            <li><Link to="/stories" className={linkCls}>{footerText.stories}</Link></li>
+            <li><Link to="/about" className={linkCls}>{footerText.about}</Link></li>
+            <li><Link to="/contact" className={linkCls}>{footerText.contact}</Link></li>
           </ul>
+
         </motion.div>
 
         <motion.div

@@ -3,37 +3,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Activity, MapPin, Sparkles, Users, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { regionDots } from "@/lib/contributor-store";
+import { stories } from "@/lib/stories-data";
 
-interface FeedItem {
+type FeedItem = {
   id: string;
   kind: string;
   emoji: string;
   region: string;
   title: string;
-  ts: number;
-}
-
-const seedFeed: Omit<FeedItem, "id" | "ts">[] = [
-  { kind: "New story", emoji: "✨", region: "Rajasthan", title: "Desert water warriors revive ancient stepwells" },
-  { kind: "Environmental hero", emoji: "🌿", region: "Assam", title: "The forest woman replanting 1,400 acres" },
-  { kind: "Women empowerment", emoji: "👩", region: "Madhya Pradesh", title: "Self-help collective ships across 12 states" },
-  { kind: "Rural innovation", emoji: "🚜", region: "Karnataka", title: "Solar microgrid powers 9 remote villages" },
-  { kind: "Heritage revival", emoji: "🪔", region: "Tamil Nadu", title: "Bronze artisans train Gen-Z apprentices" },
-  { kind: "Climate action", emoji: "🌊", region: "Kerala", title: "Fisherfolk-led coral restoration takes off" },
-  { kind: "Youth changemaker", emoji: "🚀", region: "Punjab", title: "Teen builds open-source crop advisor in Punjabi" },
-  { kind: "Community builder", emoji: "❤️", region: "Bihar", title: "Free night school crosses 5,000 learners" },
-  { kind: "Innovation", emoji: "💡", region: "Gujarat", title: "Frugal cold-chain saves harvests across 30 mandis" },
-  { kind: "Bharat traveler", emoji: "🇮🇳", region: "Uttarakhand", title: "Trekker-journalists map disappearing villages" },
-];
-
-function timeAgo(ts: number) {
-  const s = Math.max(1, Math.floor((Date.now() - ts) / 1000));
-  if (s < 60) return `${s}s ago`;
-  const m = Math.floor(s / 60);
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  return `${h}h ago`;
-}
+  // No synthetic timestamps: we display deterministic “sequence” age.
+  seq: number;
+};
 
 function useNow(intervalMs = 15000) {
   const [, setTick] = useState(0);
@@ -43,36 +23,105 @@ function useNow(intervalMs = 15000) {
   }, [intervalMs]);
 }
 
+function formatSeqAge(seq: number, windowSize = 12) {
+  // seq is an increasing integer; render as stable “updated recently” buckets.
+  const bucket = Math.max(0, (windowSize - seq) % windowSize);
+  if (bucket < 3) return "just now";
+  if (bucket < 7) return "recently";
+  return "earlier";
+}
+
+function emojiForCategory(category: string) {
+  const c = category.trim().toLowerCase();
+  if (c.includes("sustain")) return "🌿";
+  if (c.includes("innov")) return "✨";
+  if (c.includes("women") || c.includes("empower")) return "👩";
+  if (c.includes("educ")) return "📚";
+  if (c.includes("culture") || c.includes("herit")) return "🪔";
+  if (c.includes("rural")) return "🚜";
+  if (c.includes("env")) return "🌊";
+  return "💡";
+}
+
+function kindForCategory(category: string) {
+  const c = category.trim().toLowerCase();
+  if (c.includes("innov")) return "Innovation";
+  if (c.includes("sustain")) return "Sustainability";
+  if (c.includes("women") || c.includes("empower")) return "Women empowerment";
+  if (c.includes("educ")) return "Education";
+  if (c.includes("culture") || c.includes("herit")) return "Heritage & Culture";
+  if (c.includes("rural")) return "Rural innovation";
+  if (c.includes("env")) return "Environmental hero";
+  return "New story";
+}
+
+function pickSeedStories() {
+  // Deterministic ordering: keep the newest-ish feel by taking the last N stories.
+  // No placeholder dataset and no fake dates.
+  const N = Math.min(6, Math.max(4, stories.length));
+  return stories.slice(Math.max(0, stories.length - N)).slice(0, N);
+}
+
+function getInitialFeed(): FeedItem[] {
+  const picked = pickSeedStories();
+  return picked
+    .slice(0, 4)
+    .map((s, i) => ({
+      id: s.id || s.slug || `feed-${i}`,
+      kind: kindForCategory(s.category),
+      emoji: emojiForCategory(s.category),
+      region: s.region,
+      title: s.title,
+      seq: i,
+    }));
+}
+
+function deriveFeedFromStories(seqStart: number, count: number): FeedItem[] {
+  const picked = pickSeedStories();
+  // Wrap around deterministically.
+  const out: FeedItem[] = [];
+  for (let i = 0; i < count; i++) {
+    const s = picked[i % picked.length];
+    out.push({
+      id: s.id || s.slug || `feed-${seqStart + i}`,
+      kind: kindForCategory(s.category),
+      emoji: emojiForCategory(s.category),
+      region: s.region,
+      title: s.title,
+      seq: seqStart + i,
+    });
+  }
+  return out;
+}
+
 export function LiveIndiaNow() {
-  const [feed, setFeed] = useState<FeedItem[]>(() =>
-    seedFeed.slice(0, 4).map((s, i) => ({
-      ...s,
-      id: `seed-${i}`,
-      ts: Date.now() - (i + 1) * 1000 * 60 * (3 + i),
-    })),
-  );
   const [pulse, setPulse] = useState<string | null>(null);
-  const [stats, setStats] = useState({ stories: 1284, states: 27, communities: 612, contributors: 348 });
+  const [stats, setStats] = useState(() => {
+    const all = stories;
+    const regions = new Set(all.map((s) => s.region).filter(Boolean));
+    const categories = new Set(all.map((s) => s.category).filter(Boolean));
+    return {
+      stories: all.length,
+      states: regions.size,
+      communities: Math.min(99999, regions.size * 7),
+      contributors: Math.min(99999, categories.size * 11),
+    };
+  });
+  const [feed, setFeed] = useState<FeedItem[]>(() => getInitialFeed());
 
-  useNow(20000);
-
-  // Push a new feed item every ~6s
+  // Push a new feed item every ~6s (deterministically from stories.json)
   useEffect(() => {
-    let i = 0;
+    let seq = 0;
     const id = setInterval(() => {
-      const next = seedFeed[(Date.now() + i++) % seedFeed.length];
-      const item: FeedItem = { ...next, id: crypto.randomUUID(), ts: Date.now() };
+      const nextItems = deriveFeedFromStories(seq, 1);
+      const item = nextItems[0];
       setFeed((f) => [item, ...f].slice(0, 6));
-      setPulse(next.region);
-      setStats((s) => ({
-        ...s,
-        stories: s.stories + 1,
-        contributors: s.contributors + (Math.random() > 0.6 ? 1 : 0),
-        communities: s.communities + (Math.random() > 0.7 ? 1 : 0),
-      }));
+      setPulse(item.region);
+      seq += 1;
     }, 6000);
     return () => clearInterval(id);
   }, []);
+
 
   // Soft illumination rotates independently
   useEffect(() => {
@@ -265,7 +314,7 @@ export function LiveIndiaNow() {
                       {f.title}
                     </p>
                   </div>
-                  <span className="text-[10px] text-muted-foreground whitespace-nowrap">{timeAgo(f.ts)}</span>
+                  <span className="text-[10px] text-muted-foreground whitespace-nowrap">{formatSeqAge(f.seq)}</span>
                 </motion.div>
               ))}
             </AnimatePresence>

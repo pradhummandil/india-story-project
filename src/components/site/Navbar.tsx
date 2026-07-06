@@ -3,14 +3,9 @@ import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { motion, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
 import { Menu, X, Compass } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LanguageToggle } from "./LanguageToggle";
+import { useI18nStore, getNavText } from "@/lib/i18n";
 
-const links = [
-  { to: "/", label: "Home" },
-  { to: "/stories", label: "Stories" },
-  { to: "/join", label: "Join" },
-  { to: "/about", label: "About" },
-  { to: "/contact", label: "Contact" },
-] as const;
 
 function MagneticLink({
   to,
@@ -74,6 +69,18 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
   const { location } = useRouterState();
 
+  const lang = useI18nStore((s) => s.lang);
+  const navText = getNavText(lang);
+
+  const links = [
+    { to: "/", label: navText.home },
+    { to: "/stories", label: navText.stories },
+    { to: "/join", label: navText.join },
+    { to: "/about", label: navText.about },
+    { to: "/contact", label: navText.contact },
+  ];
+
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
@@ -129,6 +136,9 @@ export function Navbar() {
           </Link>
         </div>
 
+        <LanguageToggle />
+
+
 
         <button
           className="md:hidden p-2 text-foreground"
@@ -169,6 +179,11 @@ export function Navbar() {
                 <Compass className="size-4" />
                 Explore India
               </Button>
+
+              <div className="mt-3">
+                <LanguageToggle />
+              </div>
+
             </div>
           </motion.div>
         )}

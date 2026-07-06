@@ -6,9 +6,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import gsap from "gsap";
 import { ArrowRight, MapPin, X, Sparkles as SparkleIcon, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "@tanstack/react-router";
+
+import { stories } from "@/lib/stories-data";
+import { storyCoords } from "@/lib/homepage-stories";
 
 // ---------- Data ----------
-interface StateNode {
+interface HotspotNode {
   id: string;
   state: string;
   x: number; // SVG-ish 0..500
@@ -18,44 +22,46 @@ interface StateNode {
   categories: string[];
   featuredTitle: string;
   preview: string;
+  slug: string; // story slug for navigation
 }
 
-const NODES: StateNode[] = [
-  { id: "jk", state: "Jammu & Kashmir", x: 200, y: 80,  stories: 12, hero: "Mehbooba Ali",  categories: ["Culture", "Humanity"],            featuredTitle: "Saffron Fields of Pampore",            preview: "Generations of saffron farmers reclaiming a Himalayan tradition." },
-  { id: "pb", state: "Punjab",          x: 220, y: 140, stories: 13, hero: "Harpreet Kaur", categories: ["Rural Development", "Women Empowerment"], featuredTitle: "She Drives the Tractor",        preview: "Women farmers rewriting Punjab's agricultural story." },
-  { id: "ut", state: "Uttarakhand",     x: 275, y: 155, stories: 18, hero: "Vikram Singh",  categories: ["Innovation", "Education"],        featuredTitle: "Coding Schools in the Himalayas",      preview: "Training tribal youth to build software from a remote mountain village." },
-  { id: "rj", state: "Rajasthan",       x: 195, y: 230, stories: 24, hero: "Bhanwar Lal",   categories: ["Culture", "Rural Development"],   featuredTitle: "Guardians of the Thar",                preview: "Desert artisans preserving block-print traditions across generations." },
-  { id: "up", state: "Uttar Pradesh",   x: 290, y: 215, stories: 31, hero: "Aarav Khanna",  categories: ["Culture", "Humanity"],            featuredTitle: "Reimagining Royal Awadhi Cuisine",     preview: "A young chef blending Nawabi recipes with modern fine dining." },
-  { id: "as", state: "Assam",           x: 395, y: 215, stories: 22, hero: "Ratna Devi",    categories: ["Women Empowerment", "Culture"],   featuredTitle: "The Weaver Who Revived a Forgotten Loom", preview: "Bringing back a 400-year-old weaving tradition — one thread at a time." },
-  { id: "wb", state: "West Bengal",     x: 365, y: 260, stories: 19, hero: "Suman Bose",    categories: ["Culture", "Education"],           featuredTitle: "Kolkata's Last Letter Painters",       preview: "Street typographers keeping a vanishing craft alive on tram walls." },
-  { id: "gj", state: "Gujarat",         x: 155, y: 285, stories: 16, hero: "Rohan Patel",   categories: ["Environment", "Rural Development"], featuredTitle: "Salt of the Rann",                   preview: "Salt farmers turning desert flats into solar-powered livelihoods." },
-  { id: "mh", state: "Maharashtra",     x: 210, y: 335, stories: 27, hero: "Priya Naik",    categories: ["Innovation", "Environment"],      featuredTitle: "Mumbai's Vertical Forests",            preview: "Architects turning concrete jungles into living green corridors." },
-  { id: "od", state: "Odisha",          x: 335, y: 320, stories: 14, hero: "Sanyukta Das",  categories: ["Culture", "Humanity"],            featuredTitle: "The Loom That Speaks",                 preview: "Tribal weavers narrating folklore through ikat patterns." },
-  { id: "tg", state: "Telangana",       x: 275, y: 380, stories: 21, hero: "Lakshmi Reddy", categories: ["Environment", "Rural Development"], featuredTitle: "The Silent Revolution of Millet Farmers", preview: "Smallholder farmers reshaping India's food future." },
-  { id: "ka", state: "Karnataka",       x: 245, y: 440, stories: 29, hero: "Arjun Rao",     categories: ["Innovation", "Education"],        featuredTitle: "Designing a Made-in-India Spacecraft", preview: "Engineers behind India's most ambitious private space mission." },
-  { id: "tn", state: "Tamil Nadu",      x: 285, y: 500, stories: 25, hero: "Meera Iyer",    categories: ["Culture", "Education"],           featuredTitle: "Bharatanatyam in the Digital Age",     preview: "A young dancer reinterpreting an ancient art for global stages." },
-  { id: "kl", state: "Kerala",          x: 240, y: 520, stories: 20, hero: "Thomas Joseph", categories: ["Environment", "Humanity"],        featuredTitle: "The Backwater Restorers",              preview: "Fisher communities reviving Kerala's lifeline waterways." },
-];
 
-const FILTERS = [
-  "Environment",
-  "Women Empowerment",
-  "Innovation",
-  "Education",
-  "Humanity",
-  "Culture",
-  "Rural Development",
-] as const;
 
-// Approximate India outline polygon — matches the same projected space as NODES.
+// Approximate India outline polygon — matches the same projected space as hotspots.
 const OUTLINE: Array<[number, number]> = [
-  [180, 60],  [240, 55],  [300, 75],  [345, 105], [365, 140],
-  [355, 175], [380, 188], [415, 215], [430, 250], [420, 295],
-  [395, 325], [375, 345], [385, 385], [375, 430], [355, 470],
-  [325, 505], [295, 535], [265, 555], [240, 555], [220, 535],
-  [200, 505], [190, 470], [185, 430], [200, 400], [188, 365],
-  [205, 330], [218, 295], [212, 260], [222, 225], [218, 190],
-  [225, 155], [212, 125], [195, 95],
+  [180, 60],
+  [240, 55],
+  [300, 75],
+  [345, 105],
+  [365, 140],
+  [355, 175],
+  [380, 188],
+  [415, 215],
+  [430, 250],
+  [420, 295],
+  [395, 325],
+  [375, 345],
+  [385, 385],
+  [375, 430],
+  [355, 470],
+  [325, 505],
+  [295, 535],
+  [265, 555],
+  [240, 555],
+  [220, 535],
+  [200, 505],
+  [190, 470],
+  [185, 430],
+  [200, 400],
+  [188, 365],
+  [205, 330],
+  [218, 295],
+  [212, 260],
+  [222, 225],
+  [218, 190],
+  [225, 155],
+  [212, 125],
+  [195, 95],
 ];
 
 // Project SVG-ish coords to world XZ. North (smaller y) → smaller z (negative).
@@ -73,8 +79,8 @@ function IndiaLandmass({
   activeIds,
   hasFilter,
 }: {
-  hovered: StateNode | null;
-  selected: StateNode | null;
+  hovered: HotspotNode | null;
+  selected: HotspotNode | null;
   activeIds: Set<string>;
   hasFilter: boolean;
 }) {
@@ -82,7 +88,6 @@ function IndiaLandmass({
     const s = new THREE.Shape();
     OUTLINE.forEach(([mx, my], i) => {
       const [x, z] = worldFromMap(mx, my);
-      // Shape lives in XY; we'll rotate the mesh later so Y maps to Z.
       if (i === 0) s.moveTo(x, -z);
       else s.lineTo(x, -z);
     });
@@ -104,7 +109,6 @@ function IndiaLandmass({
 
   return (
     <group rotation={[-Math.PI / 2, 0, 0]}>
-      {/* Base landmass */}
       <mesh geometry={shape} castShadow receiveShadow>
         <meshStandardMaterial
           color={"#1a1410"}
@@ -114,15 +118,12 @@ function IndiaLandmass({
           emissiveIntensity={0.18}
         />
       </mesh>
-      {/* Gold edge accent */}
       <lineSegments geometry={edges} position={[0, 0, 1.12]}>
         <lineBasicMaterial color={"#e8b261"} transparent opacity={0.8} />
       </lineSegments>
-      {/* Subtle highlight when hovered/selected lives on hotspot, not landmass */}
       {(hovered || selected || hasFilter || activeIds.size > 0) && null}
     </group>
   );
-
 }
 
 function Hotspot({
@@ -132,16 +133,16 @@ function Hotspot({
   onHover,
   onClick,
 }: {
-  node: StateNode;
+  node: HotspotNode;
   active: boolean;
   dim: boolean;
-  onHover: (n: StateNode | null) => void;
-  onClick: (n: StateNode) => void;
+  onHover: (n: HotspotNode | null) => void;
+  onClick: (n: HotspotNode) => void;
 }) {
   const ref = useRef<THREE.Group>(null);
   const beamRef = useRef<THREE.Mesh>(null);
   const [px, pz] = worldFromMap(node.x, node.y);
-  // Story richness — visual scale.
+
   const richness = Math.min(1.6, 0.55 + node.stories / 35);
 
   useFrame(({ clock }) => {
@@ -160,9 +161,10 @@ function Hotspot({
 
   return (
     <group ref={ref} position={[px, 1.6, pz]}>
-      {/* Vertical light beam */}
       <mesh ref={beamRef} position={[0, 1.2, 0]}>
-        <cylinderGeometry args={[0.04 * richness, 0.18 * richness, 2.4, 16, 1, true]} />
+        <cylinderGeometry
+          args={[0.04 * richness, 0.18 * richness, 2.4, 16, 1, true]}
+        />
         <meshBasicMaterial
           color={color}
           transparent
@@ -172,7 +174,6 @@ function Hotspot({
         />
       </mesh>
 
-      {/* Glow sphere */}
       <Float speed={2} floatIntensity={0.4} rotationIntensity={0}>
         <mesh
           scale={richness}
@@ -200,10 +201,14 @@ function Hotspot({
         </mesh>
       </Float>
 
-      {/* Outer halo */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.55, 0]}>
         <ringGeometry args={[0.35 * richness, 0.55 * richness, 32]} />
-        <meshBasicMaterial color={color} transparent opacity={active ? 0.55 : 0.25} side={THREE.DoubleSide} />
+        <meshBasicMaterial
+          color={color}
+          transparent
+          opacity={active ? 0.55 : 0.25}
+          side={THREE.DoubleSide}
+        />
       </mesh>
 
       <pointLight color={color} intensity={active ? 1.6 : 0.6} distance={4} decay={2} />
@@ -211,7 +216,7 @@ function Hotspot({
   );
 }
 
-function CameraRig({ target }: { target: StateNode | null }) {
+function CameraRig({ target }: { target: HotspotNode | null }) {
   const { camera } = useThree();
   useEffect(() => {
     if (target) {
@@ -239,29 +244,32 @@ function CameraRig({ target }: { target: StateNode | null }) {
 }
 
 function Scene({
+  hotspots,
   hovered,
   selected,
   setHovered,
   setSelected,
   activeFilter,
 }: {
-  hovered: StateNode | null;
-  selected: StateNode | null;
-  setHovered: (n: StateNode | null) => void;
-  setSelected: (n: StateNode | null) => void;
+  hotspots: HotspotNode[];
+  hovered: HotspotNode | null;
+  selected: HotspotNode | null;
+  setHovered: (n: HotspotNode | null) => void;
+  setSelected: (n: HotspotNode | null) => void;
   activeFilter: string | null;
 }) {
   const activeIds = useMemo(() => {
     if (!activeFilter) return new Set<string>();
-    return new Set(NODES.filter((n) => n.categories.includes(activeFilter)).map((n) => n.id));
-  }, [activeFilter]);
+    return new Set(
+      hotspots.filter((n) => n.categories.includes(activeFilter)).map((n) => n.id),
+    );
+  }, [activeFilter, hotspots]);
 
   return (
     <>
       <color attach="background" args={["#0a0806"]} />
       <fog attach="fog" args={["#0a0806", 25, 55]} />
 
-      {/* Lights */}
       <ambientLight intensity={0.35} color={"#3b2a18"} />
       <directionalLight
         position={[8, 18, 10]}
@@ -275,13 +283,11 @@ function Scene({
 
       <CameraRig target={selected} />
 
-      {/* Ground (water) */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.3, 0]} receiveShadow>
         <circleGeometry args={[40, 64]} />
         <meshStandardMaterial color={"#06090d"} roughness={1} metalness={0.4} />
       </mesh>
 
-      {/* Subtle grid rings */}
       {[10, 18, 28].map((r) => (
         <mesh key={r} rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.29, 0]}>
           <ringGeometry args={[r, r + 0.04, 96]} />
@@ -296,8 +302,7 @@ function Scene({
         hasFilter={!!activeFilter}
       />
 
-      {/* Hotspots */}
-      {NODES.map((n) => {
+      {hotspots.map((n) => {
         const isActive = activeFilter ? activeIds.has(n.id) : true;
         const isFocus = selected?.id === n.id || hovered?.id === n.id;
         return (
@@ -312,18 +317,36 @@ function Scene({
         );
       })}
 
-      {/* Clouds */}
       <Clouds material={THREE.MeshBasicMaterial} limit={40}>
-        <Cloud segments={28} bounds={[14, 1.5, 14]} volume={6} color="#1a1410" position={[2, 7, -2]} opacity={0.35} />
-        <Cloud segments={20} bounds={[10, 1, 10]} volume={4} color="#2a1f15" position={[-4, 8, 3]} opacity={0.3} />
-        <Cloud segments={16} bounds={[8, 1, 8]} volume={3} color="#241a10" position={[6, 9, 5]} opacity={0.25} />
+        <Cloud
+          segments={28}
+          bounds={[14, 1.5, 14]}
+          volume={6}
+          color="#1a1410"
+          position={[2, 7, -2]}
+          opacity={0.35}
+        />
+        <Cloud
+          segments={20}
+          bounds={[10, 1, 10]}
+          volume={4}
+          color="#2a1f15"
+          position={[-4, 8, 3]}
+          opacity={0.3}
+        />
+        <Cloud
+          segments={16}
+          bounds={[8, 1, 8]}
+          volume={3}
+          color="#241a10"
+          position={[6, 9, 5]}
+          opacity={0.25}
+        />
       </Clouds>
 
-      {/* Ambient sparkles */}
       <Sparkles count={120} size={2} scale={[35, 12, 35]} speed={0.3} color={"#e8b261"} opacity={0.6} />
       <Sparkles count={60} size={1.2} scale={[25, 6, 25]} speed={0.5} color={"#ffd07a"} opacity={0.5} />
 
-      {/* Hover label in 3D */}
       {hovered && !selected && (
         (() => {
           const [px, pz] = worldFromMap(hovered.x, hovered.y);
@@ -355,22 +378,73 @@ function Scene({
 
 // ---------- Outer component ----------
 export function ExploreIndia3D() {
+  const navigate = useNavigate();
   const [mounted, setMounted] = useState(false);
-  const [hovered, setHovered] = useState<StateNode | null>(null);
-  const [selected, setSelected] = useState<StateNode | null>(null);
+  const [hovered, setHovered] = useState<HotspotNode | null>(null);
+  const [selected, setSelected] = useState<HotspotNode | null>(null);
   const [filter, setFilter] = useState<string | null>(null);
 
   useEffect(() => setMounted(true), []);
 
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    for (const s of stories) {
+      if (s.category) set.add(s.category);
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, []);
+
+  const hotspots = useMemo<HotspotNode[]>(() => {
+
+
+
+    // Region-level hotspots (matches original “state beacons” UX).
+    const byRegion = new Map<string, typeof stories>();
+    for (const s of stories) {
+      const key = s.region || "India";
+      const arr = byRegion.get(key) ?? [];
+      arr.push(s);
+      byRegion.set(key, arr);
+    }
+
+    // Deterministic but stable ordering.
+    const regions = Array.from(byRegion.keys()).sort((a, b) => a.localeCompare(b));
+
+    return regions.map((region, idx) => {
+      const list = byRegion.get(region)!;
+      const categories = Array.from(new Set(list.map((s) => s.category).filter(Boolean)));
+      const featured = list[0];
+
+      // Deterministic coords per region + index.
+      const coords = storyCoords(region, `${region}|${idx}`);
+
+        // Derive a non-placeholder “hero” label from real story fields.
+        // UI stays identical; the value is no longer the synthetic string "Featured".
+        const heroLabel = featured.category || featured.region || region;
+
+        return {
+          id: region,
+          state: region,
+          x: coords.x,
+          y: coords.y,
+          stories: list.length,
+          hero: heroLabel,
+          categories: categories.slice(0, 3),
+          featuredTitle: featured.title,
+          preview: featured.excerpt,
+          slug: featured.slug,
+        };
+
+    });
+  }, []);
+
   return (
     <section className="relative w-full overflow-hidden py-24 md:py-32">
-      {/* Backdrop */}
       <div className="absolute inset-0 bg-hero opacity-50 pointer-events-none" />
       <div className="absolute top-1/4 left-1/4 size-[480px] rounded-full bg-gold/10 blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 right-0 size-[420px] rounded-full bg-saffron/10 blur-3xl pointer-events-none" />
 
       <div className="container mx-auto px-6 relative">
-        {/* Heading */}
         <div className="text-center max-w-3xl mx-auto mb-12">
           <motion.p
             initial={{ opacity: 0, y: 10 }}
@@ -402,12 +476,12 @@ export function ExploreIndia3D() {
           </motion.p>
         </div>
 
-        {/* Filters */}
         <div className="flex flex-wrap items-center justify-center gap-2 mb-8">
           <span className="text-xs uppercase tracking-widest text-muted-foreground mr-2 inline-flex items-center gap-2">
             <Filter className="size-3.5" /> Filter by theme
           </span>
-          {FILTERS.map((f) => {
+          {categories.slice(0, 7).map((f) => {
+
             const active = filter === f;
             return (
               <motion.button
@@ -435,7 +509,6 @@ export function ExploreIndia3D() {
           )}
         </div>
 
-        {/* Canvas */}
         <div className="relative glass rounded-3xl overflow-hidden border border-gold/15">
           <div className="aspect-[16/10] md:aspect-[16/9] w-full relative">
             {mounted ? (
@@ -447,6 +520,7 @@ export function ExploreIndia3D() {
               >
                 <Suspense fallback={null}>
                   <Scene
+                    hotspots={hotspots}
                     hovered={hovered}
                     selected={selected}
                     setHovered={setHovered}
@@ -461,7 +535,6 @@ export function ExploreIndia3D() {
               </div>
             )}
 
-            {/* Floating preview card (DOM overlay) */}
             <AnimatePresence>
               {selected && (
                 <motion.aside
@@ -501,12 +574,8 @@ export function ExploreIndia3D() {
                   <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
                     {selected.categories.join(" · ")}
                   </p>
-                  <h3 className="font-display text-xl leading-tight mb-2">
-                    {selected.featuredTitle}
-                  </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                    {selected.preview}
-                  </p>
+                  <h3 className="font-display text-xl leading-tight mb-2">{selected.featuredTitle}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-4">{selected.preview}</p>
 
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-xs text-muted-foreground">
@@ -515,6 +584,7 @@ export function ExploreIndia3D() {
                     <Button
                       size="sm"
                       className="bg-gradient-to-r from-gold to-saffron text-gold-foreground border-0 shadow-glow"
+                      onClick={() => navigate({ to: `/stories/${selected.slug}` })}
                     >
                       Read story
                       <ArrowRight className="size-3.5" />
@@ -524,7 +594,6 @@ export function ExploreIndia3D() {
               )}
             </AnimatePresence>
 
-            {/* Legend */}
             <div className="absolute bottom-4 left-4 md:bottom-6 md:left-6 glass rounded-full px-4 py-2 text-[11px] uppercase tracking-widest text-muted-foreground flex items-center gap-3 border border-gold/15">
               <span className="size-1.5 rounded-full bg-gold shadow-[0_0_8px_var(--gold)]" />
               brighter beacons = richer story collections
@@ -537,3 +606,4 @@ export function ExploreIndia3D() {
 }
 
 export default ExploreIndia3D;
+

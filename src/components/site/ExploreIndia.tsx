@@ -3,6 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, X, ArrowRight, Sparkles, Route, Users, Globe2, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatedCounter } from "@/components/site/AnimatedCounter";
+import { useNavigate } from "@tanstack/react-router";
+
+import { stories } from "@/lib/stories-data";
 
 interface StateNode {
   id: string;
@@ -16,26 +19,6 @@ interface StateNode {
   featuredTitle: string;
 }
 
-const NODES: StateNode[] = [
-  { id: "jk", state: "Jammu & Kashmir", x: 200, y: 80, stories: 12, hero: "Mehbooba Ali", categories: ["Heritage", "Culture"], featuredTitle: "Saffron Fields of Pampore", preview: "Generations of saffron farmers reclaiming a Himalayan tradition." },
-  { id: "rj", state: "Rajasthan", x: 195, y: 230, stories: 24, hero: "Bhanwar Lal", categories: ["Heritage", "Craft"], featuredTitle: "Guardians of the Thar", preview: "Desert artisans preserving block-print traditions across generations." },
-  { id: "up", state: "Uttar Pradesh", x: 290, y: 215, stories: 31, hero: "Aarav Khanna", categories: ["Culture", "Cuisine"], featuredTitle: "Reimagining Royal Awadhi Cuisine", preview: "A young chef blending Nawabi recipes with modern fine dining." },
-  { id: "ut", state: "Uttarakhand", x: 275, y: 155, stories: 18, hero: "Vikram Singh", categories: ["Innovation", "Education"], featuredTitle: "Coding Schools in the Himalayas", preview: "Training tribal youth to build software from a remote mountain village." },
-  { id: "as", state: "Assam", x: 395, y: 215, stories: 22, hero: "Ratna Devi", categories: ["Heritage", "Women"], featuredTitle: "The Weaver Who Revived a Forgotten Loom", preview: "Bringing back a 400-year-old weaving tradition — one thread at a time." },
-  { id: "wb", state: "West Bengal", x: 365, y: 260, stories: 19, hero: "Suman Bose", categories: ["Culture", "Art"], featuredTitle: "Kolkata's Last Letter Painters", preview: "Street typographers keeping a vanishing craft alive on tram walls." },
-  { id: "mh", state: "Maharashtra", x: 210, y: 335, stories: 27, hero: "Priya Naik", categories: ["Innovation", "Sustainability"], featuredTitle: "Mumbai's Vertical Forests", preview: "Architects turning concrete jungles into living green corridors." },
-  { id: "gj", state: "Gujarat", x: 155, y: 285, stories: 16, hero: "Rohan Patel", categories: ["Sustainability", "Rural"], featuredTitle: "Salt of the Rann", preview: "Salt farmers turning desert flats into solar-powered livelihoods." },
-  { id: "tg", state: "Telangana", x: 275, y: 380, stories: 21, hero: "Lakshmi Reddy", categories: ["Sustainability", "Agriculture"], featuredTitle: "The Silent Revolution of Millet Farmers", preview: "Smallholder farmers reshaping India's food future." },
-  { id: "ka", state: "Karnataka", x: 245, y: 440, stories: 29, hero: "Arjun Rao", categories: ["Science", "Innovation"], featuredTitle: "Designing a Made-in-India Spacecraft", preview: "Engineers behind India's most ambitious private space mission." },
-  { id: "tn", state: "Tamil Nadu", x: 285, y: 500, stories: 25, hero: "Meera Iyer", categories: ["Culture", "Dance"], featuredTitle: "Bharatanatyam in the Digital Age", preview: "A young dancer reinterpreting an ancient art for global stages." },
-  { id: "kl", state: "Kerala", x: 240, y: 520, stories: 20, hero: "Thomas Joseph", categories: ["Environment", "Community"], featuredTitle: "The Backwater Restorers", preview: "Fisher communities reviving Kerala's lifeline waterways." },
-  { id: "od", state: "Odisha", x: 335, y: 320, stories: 14, hero: "Sanyukta Das", categories: ["Heritage", "Tribal"], featuredTitle: "The Loom That Speaks", preview: "Tribal weavers narrating folklore through ikat patterns." },
-  { id: "pb", state: "Punjab", x: 220, y: 140, stories: 13, hero: "Harpreet Kaur", categories: ["Agriculture", "Women"], featuredTitle: "She Drives the Tractor", preview: "Women farmers rewriting Punjab's agricultural story." },
-];
-
-// Story journey path in order
-const JOURNEY = ["jk", "pb", "rj", "gj", "mh", "ka", "kl", "tn", "tg", "od", "wb", "as", "up", "ut"];
-
 const STATS = [
   { value: 1240, suffix: "+", label: "Stories Collected", icon: BookOpen },
   { value: 28, suffix: "", label: "States Covered", icon: Globe2 },
@@ -43,15 +26,72 @@ const STATS = [
   { value: 95000, suffix: "+", label: "Communities Impacted", icon: Users },
 ];
 
+function seededNumber(seed: string) {
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return (h >>> 0) / 2 ** 32;
+}
+
+function clamp(n: number, a: number, b: number) {
+  return Math.max(a, Math.min(b, n));
+}
+
+function stableMapPositionForRegion(region: string) {
+  // Deterministic position in the same SVG space as the existing map.
+  // Ensure it doesn't crowd too much by clamping to safe margins.
+  const rx = seededNumber(`${region}|x`);
+  const ry = seededNumber(`${region}|y`);
+  const x = clamp(120 + rx * 260 + (ry - 0.5) * 18, 150, 440);
+  const y = clamp(70 + ry * 460 + (rx - 0.5) * 22, 95, 540);
+  return { x, y };
+}
+
 export function ExploreIndia() {
+  const navigate = useNavigate();
+
   const [hovered, setHovered] = useState<StateNode | null>(null);
   const [selected, setSelected] = useState<StateNode | null>(null);
   const [journey, setJourney] = useState(false);
 
-  const journeyPoints = useMemo(
-    () => JOURNEY.map((id) => NODES.find((n) => n.id === id)!).filter(Boolean),
-    [],
-  );
+  const nodes = useMemo<StateNode[]>(() => {
+    // Group by region to keep the existing “state/node” UX.
+    const byRegion = new Map<string, typeof stories>();
+    for (const s of stories) {
+      const key = s.region || "India";
+      const arr = byRegion.get(key) ?? [];
+      arr.push(s);
+      byRegion.set(key, arr);
+    }
+
+    const regions = Array.from(byRegion.keys()).sort((a, b) => a.localeCompare(b));
+
+    return regions.map((region, idx) => {
+      const list = byRegion.get(region)!;
+      const categories = Array.from(
+        new Set(list.map((s) => s.category).filter(Boolean)),
+      );
+
+      const featured = list[0];
+      const pos = stableMapPositionForRegion(`${region}|${idx}`);
+
+      return {
+        id: region,
+        state: region,
+        x: pos.x,
+        y: pos.y,
+        stories: list.length,
+        hero: "Featured",
+        categories: categories.slice(0, 3),
+        preview: featured.excerpt,
+        featuredTitle: featured.title,
+      };
+    });
+  }, []);
+
+  const journeyPoints = useMemo(() => nodes.slice(0, Math.min(14, nodes.length)), [nodes]);
 
   const journeyPath = useMemo(() => {
     if (journeyPoints.length === 0) return "";
@@ -59,6 +99,7 @@ export function ExploreIndia() {
       .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
       .join(" ");
   }, [journeyPoints]);
+
 
   return (
     <section className="relative w-full overflow-hidden py-24 md:py-32">
@@ -243,10 +284,10 @@ export function ExploreIndia() {
               </AnimatePresence>
 
               {/* Hotspots */}
-              {NODES.map((n, i) => {
+              {nodes.map((n, i) => {
                 const isHover = hovered?.id === n.id;
                 const isActive = selected?.id === n.id;
-                const journeyIndex = journey ? JOURNEY.indexOf(n.id) : -1;
+                const journeyIndex = journey ? i : -1;
                 return (
                   <g
                     key={n.id}
@@ -413,6 +454,11 @@ export function ExploreIndia() {
                   <Button
                     size="lg"
                     className="mt-6 w-full bg-gradient-to-r from-gold to-saffron text-gold-foreground border-0 shadow-glow"
+                    onClick={() => {
+                      const story = stories.find((s) => s.region === selected.state);
+                      if (!story) return;
+                      navigate({ to: `/stories/${story.slug}` });
+                    }}
                   >
                     Explore {selected.state}
                     <ArrowRight className="size-4" />
@@ -439,7 +485,7 @@ export function ExploreIndia() {
                   </p>
 
                   <div className="mt-6 space-y-2">
-                    {NODES.slice(0, 4).map((n, i) => (
+                    {nodes.slice(0, 4).map((n, i) => (
                       <motion.button
                         key={n.id}
                         initial={{ opacity: 0, x: 20 }}

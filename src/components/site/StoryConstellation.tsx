@@ -1,64 +1,121 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ArrowRight } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+
+import { stories } from "@/lib/stories-data";
 
 type Node = {
   id: string;
   title: string;
   state: string;
-  category:
-    | "Innovation"
-    | "Sustainability"
-    | "Women Empowerment"
-    | "Education"
-    | "Culture"
-    | "Rural Development"
-    | "Environment";
+  category: string;
   summary: string;
   x: number; // 0-100
   y: number; // 0-100
   size?: number;
+  slug: string;
 };
 
-const nodes: Node[] = [
-  { id: "n1", title: "The Weaver Who Revived a Forgotten Loom", state: "Assam", category: "Culture", summary: "A 400-year-old weaving tradition, brought back to life thread by thread.", x: 18, y: 22, size: 14 },
-  { id: "n2", title: "Coding Schools in the Himalayas", state: "Uttarakhand", category: "Education", summary: "Tribal youth shipping software from a remote mountain village.", x: 38, y: 14, size: 12 },
-  { id: "n3", title: "The Silent Revolution of Millet Farmers", state: "Telangana", category: "Sustainability", summary: "Smallholder farmers reshaping India's food future.", x: 62, y: 28, size: 14 },
-  { id: "n4", title: "Designing a Made-in-India Spacecraft", state: "Karnataka", category: "Innovation", summary: "The engineers behind India's most ambitious private mission.", x: 82, y: 20, size: 13 },
-  { id: "n5", title: "Healing Waters of the Ganges", state: "Uttar Pradesh", category: "Environment", summary: "Scientists and saints uniting to restore a sacred river.", x: 28, y: 52, size: 12 },
-  { id: "n6", title: "Lighting Up 200 Villages", state: "Bihar", category: "Rural Development", summary: "Solar microgrids changing nightfall across the plains.", x: 50, y: 46, size: 15 },
-  { id: "n7", title: "Daughters of the Loom", state: "Tamil Nadu", category: "Women Empowerment", summary: "A cooperative of 1,200 women redefining textile labor.", x: 72, y: 58, size: 13 },
-  { id: "n8", title: "Reimagining Royal Awadhi Cuisine", state: "Uttar Pradesh", category: "Culture", summary: "Three centuries of Nawabi recipes meet modern fine dining.", x: 14, y: 74, size: 11 },
-  { id: "n9", title: "Forests Grown by Children", state: "Meghalaya", category: "Environment", summary: "Village schools planted a quarter-million native trees.", x: 42, y: 80, size: 12 },
-  { id: "n10", title: "The Seed Bank of Wayanad", state: "Kerala", category: "Sustainability", summary: "Preserving 700 native varieties for the next century.", x: 64, y: 74, size: 13 },
-  { id: "n11", title: "A Drone For Every Farmer", state: "Punjab", category: "Innovation", summary: "Affordable aerial tech reshaping smallholder agriculture.", x: 86, y: 68, size: 12 },
-];
 
-// Connections by shared theme / cross-pollination
-const edges: [string, string][] = [
-  ["n1", "n7"], ["n1", "n8"],
-  ["n2", "n4"], ["n2", "n6"],
-  ["n3", "n10"], ["n3", "n6"],
-  ["n4", "n11"],
-  ["n5", "n9"], ["n5", "n6"],
-  ["n6", "n11"],
-  ["n7", "n10"], ["n7", "n8"],
-  ["n9", "n10"],
-];
+function seededNumber(seed: string) {
+  // Simple deterministic hash -> [0,1)
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return (h >>> 0) / 2 ** 32;
+}
 
-const categoryColors: Record<Node["category"], string> = {
-  Innovation: "oklch(0.78 0.16 60)",
-  Sustainability: "oklch(0.78 0.14 140)",
-  "Women Empowerment": "oklch(0.7 0.18 350)",
-  Education: "oklch(0.75 0.14 230)",
-  Culture: "oklch(0.78 0.18 40)",
-  "Rural Development": "oklch(0.78 0.12 90)",
-  Environment: "oklch(0.78 0.16 170)",
-};
+function colorForCategory(category: string) {
+  // Deterministic color per category without a whitelist.
+  const r = seededNumber(`r|${category}`);
+  const hue = Math.round(20 + r * 330); // 20..350
+  const chroma = Math.round(12 + seededNumber(`c|${category}`) * 12); // 12..24
+  const light = Math.round(52 + seededNumber(`l|${category}`) * 20); // 52..72
+  const alpha = 1;
+  return `oklch(${(light / 100).toFixed(2)} ${(chroma / 100).toFixed(2)} ${hue} / ${alpha})`;
+}
+
+
+function dedupeEdges(edges: [string, string][]) {
+  const seen = new Set<string>();
+  return edges.filter(([a, b]) => {
+    const key = a < b ? `${a}|${b}` : `${b}|${a}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
 
 export function StoryConstellation() {
+  const navigate = useNavigate();
+
+  const nodesAndEdges = useMemo(() => {
+    // Keep the exact same visual layout: 11 nodes like the original component.
+    const pick = stories.slice(0, 11);
+
+    const nodes: Node[] = pick.map((s, idx) => {
+
+
+      const rx = seededNumber(`${s.region}|x|${idx}`);
+      const ry = seededNumber(`${s.region}|y|${idx}`);
+      const baseX = 10 + rx * 80; // 10..90
+      const baseY = 12 + ry * 76; // 12..88
+
+      // Preserve a similar spread by nudging around a few anchor positions.
+      const anchors = [22, 14, 28, 20, 52, 46, 58, 74, 80, 74, 68];
+      const x = Math.max(
+        6,
+        Math.min(94, baseX * 0.85 + anchors[idx] * 0.15),
+      );
+      const y = Math.max(
+        6,
+        Math.min(94, baseY * 0.85 + (idx % 2 ? 22 : 18) * 0.15),
+      );
+
+      return {
+        id: s.id || s.slug || `c-${idx}`,
+        title: s.title,
+        state: s.region,
+        category: (s.category as Node["category"]) ?? "Culture",
+
+        summary: s.excerpt,
+        x,
+        y,
+        size: 11 + Math.round(seededNumber(`${s.slug}|size`) * 6),
+        slug: s.slug,
+      };
+    });
+
+    const byCategory = new Map<string, Node[]>();
+
+    nodes.forEach((n) => {
+      const arr = byCategory.get(n.category) ?? [];
+      arr.push(n);
+      byCategory.set(n.category, arr);
+    });
+
+    const edges: [string, string][] = [];
+    // Connections: connect within same category and also cross-connect by index adjacency.
+    nodes.forEach((n, i) => {
+      const same = byCategory.get(n.category) ?? [];
+      if (same.length > 1) {
+        const target = same[(i + 1) % same.length];
+        if (target && target.id !== n.id) edges.push([n.id, target.id]);
+      }
+      const adj = nodes[(i + 2) % nodes.length];
+      if (adj) edges.push([n.id, adj.id]);
+    });
+
+    return { nodes, edges: dedupeEdges(edges) };
+  }, []);
+
   const [hovered, setHovered] = useState<string | null>(null);
   const [selected, setSelected] = useState<Node | null>(null);
+
+  const { nodes, edges } = nodesAndEdges;
 
   const findNode = (id: string) => nodes.find((n) => n.id === id)!;
 
@@ -133,17 +190,19 @@ export function StoryConstellation() {
 
         {/* Category legend */}
         <div className="flex flex-wrap justify-center gap-2 mb-8">
-          {(Object.keys(categoryColors) as Node["category"][]).map((c) => (
+          {Array.from(new Set(nodes.map((n) => n.category))).slice(0, 7).map((c) => (
+
             <span
               key={c}
               className="inline-flex items-center gap-2 glass rounded-full px-3 py-1 text-[10px] uppercase tracking-widest text-muted-foreground"
             >
               <span
                 className="size-1.5 rounded-full"
-                style={{ background: categoryColors[c] }}
+                style={{ background: colorForCategory(c) }}
               />
               {c}
             </span>
+
           ))}
         </div>
 
@@ -166,15 +225,18 @@ export function StoryConstellation() {
             <defs>
               <linearGradient id="edgeGrad" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0%" stopColor="var(--gold)" stopOpacity="0.6" />
-                <stop offset="100%" stopColor="var(--saffron)" stopOpacity="0.3" />
+                <stop
+                  offset="100%"
+                  stopColor="var(--saffron)"
+                  stopOpacity="0.3"
+                />
               </linearGradient>
             </defs>
 
             {edges.map(([a, b], i) => {
               const A = findNode(a);
               const B = findNode(b);
-              const isActive =
-                activeId && (a === activeId || b === activeId);
+              const isActive = activeId && (a === activeId || b === activeId);
               return (
                 <motion.line
                   key={`${a}-${b}`}
@@ -190,9 +252,16 @@ export function StoryConstellation() {
                   whileInView={{ pathLength: 1, opacity: 1 }}
                   viewport={{ once: true, margin: "-80px" }}
                   transition={{
-                    pathLength: { duration: 1.8, delay: 0.5 + i * 0.06, ease: [0.16, 1, 0.3, 1] },
+                    pathLength: {
+                      duration: 1.8,
+                      delay: 0.5 + i * 0.06,
+                      ease: [0.16, 1, 0.3, 1],
+                    },
                     opacity: { duration: 0.6, delay: 0.5 + i * 0.06 },
-                    strokeOpacity: { duration: 0.4, ease: "easeOut" },
+                    strokeOpacity: {
+                      duration: 0.4,
+                      ease: "easeOut",
+                    },
                     stroke: { duration: 0.4 },
                   }}
                 />
@@ -200,12 +269,14 @@ export function StoryConstellation() {
             })}
           </svg>
 
-          {/* Nodes */}
-          {nodes.map((n, i) => {
+        {/* Nodes */}
+        {nodes.map((n, i) => {
             const isActive = activeId === n.id;
+
             const isConnected = connected.has(n.id);
             const dim = activeId && !isActive && !isConnected;
-            const color = categoryColors[n.category];
+            const color = colorForCategory(n.category);
+
             return (
               <motion.button
                 key={n.id}
@@ -331,9 +402,10 @@ export function StoryConstellation() {
                 <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest mb-3">
                   <span
                     className="size-1.5 rounded-full"
-                    style={{ background: categoryColors[selected.category] }}
+                    style={{ background: colorForCategory(selected.category) }}
                   />
-                  <span style={{ color: categoryColors[selected.category] }}>
+                  <span style={{ color: colorForCategory(selected.category) }}>
+
                     {selected.category}
                   </span>
                   <span className="text-muted-foreground">· {selected.state}</span>
@@ -345,7 +417,10 @@ export function StoryConstellation() {
                   {selected.summary}
                 </p>
 
-                <button className="mt-5 inline-flex items-center gap-2 text-sm text-gold hover:gap-3 transition-all">
+                <button
+                  onClick={() => navigate({ to: `/stories/${selected.slug}` })}
+                  className="mt-5 inline-flex items-center gap-2 text-sm text-gold hover:gap-3 transition-all"
+                >
                   Read story
                   <ArrowRight className="size-4" />
                 </button>
@@ -367,11 +442,10 @@ export function StoryConstellation() {
                           <div className="flex items-center gap-2 text-[9px] uppercase tracking-widest mb-1">
                             <span
                               className="size-1 rounded-full"
-                              style={{ background: categoryColors[c.category] }}
+                              style={{ background: colorForCategory(c.category) }}
                             />
-                            <span className="text-muted-foreground">
-                              {c.state}
-                            </span>
+
+                            <span className="text-muted-foreground">{c.state}</span>
                           </div>
                           <div className="font-display text-sm leading-snug group-hover:text-gradient-gold transition-colors">
                             {c.title}
@@ -393,3 +467,4 @@ export function StoryConstellation() {
     </section>
   );
 }
+

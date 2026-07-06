@@ -8,7 +8,7 @@ import { StoryNodes } from "./StoryNodes";
 import { IndiaSilhouette } from "./IndiaSilhouette";
 import { HeroStats } from "./AnimatedCounter";
 
-const headingWords = ["Experience", "India's", "Stories,"];
+const headingWords = ["Experience", "India's", "Stories"];
 const italicWords = ["Don't", "Just", "Read", "Them"];
 
 export function Hero() {
