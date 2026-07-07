@@ -17,9 +17,20 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StoriesIndexRouteImport } from './routes/stories/index'
 import { Route as StoriesSlugRouteImport } from './routes/stories/$slug'
+import { Route as ApiThemesRouteImport } from './routes/api/themes'
 import { Route as ApiStoriesCatalogueDataRouteImport } from './routes/api/stories-catalogue-data'
 import { Route as ApiStoriesCatalogueRouteImport } from './routes/api/stories-catalogue'
+import { Route as ApiStoriesRouteImport } from './routes/api/stories'
+import { Route as ApiStatesRouteImport } from './routes/api/states'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiCategoriesRouteImport } from './routes/api/categories'
+import { Route as ApiAuthorsRouteImport } from './routes/api/authors'
+import { Route as ApiStoriesSearchRouteImport } from './routes/api/stories/search'
+import { Route as ApiStoriesRecommendedRouteImport } from './routes/api/stories/recommended'
+import { Route as ApiStoriesLatestRouteImport } from './routes/api/stories/latest'
+import { Route as ApiStoriesFilterRouteImport } from './routes/api/stories/filter'
+import { Route as ApiStoriesFeaturedRouteImport } from './routes/api/stories/featured'
+import { Route as ApiStoriesSlugRouteImport } from './routes/api/stories/$slug'
 
 const StoriesRoute = StoriesRouteImport.update({
   id: '/stories',
@@ -61,6 +72,11 @@ const StoriesSlugRoute = StoriesSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => StoriesRoute,
 } as any)
+const ApiThemesRoute = ApiThemesRouteImport.update({
+  id: '/api/themes',
+  path: '/api/themes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiStoriesCatalogueDataRoute = ApiStoriesCatalogueDataRouteImport.update({
   id: '/api/stories-catalogue-data',
   path: '/api/stories-catalogue-data',
@@ -71,10 +87,60 @@ const ApiStoriesCatalogueRoute = ApiStoriesCatalogueRouteImport.update({
   path: '/api/stories-catalogue',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiStoriesRoute = ApiStoriesRouteImport.update({
+  id: '/api/stories',
+  path: '/api/stories',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStatesRoute = ApiStatesRouteImport.update({
+  id: '/api/states',
+  path: '/api/states',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCategoriesRoute = ApiCategoriesRouteImport.update({
+  id: '/api/categories',
+  path: '/api/categories',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthorsRoute = ApiAuthorsRouteImport.update({
+  id: '/api/authors',
+  path: '/api/authors',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStoriesSearchRoute = ApiStoriesSearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => ApiStoriesRoute,
+} as any)
+const ApiStoriesRecommendedRoute = ApiStoriesRecommendedRouteImport.update({
+  id: '/recommended',
+  path: '/recommended',
+  getParentRoute: () => ApiStoriesRoute,
+} as any)
+const ApiStoriesLatestRoute = ApiStoriesLatestRouteImport.update({
+  id: '/latest',
+  path: '/latest',
+  getParentRoute: () => ApiStoriesRoute,
+} as any)
+const ApiStoriesFilterRoute = ApiStoriesFilterRouteImport.update({
+  id: '/filter',
+  path: '/filter',
+  getParentRoute: () => ApiStoriesRoute,
+} as any)
+const ApiStoriesFeaturedRoute = ApiStoriesFeaturedRouteImport.update({
+  id: '/featured',
+  path: '/featured',
+  getParentRoute: () => ApiStoriesRoute,
+} as any)
+const ApiStoriesSlugRoute = ApiStoriesSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => ApiStoriesRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -84,11 +150,22 @@ export interface FileRoutesByFullPath {
   '/explore': typeof ExploreRoute
   '/join': typeof JoinRoute
   '/stories': typeof StoriesRouteWithChildren
+  '/api/authors': typeof ApiAuthorsRoute
+  '/api/categories': typeof ApiCategoriesRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/states': typeof ApiStatesRoute
+  '/api/stories': typeof ApiStoriesRouteWithChildren
   '/api/stories-catalogue': typeof ApiStoriesCatalogueRoute
   '/api/stories-catalogue-data': typeof ApiStoriesCatalogueDataRoute
+  '/api/themes': typeof ApiThemesRoute
   '/stories/$slug': typeof StoriesSlugRoute
   '/stories/': typeof StoriesIndexRoute
+  '/api/stories/$slug': typeof ApiStoriesSlugRoute
+  '/api/stories/featured': typeof ApiStoriesFeaturedRoute
+  '/api/stories/filter': typeof ApiStoriesFilterRoute
+  '/api/stories/latest': typeof ApiStoriesLatestRoute
+  '/api/stories/recommended': typeof ApiStoriesRecommendedRoute
+  '/api/stories/search': typeof ApiStoriesSearchRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -96,11 +173,22 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/explore': typeof ExploreRoute
   '/join': typeof JoinRoute
+  '/api/authors': typeof ApiAuthorsRoute
+  '/api/categories': typeof ApiCategoriesRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/states': typeof ApiStatesRoute
+  '/api/stories': typeof ApiStoriesRouteWithChildren
   '/api/stories-catalogue': typeof ApiStoriesCatalogueRoute
   '/api/stories-catalogue-data': typeof ApiStoriesCatalogueDataRoute
+  '/api/themes': typeof ApiThemesRoute
   '/stories/$slug': typeof StoriesSlugRoute
   '/stories': typeof StoriesIndexRoute
+  '/api/stories/$slug': typeof ApiStoriesSlugRoute
+  '/api/stories/featured': typeof ApiStoriesFeaturedRoute
+  '/api/stories/filter': typeof ApiStoriesFilterRoute
+  '/api/stories/latest': typeof ApiStoriesLatestRoute
+  '/api/stories/recommended': typeof ApiStoriesRecommendedRoute
+  '/api/stories/search': typeof ApiStoriesSearchRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -110,11 +198,22 @@ export interface FileRoutesById {
   '/explore': typeof ExploreRoute
   '/join': typeof JoinRoute
   '/stories': typeof StoriesRouteWithChildren
+  '/api/authors': typeof ApiAuthorsRoute
+  '/api/categories': typeof ApiCategoriesRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/states': typeof ApiStatesRoute
+  '/api/stories': typeof ApiStoriesRouteWithChildren
   '/api/stories-catalogue': typeof ApiStoriesCatalogueRoute
   '/api/stories-catalogue-data': typeof ApiStoriesCatalogueDataRoute
+  '/api/themes': typeof ApiThemesRoute
   '/stories/$slug': typeof StoriesSlugRoute
   '/stories/': typeof StoriesIndexRoute
+  '/api/stories/$slug': typeof ApiStoriesSlugRoute
+  '/api/stories/featured': typeof ApiStoriesFeaturedRoute
+  '/api/stories/filter': typeof ApiStoriesFilterRoute
+  '/api/stories/latest': typeof ApiStoriesLatestRoute
+  '/api/stories/recommended': typeof ApiStoriesRecommendedRoute
+  '/api/stories/search': typeof ApiStoriesSearchRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -125,11 +224,22 @@ export interface FileRouteTypes {
     | '/explore'
     | '/join'
     | '/stories'
+    | '/api/authors'
+    | '/api/categories'
     | '/api/chat'
+    | '/api/states'
+    | '/api/stories'
     | '/api/stories-catalogue'
     | '/api/stories-catalogue-data'
+    | '/api/themes'
     | '/stories/$slug'
     | '/stories/'
+    | '/api/stories/$slug'
+    | '/api/stories/featured'
+    | '/api/stories/filter'
+    | '/api/stories/latest'
+    | '/api/stories/recommended'
+    | '/api/stories/search'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -137,11 +247,22 @@ export interface FileRouteTypes {
     | '/contact'
     | '/explore'
     | '/join'
+    | '/api/authors'
+    | '/api/categories'
     | '/api/chat'
+    | '/api/states'
+    | '/api/stories'
     | '/api/stories-catalogue'
     | '/api/stories-catalogue-data'
+    | '/api/themes'
     | '/stories/$slug'
     | '/stories'
+    | '/api/stories/$slug'
+    | '/api/stories/featured'
+    | '/api/stories/filter'
+    | '/api/stories/latest'
+    | '/api/stories/recommended'
+    | '/api/stories/search'
   id:
     | '__root__'
     | '/'
@@ -150,11 +271,22 @@ export interface FileRouteTypes {
     | '/explore'
     | '/join'
     | '/stories'
+    | '/api/authors'
+    | '/api/categories'
     | '/api/chat'
+    | '/api/states'
+    | '/api/stories'
     | '/api/stories-catalogue'
     | '/api/stories-catalogue-data'
+    | '/api/themes'
     | '/stories/$slug'
     | '/stories/'
+    | '/api/stories/$slug'
+    | '/api/stories/featured'
+    | '/api/stories/filter'
+    | '/api/stories/latest'
+    | '/api/stories/recommended'
+    | '/api/stories/search'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -164,9 +296,14 @@ export interface RootRouteChildren {
   ExploreRoute: typeof ExploreRoute
   JoinRoute: typeof JoinRoute
   StoriesRoute: typeof StoriesRouteWithChildren
+  ApiAuthorsRoute: typeof ApiAuthorsRoute
+  ApiCategoriesRoute: typeof ApiCategoriesRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiStatesRoute: typeof ApiStatesRoute
+  ApiStoriesRoute: typeof ApiStoriesRouteWithChildren
   ApiStoriesCatalogueRoute: typeof ApiStoriesCatalogueRoute
   ApiStoriesCatalogueDataRoute: typeof ApiStoriesCatalogueDataRoute
+  ApiThemesRoute: typeof ApiThemesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -227,6 +364,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoriesSlugRouteImport
       parentRoute: typeof StoriesRoute
     }
+    '/api/themes': {
+      id: '/api/themes'
+      path: '/api/themes'
+      fullPath: '/api/themes'
+      preLoaderRoute: typeof ApiThemesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/stories-catalogue-data': {
       id: '/api/stories-catalogue-data'
       path: '/api/stories-catalogue-data'
@@ -241,12 +385,82 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiStoriesCatalogueRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/stories': {
+      id: '/api/stories'
+      path: '/api/stories'
+      fullPath: '/api/stories'
+      preLoaderRoute: typeof ApiStoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/states': {
+      id: '/api/states'
+      path: '/api/states'
+      fullPath: '/api/states'
+      preLoaderRoute: typeof ApiStatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
       fullPath: '/api/chat'
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/categories': {
+      id: '/api/categories'
+      path: '/api/categories'
+      fullPath: '/api/categories'
+      preLoaderRoute: typeof ApiCategoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/authors': {
+      id: '/api/authors'
+      path: '/api/authors'
+      fullPath: '/api/authors'
+      preLoaderRoute: typeof ApiAuthorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/stories/search': {
+      id: '/api/stories/search'
+      path: '/search'
+      fullPath: '/api/stories/search'
+      preLoaderRoute: typeof ApiStoriesSearchRouteImport
+      parentRoute: typeof ApiStoriesRoute
+    }
+    '/api/stories/recommended': {
+      id: '/api/stories/recommended'
+      path: '/recommended'
+      fullPath: '/api/stories/recommended'
+      preLoaderRoute: typeof ApiStoriesRecommendedRouteImport
+      parentRoute: typeof ApiStoriesRoute
+    }
+    '/api/stories/latest': {
+      id: '/api/stories/latest'
+      path: '/latest'
+      fullPath: '/api/stories/latest'
+      preLoaderRoute: typeof ApiStoriesLatestRouteImport
+      parentRoute: typeof ApiStoriesRoute
+    }
+    '/api/stories/filter': {
+      id: '/api/stories/filter'
+      path: '/filter'
+      fullPath: '/api/stories/filter'
+      preLoaderRoute: typeof ApiStoriesFilterRouteImport
+      parentRoute: typeof ApiStoriesRoute
+    }
+    '/api/stories/featured': {
+      id: '/api/stories/featured'
+      path: '/featured'
+      fullPath: '/api/stories/featured'
+      preLoaderRoute: typeof ApiStoriesFeaturedRouteImport
+      parentRoute: typeof ApiStoriesRoute
+    }
+    '/api/stories/$slug': {
+      id: '/api/stories/$slug'
+      path: '/$slug'
+      fullPath: '/api/stories/$slug'
+      preLoaderRoute: typeof ApiStoriesSlugRouteImport
+      parentRoute: typeof ApiStoriesRoute
     }
   }
 }
@@ -264,6 +478,28 @@ const StoriesRouteChildren: StoriesRouteChildren = {
 const StoriesRouteWithChildren =
   StoriesRoute._addFileChildren(StoriesRouteChildren)
 
+interface ApiStoriesRouteChildren {
+  ApiStoriesSlugRoute: typeof ApiStoriesSlugRoute
+  ApiStoriesFeaturedRoute: typeof ApiStoriesFeaturedRoute
+  ApiStoriesFilterRoute: typeof ApiStoriesFilterRoute
+  ApiStoriesLatestRoute: typeof ApiStoriesLatestRoute
+  ApiStoriesRecommendedRoute: typeof ApiStoriesRecommendedRoute
+  ApiStoriesSearchRoute: typeof ApiStoriesSearchRoute
+}
+
+const ApiStoriesRouteChildren: ApiStoriesRouteChildren = {
+  ApiStoriesSlugRoute: ApiStoriesSlugRoute,
+  ApiStoriesFeaturedRoute: ApiStoriesFeaturedRoute,
+  ApiStoriesFilterRoute: ApiStoriesFilterRoute,
+  ApiStoriesLatestRoute: ApiStoriesLatestRoute,
+  ApiStoriesRecommendedRoute: ApiStoriesRecommendedRoute,
+  ApiStoriesSearchRoute: ApiStoriesSearchRoute,
+}
+
+const ApiStoriesRouteWithChildren = ApiStoriesRoute._addFileChildren(
+  ApiStoriesRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
@@ -271,9 +507,14 @@ const rootRouteChildren: RootRouteChildren = {
   ExploreRoute: ExploreRoute,
   JoinRoute: JoinRoute,
   StoriesRoute: StoriesRouteWithChildren,
+  ApiAuthorsRoute: ApiAuthorsRoute,
+  ApiCategoriesRoute: ApiCategoriesRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiStatesRoute: ApiStatesRoute,
+  ApiStoriesRoute: ApiStoriesRouteWithChildren,
   ApiStoriesCatalogueRoute: ApiStoriesCatalogueRoute,
   ApiStoriesCatalogueDataRoute: ApiStoriesCatalogueDataRoute,
+  ApiThemesRoute: ApiThemesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

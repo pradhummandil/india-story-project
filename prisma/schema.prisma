@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum StoryStatus {
+  Draft
+  Published
+  Archived
+}
+
+enum Timestamped {
+  Created
+  Updated
+}
+
+model Author {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  bio       String?  @db.Text
+  avatar    String?  @db.Text
+
+  stories   Story[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+}
+
+model Category {
+  id      String @id @default(uuid()) @db.Uuid
+  name    String
+  slug    String @unique
+
+  stories Story[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+}
+
+model Theme {
+  id      String @id @default(uuid()) @db.Uuid
+  name    String
+  slug    String @unique
+
+  stories Story[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+}
+
+model State {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  slug        String   @unique
+  latitude    Float?
+  longitude   Float?
+
+  stories     Story[]
+  cities      City[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([name])
+  @@index([latitude, longitude])
+}
+
+
+model City {
+  id        String @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String @unique
+
+  stateId   String @db.Uuid
+  state     State  @relation(fields: [stateId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  stories   Story[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([stateId])
+}
+
+model Tag {
+  id      String @id @default(uuid()) @db.Uuid
+  name    String
+  slug    String @unique
+
+  stories StoryTag[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+}
+
+model Story {
+  id            String        @id @default(uuid()) @db.Uuid
+
+  sourceId      String?       @unique
+  slug          String        @unique
+
+  title         String
+  excerpt       String        @db.Text
+  content       String        @db.Text
+
+  publishedAt   DateTime?
+  readingTime   Int?
+
+  seoTitle       String?
+  seoDescription String?
+
+  featured      Boolean       @default(false)
+  heroOfTheDay  Boolean       @default(false)
+  status        StoryStatus  @default(Draft)
+
+  authorId       String        @db.Uuid
+  author         Author        @relation(fields: [authorId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  categoryId     String        @db.Uuid
+  category       Category      @relation(fields: [categoryId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  themeId        String        @db.Uuid
+  theme          Theme         @relation(fields: [themeId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  stateId        String        @db.Uuid
+  state          State         @relation(fields: [stateId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  cityId         String?       @db.Uuid
+  city           City?         @relation(fields: [cityId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  tags           StoryTag[]
+  images         StoryImage[]
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([slug])
+  @@index([status])
+  @@index([publishedAt])
+  @@index([featured])
+  @@index([heroOfTheDay])
+}
+
+model StoryTag {
+  storyId String @db.Uuid
+  tagId   String @db.Uuid
+
+  story   Story  @relation(fields: [storyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  tag     Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@id([storyId, tagId])
+  @@index([tagId])
+}
+
+model StoryImage {
+  id          String  @id @default(uuid()) @db.Uuid
+
+  storyId     String  @db.Uuid
+  story       Story   @relation(fields: [storyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  imageUrl    String  @db.Text
+  caption     String? @db.Text
+  sortOrder   Int     @default(0)
+  heroImage   Boolean @default(false)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([storyId])
+  @@index([heroImage])
+  @@unique([storyId, sortOrder])
+}
+
