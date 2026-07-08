@@ -95,8 +95,8 @@ export function Footer() {
               {footerText.getInTouch}
             </h4>
             <ul className="space-y-2 text-sm text-muted-foreground font-sans">
-              <li>hello@indiastoryproject.com</li>
-              <li>Bengaluru · Mumbai · Delhi</li>
+              <li>indiastoryprojectmanager21@gmail.com</li>
+              <li>Lucknow · Delhi · Bhopal</li>
             </ul>
           </div>
         </div>

@@ -13,6 +13,9 @@ import {
   X,
   ChevronRight,
   LogOut,
+  MessageSquare,
+  Trophy,
+  Award,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/lib/auth-store";
@@ -20,11 +23,12 @@ import { useAuthStore } from "@/lib/auth-store";
 const NAV_ITEMS = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/stories", label: "Stories", icon: BookOpen },
-  { to: "/admin/categories", label: "Categories", icon: FolderOpen },
-  { to: "/admin/states", label: "States", icon: MapPin },
-  { to: "/admin/authors", label: "Authors", icon: Users },
-  { to: "/admin/media", label: "Media", icon: Image },
+  { to: "/admin/community", label: "Community", icon: FolderOpen },
+  { to: "/admin/comments", label: "Comments", icon: MessageSquare },
+  { to: "/admin/leaderboard", label: "Leaderboard", icon: Trophy },
+  { to: "/admin/achievements", label: "Achievements", icon: Award },
   { to: "/admin/users", label: "Users", icon: Users },
+  { to: "/admin/media", label: "Media", icon: Image },
   { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/admin/settings", label: "Settings", icon: Settings },
 ];

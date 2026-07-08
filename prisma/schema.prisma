@@ -8,8 +8,16 @@ datasource db {
 
 enum StoryStatus {
   Draft
+  Pending
   Published
+  Hidden
   Archived
+}
+
+enum SubmissionStatus {
+  Pending
+  Approved
+  Rejected
 }
 
 enum UserRole {
@@ -47,6 +55,7 @@ model UserProfile {
   totalXP          Int       @default(0)
   level            Int       @default(1)
   readingStreak    Int       @default(0)
+  totalReadingTime Int       @default(0)
   lastActiveAt     DateTime?
   favoriteCategory String?
   favoriteState    String?
@@ -57,6 +66,10 @@ model UserProfile {
   readingProgress  ReadingProgress[]
   userStat         UserStat?
   userBadges       UserBadge[]
+  comments         Comment[]
+  commentLikes     CommentLike[]
+  commentReports   CommentReport[]
+  submissions      SubmittedStory[]
   @@index([role])
   @@index([totalXP])
   @@index([readingStreak])
@@ -162,6 +175,7 @@ model Story {
   readingProgress ReadingProgress[]
   heroSlides      HeroSlide[]
   featuredIn      FeaturedStory[]
+  comments        Comment[]
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   @@index([slug])
@@ -237,6 +251,7 @@ model ReadingProgress {
   storyId         String      @db.Uuid
   story           Story       @relation(fields: [storyId], references: [id], onDelete: Cascade)
   progressPercent Int         @default(0)
+  scrollPosition  Int         @default(0)
   completed       Boolean     @default(false)
   lastReadAt      DateTime    @default(now())
   @@unique([userId, storyId])
@@ -245,20 +260,21 @@ model ReadingProgress {
 }
 
 model UserStat {
-  id             String      @id @default(uuid()) @db.Uuid
-  userId         String      @unique @db.Uuid
-  user           UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
-  storiesRead    Int         @default(0)
-  storiesLiked   Int         @default(0)
-  bookmarksCount Int         @default(0)
-  readingStreak  Int         @default(0)
-  longestStreak  Int         @default(0)
-  totalXP        Int         @default(0)
-  level          Int         @default(1)
-  weeklyXP       Int         @default(0)
-  monthlyXP      Int         @default(0)
-  lastActiveAt   DateTime?
-  updatedAt      DateTime    @updatedAt
+  id               String      @id @default(uuid()) @db.Uuid
+  userId           String      @unique @db.Uuid
+  user             UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storiesRead      Int         @default(0)
+  storiesLiked     Int         @default(0)
+  bookmarksCount   Int         @default(0)
+  readingStreak    Int         @default(0)
+  longestStreak    Int         @default(0)
+  totalXP          Int         @default(0)
+  level            Int         @default(1)
+  weeklyXP         Int         @default(0)
+  monthlyXP        Int         @default(0)
+  totalReadingTime Int         @default(0)
+  lastActiveAt     DateTime?
+  updatedAt        DateTime    @updatedAt
   @@index([totalXP])
   @@index([readingStreak])
 }
@@ -324,4 +340,75 @@ model Profile {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   @@map("profiles")
+}
+
+model Comment {
+  id        String      @id @default(uuid()) @db.Uuid
+  storyId   String      @db.Uuid
+  story     Story       @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  userId    String      @db.Uuid
+  user      UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String      @db.Text
+  parentId  String?     @db.Uuid
+  parent    Comment?    @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[]   @relation("CommentReplies")
+  likes     CommentLike[]
+  reports   CommentReport[]
+  status    String      @default("approved") // "pending", "approved", "rejected", "flagged"
+  edited    Boolean     @default(false)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([storyId])
+  @@index([userId])
+  @@index([parentId])
+}
+
+model CommentLike {
+  id        String      @id @default(uuid()) @db.Uuid
+  commentId String      @db.Uuid
+  comment   Comment     @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  userId    String      @db.Uuid
+  user      UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now())
+
+  @@unique([commentId, userId])
+}
+
+model CommentReport {
+  id        String      @id @default(uuid()) @db.Uuid
+  commentId String      @db.Uuid
+  comment   Comment     @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  userId    String      @db.Uuid
+  user      UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reason    String      @db.Text
+  createdAt DateTime    @default(now())
+
+  @@unique([commentId, userId])
+}
+
+model SubmittedStory {
+  id           String           @id @default(uuid()) @db.Uuid
+  userId       String           @db.Uuid
+  user         UserProfile      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title        String
+  excerpt      String           @db.Text
+  content      String           @db.Text
+  titleHi      String?
+  excerptHi    String?          @db.Text
+  contentHi    String?          @db.Text
+  categoryName String
+  stateName    String
+  cityName     String?
+  themeName    String?
+  authorName   String?
+  imageUrl     String?          @db.Text
+  imageCaption String?          @db.Text
+  status       SubmissionStatus @default(Pending)
+  adminNotes   String?          @db.Text
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([userId])
+  @@index([status])
 }

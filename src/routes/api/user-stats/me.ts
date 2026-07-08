@@ -54,6 +54,7 @@ export const Route = createFileRoute("/api/user-stats/me")({
                 level: userStat.level,
                 weeklyXP: userStat.weeklyXP,
                 monthlyXP: userStat.monthlyXP,
+                totalReadingTime: userStat.totalReadingTime,
               }
             : null;
 

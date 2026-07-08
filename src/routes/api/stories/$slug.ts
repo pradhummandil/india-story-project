@@ -52,8 +52,8 @@ export const Route = createFileRoute("/api/stories/$slug")({
         }
 
         try {
-          const dbStory = await prisma.story.findUnique({
-            where: { slug },
+          const dbStory = await prisma.story.findFirst({
+            where: { slug, status: "Published" },
             select: { id: true },
           });
 

@@ -11,7 +11,12 @@ export const Route = createFileRoute("/api/hero-slides")({
         try {
           // Try to fetch active hero slides from DB
           const heroSlides = await prisma.heroSlide.findMany({
-            where: { active: true },
+            where: {
+              active: true,
+              story: {
+                status: "Published",
+              },
+            },
             orderBy: { sortOrder: "asc" },
             include: {
               story: {

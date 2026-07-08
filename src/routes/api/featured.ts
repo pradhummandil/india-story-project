@@ -14,7 +14,13 @@ export const Route = createFileRoute("/api/featured")({
 
           // Try to fetch active featured stories for this section
           const featuredRows = await prisma.featuredStory.findMany({
-            where: { active: true, section },
+            where: {
+              active: true,
+              section,
+              story: {
+                status: "Published",
+              },
+            },
             orderBy: { sortOrder: "asc" },
             include: {
               story: {

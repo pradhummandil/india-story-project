@@ -27,6 +27,9 @@ import {
   ExternalLink,
   Save,
   X,
+  MessageSquare,
+  UploadCloud,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -88,6 +91,10 @@ function ProfilePage() {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [stats, setStats] = useState<UserStats | null>(null);
   const [bookmarks, setBookmarks] = useState<any[]>([]);
+  const [likes, setLikes] = useState<any[]>([]);
+  const [comments, setComments] = useState<any[]>([]);
+  const [progressList, setProgressList] = useState<any[]>([]);
+  const [submissions, setSubmissions] = useState<any[]>([]);
   const [statsLoading, setStatsLoading] = useState(true);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
@@ -130,6 +137,46 @@ function ProfilePage() {
       .then((r) => r.json())
       .then((d) => {
         if (d.bookmarks) setBookmarks(d.bookmarks);
+      })
+      .catch(() => {});
+
+    // Load likes
+    fetch("/api/likes", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.likes) setLikes(d.likes);
+      })
+      .catch(() => {});
+
+    // Load comments
+    fetch("/api/comments", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.comments) setComments(d.comments);
+      })
+      .catch(() => {});
+
+    // Load reading progress
+    fetch("/api/reading-progress", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.progress) setProgressList(d.progress);
+      })
+      .catch(() => {});
+
+    // Load submissions
+    fetch("/api/submissions", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.submissions) setSubmissions(d.submissions);
       })
       .catch(() => {});
   }, [user, session]);
@@ -178,6 +225,18 @@ function ProfilePage() {
   const handleSignOut = async () => {
     await signOut();
     void navigate({ to: "/" });
+  };
+
+  // Helper to format reading time
+  const formatReadingTime = (seconds: number) => {
+    if (!seconds) return "0m";
+    const mins = Math.floor(seconds / 60);
+    const hrs = Math.floor(mins / 60);
+    const remainingMins = mins % 60;
+    if (hrs > 0) {
+      return `${hrs}h ${remainingMins}m`;
+    }
+    return `${mins}m`;
   };
 
   return (
@@ -286,10 +345,11 @@ function ProfilePage() {
 
           {/* ── Stats row ── */}
           {stats && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-8">
               {[
                 { label: "Stories Read", value: stats.storiesRead, icon: BookOpen, color: "text-primary" },
                 { label: "Reading Streak", value: `${stats.readingStreak}d`, icon: Flame, color: "text-orange-500" },
+                { label: "Reading Time", value: formatReadingTime((stats as any).totalReadingTime || 0), icon: Clock, color: "text-sky-500" },
                 { label: "Total XP", value: stats.totalXP.toLocaleString(), icon: Zap, color: "text-gold" },
                 { label: "Badges Earned", value: earnedBadges.length, icon: Trophy, color: "text-purple-500" },
               ].map((stat) => (
@@ -467,74 +527,278 @@ function ProfilePage() {
               {/* ── Reading Tab ── */}
               {activeTab === "reading" && (
                 <div className="space-y-6">
-                  {/* Bookmarks grid */}
-                  <div>
-                    <h2 className="font-display text-xl font-bold mb-4 flex items-center gap-2">
-                      <BookMarked className="size-5 text-gold" />
-                      Bookmarked Stories
-                      <span className="text-sm font-sans font-normal text-muted-foreground ml-1">
-                        ({bookmarks.length})
-                      </span>
-                    </h2>
-                    {bookmarks.length === 0 ? (
-                      <div className="bg-card/40 border border-border/40 rounded-xl p-10 text-center">
-                        <BookMarked className="size-8 text-muted-foreground/50 mx-auto mb-3" />
-                        <p className="text-sm text-muted-foreground font-sans">
-                          No bookmarks yet. Tap the bookmark icon on any story.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {bookmarks.map((b: any) => (
-                          <Link
-                            key={b.id}
-                            to="/stories/$slug"
-                            params={{ slug: b.story?.slug || b.storyId }}
-                            className="group bg-card/50 border border-border/40 rounded-xl overflow-hidden hover:border-border transition-colors"
-                          >
-                            {b.story?.image && (
-                              <div className="aspect-video overflow-hidden">
-                                <img
-                                  src={b.story.image}
-                                  alt={b.story?.title}
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                />
-                              </div>
-                            )}
-                            <div className="p-4">
-                              <p className="text-xs text-gold uppercase tracking-widest font-sans mb-1">
-                                {b.story?.category}
-                              </p>
-                              <p className="text-sm font-display font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
-                                {b.story?.title || "Story"}
-                              </p>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    )}
+                  {/* Sub-tabs Selector */}
+                  <div className="flex gap-2 border-b border-border/30 pb-3 overflow-x-auto">
+                    {[
+                      { id: "continue", label: "Continue", count: progressList.filter(p => !p.completed && p.progressPercent > 0).length },
+                      { id: "bookmarks", label: "Bookmarks", count: bookmarks.length },
+                      { id: "likes", label: "Likes", count: likes.length },
+                      { id: "history", label: "History", count: progressList.length },
+                      { id: "comments", label: "Comments", count: comments.length },
+                      { id: "submissions", label: "Submissions", count: submissions.length },
+                    ].map((sub) => {
+                      const isActive = (window as any).readingSubTab === sub.id || (!(window as any).readingSubTab && sub.id === "continue");
+                      return (
+                        <button
+                          key={sub.id}
+                          type="button"
+                          onClick={() => {
+                            (window as any).readingSubTab = sub.id;
+                            setActiveTab("reading"); // trigger rerender
+                          }}
+                          className={`px-3 py-1.5 rounded-full text-xs font-sans font-medium transition-all ${
+                            isActive
+                              ? "bg-primary text-primary-foreground font-semibold"
+                              : "bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border/40"
+                          }`}
+                        >
+                          {sub.label} <span className="text-[10px] opacity-75">({sub.count})</span>
+                        </button>
+                      );
+                    })}
                   </div>
 
-                  {/* Reading stats */}
-                  {stats && (
-                    <div className="bg-card/40 border border-border/40 rounded-xl p-6">
-                      <h3 className="font-display text-lg font-bold mb-4">Reading Analytics</h3>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        {[
-                          { label: "Total Read", value: stats.storiesRead, icon: BookOpen },
-                          { label: "Current Streak", value: `${stats.readingStreak}d`, icon: Flame },
-                          { label: "Best Streak", value: `${stats.longestStreak}d`, icon: TrendingUp },
-                          { label: "Total XP", value: stats.totalXP, icon: Star },
-                        ].map((s) => (
-                          <div key={s.label} className="text-center">
-                            <s.icon className="size-5 mx-auto mb-1 text-gold" />
-                            <div className="text-xl font-bold font-display tabular-nums">{s.value}</div>
-                            <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{s.label}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  {/* Sub-tab content */}
+                  {(() => {
+                    const activeSub = (window as any).readingSubTab || "continue";
+
+                    // CONTINUE READING
+                    if (activeSub === "continue") {
+                      const list = progressList.filter(p => !p.completed && p.progressPercent > 0);
+                      return (
+                        <div className="space-y-4">
+                          <h3 className="font-display text-lg font-bold text-foreground">Continue Reading</h3>
+                          {list.length === 0 ? (
+                            <div className="bg-card/30 border border-border/40 rounded-xl p-10 text-center">
+                              <BookOpen className="size-8 text-muted-foreground/30 mx-auto mb-3" />
+                              <p className="text-sm text-muted-foreground font-sans">No stories in progress. Start reading from the homepage or Explore tab!</p>
+                            </div>
+                          ) : (
+                            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                              {list.map((p: any) => (
+                                <Link
+                                  key={p.id}
+                                  to="/stories/$slug"
+                                  params={{ slug: p.story?.slug || p.storyId }}
+                                  className="group bg-card/50 border border-border/40 rounded-xl overflow-hidden hover:border-border transition-colors flex flex-col justify-between"
+                                >
+                                  <div>
+                                    {p.story?.image && (
+                                      <div className="aspect-video overflow-hidden relative">
+                                        <img src={p.story.image} alt={p.story?.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-border/40">
+                                          <div className="h-full bg-primary" style={{ width: `${p.progressPercent}%` }} />
+                                        </div>
+                                      </div>
+                                    )}
+                                    <div className="p-4">
+                                      <p className="text-[10px] text-gold uppercase tracking-widest font-sans mb-1">{p.story?.category}</p>
+                                      <h4 className="text-sm font-display font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors">{p.story?.title}</h4>
+                                    </div>
+                                  </div>
+                                  <div className="px-4 pb-4 flex justify-between items-center text-[10px] font-sans text-muted-foreground">
+                                    <span>{p.progressPercent}% completed</span>
+                                    <span>Resume reading</span>
+                                  </div>
+                                </Link>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    // BOOKMARKS
+                    if (activeSub === "bookmarks") {
+                      return (
+                        <div className="space-y-4">
+                          <h3 className="font-display text-lg font-bold text-foreground">Bookmarks</h3>
+                          {bookmarks.length === 0 ? (
+                            <div className="bg-card/30 border border-border/40 rounded-xl p-10 text-center">
+                              <BookMarked className="size-8 text-muted-foreground/30 mx-auto mb-3" />
+                              <p className="text-sm text-muted-foreground font-sans">No bookmarks saved yet.</p>
+                            </div>
+                          ) : (
+                            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                              {bookmarks.map((b: any) => (
+                                <Link
+                                  key={b.id}
+                                  to="/stories/$slug"
+                                  params={{ slug: b.story?.slug || b.storyId }}
+                                  className="group bg-card/50 border border-border/40 rounded-xl overflow-hidden hover:border-border transition-colors"
+                                >
+                                  {b.story?.image && (
+                                    <div className="aspect-video overflow-hidden">
+                                      <img src={b.story.image} alt={b.story?.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                    </div>
+                                  )}
+                                  <div className="p-4">
+                                    <p className="text-[10px] text-gold uppercase tracking-widest font-sans mb-1">{b.story?.category}</p>
+                                    <h4 className="text-sm font-display font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors">{b.story?.title}</h4>
+                                  </div>
+                                </Link>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    // LIKES
+                    if (activeSub === "likes") {
+                      return (
+                        <div className="space-y-4">
+                          <h3 className="font-display text-lg font-bold text-foreground">Liked Stories</h3>
+                          {likes.length === 0 ? (
+                            <div className="bg-card/30 border border-border/40 rounded-xl p-10 text-center">
+                              <Heart className="size-8 text-muted-foreground/30 mx-auto mb-3" />
+                              <p className="text-sm text-muted-foreground font-sans">No liked stories yet.</p>
+                            </div>
+                          ) : (
+                            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                              {likes.map((l: any) => (
+                                <Link
+                                  key={l.id}
+                                  to="/stories/$slug"
+                                  params={{ slug: l.story?.slug || l.storyId }}
+                                  className="group bg-card/50 border border-border/40 rounded-xl overflow-hidden hover:border-border transition-colors"
+                                >
+                                  {l.story?.image && (
+                                    <div className="aspect-video overflow-hidden">
+                                      <img src={l.story.image} alt={l.story?.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                    </div>
+                                  )}
+                                  <div className="p-4">
+                                    <p className="text-[10px] text-gold uppercase tracking-widest font-sans mb-1">{l.story?.category}</p>
+                                    <h4 className="text-sm font-display font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors">{l.story?.title}</h4>
+                                  </div>
+                                </Link>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    // HISTORY
+                    if (activeSub === "history") {
+                      return (
+                        <div className="space-y-4">
+                          <h3 className="font-display text-lg font-bold text-foreground">Reading History</h3>
+                          {progressList.length === 0 ? (
+                            <div className="bg-card/30 border border-border/40 rounded-xl p-10 text-center">
+                              <Clock className="size-8 text-muted-foreground/30 mx-auto mb-3" />
+                              <p className="text-sm text-muted-foreground font-sans">No reading history yet.</p>
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              {progressList.map((p: any) => (
+                                <Link
+                                  key={p.id}
+                                  to="/stories/$slug"
+                                  params={{ slug: p.story?.slug || p.storyId }}
+                                  className="flex items-center gap-4 bg-card/30 hover:bg-card/60 border border-border/40 rounded-xl p-3 group transition-colors"
+                                >
+                                  {p.story?.image && (
+                                    <img src={p.story.image} alt={p.story?.title} className="size-14 rounded-lg object-cover flex-shrink-0" />
+                                  )}
+                                  <div className="min-w-0 flex-1">
+                                    <h4 className="text-sm font-display font-bold text-foreground truncate group-hover:text-primary transition-colors">{p.story?.title}</h4>
+                                    <div className="flex items-center gap-3 text-xs font-sans text-muted-foreground mt-1">
+                                      <span className="text-gold uppercase tracking-widest text-[9px] font-bold">{p.story?.category}</span>
+                                      <span>•</span>
+                                      <span>{p.completed ? "Completed" : `${p.progressPercent}% read`}</span>
+                                      <span>•</span>
+                                      <span>{new Date(p.lastReadAt).toLocaleDateString("en-IN")}</span>
+                                    </div>
+                                  </div>
+                                </Link>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    // COMMENTS
+                    if (activeSub === "comments") {
+                      return (
+                        <div className="space-y-4">
+                          <h3 className="font-display text-lg font-bold text-foreground">My Comments</h3>
+                          {comments.length === 0 ? (
+                            <div className="bg-card/30 border border-border/40 rounded-xl p-10 text-center">
+                              <MessageSquare className="size-8 text-muted-foreground/30 mx-auto mb-3" />
+                              <p className="text-sm text-muted-foreground font-sans">You haven't commented on any stories yet.</p>
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              {comments.map((c: any) => (
+                                <Link
+                                  key={c.id}
+                                  to="/stories/$slug"
+                                  params={{ slug: c.storySlug }}
+                                  className="block bg-card/30 hover:bg-card/60 border border-border/40 rounded-xl p-4 group transition-colors"
+                                >
+                                  <div className="flex justify-between items-start">
+                                    <span className="text-[10px] text-muted-foreground font-sans">{new Date(c.createdAt).toLocaleDateString("en-IN")}</span>
+                                    <span className="text-[10px] font-sans px-2 py-0.5 rounded bg-muted border border-border/50 uppercase tracking-widest text-muted-foreground">{c.status}</span>
+                                  </div>
+                                  <p className="text-sm font-sans text-foreground mt-2 italic">"{c.content}"</p>
+                                  <p className="text-xs font-sans text-muted-foreground mt-3">
+                                    On: <span className="font-semibold text-foreground group-hover:text-primary transition-colors">{c.storyTitle}</span>
+                                  </p>
+                                </Link>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    // SUBMISSIONS
+                    if (activeSub === "submissions") {
+                      return (
+                        <div className="space-y-4">
+                          <h3 className="font-display text-lg font-bold text-foreground">My Submissions</h3>
+                          {submissions.length === 0 ? (
+                            <div className="bg-card/30 border border-border/40 rounded-xl p-10 text-center">
+                              <UploadCloud className="size-8 text-muted-foreground/30 mx-auto mb-3" />
+                              <p className="text-sm text-muted-foreground font-sans">You haven't submitted any stories yet. Head to the Contributor Hub to write your first story!</p>
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              {submissions.map((s: any) => (
+                                <div key={s.id} className="bg-card/30 border border-border/40 rounded-xl p-4 space-y-3">
+                                  <div className="flex justify-between items-center">
+                                    <h4 className="text-sm font-display font-bold text-foreground">{s.title}</h4>
+                                    <span className={`text-[10px] font-sans px-2 py-0.5 rounded font-bold uppercase tracking-wider ${
+                                      s.status === "Approved" ? "bg-green-500/10 text-green-500 border border-green-500/20" :
+                                      s.status === "Rejected" ? "bg-destructive/10 text-destructive border border-destructive/20" :
+                                      "bg-orange-500/10 text-orange-500 border border-orange-500/20"
+                                    }`}>
+                                      {s.status}
+                                    </span>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground font-sans line-clamp-2">{s.excerpt}</p>
+                                  <div className="flex justify-between items-center text-[10px] font-sans text-muted-foreground border-t border-border/20 pt-2">
+                                    <span>Submitted on {new Date(s.createdAt).toLocaleDateString("en-IN")}</span>
+                                    <span>Category: {s.categoryName}</span>
+                                  </div>
+                                  {s.adminNotes && (
+                                    <div className="bg-muted/50 border border-border/40 p-3 rounded-lg text-xs font-sans text-muted-foreground">
+                                      <strong className="text-foreground">Moderator Feedback:</strong> {s.adminNotes}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    return null;
+                  })()}
                 </div>
               )}
 

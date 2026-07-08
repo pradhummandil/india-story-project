@@ -9,9 +9,15 @@ import {
   Users,
   FolderOpen,
   TrendingUp,
-  ArrowUpRight,
   Clock,
   MapPin,
+  MessageSquare,
+  Bookmark,
+  Zap,
+  ShieldAlert,
+  Bell,
+  ChevronRight,
+  TrendingDown,
 } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { useAuthStore } from "@/lib/auth-store";
@@ -28,12 +34,11 @@ import {
   Cell,
   LineChart,
   Line,
-  Legend,
 } from "recharts";
 
 export const Route = createFileRoute("/admin/")({
   head: () => ({
-    meta: [{ title: "Admin Dashboard — India Story Project" }],
+    meta: [{ title: "CMS Dashboard — India Story Project" }],
   }),
   component: AdminDashboard,
 });
@@ -42,234 +47,287 @@ type DashboardStats = {
   totalStories: number;
   published: number;
   draft: number;
+  hidden: number;
   archived: number;
+  pendingSubmissions: number;
+  totalUsers: number;
+  dailyReaders: number;
   totalViews: number;
-  totalAuthors: number;
-  totalCategories: number;
-  recentStories: Array<{
-    title: string;
-    status: string;
-    category: string;
-    viewCount: number;
-    createdAt: string;
-  }>;
+  totalLikes: number;
+  totalComments: number;
+  totalBookmarks: number;
+  totalReadingTime: number;
+  topStories: Array<{ title: string; viewCount: number; slug: string }>;
+  topAuthors: Array<{ name: string; viewCount: number; storiesCount: number }>;
+  trendingStates: Array<{ name: string; viewCount: number; storiesCount: number }>;
+  growthCharts: Array<{ month: string; count: number }>;
+  activities: Array<{ type: string; title: string; time: string; meta: string }>;
+  notifications: {
+    pendingSubmissions: number;
+    flaggedCommentsCount: number;
+  };
 };
 
 const CHART_COLORS = ["#8B0000", "#C8A96A", "#D97706", "#4B5563", "#1F2937"];
 
-function StatCard({
+function MetricCard({
   label,
   value,
   icon: Icon,
   delta,
-  color = "primary",
+  isNegative = false,
 }: {
   label: string;
-  value: number | string;
+  value: string | number;
   icon: any;
   delta?: string;
-  color?: string;
+  isNegative?: boolean;
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="bg-[#161616] border border-white/10 p-6 rounded-sm hover:border-white/20 transition-colors"
+      className="bg-[#161616]/90 border border-white/5 p-5 rounded hover:border-white/15 transition-all relative overflow-hidden group"
     >
-      <div className="flex items-start justify-between mb-4">
-        <div className="size-10 bg-primary/15 border border-primary/20 flex items-center justify-center rounded-sm">
-          <Icon className="size-5 text-primary" />
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-white/40">{label}</span>
+        <div className="size-8 rounded bg-primary/10 border border-primary/20 flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
+          <Icon className="size-4" />
         </div>
+      </div>
+      <div className="flex items-baseline gap-2">
+        <h4 className="font-display text-2xl font-bold text-white tracking-tight">{value}</h4>
         {delta && (
-          <span className="text-xs font-sans text-emerald-400 flex items-center gap-1">
-            <TrendingUp className="size-3" />
+          <span className={`text-[10px] font-sans font-semibold flex items-center gap-0.5 ${isNegative ? "text-red-400" : "text-emerald-400"}`}>
+            {isNegative ? <TrendingDown className="size-3" /> : <TrendingUp className="size-3" />}
             {delta}
           </span>
         )}
       </div>
-      <p className="font-display text-3xl font-bold text-white mb-1">{value.toLocaleString()}</p>
-      <p className="text-xs font-sans text-white/40 uppercase tracking-widest">{label}</p>
     </motion.div>
   );
 }
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const { user, loading, initialized } = useAuthStore();
+  const { user, session, initialized, loading } = useAuthStore();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
-  // Auth guard
   useEffect(() => {
-    if (initialized && !user) {
-      void navigate({ to: "/login" });
-    }
+    if (initialized && !user) void navigate({ to: "/login" });
   }, [user, initialized, navigate]);
 
-  // Fetch stats
   useEffect(() => {
-    if (!user) return;
-    fetch("/api/admin/analytics")
+    if (!user || !session) return;
+    setStatsLoading(true);
+    fetch("/api/admin/analytics", {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    })
       .then((r) => r.json())
       .then((data) => setStats(data as DashboardStats))
       .catch(console.error)
       .finally(() => setStatsLoading(false));
-  }, [user]);
+  }, [user, session]);
 
-  if (loading || !initialized) {
+  if (loading || !initialized || statsLoading) {
     return (
-      <AdminLayout title="Dashboard">
+      <AdminLayout>
         <div className="flex items-center justify-center h-64 text-white/30 font-sans text-xs uppercase tracking-widest animate-pulse">
-          Loading…
+          Loading metrics…
         </div>
       </AdminLayout>
     );
   }
 
-  if (!user) return null;
+  if (!user || !stats) return null;
 
-  // Chart placeholder data (replace with real data from stats)
-  const storiesPerMonth = [
-    { month: "Feb", stories: 12 },
-    { month: "Mar", stories: 18 },
-    { month: "Apr", stories: 24 },
-    { month: "May", stories: 15 },
-    { month: "Jun", stories: 32 },
-    { month: "Jul", stories: 28 },
-  ];
+  const hasNotifications =
+    stats.notifications.pendingSubmissions > 0 || stats.notifications.flaggedCommentsCount > 0;
 
-  const categoryData = [{ name: "कहानी", value: stats?.totalStories ?? 422 }];
+  // Format reading time helper
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const hrs = Math.floor(mins / 60);
+    const remainingMins = mins % 60;
+    if (hrs > 0) return `${hrs}h ${remainingMins}m`;
+    return `${mins}m`;
+  };
 
   return (
-    <AdminLayout title="Dashboard" subtitle="Overview of India Story Project">
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard label="Total Stories" value={stats?.totalStories ?? 422} icon={BookOpen} />
-        <StatCard
-          label="Published"
-          value={stats?.published ?? 422}
-          icon={CheckCircle}
-          delta="+12 this month"
-        />
-        <StatCard label="Draft" value={stats?.draft ?? 0} icon={FileText} />
-        <StatCard label="Total Views" value={stats?.totalViews ?? 0} icon={Eye} />
-        <StatCard label="Authors" value={stats?.totalAuthors ?? 1} icon={Users} />
-        <StatCard label="Categories" value={stats?.totalCategories ?? 2} icon={FolderOpen} />
-        <StatCard label="Avg Read Time" value="4 min" icon={Clock} />
-        <StatCard label="States Covered" value="28" icon={MapPin} />
-      </div>
-
-      {/* Charts row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* Stories per month */}
-        <div className="lg:col-span-2 bg-[#161616] border border-white/10 p-6 rounded-sm">
-          <h3 className="font-sans text-sm font-semibold text-white/70 uppercase tracking-widest mb-6">
-            Stories Published Per Month
-          </h3>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={storiesPerMonth}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-              <XAxis
-                dataKey="month"
-                tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip
-                contentStyle={{
-                  background: "#1a1a1a",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: 0,
-                  color: "white",
-                }}
-              />
-              <Bar dataKey="stories" fill="#8B0000" radius={[2, 2, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+    <AdminLayout>
+      <div className="space-y-6">
+        {/* Dashboard Title Banner */}
+        <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+          <div>
+            <h1 className="font-display text-2xl font-bold text-white tracking-wide">CMS Analytics Hub</h1>
+            <p className="text-xs font-sans text-white/50 uppercase tracking-widest mt-1">Real-time metrics, curation tools, and moderation status</p>
+          </div>
+          {hasNotifications && (
+            <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded px-3 py-1.5 text-xs text-white">
+              <Bell className="size-3.5 text-primary animate-bounce" />
+              <span className="font-sans font-semibold">
+                {stats.notifications.pendingSubmissions + stats.notifications.flaggedCommentsCount} review items need attention
+              </span>
+            </div>
+          )}
         </div>
 
-        {/* Category distribution */}
-        <div className="bg-[#161616] border border-white/10 p-6 rounded-sm">
-          <h3 className="font-sans text-sm font-semibold text-white/70 uppercase tracking-widest mb-6">
-            Category Distribution
-          </h3>
-          <ResponsiveContainer width="100%" height={220}>
-            <PieChart>
-              <Pie
-                data={categoryData}
-                cx="50%"
-                cy="50%"
-                innerRadius={55}
-                outerRadius={85}
-                dataKey="value"
-              >
-                {categoryData.map((_, index) => (
-                  <Cell key={index} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip
-                contentStyle={{
-                  background: "#1a1a1a",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: 0,
-                  color: "white",
-                }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
+        {/* Primary stats row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <MetricCard label="Total Stories" value={stats.totalStories} icon={BookOpen} />
+          <MetricCard label="Published" value={stats.published} icon={CheckCircle} delta="Live" />
+          <MetricCard label="Drafts" value={stats.draft} icon={FileText} />
+          <MetricCard label="Hidden" value={stats.hidden} icon={Eye} />
+          <MetricCard label="Pending Approval" value={stats.pendingSubmissions} icon={ShieldAlert} />
         </div>
-      </div>
 
-      {/* Recent stories table */}
-      <div className="bg-[#161616] border border-white/10 rounded-sm overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
-          <h3 className="font-sans text-sm font-semibold text-white/70 uppercase tracking-widest">
-            Recent Stories
-          </h3>
-          <a
-            href="/admin/stories"
-            className="text-xs text-primary hover:text-gold font-sans flex items-center gap-1 transition-colors"
-          >
-            View all <ArrowUpRight className="size-3" />
-          </a>
+        {/* User engagement metrics row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <MetricCard label="Total Users" value={stats.totalUsers} icon={Users} />
+          <MetricCard label="Daily Active" value={stats.dailyReaders} icon={TrendingUp} />
+          <MetricCard label="Total Views" value={stats.totalViews.toLocaleString()} icon={Eye} />
+          <MetricCard label="Likes" value={stats.totalLikes.toLocaleString()} icon={Zap} />
+          <MetricCard label="Comments" value={stats.totalComments.toLocaleString()} icon={MessageSquare} />
+          <MetricCard label="Reading Time" value={formatTime(stats.totalReadingTime)} icon={Clock} />
         </div>
-        {statsLoading ? (
-          <div className="p-8 text-center text-white/20 font-sans text-xs">Loading…</div>
-        ) : (
-          <div className="divide-y divide-white/5">
-            {(stats?.recentStories ?? []).slice(0, 8).map((story, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between px-6 py-3 hover:bg-white/3 transition-colors"
-              >
-                <div className="flex-1 min-w-0 mr-4">
-                  <p className="text-sm font-sans text-white/80 truncate">{story.title}</p>
-                  <p className="text-xs text-white/30 font-sans mt-0.5">{story.category}</p>
+
+        {/* Charts and Data Visualizations */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Growth graph */}
+          <div className="lg:col-span-2 bg-[#161616] border border-white/10 p-5 rounded">
+            <h3 className="font-sans text-xs font-bold text-white/50 uppercase tracking-wider mb-4">
+              Story Publishing Trend (Last 6 Months)
+            </h3>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={stats.growthCharts}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                  <XAxis dataKey="month" tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }} />
+                  <YAxis tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }} />
+                  <Tooltip contentStyle={{ background: "#111", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 4, color: "white" }} />
+                  <Line type="monotone" dataKey="count" stroke="#8B0000" strokeWidth={3} dot={{ fill: "#C8A96A" }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Trending States list */}
+          <div className="bg-[#161616] border border-white/10 p-5 rounded">
+            <h3 className="font-sans text-xs font-bold text-white/50 uppercase tracking-wider mb-4">
+              Trending States (By Views)
+            </h3>
+            <div className="space-y-4">
+              {stats.trendingStates.length === 0 ? (
+                <p className="text-xs text-white/30 font-sans italic py-4">No stories views tracked yet.</p>
+              ) : (
+                stats.trendingStates.map((state, i) => (
+                  <div key={state.name} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-primary font-bold w-4">#{i + 1}</span>
+                      <span className="text-xs text-white/80 font-sans font-semibold">{state.name}</span>
+                    </div>
+                    <span className="text-xs text-white/40 font-mono">{state.viewCount.toLocaleString()} views</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Top Stories list */}
+          <div className="bg-[#161616] border border-white/10 p-5 rounded">
+            <h3 className="font-sans text-xs font-bold text-white/50 uppercase tracking-wider mb-4">
+              Top Read Stories
+            </h3>
+            <div className="space-y-4">
+              {stats.topStories.map((story) => (
+                <div key={story.slug} className="flex items-center justify-between gap-3">
+                  <span className="text-xs font-sans text-white/80 font-semibold truncate max-w-[200px]">{story.title}</span>
+                  <span className="text-xs text-gold font-bold font-mono whitespace-nowrap">{story.viewCount.toLocaleString()} views</span>
                 </div>
-                <div className="flex items-center gap-4 flex-shrink-0">
-                  <span
-                    className={`text-[10px] font-sans font-bold uppercase tracking-widest px-2 py-0.5 ${
-                      story.status === "Published"
-                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                        : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                    }`}
-                  >
-                    {story.status}
+              ))}
+            </div>
+          </div>
+
+          {/* Top Authors */}
+          <div className="bg-[#161616] border border-white/10 p-5 rounded">
+            <h3 className="font-sans text-xs font-bold text-white/50 uppercase tracking-wider mb-4">
+              Top Authors
+            </h3>
+            <div className="space-y-4">
+              {stats.topAuthors.map((author) => (
+                <div key={author.name} className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-white/80 font-sans font-semibold">{author.name}</p>
+                    <p className="text-[10px] text-white/40">{author.storiesCount} stories written</p>
+                  </div>
+                  <span className="text-xs text-white/50 font-mono font-semibold">{author.viewCount.toLocaleString()} views</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Notification Alerts */}
+          <div className="bg-[#161616] border border-white/10 p-5 rounded flex flex-col justify-between">
+            <div>
+              <h3 className="font-sans text-xs font-bold text-white/50 uppercase tracking-wider mb-4">
+                Moderation Action Items
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 rounded bg-white/5 border border-white/5">
+                  <div>
+                    <p className="text-xs text-white/80 font-sans font-semibold">Pending Submissions</p>
+                    <p className="text-[10px] text-white/40">Contributions awaiting validation</p>
+                  </div>
+                  <span className="size-6 rounded-full bg-primary/20 flex items-center justify-center text-xs text-primary font-bold">
+                    {stats.notifications.pendingSubmissions}
                   </span>
-                  <span className="text-xs text-white/30 font-sans w-16 text-right">
-                    {story.viewCount} views
+                </div>
+                <div className="flex items-center justify-between p-3 rounded bg-white/5 border border-white/5">
+                  <div>
+                    <p className="text-xs text-white/80 font-sans font-semibold">Flagged Comments</p>
+                    <p className="text-[10px] text-white/40">Reports submitted by readers</p>
+                  </div>
+                  <span className="size-6 rounded-full bg-yellow-500/20 flex items-center justify-center text-xs text-yellow-400 font-bold">
+                    {stats.notifications.flaggedCommentsCount}
                   </span>
                 </div>
               </div>
-            ))}
+            </div>
+            <button
+              onClick={() => void navigate({ to: "/admin/community" })}
+              className="mt-4 w-full h-9 flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-sans text-white/80 rounded transition-colors gap-1.5"
+            >
+              Open Moderation Panel <ChevronRight className="size-3.5" />
+            </button>
           </div>
-        )}
+        </div>
+
+        {/* Latest activity log */}
+        <div className="bg-[#161616] border border-white/10 p-5 rounded">
+          <h3 className="font-sans text-xs font-bold text-white/50 uppercase tracking-wider mb-4">
+            Recent System Activity
+          </h3>
+          <div className="divide-y divide-white/5">
+            {stats.activities.length === 0 ? (
+              <p className="text-xs text-white/30 font-sans italic py-4">No activities logged yet.</p>
+            ) : (
+              stats.activities.map((act, i) => (
+                <div key={i} className="py-3 flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs text-white/80 font-sans leading-relaxed">{act.title}</p>
+                    <p className="text-[9px] text-white/40 mt-0.5">{new Date(act.time).toLocaleString("en-IN")}</p>
+                  </div>
+                  <span className="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-white/5 border border-white/5 text-white/50">
+                    {act.meta}
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       </div>
     </AdminLayout>
   );

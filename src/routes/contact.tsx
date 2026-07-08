@@ -112,7 +112,7 @@ function Contact() {
                 </div>
                 <div>
                   <p className="text-xs uppercase tracking-widest text-muted-foreground">Email</p>
-                  <p className="mt-1 text-foreground">hello@indiastoryproject.com</p>
+                  <p className="mt-1 text-foreground">indiastoryprojectmanager21@gmail.com</p>
                 </div>
               </div>
             </div>

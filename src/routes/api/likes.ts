@@ -1,19 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { json } from "@/routes/api/-_utils";
+import { json, authenticate } from "@/routes/api/-_utils";
 import { prisma } from "@/lib/repositories/prisma.server";
-import { supabase } from "@/lib/supabase-client";
-
-async function authenticate(request: Request) {
-  const authHeader = request.headers.get("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) return null;
-  const token = authHeader.substring(7);
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser(token);
-  if (error || !user) return null;
-  return user;
-}
 
 export const Route = createFileRoute("/api/likes")({
   server: {
@@ -23,7 +10,44 @@ export const Route = createFileRoute("/api/likes")({
         const storyId = url.searchParams.get("storyId");
 
         if (!storyId) {
-          return json({ error: "storyId is required" }, { status: 400 });
+          // Return list of stories liked by the logged-in user
+          const user = await authenticate(request);
+          if (!user) return json({ error: "Unauthorized" }, { status: 401 });
+
+          try {
+            const likes = await prisma.storyLike.findMany({
+              where: { userId: user.id },
+              include: {
+                story: {
+                  include: {
+                    images: true,
+                    category: true,
+                    state: true,
+                  },
+                },
+              },
+              orderBy: { createdAt: "desc" },
+            });
+
+            return json({
+              likes: likes.map((l) => ({
+                id: l.id,
+                storyId: l.storyId,
+                createdAt: l.createdAt.toISOString(),
+                story: {
+                  id: l.story.id,
+                  slug: l.story.slug,
+                  title: l.story.title,
+                  excerpt: l.story.excerpt,
+                  category: l.story.category?.name || "Uncategorized",
+                  image: l.story.images[0]?.imageUrl || null,
+                },
+              })),
+            });
+          } catch (error) {
+            console.error("[likes] GET user likes error:", error);
+            return json({ error: "Internal server error" }, { status: 500 });
+          }
         }
 
         try {
@@ -43,9 +67,6 @@ export const Route = createFileRoute("/api/likes")({
           return json({ liked, count });
         } catch (error: any) {
           console.error("[likes] GET error:", error);
-          if (error?.code === "P2021" || error?.message?.includes("does not exist")) {
-            return json({ error: "Profile system not yet migrated" }, { status: 503 });
-          }
           return json({ error: "Internal server error" }, { status: 500 });
         }
       },
@@ -62,6 +83,19 @@ export const Route = createFileRoute("/api/likes")({
             return json({ error: "storyId is required" }, { status: 400 });
           }
 
+          // Create UserProfile record if missing
+          let userProfile = await prisma.userProfile.findUnique({ where: { id: user.id } });
+          if (!userProfile) {
+            userProfile = await prisma.userProfile.create({
+              data: {
+                id: user.id,
+                email: user.email ?? "",
+                name: user.user_metadata?.name || user.email?.split("@")[0] || "Contributor",
+                avatarUrl: user.user_metadata?.avatar_url || null,
+              },
+            });
+          }
+
           // Toggle: delete if exists, create if not
           const existing = await prisma.storyLike.findFirst({
             where: { userId: user.id, storyId },
@@ -75,15 +109,25 @@ export const Route = createFileRoute("/api/likes")({
             });
           }
 
+          // Update user stat
+          const likesCount = await prisma.storyLike.count({ where: { userId: user.id } });
+          await prisma.userStat.upsert({
+            where: { userId: user.id },
+            create: {
+              userId: user.id,
+              storiesLiked: likesCount,
+            },
+            update: {
+              storiesLiked: likesCount,
+            },
+          });
+
           const count = await prisma.storyLike.count({ where: { storyId } });
           const liked = !existing;
 
           return json({ liked, count });
         } catch (error: any) {
           console.error("[likes] POST error:", error);
-          if (error?.code === "P2021" || error?.message?.includes("does not exist")) {
-            return json({ error: "Profile system not yet migrated" }, { status: 503 });
-          }
           return json({ error: "Internal server error" }, { status: 500 });
         }
       },

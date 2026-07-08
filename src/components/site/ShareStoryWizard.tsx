@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useContributor, regionDots } from "@/lib/contributor-store";
 import { categories } from "@/lib/stories-data";
+import { useAuthStore } from "@/lib/auth-store";
 
 const steps = [
   { id: 0, label: "Category", icon: Sparkles },
@@ -44,9 +45,36 @@ export function ShareStoryWizard() {
   const next = () => setStep((s) => Math.min(steps.length - 1, s + 1));
   const back = () => setStep((s) => Math.max(0, s - 1));
 
-  const handleSubmit = () => {
-    submit({ category, region, title, body, media });
-    setDone(true);
+  const { session } = useAuthStore();
+
+  const handleSubmit = async () => {
+    if (!session) return;
+    try {
+      const res = await fetch("/api/submissions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          title,
+          excerpt: body.length > 150 ? body.slice(0, 150) + "..." : body,
+          content: body,
+          categoryName: category,
+          stateName: region,
+          imageUrl: media > 0 ? "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800" : null,
+        }),
+      });
+      if (res.ok) {
+        setDone(true);
+      } else {
+        const errorData = await res.json();
+        alert(`Failed to submit: ${errorData.error || "Unknown error"}`);
+      }
+    } catch (e) {
+      console.error("Story submission failed:", e);
+      alert("An error occurred during story submission.");
+    }
   };
 
   const handleReset = () => {

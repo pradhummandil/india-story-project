@@ -45,6 +45,26 @@ export async function verifyAdmin(request: Request) {
   return verifyUserRole(request, ["admin"]);
 }
 
+export async function authenticate(request: Request) {
+  const authHeader = request.headers.get("Authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return null;
+  }
+  const token = authHeader.substring(7);
+  try {
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser(token);
+    if (error || !user) {
+      return null;
+    }
+    return user;
+  } catch {
+    return null;
+  }
+}
+
 export function readOptionalString(value: string | null) {
   const normalized = value?.trim();
   return normalized ? normalized : undefined;

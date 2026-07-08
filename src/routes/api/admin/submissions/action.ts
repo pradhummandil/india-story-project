@@ -1,0 +1,184 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { json, verifyAdmin } from "@/routes/api/-_utils";
+import { prisma } from "@/lib/repositories/prisma.server";
+
+function slugify(text: string) {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export const Route = createFileRoute("/api/admin/submissions/action")({
+  server: {
+    handlers: {
+      POST: async ({ request }) => {
+        const admin = await verifyAdmin(request);
+        if (!admin) return json({ error: "Forbidden" }, { status: 403 });
+
+        try {
+          const body = await request.json();
+          const { submissionId, action, adminNotes } = body;
+
+          if (!submissionId || !action) {
+            return json({ error: "submissionId and action are required" }, { status: 400 });
+          }
+
+          if (action !== "Approve" && action !== "Reject") {
+            return json({ error: "Action must be Approve or Reject" }, { status: 400 });
+          }
+
+          const submission = await prisma.submittedStory.findUnique({
+            where: { id: submissionId },
+            include: {
+              user: true,
+            },
+          });
+
+          if (!submission) {
+            return json({ error: "Submission not found" }, { status: 404 });
+          }
+
+          // Update status in db
+          const updatedSubmission = await prisma.submittedStory.update({
+            where: { id: submissionId },
+            data: {
+              status: action === "Approve" ? "Approved" : "Rejected",
+              adminNotes: adminNotes || null,
+            },
+          });
+
+          // If approved, create the published Story record
+          if (action === "Approve") {
+            // 1. Find or create Category
+            const catName = submission.categoryName || "Heritage";
+            let category = await prisma.category.findFirst({
+              where: { name: { equals: catName, mode: "insensitive" } },
+            });
+            if (!category) {
+              category = await prisma.category.create({
+                data: {
+                  name: catName,
+                  slug: slugify(catName),
+                },
+              });
+            }
+
+            // 2. Find or create State
+            const stName = submission.stateName || "Delhi";
+            let state = await prisma.state.findFirst({
+              where: { name: { equals: stName, mode: "insensitive" } },
+            });
+            if (!state) {
+              state = await prisma.state.create({
+                data: {
+                  name: stName,
+                  slug: slugify(stName),
+                },
+              });
+            }
+
+            // 3. Find or create Theme
+            const thName = submission.themeName || "General";
+            let theme = await prisma.theme.findFirst({
+              where: { name: { equals: thName, mode: "insensitive" } },
+            });
+            if (!theme) {
+              theme = await prisma.theme.create({
+                data: {
+                  name: thName,
+                  slug: slugify(thName),
+                },
+              });
+            }
+
+            // 4. Find or create Author
+            const autName = submission.authorName || submission.user?.name || "Contributor";
+            let author = await prisma.author.findFirst({
+              where: { name: { equals: autName, mode: "insensitive" } },
+            });
+            if (!author) {
+              author = await prisma.author.create({
+                data: {
+                  name: autName,
+                  bio: "ISP Guest Contributor.",
+                },
+              });
+            }
+
+            // 5. Generate unique slug
+            let baseSlug = slugify(submission.title);
+            let finalSlug = baseSlug;
+            let count = 1;
+            while (await prisma.story.findUnique({ where: { slug: finalSlug } })) {
+              finalSlug = `${baseSlug}-${count}`;
+              count++;
+            }
+
+            // 6. Create Story
+            const story = await prisma.story.create({
+              data: {
+                title: submission.title,
+                excerpt: submission.excerpt,
+                content: submission.content,
+                titleHi: submission.titleHi,
+                excerptHi: submission.excerptHi,
+                contentHi: submission.contentHi,
+                slug: finalSlug,
+                status: "Published",
+                categoryId: category.id,
+                stateId: state.id,
+                themeId: theme.id,
+                authorId: author.id,
+                readingTime: Math.max(1, Math.ceil(submission.content.split(/\s+/).length / 200)),
+                publishedAt: new Date(),
+              },
+            });
+
+            // 7. Create StoryImage if url exists
+            if (submission.imageUrl) {
+              await prisma.storyImage.create({
+                data: {
+                  storyId: story.id,
+                  imageUrl: submission.imageUrl,
+                  caption: submission.imageCaption || null,
+                  sortOrder: 0,
+                  heroImage: true,
+                },
+              });
+            }
+
+            // Award +50 XP for approval to the submitting contributor!
+            try {
+              await prisma.userStat.upsert({
+                where: { userId: submission.userId },
+                create: {
+                  userId: submission.userId,
+                  totalXP: 50,
+                  storiesRead: 0,
+                },
+                update: {
+                  totalXP: { increment: 50 },
+                },
+              });
+              await prisma.userProfile.update({
+                where: { id: submission.userId },
+                data: {
+                  totalXP: { increment: 50 },
+                },
+              });
+            } catch (statsErr) {
+              console.error("[action] stats update error:", statsErr);
+            }
+          }
+
+          return json({ success: true, submission: updatedSubmission });
+        } catch (e: any) {
+          console.error("[admin/submissions/action] POST error:", e);
+          return json({ error: "Internal server error" }, { status: 500 });
+        }
+      },
+    },
+  },
+});
