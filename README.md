@@ -256,25 +256,51 @@ npm run build
 
 ---
 
-# 👨‍💻 Developers
+---
 
-## Pradhum Mandil
+# 👨‍💻 Meet the Developers
+
+<table align="center">
+<tr>
+
+<td align="center" width="50%">
+
+<img src="assets/pradhum-mandil.jpg" width="220" style="border-radius:50%;" />
+
+### **Pradhum Mandil**
 
 Full Stack Developer
 
-LinkedIn
+📍 India
+
+💼 Passionate about building scalable web applications, AI-powered platforms, and immersive digital experiences.
+
+🔗 **LinkedIn**
 
 https://www.linkedin.com/in/pradhum-m-b69b66318/
 
----
+</td>
 
-## Mayank Sahu
+<td align="center" width="50%">
+
+<img src="assets/mayank-sahu.png" width="220" style="border-radius:50%;" />
+
+### **Mayank Sahu**
 
 Full Stack Developer
 
-LinkedIn
+📍 India
+
+💼 Passionate about backend engineering, databases, cloud technologies, and modern web development.
+
+🔗 **LinkedIn**
 
 https://www.linkedin.com/in/mayank-sahu-77653324a/
+
+</td>
+
+</tr>
+</table>
 
 ---
 
