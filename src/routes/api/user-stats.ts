@@ -20,7 +20,6 @@ export const Route = createFileRoute("/api/user-stats")({
     handlers: {
       GET: async ({ request }) => {
         const url = new URL(request.url);
-        // Route sub-paths: /api/user-stats/me vs /api/user-stats
         const pathParts = url.pathname.split("/").filter(Boolean);
         const isMe = pathParts[pathParts.length - 1] === "me";
 
@@ -34,63 +33,69 @@ export const Route = createFileRoute("/api/user-stats")({
               where: { userId: user.id },
             });
 
-            // Count badges — field may not exist; guard with try/catch
             let badgeCount = 0;
             try {
-              badgeCount = await (prisma as any).userBadge.count({
+              badgeCount = await prisma.userBadge.count({
                 where: { userId: user.id },
               });
             } catch {
               badgeCount = 0;
             }
 
-            const userProfile = await prisma.userProfile.findUnique({
-              where: { id: user.id },
-              select: { name: true, avatarUrl: true, level: true, totalXP: true },
-            }).catch(() => null);
+            const userProfile = await prisma.userProfile
+              .findUnique({
+                where: { id: user.id },
+                select: { name: true, avatarUrl: true, level: true, totalXP: true, role: true },
+              })
+              .catch(() => null);
+
+            // Fetch profile role fallback
+            const profile = await prisma.profile
+              .findUnique({
+                where: { id: user.id },
+                select: { role: true },
+              })
+              .catch(() => null);
+
+            const userRole = profile?.role || userProfile?.role || "reader";
 
             return json({
               userStat: userStat ?? null,
               badgeCount,
-              userProfile,
+              userProfile: userProfile ? { ...userProfile, role: userRole } : null,
+              role: userRole,
             });
           } catch (error: any) {
             console.error("[user-stats/me] GET error:", error);
-            if (error?.code === "P2021" || error?.message?.includes("does not exist")) {
-              return json({ leaderboard: [] });
-            }
             return json({ error: "Internal server error" }, { status: 500 });
           }
         }
 
-        // Public leaderboard
+        // Public leaderboard (optimized single query)
         try {
           const stats = await prisma.userStat.findMany({
             orderBy: { totalXP: "desc" },
             take: 20,
+            include: {
+              user: {
+                select: {
+                  name: true,
+                  avatarUrl: true,
+                },
+              },
+            },
           });
 
-          const leaderboard = await Promise.all(
-            stats.map(async (stat, index) => {
-              const profile = await prisma.userProfile
-                .findUnique({
-                  where: { id: stat.userId },
-                  select: { name: true, avatarUrl: true },
-                })
-                .catch(() => null);
-
-              return {
-                rank: index + 1,
-                userId: stat.userId,
-                name: profile?.name ?? "Anonymous",
-                avatarUrl: profile?.avatarUrl ?? null,
-                totalXP: stat.totalXP,
-                level: stat.level,
-                readingStreak: stat.readingStreak,
-                storiesRead: stat.storiesRead,
-              };
-            })
-          );
+          const leaderboard = stats.map((stat, index) => ({
+            rank: index + 1,
+            userId: stat.userId,
+            name: stat.user?.name ?? "Anonymous Reader",
+            avatarUrl: stat.user?.avatarUrl ?? null,
+            totalXP: stat.totalXP,
+            level: stat.level,
+            readingStreak: stat.readingStreak,
+            storiesRead: stat.storiesRead,
+          }));
 
           return json({ leaderboard });
         } catch (error: any) {

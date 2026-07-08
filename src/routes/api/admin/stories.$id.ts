@@ -68,6 +68,69 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
           return json({ error: "Invalid JSON" }, { status: 400 });
         }
 
+        const featured = body.featured ?? false;
+        const heroOfTheDay = body.heroOfTheDay ?? false;
+
+        // Mutual exclusivity enforcement
+        if (featured) {
+          await prisma.story.updateMany({
+            where: { id: { not: params.id } },
+            data: { featured: false },
+          });
+        }
+        if (heroOfTheDay) {
+          await prisma.story.updateMany({
+            where: { id: { not: params.id } },
+            data: { heroOfTheDay: false },
+          });
+        }
+
+        // Cover image updates
+        if (body.coverImage) {
+          const existing = await prisma.storyImage.findFirst({
+            where: { storyId: params.id, heroImage: true },
+          });
+          if (existing) {
+            await prisma.storyImage.update({
+              where: { id: existing.id },
+              data: { imageUrl: body.coverImage },
+            });
+          } else {
+            await prisma.storyImage.create({
+              data: {
+                storyId: params.id,
+                imageUrl: body.coverImage,
+                heroImage: true,
+                sortOrder: 0,
+              },
+            });
+          }
+        } else if (body.coverImage === null) {
+          await prisma.storyImage.deleteMany({
+            where: { storyId: params.id, heroImage: true },
+          });
+        }
+
+        // Additional images updates
+        if (Array.isArray(body.additionalImages)) {
+          // Delete old non-hero images
+          await prisma.storyImage.deleteMany({
+            where: { storyId: params.id, heroImage: false },
+          });
+
+          // Create new ones
+          if (body.additionalImages.length > 0) {
+            await prisma.storyImage.createMany({
+              data: body.additionalImages.map((url: string, index: number) => ({
+                storyId: params.id,
+                imageUrl: url,
+                heroImage: false,
+                sortOrder: index + 1,
+              })),
+            });
+          }
+        }
+
         const story = await prisma.story.update({
           where: { id: params.id },
           data: {
@@ -81,8 +144,8 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
             seoTitle: body.seoTitle ?? null,
             seoDescription: body.seoDescription ?? null,
             readingTime: body.readingTime ? parseInt(body.readingTime, 10) : null,
-            featured: body.featured ?? false,
-            heroOfTheDay: body.heroOfTheDay ?? false,
+            featured,
+            heroOfTheDay,
             status: body.status as StoryStatus,
             publishedAt:
               body.status === "Published" && !body.publishedAt
@@ -110,14 +173,40 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
           return json({ error: "Invalid JSON" }, { status: 400 });
         }
 
+        const featured = body.featured;
+        const heroOfTheDay = body.heroOfTheDay;
+
+        // Mutual exclusivity enforcement on patch updates
+        if (featured === true) {
+          await prisma.story.updateMany({
+            where: { id: { not: params.id } },
+            data: { featured: false },
+          });
+        }
+        if (heroOfTheDay === true) {
+          await prisma.story.updateMany({
+            where: { id: { not: params.id } },
+            data: { heroOfTheDay: false },
+          });
+        }
+
         const allowed = ["featured", "heroOfTheDay", "status", "viewCount"];
         const data: Record<string, unknown> = {};
         for (const key of allowed) {
           if (key in body) data[key] = body[key];
         }
 
-        const story = await prisma.story.update({ where: { id: params.id }, data });
-        return json({ id: story.id, ...data });
+        // Adjust publishedAt if status is updated to Published
+        if (body.status === "Published") {
+          data.publishedAt = new Date();
+        }
+
+        const story = await prisma.story.update({
+          where: { id: params.id },
+          data,
+          include: storyIncludes,
+        });
+        return json({ story: toAdminRow(story) });
       },
 
       DELETE: async ({ params }) => {

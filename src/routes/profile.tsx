@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   User,
@@ -115,7 +115,7 @@ function ProfilePage() {
     }
   }, [user, loading, navigate]);
 
-  useEffect(() => {
+  const refetchData = useCallback(() => {
     if (!user || !session) return;
     const token = session.access_token;
 
@@ -125,7 +125,12 @@ function ProfilePage() {
     })
       .then((r) => r.json())
       .then((d) => {
-        if (d.stats) setStats(d.stats);
+        if (d.userStat) {
+          setStats({
+            ...d.userStat,
+            role: d.role,
+          });
+        }
         setStatsLoading(false);
       })
       .catch(() => setStatsLoading(false));
@@ -180,6 +185,31 @@ function ProfilePage() {
       })
       .catch(() => {});
   }, [user, session]);
+
+  // Sync on tab change
+  useEffect(() => {
+    if (user && session) {
+      refetchData();
+    }
+  }, [activeTab, user, session, refetchData]);
+
+  // Sync on focus & Cross-tab BroadcastChannel updates
+  useEffect(() => {
+    const handleFocus = () => {
+      refetchData();
+    };
+    window.addEventListener("focus", handleFocus);
+
+    const channel = new BroadcastChannel("isp-profile-updates");
+    channel.onmessage = () => {
+      refetchData();
+    };
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      channel.close();
+    };
+  }, [refetchData]);
 
   if (loading || !user) {
     return (
@@ -322,13 +352,16 @@ function ProfilePage() {
             {/* Actions */}
             <div className="flex items-center gap-2">
               {(user.app_metadata?.role === "Admin" ||
-                user.app_metadata?.role === "SuperAdmin") && (
+                user.app_metadata?.role === "SuperAdmin" ||
+                (stats as any)?.role === "admin" ||
+                (stats as any)?.role === "superadmin" ||
+                (stats as any)?.role === "editor") && (
                 <Link
                   to="/admin"
-                  className="flex items-center gap-1.5 border border-primary/30 bg-primary/8 px-3 py-2 text-xs font-sans font-semibold text-primary hover:bg-primary/15 transition-colors rounded-full"
+                  className="flex items-center gap-1.5 border border-primary/30 bg-primary/8 px-3 py-2 text-xs font-sans font-semibold text-primary hover:bg-primary/15 transition-colors rounded-full animate-pulse"
                 >
                   <Shield className="size-3.5" />
-                  Admin
+                  Admin Dashboard
                 </Link>
               )}
               <Button

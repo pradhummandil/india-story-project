@@ -59,7 +59,7 @@ export function Navbar() {
     >
       <div className="container mx-auto px-6 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3 group">
-          <div className="relative size-9 rounded-full border border-[#C8A96A]/40 overflow-hidden bg-white p-0.5 shadow-sm shadow-[#C8A96A]/10 transition-all duration-300 group-hover:scale-105 group-hover:border-[#C8A96A]/60 flex items-center justify-center">
+          <div className="relative size-9 rounded-full border border-[#C8A96A]/40 overflow-hidden p-0.5 shadow-sm shadow-[#C8A96A]/10 transition-all duration-300 group-hover:scale-105 group-hover:border-[#C8A96A]/60 flex items-center justify-center">
             <img
               src="https://indiastoryproject.com/wp-content/uploads/2022/04/Logo-ISP.png"
               alt="India Story Project logo"

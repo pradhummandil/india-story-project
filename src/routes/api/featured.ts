@@ -4,6 +4,25 @@ import { prisma } from "@/lib/repositories/prisma.server";
 
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800&auto=format&fit=crop";
 
+const storyCardSelect = {
+  id: true,
+  slug: true,
+  title: true,
+  excerpt: true,
+  titleHi: true,
+  excerptHi: true,
+  readingTime: true,
+  viewCount: true,
+  category: { select: { name: true } },
+  state: { select: { name: true } },
+  author: { select: { name: true } },
+  images: {
+    where: { heroImage: true },
+    take: 1,
+    select: { imageUrl: true },
+  },
+};
+
 export const Route = createFileRoute("/api/featured")({
   server: {
     handlers: {
@@ -12,7 +31,7 @@ export const Route = createFileRoute("/api/featured")({
           const url = new URL(request.url);
           const section = url.searchParams.get("section") ?? "homepage_grid";
 
-          // Try to fetch active featured stories for this section
+          // Try to fetch active featured stories for this section (with selective columns)
           const featuredRows = await prisma.featuredStory.findMany({
             where: {
               active: true,
@@ -22,14 +41,10 @@ export const Route = createFileRoute("/api/featured")({
               },
             },
             orderBy: { sortOrder: "asc" },
-            include: {
+            select: {
+              id: true,
               story: {
-                include: {
-                  author: true,
-                  category: true,
-                  state: true,
-                  images: true,
-                },
+                select: storyCardSelect,
               },
             },
           });
@@ -37,19 +52,17 @@ export const Route = createFileRoute("/api/featured")({
           if (featuredRows.length > 0) {
             const stories = featuredRows.map((fs) => {
               const s = fs.story;
-              const image =
-                (s.images as any[])?.find((img) => img.heroImage)?.imageUrl ??
-                FALLBACK_IMAGE;
+              const image = s.images[0]?.imageUrl ?? FALLBACK_IMAGE;
               return {
                 id: s.id,
                 slug: s.slug,
                 title: s.title,
                 excerpt: s.excerpt,
-                titleHi: (s as any).titleHi ?? null,
-                excerptHi: (s as any).excerptHi ?? null,
-                category: (s as any).category?.name ?? null,
-                state: (s as any).state?.name ?? null,
-                author: (s as any).author?.name ?? null,
+                titleHi: s.titleHi ?? null,
+                excerptHi: s.excerptHi ?? null,
+                category: s.category?.name ?? null,
+                state: s.state?.name ?? null,
+                author: s.author?.name ?? null,
                 readingTime: s.readingTime,
                 viewCount: s.viewCount,
                 image,
@@ -58,33 +71,26 @@ export const Route = createFileRoute("/api/featured")({
             return json({ stories });
           }
 
-          // Fallback: stories with featured=true, status=Published
+          // Fallback: stories with featured=true, status=Published (using projection select)
           const fallbackStories = await prisma.story.findMany({
             where: { featured: true, status: "Published" },
             orderBy: { viewCount: "desc" },
             take: 12,
-            include: {
-              author: true,
-              category: true,
-              state: true,
-              images: true,
-            },
+            select: storyCardSelect,
           });
 
           const stories = fallbackStories.map((s) => {
-            const image =
-              (s.images as any[])?.find((img) => img.heroImage)?.imageUrl ??
-              FALLBACK_IMAGE;
+            const image = s.images[0]?.imageUrl ?? FALLBACK_IMAGE;
             return {
               id: s.id,
               slug: s.slug,
               title: s.title,
               excerpt: s.excerpt,
-              titleHi: (s as any).titleHi ?? null,
-              excerptHi: (s as any).excerptHi ?? null,
-              category: (s as any).category?.name ?? null,
-              state: (s as any).state?.name ?? null,
-              author: (s as any).author?.name ?? null,
+              titleHi: s.titleHi ?? null,
+              excerptHi: s.excerptHi ?? null,
+              category: s.category?.name ?? null,
+              state: s.state?.name ?? null,
+              author: s.author?.name ?? null,
               readingTime: s.readingTime,
               viewCount: s.viewCount,
               image,

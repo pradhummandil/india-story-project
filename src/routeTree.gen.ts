@@ -80,6 +80,8 @@ import { Route as AdminStoriesNewRouteImport } from './routes/admin/stories/new'
 import { Route as ApiAdminUsersIdRouteImport } from './routes/api/admin/users.$id'
 import { Route as ApiAdminSubmissionsActionRouteImport } from './routes/api/admin/submissions/action'
 import { Route as ApiAdminStoriesVisibilityRouteImport } from './routes/api/admin/stories/visibility'
+import { Route as ApiAdminStoriesDuplicateRouteImport } from './routes/api/admin/stories/duplicate'
+import { Route as ApiAdminStoriesBulkRouteImport } from './routes/api/admin/stories/bulk'
 import { Route as ApiAdminStoriesIdRouteImport } from './routes/api/admin/stories.$id'
 import { Route as ApiAdminStatesIdRouteImport } from './routes/api/admin/states.$id'
 import { Route as ApiAdminCategoriesIdRouteImport } from './routes/api/admin/categories.$id'
@@ -443,6 +445,17 @@ const ApiAdminStoriesVisibilityRoute =
     path: '/visibility',
     getParentRoute: () => ApiAdminStoriesRoute,
   } as any)
+const ApiAdminStoriesDuplicateRoute =
+  ApiAdminStoriesDuplicateRouteImport.update({
+    id: '/duplicate',
+    path: '/duplicate',
+    getParentRoute: () => ApiAdminStoriesRoute,
+  } as any)
+const ApiAdminStoriesBulkRoute = ApiAdminStoriesBulkRouteImport.update({
+  id: '/bulk',
+  path: '/bulk',
+  getParentRoute: () => ApiAdminStoriesRoute,
+} as any)
 const ApiAdminStoriesIdRoute = ApiAdminStoriesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -543,6 +556,8 @@ export interface FileRoutesByFullPath {
   '/api/admin/categories/$id': typeof ApiAdminCategoriesIdRoute
   '/api/admin/states/$id': typeof ApiAdminStatesIdRoute
   '/api/admin/stories/$id': typeof ApiAdminStoriesIdRoute
+  '/api/admin/stories/bulk': typeof ApiAdminStoriesBulkRoute
+  '/api/admin/stories/duplicate': typeof ApiAdminStoriesDuplicateRoute
   '/api/admin/stories/visibility': typeof ApiAdminStoriesVisibilityRoute
   '/api/admin/submissions/action': typeof ApiAdminSubmissionsActionRoute
   '/api/admin/users/$id': typeof ApiAdminUsersIdRoute
@@ -619,6 +634,8 @@ export interface FileRoutesByTo {
   '/api/admin/categories/$id': typeof ApiAdminCategoriesIdRoute
   '/api/admin/states/$id': typeof ApiAdminStatesIdRoute
   '/api/admin/stories/$id': typeof ApiAdminStoriesIdRoute
+  '/api/admin/stories/bulk': typeof ApiAdminStoriesBulkRoute
+  '/api/admin/stories/duplicate': typeof ApiAdminStoriesDuplicateRoute
   '/api/admin/stories/visibility': typeof ApiAdminStoriesVisibilityRoute
   '/api/admin/submissions/action': typeof ApiAdminSubmissionsActionRoute
   '/api/admin/users/$id': typeof ApiAdminUsersIdRoute
@@ -698,6 +715,8 @@ export interface FileRoutesById {
   '/api/admin/categories/$id': typeof ApiAdminCategoriesIdRoute
   '/api/admin/states/$id': typeof ApiAdminStatesIdRoute
   '/api/admin/stories/$id': typeof ApiAdminStoriesIdRoute
+  '/api/admin/stories/bulk': typeof ApiAdminStoriesBulkRoute
+  '/api/admin/stories/duplicate': typeof ApiAdminStoriesDuplicateRoute
   '/api/admin/stories/visibility': typeof ApiAdminStoriesVisibilityRoute
   '/api/admin/submissions/action': typeof ApiAdminSubmissionsActionRoute
   '/api/admin/users/$id': typeof ApiAdminUsersIdRoute
@@ -778,6 +797,8 @@ export interface FileRouteTypes {
     | '/api/admin/categories/$id'
     | '/api/admin/states/$id'
     | '/api/admin/stories/$id'
+    | '/api/admin/stories/bulk'
+    | '/api/admin/stories/duplicate'
     | '/api/admin/stories/visibility'
     | '/api/admin/submissions/action'
     | '/api/admin/users/$id'
@@ -854,6 +875,8 @@ export interface FileRouteTypes {
     | '/api/admin/categories/$id'
     | '/api/admin/states/$id'
     | '/api/admin/stories/$id'
+    | '/api/admin/stories/bulk'
+    | '/api/admin/stories/duplicate'
     | '/api/admin/stories/visibility'
     | '/api/admin/submissions/action'
     | '/api/admin/users/$id'
@@ -932,6 +955,8 @@ export interface FileRouteTypes {
     | '/api/admin/categories/$id'
     | '/api/admin/states/$id'
     | '/api/admin/stories/$id'
+    | '/api/admin/stories/bulk'
+    | '/api/admin/stories/duplicate'
     | '/api/admin/stories/visibility'
     | '/api/admin/submissions/action'
     | '/api/admin/users/$id'
@@ -1482,6 +1507,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminStoriesVisibilityRouteImport
       parentRoute: typeof ApiAdminStoriesRoute
     }
+    '/api/admin/stories/duplicate': {
+      id: '/api/admin/stories/duplicate'
+      path: '/duplicate'
+      fullPath: '/api/admin/stories/duplicate'
+      preLoaderRoute: typeof ApiAdminStoriesDuplicateRouteImport
+      parentRoute: typeof ApiAdminStoriesRoute
+    }
+    '/api/admin/stories/bulk': {
+      id: '/api/admin/stories/bulk'
+      path: '/bulk'
+      fullPath: '/api/admin/stories/bulk'
+      preLoaderRoute: typeof ApiAdminStoriesBulkRouteImport
+      parentRoute: typeof ApiAdminStoriesRoute
+    }
     '/api/admin/stories/$id': {
       id: '/api/admin/stories/$id'
       path: '/$id'
@@ -1656,11 +1695,15 @@ const ApiAdminStatesRouteWithChildren = ApiAdminStatesRoute._addFileChildren(
 
 interface ApiAdminStoriesRouteChildren {
   ApiAdminStoriesIdRoute: typeof ApiAdminStoriesIdRoute
+  ApiAdminStoriesBulkRoute: typeof ApiAdminStoriesBulkRoute
+  ApiAdminStoriesDuplicateRoute: typeof ApiAdminStoriesDuplicateRoute
   ApiAdminStoriesVisibilityRoute: typeof ApiAdminStoriesVisibilityRoute
 }
 
 const ApiAdminStoriesRouteChildren: ApiAdminStoriesRouteChildren = {
   ApiAdminStoriesIdRoute: ApiAdminStoriesIdRoute,
+  ApiAdminStoriesBulkRoute: ApiAdminStoriesBulkRoute,
+  ApiAdminStoriesDuplicateRoute: ApiAdminStoriesDuplicateRoute,
   ApiAdminStoriesVisibilityRoute: ApiAdminStoriesVisibilityRoute,
 }
 

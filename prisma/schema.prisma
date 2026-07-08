@@ -184,6 +184,10 @@ model Story {
   @@index([featured])
   @@index([heroOfTheDay])
   @@index([viewCount])
+  @@index([categoryId])
+  @@index([stateId])
+  @@index([authorId])
+  @@index([themeId])
 }
 
 model StoryTag {

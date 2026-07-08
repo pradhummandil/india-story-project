@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { ArrowLeft, Save, Send, Trash2 } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import { ArrowLeft, Save, Send, Trash2, UploadCloud, X, Image as ImageIcon } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { useAuthStore } from "@/lib/auth-store";
 import { Button } from "@/components/ui/button";
@@ -37,7 +37,7 @@ type DropdownOption = { id: string; name: string; slug: string };
 export default function EditStoryPage() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
-  const { user, initialized } = useAuthStore();
+  const { user, session, initialized } = useAuthStore();
   const [story, setStory] = useState<StoryFull | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -46,6 +46,16 @@ export default function EditStoryPage() {
   const [states, setStates] = useState<DropdownOption[]>([]);
   const [authors, setAuthors] = useState<DropdownOption[]>([]);
   const [themes, setThemes] = useState<DropdownOption[]>([]);
+
+  // Cover image management states
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Gallery images states
+  const [additionalImages, setAdditionalImages] = useState<string[]>([]);
+  const [galleryUploading, setGalleryUploading] = useState(false);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (initialized && !user) void navigate({ to: "/login" });
@@ -61,26 +71,122 @@ export default function EditStoryPage() {
       fetch("/api/themes").then((r) => r.json()),
     ])
       .then(([s, cats, sts, auths, thms]) => {
-        setStory(s as StoryFull);
+        const fullStory = s as StoryFull;
+        setStory(fullStory);
         setCategories(cats.categories ?? []);
         setStates(sts.states ?? []);
         setAuthors(auths.authors ?? []);
         setThemes(thms.themes ?? []);
+
+        // Initial cover image & gallery images
+        if (fullStory.images && fullStory.images.length > 0) {
+          const cover = fullStory.images.find(img => img.heroImage);
+          const others = fullStory.images.filter(img => !img.heroImage);
+          if (cover) {
+            setCoverImageUrl(cover.imageUrl);
+          } else {
+            setCoverImageUrl(fullStory.images[0].imageUrl);
+          }
+          setAdditionalImages(others.map(img => img.imageUrl));
+        }
       })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [user, id]);
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !session) return;
+
+    setUploading(true);
+    setError(null);
+
+    const formData = new FormData();
+    formData.append("files", file);
+
+    try {
+      const res = await fetch("/api/admin/media", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: formData,
+      });
+
+      if (!res.ok) {
+        throw new Error("Upload failed");
+      }
+
+      const data = await res.json();
+      if (data.files && data.files.length > 0) {
+        setCoverImageUrl(data.files[0].url);
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to upload image.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0 || !session) return;
+
+    setGalleryUploading(true);
+    setError(null);
+
+    const formData = new FormData();
+    for (let i = 0; i < files.length; i++) {
+      formData.append("files", files[i]);
+    }
+
+    try {
+      const res = await fetch("/api/admin/media", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: formData,
+      });
+
+      if (!res.ok) {
+        throw new Error("Upload failed");
+      }
+
+      const data = await res.json();
+      if (data.files && data.files.length > 0) {
+        const uploadedUrls = data.files.map((f: any) => f.url);
+        setAdditionalImages((prev) => [...prev, ...uploadedUrls]);
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to upload image.");
+    } finally {
+      setGalleryUploading(false);
+    }
+  };
+
   const handleSave = async (publish?: boolean) => {
     if (!story) return;
     setSaving(true);
     setError(null);
-    const body = { ...story, status: publish ? "Published" : story.status };
+
+    // Send coverImage in body payload to upsert/delete on server side
+    const body = {
+      ...story,
+      status: publish ? "Published" : story.status,
+      coverImage: coverImageUrl, // Will be string URL or null (if deleted)
+      additionalImages,
+    };
+
     const res = await fetch(`/api/admin/stories/${id}`, {
       method: "PUT",
-      headers: { "content-type": "application/json" },
+      headers: {
+        "content-type": "application/json",
+        Authorization: session ? `Bearer ${session.access_token}` : "",
+      },
       body: JSON.stringify(body),
     });
+
     if (!res.ok) {
       const err: any = await res.json();
       setError(err.error ?? "Save failed.");
@@ -92,7 +198,10 @@ export default function EditStoryPage() {
 
   const handleDelete = async () => {
     if (!confirm("Delete this story permanently?")) return;
-    await fetch(`/api/admin/stories/${id}`, { method: "DELETE" });
+    await fetch(`/api/admin/stories/${id}`, {
+      method: "DELETE",
+      headers: session ? { Authorization: `Bearer ${session.access_token}` } : {},
+    });
     void navigate({ to: "/admin/stories" });
   };
 
@@ -322,18 +431,109 @@ export default function EditStoryPage() {
                 </label>
               ))}
             </div>
-            {story.images?.[0] && (
-              <div className="bg-[#161616] border border-white/10 rounded-sm p-5">
-                <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-white/40 mb-4">
-                  Cover Image
-                </h3>
-                <img
-                  src={story.images[0].imageUrl}
-                  alt="Cover"
-                  className="w-full aspect-video object-cover border border-white/10"
+
+            {/* Premium Cover Image Controls */}
+            <div className="bg-[#161616] border border-white/10 rounded-sm p-5 space-y-4">
+              <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-white/40">
+                Cover Image
+              </h3>
+
+              {coverImageUrl ? (
+                <div className="relative group">
+                  <img
+                    src={coverImageUrl}
+                    alt="Cover"
+                    className="w-full aspect-video object-cover border border-white/10 rounded-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setCoverImageUrl(null)}
+                    className="absolute top-2 right-2 p-1.5 rounded-full bg-black/80 hover:bg-black text-white hover:text-red-400 transition-colors"
+                    title="Remove Image"
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full aspect-video border-2 border-dashed border-white/10 hover:border-primary/50 rounded-sm flex flex-col items-center justify-center cursor-pointer transition-colors"
+                >
+                  <UploadCloud className="size-8 text-white/20 mb-2" />
+                  <span className="text-xs text-white/40 font-sans">
+                    {uploading ? "Uploading cover..." : "Upload Cover Image"}
+                  </span>
+                </div>
+              )}
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase font-bold text-white/40 font-sans">
+                  Direct Cover Image URL
+                </label>
+                <Input
+                  value={coverImageUrl ?? ""}
+                  onChange={(e) => setCoverImageUrl(e.target.value || null)}
+                  placeholder="https://images.unsplash.com/..."
+                  className="h-9 bg-black/20 border-white/10 text-white text-xs font-sans"
                 />
               </div>
-            )}
+            </div>
+
+            {/* Gallery Images controls */}
+            <div className="bg-[#161616] border border-white/10 rounded-sm p-5 space-y-4">
+              <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-white/40">
+                Additional Images Gallery
+              </h3>
+
+              {additionalImages.length > 0 && (
+                <div className="grid grid-cols-2 gap-2">
+                  {additionalImages.map((url, idx) => (
+                    <div key={idx} className="relative group aspect-video">
+                      <img
+                        src={url}
+                        alt={`Gallery ${idx + 1}`}
+                        className="w-full h-full object-cover border border-white/10 rounded-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setAdditionalImages(prev => prev.filter((_, i) => i !== idx))}
+                        className="absolute top-1.5 right-1.5 p-1 rounded-full bg-black/80 hover:bg-black text-white hover:text-red-400 transition-colors"
+                        title="Delete Image"
+                      >
+                        <X className="size-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div
+                onClick={() => galleryInputRef.current?.click()}
+                className="w-full py-4 border-2 border-dashed border-white/10 hover:border-primary/50 rounded-sm flex flex-col items-center justify-center cursor-pointer transition-colors"
+              >
+                <UploadCloud className="size-6 text-white/20 mb-1" />
+                <span className="text-[10px] text-white/40 font-sans uppercase font-bold tracking-wider">
+                  {galleryUploading ? "Uploading files..." : "Upload Multiple Images"}
+                </span>
+              </div>
+
+              <input
+                ref={galleryInputRef}
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleGalleryUpload}
+                className="hidden"
+              />
+            </div>
           </div>
         </div>
       </div>

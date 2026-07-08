@@ -36,7 +36,7 @@ import { StoryCard } from "@/components/site/StoryCard";
 import type { Story } from "@/components/site/StoryCard";
 import { useI18nStore, translateStory, getCommonText } from "@/lib/i18n";
 import { stories, useStoriesData } from "@/lib/stories-data";
-import { getStoryAuthor } from "@/lib/utils";
+import { getStoryAuthor, getOptimizedImageUrl } from "@/lib/utils";
 import { useAuthStore } from "@/lib/auth-store";
 
 // Local Dictionary fallback dictionary
@@ -240,6 +240,7 @@ export function StoryDetail({ story }: { story: Story }) {
             timeDelta: timeDelta > 0 ? timeDelta : undefined,
           }),
         });
+        new BroadcastChannel("isp-profile-updates").postMessage("update");
       } catch {/* ignore */}
     },
     [session, story.id],
@@ -258,6 +259,7 @@ export function StoryDetail({ story }: { story: Story }) {
         },
         body: JSON.stringify({ storyId: story.id }),
       });
+      new BroadcastChannel("isp-profile-updates").postMessage("update");
     } catch {
       setIsBookmarked(!next);
     }
@@ -281,6 +283,7 @@ export function StoryDetail({ story }: { story: Story }) {
         const data = await res.json();
         setLikeCount(data.count ?? likeCount);
         setIsLiked(data.liked ?? next);
+        new BroadcastChannel("isp-profile-updates").postMessage("update");
       }
     } catch {
       setIsLiked(!next);
@@ -707,7 +710,7 @@ export function StoryDetail({ story }: { story: Story }) {
           {story.image ? (
             <>
               <motion.img
-                src={story.image}
+                src={getOptimizedImageUrl(story.image, 1200)}
                 alt={story.imageAlt ?? story.title}
                 initial={{ scale: 1.05 }}
                 animate={{ scale: 1 }}
@@ -786,9 +789,8 @@ export function StoryDetail({ story }: { story: Story }) {
 
             {/* Themes */}
             <div className="flex items-center gap-1 border border-border/50 rounded-full px-2 py-1 bg-black/25">
-              <button onClick={() => setReadTheme("light")} className={`size-3.5 rounded-full bg-white border ${readTheme === "light" ? "border-primary" : "border-transparent"}`} />
-              <button onClick={() => setReadTheme("dark")} className={`size-3.5 rounded-full bg-zinc-950 border ${readTheme === "dark" ? "border-primary" : "border-transparent"}`} />
-              <button onClick={() => setReadTheme("sepia")} className={`size-3.5 rounded-full bg-[#f8f1e5] border ${readTheme === "sepia" ? "border-primary" : "border-transparent"}`} />
+              <button onClick={() => setReadTheme("light")} className={`size-3.5 rounded-full bg-white border ${readTheme === "light" ? "border-primary" : "border-transparent"}`} title="Light Theme" />
+              <button onClick={() => setReadTheme("sepia")} className={`size-3.5 rounded-full bg-[#f8f1e5] border ${readTheme === "sepia" ? "border-primary" : "border-transparent"}`} title="Sepia Theme" />
             </div>
 
             {/* Like */}

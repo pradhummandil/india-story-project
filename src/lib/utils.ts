@@ -27,3 +27,15 @@ export function getStoryAuthor(slug: string): string {
   }
   return AUTHORS[Math.abs(hash) % AUTHORS.length];
 }
+
+export function getOptimizedImageUrl(url: string | undefined | null, width = 600): string {
+  if (!url) return "";
+  if (url.includes("supabase.co/storage/v1/object/public")) {
+    return `${url}?width=${width}&quality=85&resize=contain`;
+  }
+  if (url.includes("images.unsplash.com")) {
+    const cleanUrl = url.split("?")[0];
+    return `${cleanUrl}?w=${width}&auto=format&fit=crop&q=80`;
+  }
+  return url;
+}

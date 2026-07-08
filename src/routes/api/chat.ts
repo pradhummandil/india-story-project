@@ -1,63 +1,85 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { convertToModelMessages, streamText, type UIMessage } from "ai";
-import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
-import { stories } from "@/lib/stories-data";
-
-type Body = {
-  messages?: unknown;
-  context?: { route?: string; language?: string; storyId?: string };
-};
-
-const baseSystem = `You are the India Story Companion — a warm, intelligent, and trustworthy AI guide for the India Story Project website.
-
-Your role:
-- Help visitors understand, explore, and connect with stories of changemakers, innovators and everyday heroes across India.
-- Summarize stories, explain key events, surface lessons and impact.
-- Recommend similar stories, related themes, regions and categories.
-- Suggest thoughtful follow-up questions.
-
-Style:
-- Elegant, concise, cinematic. Short paragraphs. Use markdown sparingly (bold, lists).
-- Inspire curiosity; never sensationalize.
-- If the user writes in Hindi, reply in Hindi. If English, reply in English. Match their language.
-- If asked something outside India / its stories / its people, gently steer back.
-
-You have a curated catalogue of stories below. Use it as ground truth when recommending or referencing stories.`;
+import { prisma } from "@/lib/repositories/prisma.server";
+import { json } from "@/routes/api/-_utils";
 
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const { messages, context } = (await request.json()) as Body;
-        if (!Array.isArray(messages)) {
-          return new Response("Messages are required", { status: 400 });
+        try {
+          const body = await request.json();
+          const { message, lang } = body;
+          if (!message?.trim()) {
+            return json({ error: "Message is required" }, { status: 400 });
+          }
+
+          const q = message.toLowerCase().trim();
+          const isHindi = lang === "hi";
+
+          // Query the stories database directly to form dynamic, real responses!
+          const stories = await prisma.story.findMany({
+            where: {
+              status: "Published",
+              OR: [
+                { title: { contains: q, mode: "insensitive" } },
+                { excerpt: { contains: q, mode: "insensitive" } },
+                { content: { contains: q, mode: "insensitive" } },
+                { category: { name: { contains: q, mode: "insensitive" } } },
+                { state: { name: { contains: q, mode: "insensitive" } } },
+              ],
+            },
+            take: 3,
+            select: {
+              title: true,
+              titleHi: true,
+              slug: true,
+              excerpt: true,
+              excerptHi: true,
+              category: { select: { name: true } },
+              state: { select: { name: true } },
+            },
+          });
+
+          let reply = "";
+          const suggestions: string[] = [];
+
+          if (stories.length > 0) {
+            if (isHindi) {
+              reply = `मुझे आपकी खोज से संबंधित ${stories.length} प्रेरणादायक कहानियाँ मिली हैं:\n\n`;
+              stories.forEach((s) => {
+                const title = s.titleHi || s.title;
+                const excerpt = s.excerptHi || s.excerpt;
+                reply += `* **[${title}](/stories/${s.slug})** (${s.state?.name || "भारत"})\n  ${excerpt.slice(0, 100)}...\n\n`;
+                suggestions.push(`${title} के बारे में बताएं`);
+              });
+              reply += `आप इन कहानियों को पढ़ने के लिए लिंक पर क्लिक कर सकते हैं। क्या आप किसी विशिष्ट क्षेत्र या श्रेणी के बारे में जानना चाहते हैं?`;
+            } else {
+              reply = `I found ${stories.length} inspiring stories related to your search:\n\n`;
+              stories.forEach((s) => {
+                reply += `* **[${s.title}](/stories/${s.slug})** (${s.state?.name || "India"})\n  ${s.excerpt.slice(0, 100)}...\n\n`;
+                suggestions.push(`Tell me more about ${s.title}`);
+              });
+              reply += `Click the links to read the full stories. Would you like to filter by category or region?`;
+            }
+          } else {
+            // General response if no direct story match is found
+            if (isHindi) {
+              reply = `नमस्ते! मैं भारत की लोक कथाओं, गुमनाम नायकों और सांस्कृतिक विरासत को जानने में आपकी सहायता कर सकता हूँ।\n\nमुझे आपके संदेश से सीधे मेल खाती कोई कहानी नहीं मिली, लेकिन आप इनमें से कुछ खोज सकते हैं:\n* **श्रेणियाँ**: संस्कृति, विज्ञान, पर्यावरण, विरासत।\n* **राज्य**: केरल, महाराष्ट्र, राजस्थान, असम।\n\nआप मुझसे क्या पूछना चाहेंगे?`;
+              suggestions.push("केरल की कहानियाँ दिखाएँ");
+              suggestions.push("संस्कृति श्रेणी की कहानियाँ");
+              suggestions.push("प्रमुख नायकों के बारे में बताएं");
+            } else {
+              reply = `Hello! I'm your India Story Guide. I can help you discover unsung heroes, cultural heritage, and grassroots innovations across every state.\n\nI couldn't find a direct story match for your query, but you can try searching for:\n* **Categories**: Culture, Science, Environment, Heritage.\n* **States**: Kerala, Maharashtra, Rajasthan, Assam.\n\nWhat would you like to explore?`;
+              suggestions.push("Show stories from Kerala");
+              suggestions.push("Explore Culture stories");
+              suggestions.push("Who are the local heroes?");
+            }
+          }
+
+          return json({ reply, suggestions });
+        } catch (e: any) {
+          return json({ error: e.message || "Failed to parse query" }, { status: 500 });
         }
-        const key = process.env.LOVABLE_API_KEY;
-        if (!key) return new Response("Missing _API_KEY", { status: 500 });
-
-        const catalogue = stories
-          .map(
-            (s) =>
-              `- [${s.id}] "${s.title}" — ${s.category} · ${s.region} · ${s.readTime}. ${s.excerpt}`,
-          )
-          .join("\n");
-
-        const ctxLine = context?.route ? `\nThe user is currently on route: ${context.route}.` : "";
-        const langLine =
-          context?.language === "hi"
-            ? "\nUser language preference: Hindi. Reply in Hindi unless they switch."
-            : "";
-
-        const gateway = createLovableAiGatewayProvider(key);
-        const result = streamText({
-          model: gateway("google/gemini-3-flash-preview"),
-          system: `${baseSystem}\n\nStory catalogue:\n${catalogue}${ctxLine}${langLine}`,
-          messages: await convertToModelMessages(messages as UIMessage[]),
-        });
-
-        return result.toUIMessageStreamResponse({
-          originalMessages: messages as UIMessage[],
-        });
       },
     },
   },

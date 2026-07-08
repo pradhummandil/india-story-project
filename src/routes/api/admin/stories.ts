@@ -58,6 +58,9 @@ export const Route = createFileRoute("/api/admin/stories")({
         const url = new URL(request.url);
         const query = url.searchParams.get("query") ?? undefined;
         const status = url.searchParams.get("status") ?? undefined;
+        const region = url.searchParams.get("region") ?? undefined;
+        const category = url.searchParams.get("category") ?? undefined;
+        const sortBy = url.searchParams.get("sortBy") ?? "date";
         const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10));
         const pageSize = Math.min(
           60,
@@ -66,6 +69,12 @@ export const Route = createFileRoute("/api/admin/stories")({
 
         const where: any = {};
         if (status && status !== "all") where.status = status as StoryStatus;
+        if (region && region !== "all") {
+          where.state = { slug: region };
+        }
+        if (category && category !== "all") {
+          where.category = { slug: category };
+        }
         if (query) {
           where.OR = [
             { title: { contains: query, mode: "insensitive" } },
@@ -73,13 +82,47 @@ export const Route = createFileRoute("/api/admin/stories")({
           ];
         }
 
+        let orderBy: any = [{ createdAt: "desc" }];
+        if (sortBy === "views") {
+          orderBy = [{ viewCount: "desc" }, { createdAt: "desc" }];
+        } else if (sortBy === "title") {
+          orderBy = [{ title: "asc" }];
+        }
+
         const [stories, total] = await Promise.all([
           prisma.story.findMany({
             where,
-            orderBy: [{ createdAt: "desc" }],
+            orderBy,
             skip: (page - 1) * pageSize,
             take: pageSize,
-            include: storyIncludes,
+            select: {
+              id: true,
+              slug: true,
+              title: true,
+              excerpt: true,
+              readingTime: true,
+              featured: true,
+              heroOfTheDay: true,
+              status: true,
+              viewCount: true,
+              publishedAt: true,
+              scheduledAt: true,
+              createdAt: true,
+              updatedAt: true,
+              categoryId: true,
+              stateId: true,
+              authorId: true,
+              themeId: true,
+              category: { select: { id: true, name: true, slug: true } },
+              state: { select: { id: true, name: true, slug: true } },
+              author: { select: { id: true, name: true } },
+              theme: { select: { id: true, name: true, slug: true } },
+              images: {
+                orderBy: { sortOrder: "asc" },
+                select: { id: true, imageUrl: true, caption: true, heroImage: true },
+                take: 1,
+              },
+            },
           }),
           prisma.story.count({ where }),
         ]);
@@ -126,6 +169,21 @@ export const Route = createFileRoute("/api/admin/stories")({
         if (existing)
           return json({ error: "A story with this slug already exists." }, { status: 400 });
 
+        const featured = body.featured ?? false;
+        const heroOfTheDay = body.heroOfTheDay ?? false;
+
+        // Mutual exclusivity enforcement
+        if (featured) {
+          await prisma.story.updateMany({
+            data: { featured: false },
+          });
+        }
+        if (heroOfTheDay) {
+          await prisma.story.updateMany({
+            data: { heroOfTheDay: false },
+          });
+        }
+
         const story = await prisma.story.create({
           data: {
             title,
@@ -138,28 +196,36 @@ export const Route = createFileRoute("/api/admin/stories")({
             seoTitle: body.seoTitle ?? null,
             seoDescription: body.seoDescription ?? null,
             readingTime: body.readingTime ? parseInt(body.readingTime, 10) : null,
-            featured: body.featured ?? false,
-            heroOfTheDay: body.heroOfTheDay ?? false,
+            featured,
+            heroOfTheDay,
             status: body.status === "Published" ? StoryStatus.Published : StoryStatus.Draft,
             publishedAt: body.status === "Published" ? new Date() : null,
             categoryId,
             stateId,
             authorId,
             themeId,
-            ...(body.imageUrl
-              ? {
-                  images: {
-                    create: [
+            images: {
+              create: [
+                ...(body.imageUrl
+                  ? [
                       {
                         imageUrl: body.imageUrl,
                         caption: body.imageCaption ?? null,
                         heroImage: true,
                         sortOrder: 0,
                       },
-                    ],
-                  },
-                }
-              : {}),
+                    ]
+                  : []),
+                ...(Array.isArray(body.additionalImages)
+                  ? body.additionalImages.map((url: string, index: number) => ({
+                      imageUrl: url,
+                      caption: null,
+                      heroImage: false,
+                      sortOrder: index + 1,
+                    }))
+                  : []),
+              ],
+            },
           },
           include: storyIncludes,
         });

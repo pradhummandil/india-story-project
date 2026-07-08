@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { Link } from "@tanstack/react-router";
 import { useJourney } from "@/lib/journey-store";
 import { useI18nStore, translateStory, getCommonText } from "@/lib/i18n";
-import { getStoryAuthor } from "@/lib/utils";
+import { getStoryAuthor, getOptimizedImageUrl } from "@/lib/utils";
 
 export interface Story {
   id: string;
@@ -93,7 +93,7 @@ export function StoryCard({ story, index = 0 }: { story: Story; index?: number }
           <div className="aspect-[4/3] relative overflow-hidden bg-muted mb-4 border border-border/40 group-hover:border-gold/20 transition-colors duration-500">
             {story.image ? (
               <img
-                src={story.image}
+                src={getOptimizedImageUrl(story.image, 600)}
                 alt={story.imageAlt ?? story.title}
                 loading="lazy"
                 className="absolute inset-0 w-full h-full object-cover filter saturate-[0.8] brightness-[0.95] group-hover:scale-105 group-hover:saturate-100 group-hover:brightness-100 transition-all duration-[1.2s] ease-out"
