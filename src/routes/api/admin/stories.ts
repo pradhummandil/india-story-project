@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { prisma } from "@/lib/repositories/prisma.server";
 import { json } from "@/routes/api/-_utils";
-import { StoryStatus } from "@/generated/prisma/client";
+import { StoryStatus } from "@prisma/client";
 
 const storyIncludes: any = {
   category: { select: { id: true, name: true, slug: true } },

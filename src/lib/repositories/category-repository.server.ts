@@ -1,4 +1,4 @@
-import { StoryStatus } from "@/generated/prisma/client.ts";
+import { StoryStatus } from "@prisma/client";
 
 import { prisma } from "./prisma.server";
 

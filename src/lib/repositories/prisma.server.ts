@@ -1,4 +1,4 @@
-import { PrismaClient } from "@/generated/prisma/client.ts";
+import { PrismaClient } from "@prisma/client";
 
 type PrismaClientInstance = InstanceType<typeof PrismaClient>;
 

@@ -11,7 +11,7 @@ const rootDir = path.resolve(__dirname, "..");
 const storiesPath = path.join(rootDir, "stories.json");
 
 const jiti = createJiti(import.meta.url);
-const { PrismaClient, StoryStatus } = await jiti.import("../src/generated/prisma/client.ts");
+const { PrismaClient, StoryStatus } = await jiti.import("@prisma/client");
 
 const prisma = new PrismaClient();
 
