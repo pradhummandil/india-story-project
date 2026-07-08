@@ -72,7 +72,7 @@ function SignupPage() {
       {/* Left panel */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-black">
         <img
-          src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&q=80&w=1200"
+          src="https://i.pinimg.com/1200x/69/e9/93/69e993f15d25d967b7f77d73a1af4dca.jpg"
           alt="India stories"
           className="absolute inset-0 w-full h-full object-cover opacity-55"
         />

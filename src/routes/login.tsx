@@ -78,7 +78,7 @@ function LoginPage() {
       {/* Left panel — cinematic editorial image */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-black">
         <img
-          src="https://images.unsplash.com/photo-1524492449929-c42ab9ec4449?auto=format&fit=crop&q=80&w=1200"
+          src="https://i.pinimg.com/736x/79/dd/35/79dd35c9bb8c81217aac32843621ccc3.jpg"
           alt="India"
           className="absolute inset-0 w-full h-full object-cover opacity-60"
         />
