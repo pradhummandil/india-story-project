@@ -134,7 +134,7 @@ function LoginPage() {
             id="google-signin-btn"
             type="button"
             variant="outline"
-            className="w-full h-12 rounded-full border-border font-sans text-sm font-medium mb-6 gap-3 hover:border-gold/50 hover:bg-accent/5 transition-all duration-300"
+            className="w-full h-12 rounded-full border-border font-sans text-sm font-medium mb-6 gap-3 hover:border-gold/50 hover:bg-white/5 text-foreground transition-all duration-300"
             onClick={handleGoogleLogin}
             disabled={loading}
           >

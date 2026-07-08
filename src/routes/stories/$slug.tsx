@@ -1,9 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-
+import { useEffect, useState } from "react";
 import type { Story } from "@/components/site/StoryCard";
 import { StoryDetail } from "@/components/site/StoryDetail";
-import { useStoriesData } from "@/lib/stories-data";
 
 export const Route = createFileRoute("/stories/$slug")({
   component: StoryDetailPage,
@@ -22,13 +20,50 @@ export const Route = createFileRoute("/stories/$slug")({
 
 function StoryDetailPage() {
   const { slug } = Route.useParams();
-  const { stories: dbStories, loading: dataLoading } = useStoriesData();
+  const [story, setStory] = useState<Story | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const story = useMemo(() => {
-    return (dbStories as Story[]).find((s) => s.slug === slug) ?? null;
-  }, [slug, dbStories]);
+  useEffect(() => {
+    const loadStory = () => {
+      fetch(`/api/stories/${slug}`)
+        .then((r) => {
+          if (!r.ok) {
+            throw new Error("Story not found");
+          }
+          return r.json();
+        })
+        .then((data) => {
+          setStory(data);
+        })
+        .catch((err) => {
+          setError(err.message || "Failed to load story");
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    };
 
-  if (dataLoading) {
+    setLoading(true);
+    setError(null);
+    loadStory();
+
+    // Listen for live updates from admin
+    const channel = new BroadcastChannel("isp-stories-updates");
+    channel.onmessage = () => {
+      fetch(`/api/stories/${slug}`)
+        .then((r) => {
+          if (r.ok) return r.json();
+          throw new Error();
+        })
+        .then((data) => setStory(data))
+        .catch(console.error);
+    };
+
+    return () => channel.close();
+  }, [slug]);
+
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-muted-foreground font-sans font-semibold uppercase tracking-widest text-xs animate-pulse">
@@ -38,7 +73,7 @@ function StoryDetailPage() {
     );
   }
 
-  if (!story) {
+  if (error || !story) {
     throw notFound();
   }
 

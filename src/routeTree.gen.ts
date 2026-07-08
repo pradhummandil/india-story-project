@@ -28,6 +28,7 @@ import { Route as StoriesIndexRouteImport } from './routes/stories/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as StoriesSlugRouteImport } from './routes/stories/$slug'
 import { Route as ApiUserStatsRouteImport } from './routes/api/user-stats'
+import { Route as ApiTrendingRouteImport } from './routes/api/trending'
 import { Route as ApiThemesRouteImport } from './routes/api/themes'
 import { Route as ApiSubmissionsRouteImport } from './routes/api/submissions'
 import { Route as ApiStoriesCatalogueDataRouteImport } from './routes/api/stories-catalogue-data'
@@ -36,7 +37,9 @@ import { Route as ApiStoriesRouteImport } from './routes/api/stories'
 import { Route as ApiStatesRouteImport } from './routes/api/states'
 import { Route as ApiReadingProgressRouteImport } from './routes/api/reading-progress'
 import { Route as ApiLikesRouteImport } from './routes/api/likes'
+import { Route as ApiLatestStoriesRouteImport } from './routes/api/latest-stories'
 import { Route as ApiHeroSlidesRouteImport } from './routes/api/hero-slides'
+import { Route as ApiHeroOfTheDayRouteImport } from './routes/api/hero-of-the-day'
 import { Route as ApiFeaturedRouteImport } from './routes/api/featured'
 import { Route as ApiCommentsRouteImport } from './routes/api/comments'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
@@ -183,6 +186,11 @@ const ApiUserStatsRoute = ApiUserStatsRouteImport.update({
   path: '/api/user-stats',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTrendingRoute = ApiTrendingRouteImport.update({
+  id: '/api/trending',
+  path: '/api/trending',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiThemesRoute = ApiThemesRouteImport.update({
   id: '/api/themes',
   path: '/api/themes',
@@ -223,9 +231,19 @@ const ApiLikesRoute = ApiLikesRouteImport.update({
   path: '/api/likes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLatestStoriesRoute = ApiLatestStoriesRouteImport.update({
+  id: '/api/latest-stories',
+  path: '/api/latest-stories',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiHeroSlidesRoute = ApiHeroSlidesRouteImport.update({
   id: '/api/hero-slides',
   path: '/api/hero-slides',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiHeroOfTheDayRoute = ApiHeroOfTheDayRouteImport.update({
+  id: '/api/hero-of-the-day',
+  path: '/api/hero-of-the-day',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiFeaturedRoute = ApiFeaturedRouteImport.update({
@@ -507,7 +525,9 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/api/comments': typeof ApiCommentsRouteWithChildren
   '/api/featured': typeof ApiFeaturedRoute
+  '/api/hero-of-the-day': typeof ApiHeroOfTheDayRoute
   '/api/hero-slides': typeof ApiHeroSlidesRoute
+  '/api/latest-stories': typeof ApiLatestStoriesRoute
   '/api/likes': typeof ApiLikesRoute
   '/api/reading-progress': typeof ApiReadingProgressRoute
   '/api/states': typeof ApiStatesRoute
@@ -516,6 +536,7 @@ export interface FileRoutesByFullPath {
   '/api/stories-catalogue-data': typeof ApiStoriesCatalogueDataRoute
   '/api/submissions': typeof ApiSubmissionsRoute
   '/api/themes': typeof ApiThemesRoute
+  '/api/trending': typeof ApiTrendingRoute
   '/api/user-stats': typeof ApiUserStatsRouteWithChildren
   '/stories/$slug': typeof StoriesSlugRoute
   '/admin/': typeof AdminIndexRoute
@@ -585,7 +606,9 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/api/comments': typeof ApiCommentsRouteWithChildren
   '/api/featured': typeof ApiFeaturedRoute
+  '/api/hero-of-the-day': typeof ApiHeroOfTheDayRoute
   '/api/hero-slides': typeof ApiHeroSlidesRoute
+  '/api/latest-stories': typeof ApiLatestStoriesRoute
   '/api/likes': typeof ApiLikesRoute
   '/api/reading-progress': typeof ApiReadingProgressRoute
   '/api/states': typeof ApiStatesRoute
@@ -594,6 +617,7 @@ export interface FileRoutesByTo {
   '/api/stories-catalogue-data': typeof ApiStoriesCatalogueDataRoute
   '/api/submissions': typeof ApiSubmissionsRoute
   '/api/themes': typeof ApiThemesRoute
+  '/api/trending': typeof ApiTrendingRoute
   '/api/user-stats': typeof ApiUserStatsRouteWithChildren
   '/stories/$slug': typeof StoriesSlugRoute
   '/admin': typeof AdminIndexRoute
@@ -666,7 +690,9 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/api/comments': typeof ApiCommentsRouteWithChildren
   '/api/featured': typeof ApiFeaturedRoute
+  '/api/hero-of-the-day': typeof ApiHeroOfTheDayRoute
   '/api/hero-slides': typeof ApiHeroSlidesRoute
+  '/api/latest-stories': typeof ApiLatestStoriesRoute
   '/api/likes': typeof ApiLikesRoute
   '/api/reading-progress': typeof ApiReadingProgressRoute
   '/api/states': typeof ApiStatesRoute
@@ -675,6 +701,7 @@ export interface FileRoutesById {
   '/api/stories-catalogue-data': typeof ApiStoriesCatalogueDataRoute
   '/api/submissions': typeof ApiSubmissionsRoute
   '/api/themes': typeof ApiThemesRoute
+  '/api/trending': typeof ApiTrendingRoute
   '/api/user-stats': typeof ApiUserStatsRouteWithChildren
   '/stories/$slug': typeof StoriesSlugRoute
   '/admin/': typeof AdminIndexRoute
@@ -748,7 +775,9 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/comments'
     | '/api/featured'
+    | '/api/hero-of-the-day'
     | '/api/hero-slides'
+    | '/api/latest-stories'
     | '/api/likes'
     | '/api/reading-progress'
     | '/api/states'
@@ -757,6 +786,7 @@ export interface FileRouteTypes {
     | '/api/stories-catalogue-data'
     | '/api/submissions'
     | '/api/themes'
+    | '/api/trending'
     | '/api/user-stats'
     | '/stories/$slug'
     | '/admin/'
@@ -826,7 +856,9 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/comments'
     | '/api/featured'
+    | '/api/hero-of-the-day'
     | '/api/hero-slides'
+    | '/api/latest-stories'
     | '/api/likes'
     | '/api/reading-progress'
     | '/api/states'
@@ -835,6 +867,7 @@ export interface FileRouteTypes {
     | '/api/stories-catalogue-data'
     | '/api/submissions'
     | '/api/themes'
+    | '/api/trending'
     | '/api/user-stats'
     | '/stories/$slug'
     | '/admin'
@@ -906,7 +939,9 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/comments'
     | '/api/featured'
+    | '/api/hero-of-the-day'
     | '/api/hero-slides'
+    | '/api/latest-stories'
     | '/api/likes'
     | '/api/reading-progress'
     | '/api/states'
@@ -915,6 +950,7 @@ export interface FileRouteTypes {
     | '/api/stories-catalogue-data'
     | '/api/submissions'
     | '/api/themes'
+    | '/api/trending'
     | '/api/user-stats'
     | '/stories/$slug'
     | '/admin/'
@@ -984,7 +1020,9 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   ApiCommentsRoute: typeof ApiCommentsRouteWithChildren
   ApiFeaturedRoute: typeof ApiFeaturedRoute
+  ApiHeroOfTheDayRoute: typeof ApiHeroOfTheDayRoute
   ApiHeroSlidesRoute: typeof ApiHeroSlidesRoute
+  ApiLatestStoriesRoute: typeof ApiLatestStoriesRoute
   ApiLikesRoute: typeof ApiLikesRoute
   ApiReadingProgressRoute: typeof ApiReadingProgressRoute
   ApiStatesRoute: typeof ApiStatesRoute
@@ -993,6 +1031,7 @@ export interface RootRouteChildren {
   ApiStoriesCatalogueDataRoute: typeof ApiStoriesCatalogueDataRoute
   ApiSubmissionsRoute: typeof ApiSubmissionsRoute
   ApiThemesRoute: typeof ApiThemesRoute
+  ApiTrendingRoute: typeof ApiTrendingRoute
   ApiUserStatsRoute: typeof ApiUserStatsRouteWithChildren
   ApiAdminAchievementsRoute: typeof ApiAdminAchievementsRoute
   ApiAdminAnalyticsRoute: typeof ApiAdminAnalyticsRoute
@@ -1143,6 +1182,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiUserStatsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/trending': {
+      id: '/api/trending'
+      path: '/api/trending'
+      fullPath: '/api/trending'
+      preLoaderRoute: typeof ApiTrendingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/themes': {
       id: '/api/themes'
       path: '/api/themes'
@@ -1199,11 +1245,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiLikesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/latest-stories': {
+      id: '/api/latest-stories'
+      path: '/api/latest-stories'
+      fullPath: '/api/latest-stories'
+      preLoaderRoute: typeof ApiLatestStoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/hero-slides': {
       id: '/api/hero-slides'
       path: '/api/hero-slides'
       fullPath: '/api/hero-slides'
       preLoaderRoute: typeof ApiHeroSlidesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/hero-of-the-day': {
+      id: '/api/hero-of-the-day'
+      path: '/api/hero-of-the-day'
+      fullPath: '/api/hero-of-the-day'
+      preLoaderRoute: typeof ApiHeroOfTheDayRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/featured': {
@@ -1756,7 +1816,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   ApiCommentsRoute: ApiCommentsRouteWithChildren,
   ApiFeaturedRoute: ApiFeaturedRoute,
+  ApiHeroOfTheDayRoute: ApiHeroOfTheDayRoute,
   ApiHeroSlidesRoute: ApiHeroSlidesRoute,
+  ApiLatestStoriesRoute: ApiLatestStoriesRoute,
   ApiLikesRoute: ApiLikesRoute,
   ApiReadingProgressRoute: ApiReadingProgressRoute,
   ApiStatesRoute: ApiStatesRoute,
@@ -1765,6 +1827,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiStoriesCatalogueDataRoute: ApiStoriesCatalogueDataRoute,
   ApiSubmissionsRoute: ApiSubmissionsRoute,
   ApiThemesRoute: ApiThemesRoute,
+  ApiTrendingRoute: ApiTrendingRoute,
   ApiUserStatsRoute: ApiUserStatsRouteWithChildren,
   ApiAdminAchievementsRoute: ApiAdminAchievementsRoute,
   ApiAdminAnalyticsRoute: ApiAdminAnalyticsRoute,

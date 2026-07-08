@@ -7,6 +7,12 @@ export const Route = createFileRoute("/admin")({
   component: AdminRootLayout,
 });
 
+function isAdminRole(role: string | null | undefined): boolean {
+  if (!role) return false;
+  const r = role.toLowerCase();
+  return r === "admin" || r === "superadmin" || r === "editor";
+}
+
 function AdminRootLayout() {
   const navigate = useNavigate();
   const { user, profile, loading, initialized } = useAuthStore();
@@ -27,7 +33,9 @@ function AdminRootLayout() {
     );
   }
 
-  if (!user || !profile || profile.role !== "admin") {
+  const hasAdminAccess = isAdminRole(profile?.role) || isAdminRole(user?.app_metadata?.role);
+
+  if (!user || !hasAdminAccess) {
     return <Forbidden403 />;
   }
 

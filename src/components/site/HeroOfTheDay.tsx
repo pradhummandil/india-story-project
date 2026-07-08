@@ -1,11 +1,10 @@
 import { motion } from "framer-motion";
 import { BookOpen, Play, Quote, Users } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import type { Story } from "@/components/site/StoryCard";
-import { useStoriesData } from "@/lib/stories-data";
 
 type StoryWithOptionalFields = Story & {
   hero_of_the_day?: boolean;
@@ -48,8 +47,8 @@ function formatDate(v: unknown): string | undefined {
 function pickHeroStory(all: Story[]): StoryWithOptionalFields {
   const typed = all.map(asStory);
 
-  // Priority 1: hero_of_the_day
-  const heroPinned = typed.find((s) => !!s.hero_of_the_day);
+  // Priority 1: heroOfTheDay
+  const heroPinned = typed.find((s) => !!s.heroOfTheDay);
   if (heroPinned) return heroPinned;
 
   // Priority 2: featured
@@ -80,10 +79,36 @@ function getTheme(s: StoryWithOptionalFields): string {
 }
 
 export function HeroOfTheDay() {
-  const { stories: dbStories } = useStoriesData();
-  const hero = useMemo(() => pickHeroStory(dbStories), [dbStories]);
+  const [hero, setHero] = useState<StoryWithOptionalFields | null>(null);
 
-  if (dbStories.length === 0) {
+  useEffect(() => {
+    const fetchHero = async () => {
+      try {
+        const res = await fetch("/api/hero-of-the-day");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.story) {
+            setHero(data.story);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch hero of the day:", err);
+      }
+    };
+
+    fetchHero();
+
+    const channel = new BroadcastChannel("isp-stories-updates");
+    channel.onmessage = () => {
+      fetchHero();
+    };
+
+    return () => {
+      channel.close();
+    };
+  }, []);
+
+  if (!hero) {
     return null; // Don't render anything if data is not loaded yet
   }
 

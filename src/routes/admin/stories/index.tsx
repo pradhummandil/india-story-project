@@ -130,6 +130,7 @@ export default function AdminStoriesPage() {
       method: "DELETE",
       headers: session ? { Authorization: `Bearer ${session.access_token}` } : {},
     });
+    new BroadcastChannel("isp-stories-updates").postMessage("update");
     void loadStories();
     setSelectedIds((prev) => prev.filter((item) => item !== id));
   };
@@ -143,7 +144,8 @@ export default function AdminStoriesPage() {
       },
       body: JSON.stringify({ featured: !current }),
     });
-    setStories((prev) => prev.map((s) => (s.id === id ? { ...s, featured: !current } : s)));
+    new BroadcastChannel("isp-stories-updates").postMessage("update");
+    void loadStories();
   };
 
   // Duplicate Story Action
@@ -160,6 +162,7 @@ export default function AdminStoriesPage() {
         body: JSON.stringify({ id }),
       });
       if (res.ok) {
+        new BroadcastChannel("isp-stories-updates").postMessage("update");
         void loadStories();
       }
     } catch (e) {
@@ -198,6 +201,7 @@ export default function AdminStoriesPage() {
         body: JSON.stringify({ ids: selectedIds, action }),
       });
       if (res.ok) {
+        new BroadcastChannel("isp-stories-updates").postMessage("update");
         setSelectedIds([]);
         void loadStories();
       }

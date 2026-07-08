@@ -7,36 +7,17 @@ export const Route = createFileRoute("/api/admin/analytics")({
     handlers: {
       GET: async () => {
         try {
-          const [
-            totalStories,
-            published,
-            draft,
-            hidden,
-            archived,
-            pendingSubmissions,
-            totalUsers,
-            dailyReaders,
-            totalLikes,
-            totalComments,
-            totalBookmarks,
-            totalAuthors,
-            totalCategories,
-            totalStates,
-            topStories,
-            topAuthorsList,
-            trendingStatesList,
-            recentStories,
-            recentComments,
-            recentLikes,
-            recentSubmissions,
-            flaggedCommentsCount,
-          ] = await Promise.all([
+          const getValue = <T>(res: PromiseSettledResult<T>, fallback: T): T => {
+            return res.status === "fulfilled" ? res.value : fallback;
+          };
+
+          const results = await Promise.allSettled([
             prisma.story.count(),
             prisma.story.count({ where: { status: "Published" } }),
             prisma.story.count({ where: { status: "Draft" } }),
             prisma.story.count({ where: { status: "Hidden" } }),
             prisma.story.count({ where: { status: "Archived" } }),
-            prisma.submittedStory.count({ where: { status: "Pending" } }),
+            prisma.submittedStory.count({ where: { status: "Pending" } }).catch(() => 0),
             prisma.userProfile.count(),
             prisma.userProfile.count({
               where: {
@@ -110,15 +91,38 @@ export const Route = createFileRoute("/api/admin/analytics")({
                 createdAt: true,
                 user: { select: { name: true } },
               },
-            }),
+            }).catch(() => []),
             // Flagged comments count
-            prisma.commentReport.count(),
+            prisma.commentReport.count().catch(() => 0),
           ]);
 
-          const viewsResult = await prisma.story.aggregate({ _sum: { viewCount: true } });
+          const totalStories = getValue(results[0], 0);
+          const published = getValue(results[1], 0);
+          const draft = getValue(results[2], 0);
+          const hidden = getValue(results[3], 0);
+          const archived = getValue(results[4], 0);
+          const pendingSubmissions = getValue(results[5], 0);
+          const totalUsers = getValue(results[6], 0);
+          const dailyReaders = getValue(results[7], 0);
+          const totalLikes = getValue(results[8], 0);
+          const totalComments = getValue(results[9], 0);
+          const totalBookmarks = getValue(results[10], 0);
+          const totalAuthors = getValue(results[11], 0);
+          const totalCategories = getValue(results[12], 0);
+          const totalStates = getValue(results[13], 0);
+          const topStories = getValue(results[14], []);
+          const topAuthorsList = getValue(results[15], []);
+          const trendingStatesList = getValue(results[16], []);
+          const recentStories = getValue(results[17], []);
+          const recentComments = getValue(results[18], []);
+          const recentLikes = getValue(results[19], []);
+          const recentSubmissions = getValue(results[20], []);
+          const flaggedCommentsCount = getValue(results[21], 0);
+
+          const viewsResult = await prisma.story.aggregate({ _sum: { viewCount: true } }).catch(() => ({ _sum: { viewCount: 0 } }));
           const totalViews = viewsResult._sum.viewCount ?? 0;
 
-          const timeResult = await prisma.userProfile.aggregate({ _sum: { totalReadingTime: true } });
+          const timeResult = await prisma.userProfile.aggregate({ _sum: { totalReadingTime: true } }).catch(() => ({ _sum: { totalReadingTime: 0 } }));
           const totalReadingTime = timeResult._sum.totalReadingTime ?? 0;
 
           // Process top authors views
@@ -146,14 +150,19 @@ export const Route = createFileRoute("/api/admin/analytics")({
             const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
             const start = new Date(d.getFullYear(), d.getMonth(), 1);
             const end = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
-            const count = await prisma.story.count({
-              where: {
-                createdAt: {
-                  gte: start,
-                  lte: end,
+            let count = 0;
+            try {
+              count = await prisma.story.count({
+                where: {
+                  createdAt: {
+                    gte: start,
+                    lte: end,
+                  },
                 },
-              },
-            });
+              });
+            } catch {
+              // fallback
+            }
             const monthName = d.toLocaleString("en-US", { month: "short" });
             growthCharts.push({ month: monthName, count });
           }

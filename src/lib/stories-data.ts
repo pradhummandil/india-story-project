@@ -37,6 +37,8 @@ function normalizeStory(raw: Record<string, unknown>): Story {
     viewCount: typeof raw.viewCount === "number" ? raw.viewCount : 0,
     publishedAt: getString(raw.publishedAt) || undefined,
     createdAt: getString(raw.createdAt) || undefined,
+    featured: !!raw.featured,
+    heroOfTheDay: !!raw.heroOfTheDay,
   };
 }
 
@@ -172,4 +174,8 @@ export function useStoriesData(): StoriesDataState {
 
 if (typeof window !== "undefined") {
   void loadStoriesData();
+  const channel = new BroadcastChannel("isp-stories-updates");
+  channel.onmessage = () => {
+    void loadStoriesData(true);
+  };
 }

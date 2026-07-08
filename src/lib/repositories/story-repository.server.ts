@@ -25,6 +25,8 @@ export type StoryCardCompatible = {
   publishedAt?: Date | null;
   createdAt?: Date;
   viewCount?: number;
+  featured?: boolean;
+  heroOfTheDay?: boolean;
 };
 
 // Projections: Select specific columns to reduce egress (exclude content/contentHi in lists)
@@ -103,6 +105,8 @@ function toStoryCardCompatible(story: any): StoryCardCompatible {
     publishedAt: story.publishedAt,
     createdAt: story.createdAt,
     viewCount: story.viewCount,
+    featured: story.featured,
+    heroOfTheDay: story.heroOfTheDay,
   };
 }
 

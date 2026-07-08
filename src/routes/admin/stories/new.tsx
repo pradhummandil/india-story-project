@@ -213,6 +213,7 @@ export default function NewStoryPage() {
       return;
     }
 
+    new BroadcastChannel("isp-stories-updates").postMessage("update");
     void navigate({ to: "/admin/stories" });
   };
 

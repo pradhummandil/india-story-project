@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { prisma } from "@/lib/repositories/prisma.server";
 import { json } from "@/routes/api/-_utils";
 import { StoryStatus } from "@prisma/client";
+import { supabase } from "@/lib/supabase-client";
 
 const storyIncludes: any = {
   category: { select: { id: true, name: true, slug: true } },
@@ -85,12 +86,24 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
           });
         }
 
+        const getFilenameFromUrl = (url: string) => {
+          if (!url || !url.includes("/storage/v1/object/public/media/")) return null;
+          const parts = url.split("/");
+          return parts[parts.length - 1];
+        };
+
         // Cover image updates
         if (body.coverImage) {
           const existing = await prisma.storyImage.findFirst({
             where: { storyId: params.id, heroImage: true },
           });
           if (existing) {
+            if (existing.imageUrl !== body.coverImage) {
+              const oldFile = getFilenameFromUrl(existing.imageUrl);
+              if (oldFile) {
+                await supabase.storage.from("media").remove([oldFile]).catch(console.error);
+              }
+            }
             await prisma.storyImage.update({
               where: { id: existing.id },
               data: { imageUrl: body.coverImage },
@@ -106,19 +119,41 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
             });
           }
         } else if (body.coverImage === null) {
-          await prisma.storyImage.deleteMany({
+          const existing = await prisma.storyImage.findFirst({
             where: { storyId: params.id, heroImage: true },
           });
+          if (existing) {
+            const oldFile = getFilenameFromUrl(existing.imageUrl);
+            if (oldFile) {
+              await supabase.storage.from("media").remove([oldFile]).catch(console.error);
+            }
+            await prisma.storyImage.delete({ where: { id: existing.id } });
+          }
         }
 
         // Additional images updates
         if (Array.isArray(body.additionalImages)) {
-          // Delete old non-hero images
+          const oldAdditional = await prisma.storyImage.findMany({
+            where: { storyId: params.id, heroImage: false },
+          });
+
+          // Delete files from storage that were removed from gallery
+          const newUrlsSet = new Set(body.additionalImages);
+          for (const img of oldAdditional) {
+            if (!newUrlsSet.has(img.imageUrl)) {
+              const oldFile = getFilenameFromUrl(img.imageUrl);
+              if (oldFile) {
+                await supabase.storage.from("media").remove([oldFile]).catch(console.error);
+              }
+            }
+          }
+
+          // Delete old database records
           await prisma.storyImage.deleteMany({
             where: { storyId: params.id, heroImage: false },
           });
 
-          // Create new ones
+          // Create new database records
           if (body.additionalImages.length > 0) {
             await prisma.storyImage.createMany({
               data: body.additionalImages.map((url: string, index: number) => ({

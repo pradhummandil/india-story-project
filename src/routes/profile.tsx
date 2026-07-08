@@ -87,7 +87,7 @@ const TABS: { id: Tab; label: string; icon: React.ComponentType<{ className?: st
 
 function ProfilePage() {
   const navigate = useNavigate();
-  const { user, session, signOut, loading } = useAuthStore();
+  const { user, session, signOut, loading, profile } = useAuthStore();
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [stats, setStats] = useState<UserStats | null>(null);
   const [bookmarks, setBookmarks] = useState<any[]>([]);
@@ -355,7 +355,11 @@ function ProfilePage() {
                 user.app_metadata?.role === "SuperAdmin" ||
                 (stats as any)?.role === "admin" ||
                 (stats as any)?.role === "superadmin" ||
-                (stats as any)?.role === "editor") && (
+                (stats as any)?.role === "editor" ||
+                (profile?.role &&
+                  (profile.role.toLowerCase() === "admin" ||
+                    profile.role.toLowerCase() === "superadmin" ||
+                    profile.role.toLowerCase() === "editor"))) && (
                 <Link
                   to="/admin"
                   className="flex items-center gap-1.5 border border-primary/30 bg-primary/8 px-3 py-2 text-xs font-sans font-semibold text-primary hover:bg-primary/15 transition-colors rounded-full animate-pulse"
@@ -368,7 +372,7 @@ function ProfilePage() {
                 variant="outline"
                 size="sm"
                 onClick={handleSignOut}
-                className="gap-1.5 rounded-full border-border font-sans text-xs hover:border-destructive/50 hover:text-destructive"
+                className="gap-1.5 rounded-full border-border font-sans text-xs hover:border-destructive/50 hover:text-destructive text-foreground"
               >
                 <LogOut className="size-3.5" />
                 Sign Out

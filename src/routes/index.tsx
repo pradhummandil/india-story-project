@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { createFileRoute, Link, ClientOnly } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import {
@@ -19,7 +19,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { SiteLayout } from "@/components/site/Layout";
-import { StoryCard } from "@/components/site/StoryCard";
+import { StoryCard, type Story } from "@/components/site/StoryCard";
 import { Hero } from "@/components/site/Hero";
 import { HeroOfTheDay } from "@/components/site/HeroOfTheDay";
 import { StoryMap } from "@/components/site/StoryMap";
@@ -134,33 +134,85 @@ function Home() {
   const lang = useI18nStore((s) => s.lang);
   const commonText = getCommonText(lang);
 
-  // Translate stories dynamically
-  const localizedStories = dbStories.map((s) => translateStory(s, lang));
+  const [featuredStoryRaw, setFeaturedStoryRaw] = useState<Story | null>(null);
+  const [gridStoriesRaw, setGridStoriesRaw] = useState<Story[]>([]);
+  const [latestStoriesRaw, setLatestStoriesRaw] = useState<Story[]>([]);
+  const [trendingStoriesRaw, setTrendingStoriesRaw] = useState<Story[]>([]);
 
-  const getSlice = (array: typeof localizedStories, start: number, count: number) => {
-    if (array.length === 0) return [];
-    let effectiveStart = start;
-    if (effectiveStart >= array.length) {
-      effectiveStart = 0;
-    }
-    const slice = array.slice(effectiveStart, effectiveStart + count);
-    if (slice.length >= count || slice.length >= array.length) {
-      return slice;
-    }
-    const padded = [...slice];
-    let i = 0;
-    while (padded.length < count) {
-      padded.push(array[i % array.length]);
-      i++;
-    }
-    return padded;
-  };
+  useEffect(() => {
+    const fetchHomeData = async () => {
+      try {
+        const featuredRes = await fetch("/api/featured");
+        if (featuredRes.ok) {
+          const data = await featuredRes.json();
+          if (data.stories && data.stories.length > 0) {
+            setFeaturedStoryRaw(data.stories[0]);
+          } else {
+            setFeaturedStoryRaw(null);
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
 
-  // Gating index slices safely
-  const featuredStory = localizedStories.length > 0 ? localizedStories[0] : null;
-  const gridStories = getSlice(localizedStories, 1, 6); // 6 secondary cards
-  const latestStories = getSlice(localizedStories, 7, 4); // 4 horizontal cards
-  const trendingStories = getSlice(localizedStories, 11, 6); // 6 carousel cards
+      try {
+        const gridRes = await fetch("/api/stories?pageSize=6");
+        if (gridRes.ok) {
+          const data = await gridRes.json();
+          setGridStoriesRaw(data.stories ?? []);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+
+      try {
+        const latestRes = await fetch("/api/latest-stories");
+        if (latestRes.ok) {
+          const data = await latestRes.json();
+          setLatestStoriesRaw(data.stories ?? []);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+
+      try {
+        const trendingRes = await fetch("/api/trending");
+        if (trendingRes.ok) {
+          const data = await trendingRes.json();
+          setTrendingStoriesRaw(data.stories ?? []);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    fetchHomeData();
+
+    const channel = new BroadcastChannel("isp-stories-updates");
+    channel.onmessage = () => {
+      fetchHomeData();
+    };
+
+    return () => {
+      channel.close();
+    };
+  }, []);
+
+  const featuredStory = useMemo(() => {
+    return featuredStoryRaw ? translateStory(featuredStoryRaw, lang) : null;
+  }, [featuredStoryRaw, lang]);
+
+  const gridStories = useMemo(() => {
+    return gridStoriesRaw.map((s) => translateStory(s, lang));
+  }, [gridStoriesRaw, lang]);
+
+  const latestStories = useMemo(() => {
+    return latestStoriesRaw.map((s) => translateStory(s, lang));
+  }, [latestStoriesRaw, lang]);
+
+  const trendingStories = useMemo(() => {
+    return trendingStoriesRaw.map((s) => translateStory(s, lang));
+  }, [trendingStoriesRaw, lang]);
 
   // Category fallback image mapper (Task 6)
   const categoryMediasWithImages = useMemo(() => {

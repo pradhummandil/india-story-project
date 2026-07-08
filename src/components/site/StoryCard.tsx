@@ -29,6 +29,8 @@ export interface Story {
   publishedAt?: string | null;
   createdAt?: string;
   viewCount?: number;
+  featured?: boolean;
+  heroOfTheDay?: boolean;
 }
 
 export function StoryCard({ story, index = 0 }: { story: Story; index?: number }) {

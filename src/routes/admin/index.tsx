@@ -7,12 +7,9 @@ import {
   FileText,
   Eye,
   Users,
-  FolderOpen,
   TrendingUp,
   Clock,
-  MapPin,
   MessageSquare,
-  Bookmark,
   Zap,
   ShieldAlert,
   Bell,
@@ -29,9 +26,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
   LineChart,
   Line,
 } from "recharts";
@@ -67,8 +61,6 @@ type DashboardStats = {
     flaggedCommentsCount: number;
   };
 };
-
-const CHART_COLORS = ["#8B0000", "#C8A96A", "#D97706", "#4B5563", "#1F2937"];
 
 function MetricCard({
   label,
@@ -130,20 +122,40 @@ export default function AdminDashboard() {
       .finally(() => setStatsLoading(false));
   }, [user, session]);
 
-  if (loading || !initialized || statsLoading) {
+  if (loading || !initialized) {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center h-64 text-white/30 font-sans text-xs uppercase tracking-widest animate-pulse">
-          Loading metrics…
+          Verifying credentials…
         </div>
       </AdminLayout>
     );
   }
 
-  if (!user || !stats) return null;
+  const SkeletonMetricCard = () => (
+    <div className="bg-[#161616]/90 border border-white/5 p-5 rounded animate-pulse">
+      <div className="flex items-center justify-between mb-3">
+        <div className="h-3 w-16 bg-white/10 rounded" />
+        <div className="size-8 rounded bg-white/5" />
+      </div>
+      <div className="h-6 w-12 bg-white/10 rounded" />
+    </div>
+  );
 
-  const hasNotifications =
-    stats.notifications.pendingSubmissions > 0 || stats.notifications.flaggedCommentsCount > 0;
+  const SkeletonList = () => (
+    <div className="space-y-3 py-1">
+      {[1, 2, 3, 4].map((n) => (
+        <div key={n} className="flex items-center justify-between animate-pulse">
+          <div className="h-3 w-32 bg-white/10 rounded" />
+          <div className="h-3 w-10 bg-white/10 rounded" />
+        </div>
+      ))}
+    </div>
+  );
+
+  const hasNotifications = stats
+    ? stats.notifications.pendingSubmissions > 0 || stats.notifications.flaggedCommentsCount > 0
+    : false;
 
   // Format reading time helper
   const formatTime = (seconds: number) => {
@@ -163,7 +175,7 @@ export default function AdminDashboard() {
             <h1 className="font-display text-2xl font-bold text-white tracking-wide">CMS Analytics Hub</h1>
             <p className="text-xs font-sans text-white/50 uppercase tracking-widest mt-1">Real-time metrics, curation tools, and moderation status</p>
           </div>
-          {hasNotifications && (
+          {hasNotifications && stats && (
             <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded px-3 py-1.5 text-xs text-white">
               <Bell className="size-3.5 text-primary animate-bounce" />
               <span className="font-sans font-semibold">
@@ -175,21 +187,46 @@ export default function AdminDashboard() {
 
         {/* Primary stats row */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          <MetricCard label="Total Stories" value={stats.totalStories} icon={BookOpen} />
-          <MetricCard label="Published" value={stats.published} icon={CheckCircle} delta="Live" />
-          <MetricCard label="Drafts" value={stats.draft} icon={FileText} />
-          <MetricCard label="Hidden" value={stats.hidden} icon={Eye} />
-          <MetricCard label="Pending Approval" value={stats.pendingSubmissions} icon={ShieldAlert} />
+          {statsLoading || !stats ? (
+            <>
+              <SkeletonMetricCard />
+              <SkeletonMetricCard />
+              <SkeletonMetricCard />
+              <SkeletonMetricCard />
+              <SkeletonMetricCard />
+            </>
+          ) : (
+            <>
+              <MetricCard label="Total Stories" value={stats.totalStories} icon={BookOpen} />
+              <MetricCard label="Published" value={stats.published} icon={CheckCircle} delta="Live" />
+              <MetricCard label="Drafts" value={stats.draft} icon={FileText} />
+              <MetricCard label="Hidden" value={stats.hidden} icon={Eye} />
+              <MetricCard label="Pending Approval" value={stats.pendingSubmissions} icon={ShieldAlert} />
+            </>
+          )}
         </div>
 
         {/* User engagement metrics row */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          <MetricCard label="Total Users" value={stats.totalUsers} icon={Users} />
-          <MetricCard label="Daily Active" value={stats.dailyReaders} icon={TrendingUp} />
-          <MetricCard label="Total Views" value={stats.totalViews.toLocaleString()} icon={Eye} />
-          <MetricCard label="Likes" value={stats.totalLikes.toLocaleString()} icon={Zap} />
-          <MetricCard label="Comments" value={stats.totalComments.toLocaleString()} icon={MessageSquare} />
-          <MetricCard label="Reading Time" value={formatTime(stats.totalReadingTime)} icon={Clock} />
+          {statsLoading || !stats ? (
+            <>
+              <SkeletonMetricCard />
+              <SkeletonMetricCard />
+              <SkeletonMetricCard />
+              <SkeletonMetricCard />
+              <SkeletonMetricCard />
+              <SkeletonMetricCard />
+            </>
+          ) : (
+            <>
+              <MetricCard label="Total Users" value={stats.totalUsers} icon={Users} />
+              <MetricCard label="Daily Active" value={stats.dailyReaders} icon={TrendingUp} />
+              <MetricCard label="Total Views" value={stats.totalViews.toLocaleString()} icon={Eye} />
+              <MetricCard label="Likes" value={stats.totalLikes.toLocaleString()} icon={Zap} />
+              <MetricCard label="Comments" value={stats.totalComments.toLocaleString()} icon={MessageSquare} />
+              <MetricCard label="Reading Time" value={formatTime(stats.totalReadingTime)} icon={Clock} />
+            </>
+          )}
         </div>
 
         {/* Charts and Data Visualizations */}
@@ -200,15 +237,21 @@ export default function AdminDashboard() {
               Story Publishing Trend (Last 6 Months)
             </h3>
             <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={stats.growthCharts}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                  <XAxis dataKey="month" tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }} />
-                  <YAxis tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }} />
-                  <Tooltip contentStyle={{ background: "#111", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 4, color: "white" }} />
-                  <Line type="monotone" dataKey="count" stroke="#8B0000" strokeWidth={3} dot={{ fill: "#C8A96A" }} />
-                </LineChart>
-              </ResponsiveContainer>
+              {statsLoading || !stats ? (
+                <div className="h-full flex items-center justify-center animate-pulse text-white/20 text-xs font-sans">
+                  Loading trend chart...
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={stats.growthCharts}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                    <XAxis dataKey="month" tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }} />
+                    <YAxis tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }} />
+                    <Tooltip contentStyle={{ background: "#111", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 4, color: "white" }} />
+                    <Line type="monotone" dataKey="count" stroke="#8B0000" strokeWidth={3} dot={{ fill: "#C8A96A" }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </div>
 
@@ -218,7 +261,9 @@ export default function AdminDashboard() {
               Trending States (By Views)
             </h3>
             <div className="space-y-4">
-              {stats.trendingStates.length === 0 ? (
+              {statsLoading || !stats ? (
+                <SkeletonList />
+              ) : stats.trendingStates.length === 0 ? (
                 <p className="text-xs text-white/30 font-sans italic py-4">No stories views tracked yet.</p>
               ) : (
                 stats.trendingStates.map((state, i) => (
@@ -242,12 +287,16 @@ export default function AdminDashboard() {
               Top Read Stories
             </h3>
             <div className="space-y-4">
-              {stats.topStories.map((story) => (
-                <div key={story.slug} className="flex items-center justify-between gap-3">
-                  <span className="text-xs font-sans text-white/80 font-semibold truncate max-w-[200px]">{story.title}</span>
-                  <span className="text-xs text-gold font-bold font-mono whitespace-nowrap">{story.viewCount.toLocaleString()} views</span>
-                </div>
-              ))}
+              {statsLoading || !stats ? (
+                <SkeletonList />
+              ) : (
+                stats.topStories.map((story) => (
+                  <div key={story.slug} className="flex items-center justify-between gap-3">
+                    <span className="text-xs font-sans text-white/80 font-semibold truncate max-w-[200px]">{story.title}</span>
+                    <span className="text-xs text-gold font-bold font-mono whitespace-nowrap">{story.viewCount.toLocaleString()} views</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -257,15 +306,19 @@ export default function AdminDashboard() {
               Top Authors
             </h3>
             <div className="space-y-4">
-              {stats.topAuthors.map((author) => (
-                <div key={author.name} className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-white/80 font-sans font-semibold">{author.name}</p>
-                    <p className="text-[10px] text-white/40">{author.storiesCount} stories written</p>
+              {statsLoading || !stats ? (
+                <SkeletonList />
+              ) : (
+                stats.topAuthors.map((author) => (
+                  <div key={author.name} className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-white/80 font-sans font-semibold">{author.name}</p>
+                      <p className="text-[10px] text-white/40">{author.storiesCount} stories written</p>
+                    </div>
+                    <span className="text-xs text-white/50 font-mono font-semibold">{author.viewCount.toLocaleString()} views</span>
                   </div>
-                  <span className="text-xs text-white/50 font-mono font-semibold">{author.viewCount.toLocaleString()} views</span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
@@ -275,26 +328,33 @@ export default function AdminDashboard() {
               <h3 className="font-sans text-xs font-bold text-white/50 uppercase tracking-wider mb-4">
                 Moderation Action Items
               </h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 rounded bg-white/5 border border-white/5">
-                  <div>
-                    <p className="text-xs text-white/80 font-sans font-semibold">Pending Submissions</p>
-                    <p className="text-[10px] text-white/40">Contributions awaiting validation</p>
-                  </div>
-                  <span className="size-6 rounded-full bg-primary/20 flex items-center justify-center text-xs text-primary font-bold">
-                    {stats.notifications.pendingSubmissions}
-                  </span>
+              {statsLoading || !stats ? (
+                <div className="space-y-3 animate-pulse">
+                  <div className="h-14 bg-white/5 rounded" />
+                  <div className="h-14 bg-white/5 rounded" />
                 </div>
-                <div className="flex items-center justify-between p-3 rounded bg-white/5 border border-white/5">
-                  <div>
-                    <p className="text-xs text-white/80 font-sans font-semibold">Flagged Comments</p>
-                    <p className="text-[10px] text-white/40">Reports submitted by readers</p>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 rounded bg-white/5 border border-white/5">
+                    <div>
+                      <p className="text-xs text-white/80 font-sans font-semibold">Pending Submissions</p>
+                      <p className="text-[10px] text-white/40">Contributions awaiting validation</p>
+                    </div>
+                    <span className="size-6 rounded-full bg-primary/20 flex items-center justify-center text-xs text-primary font-bold">
+                      {stats.notifications.pendingSubmissions}
+                    </span>
                   </div>
-                  <span className="size-6 rounded-full bg-yellow-500/20 flex items-center justify-center text-xs text-yellow-400 font-bold">
-                    {stats.notifications.flaggedCommentsCount}
-                  </span>
+                  <div className="flex items-center justify-between p-3 rounded bg-white/5 border border-white/5">
+                    <div>
+                      <p className="text-xs text-white/80 font-sans font-semibold">Flagged Comments</p>
+                      <p className="text-[10px] text-white/40">Reports submitted by readers</p>
+                    </div>
+                    <span className="size-6 rounded-full bg-yellow-500/20 flex items-center justify-center text-xs text-yellow-400 font-bold">
+                      {stats.notifications.flaggedCommentsCount}
+                    </span>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
             <button
               onClick={() => void navigate({ to: "/admin/community" })}
@@ -311,7 +371,16 @@ export default function AdminDashboard() {
             Recent System Activity
           </h3>
           <div className="divide-y divide-white/5">
-            {stats.activities.length === 0 ? (
+            {statsLoading || !stats ? (
+              <div className="space-y-3 py-2">
+                {[1, 2, 3].map((n) => (
+                  <div key={n} className="flex justify-between animate-pulse">
+                    <div className="h-3 w-48 bg-white/10 rounded" />
+                    <div className="h-3 w-12 bg-white/10 rounded" />
+                  </div>
+                ))}
+              </div>
+            ) : stats.activities.length === 0 ? (
               <p className="text-xs text-white/30 font-sans italic py-4">No activities logged yet.</p>
             ) : (
               stats.activities.map((act, i) => (

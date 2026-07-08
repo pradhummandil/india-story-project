@@ -9,7 +9,7 @@ export const Route = createFileRoute("/api/hero-slides")({
     handlers: {
       GET: async () => {
         try {
-          // Try to fetch active hero slides from DB
+          // Fetch active hero slides from DB
           const heroSlides = await prisma.heroSlide.findMany({
             where: {
               active: true,
@@ -42,8 +42,8 @@ export const Route = createFileRoute("/api/hero-slides")({
                 slug: s.slug,
                 title: s.title,
                 excerpt: s.excerpt,
-                titleHi: s.titleHi,
-                excerptHi: s.excerptHi,
+                titleHi: s.titleHi ?? null,
+                excerptHi: s.excerptHi ?? null,
                 category: s.category?.name ?? null,
                 state: s.state?.name ?? null,
                 author: s.author?.name ?? null,
@@ -55,10 +55,10 @@ export const Route = createFileRoute("/api/hero-slides")({
             return json({ slides });
           }
 
-          // Fallback: top 5 featured stories
-          const featuredStories = await prisma.story.findMany({
-            where: { featured: true, status: "Published" },
-            orderBy: { viewCount: "desc" },
+          // Fallback: Latest Published Stories
+          const latestStories = await prisma.story.findMany({
+            where: { status: "Published" },
+            orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
             take: 5,
             include: {
               author: true,
@@ -68,7 +68,7 @@ export const Route = createFileRoute("/api/hero-slides")({
             },
           });
 
-          const slides = featuredStories.map((s) => {
+          const slides = latestStories.map((s) => {
             const heroImage =
               s.images?.find((img) => img.heroImage)?.imageUrl ??
               FALLBACK_IMAGE;
@@ -92,7 +92,6 @@ export const Route = createFileRoute("/api/hero-slides")({
           return json({ slides });
         } catch (error: any) {
           console.error("[hero-slides] GET error:", error);
-          // Return empty — Hero component will use local stories fallback
           return json({ slides: [] });
         }
       },

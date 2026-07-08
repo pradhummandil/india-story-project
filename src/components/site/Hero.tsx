@@ -43,7 +43,6 @@ const FALLBACK_IMAGES = [
 ];
 
 export function CinematicHero() {
-  const { stories: dbStories } = useStoriesData();
   const lang = useI18nStore((s) => s.lang);
 
   const [slides, setSlides] = useState<HeroSlide[]>([]);
@@ -53,10 +52,8 @@ export function CinematicHero() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [loaded, setLoaded] = useState(false);
 
-  // Build slides from DB stories (featured first) or API
   useEffect(() => {
     const buildSlides = async () => {
-      // Try API first
       try {
         const res = await fetch("/api/hero-slides");
         if (res.ok) {
@@ -67,38 +64,24 @@ export function CinematicHero() {
             return;
           }
         }
-      } catch {
-        // fall through to local stories
+      } catch (err) {
+        console.error("Failed to fetch hero slides:", err);
       }
-
-      // Fallback: use featured/top stories from store
-      if (dbStories.length > 0) {
-        const featured = dbStories
-          .filter((s) => s.image)
-          .slice(0, 7)
-          .map((s, i) => {
-            const t = translateStory(s, "en");
-            return {
-              id: s.id || s.slug,
-              slug: s.slug,
-              title: t.title,
-              excerpt: t.excerpt,
-              titleHi: s.titleHi,
-              excerptHi: s.excerptHi,
-              category: s.category,
-              state: s.region || "India",
-              author: getStoryAuthor(s.slug),
-              readingTime: s.readTime,
-              image: s.image || FALLBACK_IMAGES[i % FALLBACK_IMAGES.length],
-            } as HeroSlide;
-          });
-        setSlides(featured.length > 0 ? featured : buildFallbackSlides());
-        setLoaded(true);
-      }
+      setSlides(buildFallbackSlides());
+      setLoaded(true);
     };
 
     buildSlides();
-  }, [dbStories]);
+
+    const channel = new BroadcastChannel("isp-stories-updates");
+    channel.onmessage = () => {
+      buildSlides();
+    };
+
+    return () => {
+      channel.close();
+    };
+  }, []);
 
   function buildFallbackSlides(): HeroSlide[] {
     return FALLBACK_IMAGES.map((img, i) => ({

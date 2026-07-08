@@ -193,6 +193,7 @@ export default function EditStoryPage() {
       setSaving(false);
       return;
     }
+    new BroadcastChannel("isp-stories-updates").postMessage("update");
     void navigate({ to: "/admin/stories" });
   };
 
@@ -202,6 +203,7 @@ export default function EditStoryPage() {
       method: "DELETE",
       headers: session ? { Authorization: `Bearer ${session.access_token}` } : {},
     });
+    new BroadcastChannel("isp-stories-updates").postMessage("update");
     void navigate({ to: "/admin/stories" });
   };
 

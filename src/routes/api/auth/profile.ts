@@ -30,15 +30,7 @@ export const Route = createFileRoute("/api/auth/profile")({
           // Determine if we should set admin role
           let roleToAssign = "user";
           if (email.toLowerCase() === "indiastoryprojectmanager21@gmail.com") {
-            const otherAdmins = await prisma.profile.findFirst({
-              where: {
-                role: "admin",
-                email: { not: email },
-              },
-            });
-            if (!otherAdmins) {
-              roleToAssign = "admin";
-            }
+            roleToAssign = "admin";
           }
 
           // Upsert profile in database
