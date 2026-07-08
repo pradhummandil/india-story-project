@@ -1,99 +1,140 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, ArrowRight } from "lucide-react";
+import { MapPin, ArrowRight, X, Sparkles } from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
+
 import { Button } from "@/components/ui/button";
-import { stories } from "@/lib/stories-data";
+import type { Story } from "@/components/site/StoryCard";
+import { useStoriesData } from "@/lib/stories-data";
+import { useI18nStore, translateStory, getCommonText } from "@/lib/i18n";
+import { INDIA_PATHS } from "./IndiaPaths";
+import { STATE_COORDINATES } from "./StateCoordinates";
 
 interface Hotspot {
   id: string;
   state: string;
-  category: string;
-  title: string;
-  preview: string;
-  // coords in viewBox 500x600 (matching IndiaSilhouette path)
+  stories: Story[];
+  count: number;
   x: number;
   y: number;
 }
 
-function seededNumber(seed: string) {
-  let h = 2166136261;
-  for (let i = 0; i < seed.length; i++) {
-    h ^= seed.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return (h >>> 0) / 2 ** 32;
-}
+// Mini Story Card inside state drawer
+function MiniStoryCard({ story }: { story: Story }) {
+  const lang = useI18nStore((s) => s.lang);
+  const commonText = getCommonText(lang);
 
-// Deterministic hotspot placement derived from stories.json (region name only).
-// Approximate coordinates aligned to the current SVG viewBox (500x600).
-function stateCoords(state: string) {
-  const rx = seededNumber(`x|${state}`);
-  const ry = seededNumber(`y|${state}`);
-
-  const x = 200 + rx * 220; // 200..420
-  const y = 110 + ry * 390; // 110..500
-
-  const cx = Math.max(60, Math.min(440, x));
-  const cy = Math.max(60, Math.min(540, y));
-  return { x: cx, y: cy };
-}
-
-function pickRepresentativeStory(storyList: typeof stories) {
-  // Deterministic: keep first entry.
-  return storyList[0];
+  return (
+    <Link
+      to="/stories/$slug"
+      params={{ slug: story.slug }}
+      className="flex gap-4 p-3 bg-background hover:bg-muted border border-border/40 hover:border-gold/30 transition-all duration-300 group rounded-none"
+    >
+      <div className="size-20 shrink-0 overflow-hidden bg-muted border border-border/20">
+        {story.image ? (
+          <img
+            src={story.image}
+            alt={story.imageAlt || story.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-red-950/30 to-stone-900 flex items-center justify-center font-display italic text-gold/30">
+            ISP
+          </div>
+        )}
+      </div>
+      <div className="flex flex-col justify-between py-1 min-w-0 flex-1">
+        <div>
+          <span className="text-[9px] uppercase tracking-widest text-gold font-sans font-bold">
+            {story.category}
+          </span>
+          <h4 className="font-display text-sm font-bold leading-tight line-clamp-2 mt-1 group-hover:text-primary transition-colors">
+            {story.title}
+          </h4>
+        </div>
+        <span className="text-[10px] text-muted-foreground font-sans">
+          {story.readTime || "4 min read"}
+        </span>
+      </div>
+    </Link>
+  );
 }
 
 export function StoryMap() {
+  const { stories: dbStories } = useStoriesData();
+  const lang = useI18nStore((s) => s.lang);
+  const commonText = getCommonText(lang);
+  const navigate = useNavigate();
+
+  const [mounted, setMounted] = useState(false);
   const [active, setActive] = useState<Hotspot | null>(null);
+  const [drawerState, setDrawerState] = useState<Hotspot | null>(null);
+  const [hoveredPath, setHoveredPath] = useState<string | null>(null);
 
-  const derivedHotspots = useMemo<Hotspot[]>(() => {
-    // Every story inherits coords from its state.
-    const byState = new Map<string, typeof stories>();
-    for (const s of stories) {
-      if (!s.region) continue;
-      const list = byState.get(s.region) ?? [];
-      list.push(s);
-      byState.set(s.region, list);
-    }
-
-    const states = Array.from(byState.keys()).sort((a, b) => a.localeCompare(b));
-
-    return states.map((state, idx) => {
-      const list = byState.get(state)!;
-      const rep = pickRepresentativeStory(list);
-      const coords = stateCoords(state);
-      return {
-        id: state,
-        state,
-        category: rep.category,
-        title: rep.title,
-        preview: rep.excerpt,
-        x: coords.x,
-        y: coords.y,
-      };
-    });
+  useEffect(() => {
+    setMounted(true);
   }, []);
 
-  const connections = useMemo<Array<[Hotspot["id"], Hotspot["id"]]>>(() => {
-    // Connect hotspots that share a category; stable and data-driven.
-    const edges: Array<[Hotspot["id"], Hotspot["id"]]> = [];
-    for (let i = 0; i < derivedHotspots.length; i++) {
-      for (let j = i + 1; j < derivedHotspots.length; j++) {
-        const a = derivedHotspots[i];
-        const b = derivedHotspots[j];
-        if (!a.category || !b.category) continue;
-        if (a.category === b.category) edges.push([a.id, b.id]);
+  // Translate database stories dynamically
+  const localizedStories = useMemo(() => {
+    return dbStories.map((s) => translateStory(s, lang));
+  }, [dbStories, lang]);
+
+  // Group stories by region/state name
+  const storiesByState = useMemo(() => {
+    const map: Record<string, Story[]> = {};
+    localizedStories.forEach((s) => {
+      const stateName = s.region || "India";
+      if (!map[stateName]) {
+        map[stateName] = [];
       }
-    }
-    return edges.slice(0, 10);
-  }, [derivedHotspots]);
+      map[stateName].push(s);
+    });
+    return map;
+  }, [localizedStories]);
 
-  const getHotspot = (id: string) => derivedHotspots.find((h) => h.id === id)!;
+  // Map state coordinate centers
+  const hotspots = useMemo<Hotspot[]>(() => {
+    return Object.entries(storiesByState)
+      .map(([stateName, list]) => {
+        const coords = STATE_COORDINATES[stateName];
+        if (!coords) return null;
+        return {
+          id: stateName,
+          state: stateName,
+          stories: list,
+          count: list.length,
+          x: coords.x,
+          y: coords.y,
+        };
+      })
+      .filter((h): h is Hotspot => h !== null);
+  }, [storiesByState]);
 
-  const hotspots = derivedHotspots;
+  // Floating tooltip style using responsive percentages
+  const tooltipStyle = useMemo(() => {
+    if (!active) return {};
+    const left = (active.x / 612) * 100;
+    const top = (active.y / 696) * 100;
+    return {
+      left: `${left}%`,
+      top: `${top}%`,
+      transform: "translate(-50%, -108%)",
+    };
+  }, [active]);
+
+  if (!mounted) {
+    return (
+      <div className="container mx-auto px-6 py-24 min-h-[400px] flex items-center justify-center">
+        <span className="font-sans text-xs uppercase tracking-widest text-muted-foreground animate-pulse">
+          Loading Story Map…
+        </span>
+      </div>
+    );
+  }
 
   return (
-    <section className="relative container mx-auto px-6 py-24 md:py-32">
+    <section className="relative container mx-auto px-6 py-24 md:py-32 border-b border-border/70">
       {/* Heading */}
       <div className="text-center max-w-3xl mx-auto mb-16">
         <motion.p
@@ -101,208 +142,245 @@ export function StoryMap() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-xs uppercase tracking-widest text-gold mb-4"
+          className="text-xs uppercase tracking-widest text-gold mb-4 font-sans font-bold"
         >
-          The story map
+          {lang === "en" ? "Interactive Story Explorer" : "इंटरएक्टिव कहानी मानचित्र"}
         </motion.p>
         <motion.h2
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7, delay: 0.05 }}
-          className="font-display text-4xl md:text-6xl leading-[1.05]"
+          className="font-display text-4xl md:text-6xl font-bold leading-[1.05]"
         >
-          Every corner of India <span className="text-gradient-gold italic">has a story</span>
+          {lang === "en" ? "Every corner of India " : "भारत के हर कोने की "}
+          <span className="text-primary italic">
+            {lang === "en" ? "has a story" : "अपनी एक कहानी है"}
+          </span>
         </motion.h2>
         <motion.p
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7, delay: 0.15 }}
-          className="mt-6 text-lg text-muted-foreground leading-relaxed"
+          className="mt-6 text-base md:text-lg text-muted-foreground leading-relaxed font-sans font-medium"
         >
-          Travel across the country through the lives of changemakers, innovators, and everyday
-          heroes.
+          {lang === "en"
+            ? "Travel across the subcontinental landscape through the lives of changemakers, innovators, and everyday heroes."
+            : "बदलाव लाने वालों, नवप्रवर्तकों और रोजमर्रा के नायकों के जीवन के माध्यम से उपमहाद्वीप की यात्रा करें।"}
         </motion.p>
       </div>
 
       {/* Map + sidebar */}
-      <div className="grid lg:grid-cols-[1.4fr_1fr] gap-8 items-center">
-        {/* Map */}
+      <div className="grid lg:grid-cols-[1.5fr_1fr] gap-12 items-start">
+        {/* Map Wrapper */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.97 }}
+          initial={{ opacity: 0, scale: 0.98 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-          className="relative glass rounded-3xl p-4 md:p-8 overflow-hidden"
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="relative bg-card/45 border border-border/50 p-4 md:p-8 shadow-sm overflow-visible"
         >
-          {/* Ambient glow */}
-          <div className="absolute inset-0 bg-hero opacity-40 pointer-events-none" />
-          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 size-[420px] rounded-full bg-gold/10 blur-3xl pointer-events-none" />
+          {/* Ambient Glow */}
+          <div className="absolute inset-0 bg-hero opacity-30 pointer-events-none" />
+          <div className="absolute top-1/4 left-1/3 size-[300px] rounded-full bg-gold/5 blur-3xl pointer-events-none" />
 
+          {/* India SVG map */}
           <svg
-            viewBox="0 0 500 600"
+            viewBox="0 0 612 696"
             className="relative w-full h-auto"
             xmlns="http://www.w3.org/2000/svg"
           >
             <defs>
-              <linearGradient id="mapStroke" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="oklch(0.82 0.14 75)" />
-                <stop offset="100%" stopColor="oklch(0.72 0.2 50)" />
+              <linearGradient id="stateStrokeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#C7A25A" stopOpacity="0.65" />
+                <stop offset="100%" stopColor="#C7A25A" stopOpacity="0.3" />
               </linearGradient>
-              <linearGradient id="mapFill" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="oklch(0.82 0.14 75)" stopOpacity="0.08" />
-                <stop offset="100%" stopColor="oklch(0.72 0.2 50)" stopOpacity="0.02" />
-              </linearGradient>
-              <filter id="mapGlow">
-                <feGaussianBlur stdDeviation="3" result="blur" />
+              <filter id="markerGlow">
+                <feGaussianBlur stdDeviation="2.5" result="blur" />
                 <feMerge>
                   <feMergeNode in="blur" />
                   <feMergeNode in="SourceGraphic" />
                 </feMerge>
               </filter>
-              <radialGradient id="hotspotGrad">
-                <stop offset="0%" stopColor="oklch(0.9 0.16 75)" />
-                <stop offset="100%" stopColor="oklch(0.72 0.2 50)" />
-              </radialGradient>
             </defs>
 
-            {/* India silhouette */}
-            <motion.path
-              d="M180 60 C 220 50 260 55 295 70 C 330 82 355 100 365 125 C 372 145 360 165 345 178 C 380 185 410 200 425 230 C 440 260 430 295 405 320 C 395 332 380 340 365 345 C 380 370 385 400 375 430 C 365 460 345 485 320 505 C 295 525 265 540 240 550 C 220 558 200 555 195 540 C 188 520 200 500 215 485 C 200 480 188 470 185 455 C 180 435 195 418 210 408 C 195 395 185 378 188 358 C 192 335 215 320 235 318 C 220 305 210 285 215 265 C 222 240 245 225 268 222 C 245 215 225 200 215 178 C 205 155 215 132 232 118 C 215 110 200 95 195 78 C 190 65 175 62 180 60 Z"
-              fill="url(#mapFill)"
-              stroke="url(#mapStroke)"
-              strokeWidth="1.5"
-              filter="url(#mapGlow)"
-              initial={{ pathLength: 0, opacity: 0 }}
-              whileInView={{ pathLength: 1, opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 2.2, ease: [0.22, 1, 0.36, 1] }}
-            />
+            {/* Render 36 individual state paths */}
+            <g className="transition-all duration-300">
+              {INDIA_PATHS.map((path) => {
+                const hasStories = !!storiesByState[path.name];
+                const isHovered = hoveredPath === path.id;
 
-            {/* Subtle region divider lines (north/south/east/west) */}
-            <g stroke="url(#mapStroke)" strokeWidth="0.6" strokeDasharray="3 5" opacity="0.25">
-              <line x1="180" y1="270" x2="425" y2="270" />
-              <line x1="180" y1="400" x2="400" y2="400" />
-              <line x1="280" y1="80" x2="280" y2="550" />
-            </g>
-
-            {/* Connections between selected stories */}
-            <g>
-              {connections.map(([a, b], i) => {
-                const A = getHotspot(a);
-                const B = getHotspot(b);
                 return (
-                  <motion.line
-                    key={`${a}-${b}`}
-                    x1={A.x}
-                    y1={A.y}
-                    x2={B.x}
-                    y2={B.y}
-                    stroke="url(#mapStroke)"
-                    strokeWidth="0.8"
-                    strokeDasharray="4 6"
-                    initial={{ pathLength: 0, opacity: 0 }}
-                    whileInView={{ pathLength: 1, opacity: 0.5 }}
-                    viewport={{ once: true }}
-                    transition={{
-                      duration: 1.4,
-                      delay: 1.5 + i * 0.2,
-                      ease: "easeOut",
+                  <path
+                    key={path.id}
+                    d={path.d}
+                    fill={
+                      isHovered
+                        ? "rgba(199, 162, 90, 0.35)"
+                        : hasStories
+                          ? "rgba(199, 162, 90, 0.12)"
+                          : "rgba(229, 220, 203, 0.22)"
+                    }
+                    stroke="url(#stateStrokeGrad)"
+                    strokeWidth={isHovered ? "1.8" : "1.2"}
+                    className="cursor-pointer transition-all duration-300"
+                    onMouseEnter={() => setHoveredPath(path.id)}
+                    onMouseLeave={() => setHoveredPath(null)}
+                    onClick={() => {
+                      void navigate({
+                        to: "/stories",
+                        search: { state: path.name },
+                      });
                     }}
                   />
                 );
               })}
             </g>
 
-            {/* Hotspots */}
+            {/* Interactive hotspot pins */}
             {hotspots.map((h, i) => {
-              const isActive = active?.id === h.id;
+              const isHovered = active?.id === h.id;
+              const hasMultiple = h.count > 1;
+
               return (
                 <g
                   key={h.id}
-                  className="cursor-pointer"
+                  className="cursor-pointer select-none"
                   onMouseEnter={() => setActive(h)}
                   onMouseLeave={() => setActive((cur) => (cur?.id === h.id ? null : cur))}
-                  onClick={() => setActive(h)}
+                  onClick={() => {
+                    if (hasMultiple) {
+                      setDrawerState(h);
+                    } else {
+                      void navigate({
+                        to: "/stories/$slug",
+                        params: { slug: h.stories[0].slug },
+                      });
+                    }
+                  }}
                 >
-                  {/* Pulse ring */}
+                  {/* Pulse Ring */}
                   <motion.circle
                     cx={h.x}
                     cy={h.y}
-                    r="6"
+                    r="8"
                     fill="oklch(0.82 0.14 75)"
-                    opacity="0.4"
-                    animate={{ r: [6, 18, 6], opacity: [0.5, 0, 0.5] }}
+                    opacity="0.45"
+                    animate={{ r: [8, 22, 8], opacity: [0.6, 0, 0.6] }}
                     transition={{
-                      duration: 2.4,
+                      duration: 2.2,
                       repeat: Infinity,
-                      delay: i * 0.3,
+                      delay: i * 0.25,
                       ease: "easeOut",
                     }}
                   />
-                  {/* Outer halo on hover */}
+                  {/* Hover Halo */}
                   <motion.circle
                     cx={h.x}
                     cy={h.y}
-                    r="14"
+                    r="15"
                     fill="oklch(0.82 0.14 75)"
-                    opacity={isActive ? 0.18 : 0}
-                    animate={{ opacity: isActive ? 0.18 : 0 }}
-                    transition={{ duration: 0.3 }}
+                    opacity={isHovered ? 0.22 : 0}
+                    animate={{ opacity: isHovered ? 0.22 : 0 }}
+                    transition={{ duration: 0.2 }}
                   />
-                  {/* Core dot */}
+                  {/* Outer circle dot */}
                   <circle
                     cx={h.x}
                     cy={h.y}
-                    r={isActive ? 5.5 : 4}
-                    fill="url(#hotspotGrad)"
-                    stroke="oklch(0.96 0.01 80)"
-                    strokeWidth="0.8"
-                    style={{ transition: "r 0.3s ease" }}
+                    r={isHovered ? 6.5 : 5.5}
+                    fill="oklch(0.72 0.2 50)"
+                    stroke="#F8F4EC"
+                    strokeWidth="1.2"
+                    filter="url(#markerGlow)"
+                    className="transition-all duration-300"
                   />
-                  {/* Invisible larger hit target */}
-                  <circle cx={h.x} cy={h.y} r="20" fill="transparent" />
+                  {/* Multiple count badge overlay */}
+                  {hasMultiple && (
+                    <text
+                      x={h.x}
+                      y={h.y - 12}
+                      textAnchor="middle"
+                      className="fill-gold font-sans font-bold text-[9px] uppercase tracking-wider pointer-events-none select-none drop-shadow"
+                    >
+                      +{h.count}
+                    </text>
+                  )}
                 </g>
               );
             })}
           </svg>
 
-          {/* Hover tooltip (positioned absolutely over the map) */}
+          {/* Floating Tooltip Card (Task 3) */}
           <AnimatePresence>
             {active && (
               <motion.div
                 key={active.id}
-                initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 8, scale: 0.96 }}
-                transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                className="hidden md:block absolute top-6 right-6 max-w-xs glass rounded-2xl p-5 shadow-elegant pointer-events-none"
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                transition={{ duration: 0.25 }}
+                style={tooltipStyle}
+                className="absolute bg-card/95 backdrop-blur-md border border-gold/30 p-4 shadow-elegant z-30 w-64 rounded-none font-sans pointer-events-auto hidden md:block"
               >
-                <div className="flex items-center gap-2 text-xs text-gold mb-2">
-                  <MapPin className="size-3.5" />
-                  <span className="uppercase tracking-widest">{active.state}</span>
+                <div className="relative">
+                  {/* Story Image */}
+                  {active.stories[0]?.image ? (
+                    <div className="w-full aspect-[16/10] overflow-hidden mb-3 border border-border/20 bg-muted">
+                      <img
+                        src={active.stories[0].image}
+                        alt={active.stories[0].title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : null}
+
+                  <div className="flex items-center gap-2 text-[10px] text-gold mb-1 font-bold uppercase tracking-wider">
+                    <MapPin className="size-3" />
+                    <span>{active.state}</span>
+                  </div>
+
+                  <h4 className="font-display text-sm font-bold leading-tight line-clamp-2 text-foreground mb-1">
+                    {active.stories[0]?.title || "Untitled Story"}
+                  </h4>
+
+                  <p className="text-[10px] text-muted-foreground line-clamp-2 leading-relaxed mb-3">
+                    {active.stories[0]?.excerpt}
+                  </p>
+
+                  <div className="flex items-center justify-between text-[9px] text-muted-foreground font-bold uppercase tracking-wider mb-3">
+                    <span>{active.stories[0]?.category}</span>
+                    <span>{active.stories[0]?.readTime || "4 min read"}</span>
+                  </div>
+
+                  <Link
+                    to="/stories/$slug"
+                    params={{ slug: active.stories[0]?.slug }}
+                    className="inline-flex w-full items-center justify-center h-9 bg-primary text-primary-foreground text-[10px] uppercase font-bold tracking-widest hover:bg-primary/95 transition-colors rounded-none"
+                  >
+                    {lang === "en" ? "Read Story" : "कहानी पढ़ें"}
+                    <ArrowRight className="size-3 ml-1.5" />
+                  </Link>
+
+                  {/* Arrow Pointer */}
+                  <div className="absolute bottom-[-22px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-gold/30 pointer-events-none" />
                 </div>
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
-                  {active.category}
-                </p>
-                <h3 className="font-display text-xl leading-tight mb-2">{active.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
-                  {active.preview}
-                </p>
               </motion.div>
             )}
           </AnimatePresence>
         </motion.div>
 
-        {/* Sidebar — story list */}
-        <div className="flex flex-col gap-3">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">
-            Featured locations
+        {/* Sidebar — state listing */}
+        <div className="flex flex-col gap-4">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1 font-sans font-bold">
+            {lang === "en" ? "Featured States" : "फीचर्ड राज्य"}
           </p>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 max-h-[500px] overflow-y-auto pr-1 scrollbar-thin">
             {hotspots.map((h, i) => {
               const isActive = active?.id === h.id;
+              const repStory = h.stories[0];
+              if (!repStory) return null;
               return (
                 <motion.button
                   key={h.id}
@@ -312,23 +390,37 @@ export function StoryMap() {
                   transition={{ duration: 0.45, delay: i * 0.05 }}
                   onMouseEnter={() => setActive(h)}
                   onFocus={() => setActive(h)}
-                  className={`text-left glass rounded-xl p-4 transition-all border ${
-                    isActive
-                      ? "border-gold/50 shadow-glow"
-                      : "border-transparent hover:border-gold/20"
+                  onClick={() => {
+                    if (h.count === 1) {
+                      void navigate({ to: `/stories/${repStory.slug}` });
+                    } else {
+                      setDrawerState(h);
+                    }
+                  }}
+                  className={`text-left bg-card/45 rounded-none p-4 transition-all border ${
+                    isActive ? "border-gold/60 shadow-sm" : "border-border/30 hover:border-gold/30"
                   }`}
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2 text-xs text-gold mb-1">
+                      <div className="flex items-center gap-2 text-[10px] text-gold mb-1 font-sans">
                         <MapPin className="size-3" />
-                        <span className="uppercase tracking-widest">{h.state}</span>
+                        <span className="uppercase tracking-widest font-bold">{h.state}</span>
                         <span className="size-1 rounded-full bg-muted-foreground/50" />
-                        <span className="text-muted-foreground normal-case tracking-normal">
-                          {h.category}
+                        <span className="text-muted-foreground font-semibold">
+                          {h.count}{" "}
+                          {h.count === 1
+                            ? lang === "en"
+                              ? "Story"
+                              : "कहानी"
+                            : lang === "en"
+                              ? "Stories"
+                              : "कहानियाँ"}
                         </span>
                       </div>
-                      <p className="font-display text-lg leading-snug truncate">{h.title}</p>
+                      <p className="font-display text-base leading-snug truncate font-bold text-foreground">
+                        {repStory.title}
+                      </p>
                     </div>
                     <ArrowRight
                       className={`size-4 shrink-0 transition-all ${
@@ -341,17 +433,89 @@ export function StoryMap() {
             })}
           </div>
 
-          <div className="mt-6">
+          <div className="mt-4">
             <Button
+              asChild
               size="lg"
-              className="w-full sm:w-auto bg-gradient-to-r from-gold to-saffron text-gold-foreground border-0 shadow-glow"
+              className="w-full sm:w-auto bg-primary hover:bg-primary/95 text-primary-foreground border-0 shadow-sm uppercase tracking-widest text-xs font-bold rounded-full h-12"
             >
-              Explore the story map
-              <ArrowRight className="size-4" />
+              <Link to="/stories">
+                {lang === "en" ? "Browse Story Archive" : "सभी कहानियाँ देखें"}
+                <ArrowRight className="size-4 ml-2" />
+              </Link>
             </Button>
           </div>
         </div>
       </div>
+
+      {/* Drawer Overlay (Task 4) */}
+      <AnimatePresence>
+        {drawerState && (
+          <>
+            {/* Drawer Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setDrawerState(null)}
+              className="fixed inset-0 bg-black/60 z-[90]"
+            />
+            {/* Drawer Body */}
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 26, stiffness: 210 }}
+              className="fixed right-0 top-0 bottom-0 w-full sm:w-[450px] bg-card border-l border-border/50 p-6 z-[100] flex flex-col shadow-elegant overflow-y-auto"
+            >
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between border-b border-border/70 pb-4 mb-6">
+                <div>
+                  <span className="text-xs uppercase tracking-widest text-gold font-sans font-bold">
+                    {lang === "en" ? "Explore State" : "राज्य अन्वेषण"}
+                  </span>
+                  <h3 className="font-display text-2xl font-bold mt-1 text-foreground">
+                    {drawerState.state}
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setDrawerState(null)}
+                  className="p-2 hover:bg-muted text-muted-foreground hover:text-foreground rounded-full transition-colors"
+                >
+                  <X className="size-5" />
+                </button>
+              </div>
+
+              {/* Scrollable Story List */}
+              <div className="flex flex-col gap-4 flex-1 overflow-y-auto pr-1 scrollbar-thin">
+                <p className="text-xs text-muted-foreground font-sans uppercase font-bold tracking-wider mb-1">
+                  {drawerState.count} {lang === "en" ? "Stories Found" : "कहानियाँ मिलीं"}
+                </p>
+                {drawerState.stories.map((st) => (
+                  <MiniStoryCard key={st.id} story={st} />
+                ))}
+              </div>
+
+              {/* Drawer Footer Link to State Archive */}
+              <div className="mt-6 pt-4 border-t border-border/70">
+                <Button
+                  asChild
+                  className="w-full bg-primary hover:bg-primary/95 text-primary-foreground font-sans uppercase tracking-widest text-xs rounded-full h-12"
+                >
+                  <Link
+                    to="/stories"
+                    search={{ state: drawerState.state }}
+                    onClick={() => setDrawerState(null)}
+                  >
+                    {lang === "en" ? "View State Archive" : "सभी कहानियाँ देखें"}
+                    <ArrowRight className="size-4 ml-2" />
+                  </Link>
+                </Button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

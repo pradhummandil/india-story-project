@@ -1,9 +1,8 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
-import { StoryCard } from "@/components/site/StoryCard";
+import { StoryCard, type Story } from "@/components/site/StoryCard";
 import { useJourney, getRecommendations } from "@/lib/journey-store";
-import { stories } from "@/lib/stories-data";
 
 type Mode = {
   id: string;
@@ -24,9 +23,11 @@ const emojiForCategory = (category: string) => {
   return "✨";
 };
 
-function deriveModesFromStories() {
+import { useStoriesData } from "@/lib/stories-data";
+
+function deriveModesFromStories(storyList: Story[]) {
   // Keep the same UI “modes” shape, but drive them from stories.json.
-  const uniqueCategories = Array.from(new Set(stories.map((s) => s.category).filter(Boolean)));
+  const uniqueCategories = Array.from(new Set(storyList.map((s) => s.category).filter(Boolean)));
 
   const top = uniqueCategories.slice(0, 6);
 
@@ -47,27 +48,27 @@ function deriveModesFromStories() {
   return modes;
 }
 
-
 export function RecommendedForYou() {
   const { state } = useJourney();
+  const { stories: dbStories } = useStoriesData();
   const [mode, setMode] = useState("all");
   const scrollerRef = useRef<HTMLDivElement>(null);
 
-  const modes = useMemo(() => deriveModesFromStories(), []);
+  const modes = useMemo(() => deriveModesFromStories(dbStories), [dbStories]);
 
   const recs = useMemo(() => {
-    if (mode === "all") return getRecommendations(state, 8);
+    if (mode === "all") return getRecommendations(state, 8, dbStories);
     const m = modes.find((x) => x.id === mode);
-    if (!m) return getRecommendations(state, 6);
-    const filtered = stories.filter((s) =>
+    if (!m) return getRecommendations(state, 6, dbStories);
+    const filtered = dbStories.filter((s) =>
       m.match({
         category: s.category,
         title: s.title,
         excerpt: s.excerpt,
       }),
     );
-    return filtered.length ? filtered : getRecommendations(state, 6);
-  }, [mode, state, modes]);
+    return filtered.length ? filtered : getRecommendations(state, 6, dbStories);
+  }, [mode, state, modes, dbStories]);
 
   const personalized = state.viewedIds.length > 0 && mode === "all";
 
@@ -113,7 +114,6 @@ export function RecommendedForYou() {
       {/* Mode chips */}
       <div className="flex gap-2 overflow-x-auto pb-3 mb-8 -mx-6 px-6 scrollbar-none">
         {modes.map((m: Mode) => {
-
           const active = mode === m.id;
           return (
             <button
@@ -131,7 +131,6 @@ export function RecommendedForYou() {
           );
         })}
       </div>
-
 
       {/* Carousel */}
       <div className="relative">

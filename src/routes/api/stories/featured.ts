@@ -14,7 +14,9 @@ export const Route = createFileRoute("/api/stories/featured")({
           const stories = await storyService.getFeaturedStories(limit);
           return json(stories);
         } catch (error) {
-          return invalidQueryResponse(error instanceof Error ? error.message : "Invalid query parameters");
+          return invalidQueryResponse(
+            error instanceof Error ? error.message : "Invalid query parameters",
+          );
         }
       },
     },

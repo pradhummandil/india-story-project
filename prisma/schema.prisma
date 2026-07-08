@@ -14,9 +14,12 @@ enum StoryStatus {
   Archived
 }
 
-enum Timestamped {
-  Created
-  Updated
+enum UserRole {
+  SuperAdmin
+  Admin
+  Editor
+  Author
+  Reader
 }
 
 model Author {
@@ -24,165 +27,303 @@ model Author {
   name      String
   bio       String?  @db.Text
   avatar    String?  @db.Text
-
   stories   Story[]
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   @@index([name])
 }
 
+model UserProfile {
+  id               String    @id @db.Uuid
+  email            String    @unique
+  name             String?
+  avatarUrl        String?   @db.Text
+  coverUrl         String?   @db.Text
+  bio              String?   @db.Text
+  role             UserRole  @default(Reader)
+  active           Boolean   @default(true)
+  website          String?   @db.Text
+  twitter          String?
+  instagram        String?
+  linkedin         String?
+  totalXP          Int       @default(0)
+  level            Int       @default(1)
+  readingStreak    Int       @default(0)
+  lastActiveAt     DateTime?
+  favoriteCategory String?
+  favoriteState    String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  bookmarks        Bookmark[]
+  likes            StoryLike[]
+  readingProgress  ReadingProgress[]
+  userStat         UserStat?
+  userBadges       UserBadge[]
+  @@index([role])
+  @@index([totalXP])
+  @@index([readingStreak])
+}
+
+model SiteSetting {
+  key       String   @id
+  value     String   @db.Text
+  label     String?
+  updatedAt DateTime @updatedAt
+}
+
 model Category {
-  id      String @id @default(uuid()) @db.Uuid
-  name    String
-  slug    String @unique
-
-  stories Story[]
-
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String   @unique
+  stories   Story[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   @@index([slug])
 }
 
 model Theme {
-  id      String @id @default(uuid()) @db.Uuid
-  name    String
-  slug    String @unique
-
-  stories Story[]
-
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String   @unique
+  stories   Story[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   @@index([slug])
 }
 
 model State {
-  id          String   @id @default(uuid()) @db.Uuid
-  name        String
-  slug        String   @unique
-  latitude    Float?
-  longitude   Float?
-
-  stories     Story[]
-  cities      City[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String   @unique
+  latitude  Float?
+  longitude Float?
+  stories   Story[]
+  cities    City[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   @@index([name])
   @@index([latitude, longitude])
 }
 
-
 model City {
-  id        String @id @default(uuid()) @db.Uuid
+  id        String   @id @default(uuid()) @db.Uuid
   name      String
-  slug      String @unique
-
-  stateId   String @db.Uuid
-  state     State  @relation(fields: [stateId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-
+  slug      String   @unique
+  stateId   String   @db.Uuid
+  state     State    @relation(fields: [stateId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   stories   Story[]
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   @@index([stateId])
 }
 
 model Tag {
-  id      String @id @default(uuid()) @db.Uuid
-  name    String
-  slug    String @unique
-
-  stories StoryTag[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id        String     @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String     @unique
+  stories   StoryTag[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
   @@index([name])
 }
 
 model Story {
-  id            String        @id @default(uuid()) @db.Uuid
-
-  sourceId      String?       @unique
-  slug          String        @unique
-
-  title         String
-  excerpt       String        @db.Text
-  content       String        @db.Text
-
-  publishedAt   DateTime?
-  readingTime   Int?
-
-  seoTitle       String?
-  seoDescription String?
-
-  featured      Boolean       @default(false)
-  heroOfTheDay  Boolean       @default(false)
-  status        StoryStatus  @default(Draft)
-
-  authorId       String        @db.Uuid
-  author         Author        @relation(fields: [authorId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-
-  categoryId     String        @db.Uuid
-  category       Category      @relation(fields: [categoryId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-
-  themeId        String        @db.Uuid
-  theme          Theme         @relation(fields: [themeId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-
-  stateId        String        @db.Uuid
-  state          State         @relation(fields: [stateId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-
-  cityId         String?       @db.Uuid
-  city           City?         @relation(fields: [cityId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-
-  tags           StoryTag[]
-  images         StoryImage[]
-
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-
+  id              String          @id @default(uuid()) @db.Uuid
+  sourceId        String?         @unique
+  slug            String          @unique
+  title           String
+  excerpt         String          @db.Text
+  content         String          @db.Text
+  titleHi         String?
+  excerptHi       String?         @db.Text
+  contentHi       String?         @db.Text
+  publishedAt     DateTime?
+  scheduledAt     DateTime?
+  viewCount       Int             @default(0)
+  readingTime     Int?
+  seoTitle        String?
+  seoDescription  String?
+  featured        Boolean         @default(false)
+  heroOfTheDay    Boolean         @default(false)
+  status          StoryStatus     @default(Draft)
+  authorId        String          @db.Uuid
+  author          Author          @relation(fields: [authorId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  categoryId      String          @db.Uuid
+  category        Category        @relation(fields: [categoryId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  themeId         String          @db.Uuid
+  theme           Theme           @relation(fields: [themeId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  stateId         String          @db.Uuid
+  state           State           @relation(fields: [stateId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  cityId          String?         @db.Uuid
+  city            City?           @relation(fields: [cityId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  tags            StoryTag[]
+  images          StoryImage[]
+  views           StoryView[]
+  bookmarks       Bookmark[]
+  likes           StoryLike[]
+  readingProgress ReadingProgress[]
+  heroSlides      HeroSlide[]
+  featuredIn      FeaturedStory[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
   @@index([slug])
   @@index([status])
   @@index([publishedAt])
   @@index([featured])
   @@index([heroOfTheDay])
+  @@index([viewCount])
 }
 
 model StoryTag {
-  storyId String @db.Uuid
-  tagId   String @db.Uuid
-
-  story   Story  @relation(fields: [storyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  tag     Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
+  storyId   String   @db.Uuid
+  tagId     String   @db.Uuid
+  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   createdAt DateTime @default(now())
-
   @@id([storyId, tagId])
   @@index([tagId])
 }
 
 model StoryImage {
-  id          String  @id @default(uuid()) @db.Uuid
-
-  storyId     String  @db.Uuid
-  story       Story   @relation(fields: [storyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-  imageUrl    String  @db.Text
-  caption     String? @db.Text
-  sortOrder   Int     @default(0)
-  heroImage   Boolean @default(false)
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
+  id        String   @id @default(uuid()) @db.Uuid
+  storyId   String   @db.Uuid
+  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  imageUrl  String   @db.Text
+  caption   String?  @db.Text
+  sortOrder Int      @default(0)
+  heroImage Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   @@index([storyId])
   @@index([heroImage])
   @@unique([storyId, sortOrder])
 }
 
+model StoryView {
+  id        String   @id @default(uuid()) @db.Uuid
+  storyId   String   @db.Uuid
+  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  ipAddress String?
+  createdAt DateTime @default(now())
+  @@index([storyId])
+}
+
+model Bookmark {
+  id        String      @id @default(uuid()) @db.Uuid
+  userId    String      @db.Uuid
+  user      UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storyId   String      @db.Uuid
+  story     Story       @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now())
+  @@unique([userId, storyId])
+  @@index([userId])
+  @@index([storyId])
+}
+
+model StoryLike {
+  id        String      @id @default(uuid()) @db.Uuid
+  userId    String      @db.Uuid
+  user      UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storyId   String      @db.Uuid
+  story     Story       @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now())
+  @@unique([userId, storyId])
+  @@index([userId])
+  @@index([storyId])
+}
+
+model ReadingProgress {
+  id              String      @id @default(uuid()) @db.Uuid
+  userId          String      @db.Uuid
+  user            UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storyId         String      @db.Uuid
+  story           Story       @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  progressPercent Int         @default(0)
+  completed       Boolean     @default(false)
+  lastReadAt      DateTime    @default(now())
+  @@unique([userId, storyId])
+  @@index([userId])
+  @@index([lastReadAt])
+}
+
+model UserStat {
+  id             String      @id @default(uuid()) @db.Uuid
+  userId         String      @unique @db.Uuid
+  user           UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storiesRead    Int         @default(0)
+  storiesLiked   Int         @default(0)
+  bookmarksCount Int         @default(0)
+  readingStreak  Int         @default(0)
+  longestStreak  Int         @default(0)
+  totalXP        Int         @default(0)
+  level          Int         @default(1)
+  weeklyXP       Int         @default(0)
+  monthlyXP      Int         @default(0)
+  lastActiveAt   DateTime?
+  updatedAt      DateTime    @updatedAt
+  @@index([totalXP])
+  @@index([readingStreak])
+}
+
+model Badge {
+  id          String      @id @default(uuid()) @db.Uuid
+  name        String
+  slug        String      @unique
+  description String      @db.Text
+  icon        String
+  color       String      @default("#C8A96A")
+  criteria    Json
+  rarity      String      @default("common")
+  userBadges  UserBadge[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  @@index([slug])
+}
+
+model UserBadge {
+  id        String      @id @default(uuid()) @db.Uuid
+  userId    String      @db.Uuid
+  user      UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeId   String      @db.Uuid
+  badge     Badge       @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  awardedAt DateTime    @default(now())
+  @@unique([userId, badgeId])
+  @@index([userId])
+  @@index([awardedAt])
+}
+
+model HeroSlide {
+  id        String   @id @default(uuid()) @db.Uuid
+  storyId   String   @db.Uuid
+  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  sortOrder Int      @default(0)
+  active    Boolean  @default(true)
+  caption   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([active, sortOrder])
+}
+
+model FeaturedStory {
+  id        String   @id @default(uuid()) @db.Uuid
+  storyId   String   @db.Uuid
+  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  section   String
+  sortOrder Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([section, active, sortOrder])
+}
+
+model Profile {
+  id        String   @id @db.Uuid
+  email     String   @unique
+  fullName  String?  @map("full_name")
+  avatarUrl String?  @map("avatar_url") @db.Text
+  role      String   @default("user")
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  @@map("profiles")
+}

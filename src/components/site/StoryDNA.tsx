@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dna, Sparkles, MapPin, HeartHandshake, Target, Users, Wand2 } from "lucide-react";
 import { stories } from "@/lib/stories-data";
@@ -37,13 +37,28 @@ function Trait({
 }
 
 export function StoryDNA() {
-  const [selectedId, setSelectedId] = useState<string>(stories[0]?.id ?? "");
+  const [selectedId, setSelectedId] = useState<string>("");
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
 
-  const story = useMemo(() => stories.find((s) => s.id === selectedId) ?? stories[0], [selectedId]);
-  const dna = useMemo(() => deriveDNA(story), [story]);
-  const connections = useMemo(() => getConnections(story.id, 6), [story]);
+  // Set the default selected ID when stories load
+  useEffect(() => {
+    if (stories.length > 0 && !selectedId) {
+      setSelectedId(stories[0].id);
+    }
+  }, [stories, selectedId]);
+
+  const story = useMemo(
+    () => stories.find((s) => s.id === selectedId) ?? stories[0],
+    [selectedId, stories],
+  );
+
+  if (!story) {
+    return null;
+  }
+
+  const dna = deriveDNA(story);
+  const connections = getConnections(story.id, 6);
 
   // Position nodes around a circle
   const nodes = useMemo(() => {

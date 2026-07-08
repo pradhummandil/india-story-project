@@ -52,59 +52,60 @@
   --gradient-hero:
     radial-gradient(
       ellipse at top,
-      color-mix(in oklab, var(--gold) 25%, transparent),
+      color-mix(in oklab, var(--gold) 12%, transparent),
       transparent 60%
     ),
     radial-gradient(
       ellipse at bottom right,
-      color-mix(in oklab, var(--saffron) 18%, transparent),
+      color-mix(in oklab, var(--saffron) 8%, transparent),
       transparent 70%
     );
-  --gradient-gold: linear-gradient(135deg, oklch(0.65 0.22 28), oklch(0.85 0.08 85));
-  --gradient-text: linear-gradient(135deg, oklch(0.85 0.08 85), oklch(0.65 0.22 28));
+  --gradient-gold: linear-gradient(135deg, #c8a96a, #8b0000);
+  --gradient-text: linear-gradient(135deg, #8b0000, #c8a96a);
 }
 
 @layer base {
   :root,
   .dark {
-    --radius: 0.75rem;
+    --radius: 0.25rem;
 
-    /* Netflix-like: solid black background + white text + red UI */
-    --background: #000000;
-    --foreground: #ffffff;
+    /* Warm Paper background + Dark Charcoal text */
+    --background: #f8f4ec;
+    --foreground: #222222;
 
-    --card: #0b0b0b;
-    --card-foreground: #ffffff;
+    /* Cards are slightly warmer light paper */
+    --card: #faf8f5;
+    --card-foreground: #222222;
 
-    --popover: #0b0b0b;
-    --popover-foreground: #ffffff;
+    --popover: #faf8f5;
+    --popover-foreground: #222222;
 
-    /* Red primary for buttons */
-    --primary: #e10600;
-    --primary-foreground: #ffffff;
+    /* Deep Red primary */
+    --primary: #8b0000;
+    --primary-foreground: #f8f4ec;
 
-    /* Keep secondary also red-ish so variants don’t drift */
-    --secondary: #e10600;
-    --secondary-foreground: #ffffff;
+    /* Black secondary */
+    --secondary: #0a0a0a;
+    --secondary-foreground: #f8f4ec;
 
-    --muted: #141414;
-    --muted-foreground: #b3b3b3;
+    --muted: #efebe3;
+    --muted-foreground: #555555;
 
-    --accent: #e10600;
-    --accent-foreground: #ffffff;
+    /* Antique Gold accent */
+    --accent: #c8a96a;
+    --accent-foreground: #0a0a0a;
 
-    --destructive: #e10600;
-    --destructive-foreground: #ffffff;
+    --destructive: #8b0000;
+    --destructive-foreground: #f8f4ec;
 
-    /* Red borders/inputs/rings */
-    --border: color-mix(in oklab, #e10600 55%, transparent);
-    --input: color-mix(in oklab, #e10600 35%, transparent);
-    --ring: #e10600;
+    /* Warm editorial grey borders */
+    --border: #e5dccb;
+    --input: #faf8f5;
+    --ring: #8b0000;
 
-    /* Preserve existing gold/saffron variables to avoid breaking gradient tokens elsewhere */
-    --gold: #e10600;
-    --gold-foreground: #ffffff;
-    --saffron: #ff3b30;
+    --gold: #c8a96a;
+    --gold-foreground: #0a0a0a;
+    --saffron: #8b0000;
   }
 
   * {
@@ -300,5 +301,17 @@
       animation-duration: 0.001ms !important;
       transition-duration: 0.001ms !important;
     }
+  }
+
+  /* Premium Custom Header Dividers */
+  header.fixed-header {
+    border-bottom: 1px solid rgba(199, 162, 90, 0.28) !important;
+    transition:
+      border-bottom-color var(--dur-base) var(--ease-premium),
+      background-color var(--dur-base) var(--ease-premium),
+      padding var(--dur-base) var(--ease-premium);
+  }
+  header.fixed-header.is-transparent {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18) !important;
   }
 }

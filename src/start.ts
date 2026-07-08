@@ -1,6 +1,6 @@
 import { createStart, createMiddleware } from "@tanstack/react-start";
-
 import { renderErrorPage } from "./lib/error-page";
+import { verifyAdmin, json } from "./routes/api/-_utils";
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
@@ -17,6 +17,17 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
   }
 });
 
+const authMiddleware = createMiddleware().server(async ({ request, next }) => {
+  const url = new URL(request.url);
+  if (url.pathname.startsWith("/api/admin")) {
+    const admin = await verifyAdmin(request);
+    if (!admin) {
+      return json({ error: "Forbidden: Admin access required" }, { status: 403 });
+    }
+  }
+  return await next();
+});
+
 export const startInstance = createStart(() => ({
-  requestMiddleware: [errorMiddleware],
+  requestMiddleware: [errorMiddleware, authMiddleware],
 }));

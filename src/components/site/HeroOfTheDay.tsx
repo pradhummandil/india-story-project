@@ -5,7 +5,7 @@ import { useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
 import type { Story } from "@/components/site/StoryCard";
-import { stories } from "@/lib/stories-data";
+import { useStoriesData } from "@/lib/stories-data";
 
 type StoryWithOptionalFields = Story & {
   hero_of_the_day?: boolean;
@@ -80,7 +80,12 @@ function getTheme(s: StoryWithOptionalFields): string {
 }
 
 export function HeroOfTheDay() {
-  const hero = useMemo(() => pickHeroStory(stories), []);
+  const { stories: dbStories } = useStoriesData();
+  const hero = useMemo(() => pickHeroStory(dbStories), [dbStories]);
+
+  if (dbStories.length === 0) {
+    return null; // Don't render anything if data is not loaded yet
+  }
 
   // Keep existing premium feel even if data is incomplete.
   const heroImage = hero.image;
@@ -392,7 +397,18 @@ export function HeroOfTheDay() {
                       .filter(Boolean);
 
                     // Prefer early meaningful words; skip very common tiny tokens.
-                    const skip = new Set(["the", "and", "for", "with", "from", "that", "this", "into", "over", "under"]);
+                    const skip = new Set([
+                      "the",
+                      "and",
+                      "for",
+                      "with",
+                      "from",
+                      "that",
+                      "this",
+                      "into",
+                      "over",
+                      "under",
+                    ]);
                     const picked = words.find((w) => w.length >= 4 && !skip.has(w.toLowerCase()));
                     const candidate = picked ?? words[idx] ?? words[0] ?? "";
                     return candidate ? candidate.slice(0, 18) : "";
@@ -406,7 +422,6 @@ export function HeroOfTheDay() {
                         desc: t.desc,
                       }))
                     : points;
-
                 }
 
                 return points;

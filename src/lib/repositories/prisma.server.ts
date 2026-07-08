@@ -9,4 +9,3 @@ const globalForPrisma = globalThis as typeof globalThis & {
 export const prisma = globalForPrisma.indiaStoryPrisma ?? new PrismaClient();
 
 globalForPrisma.indiaStoryPrisma = prisma;
-

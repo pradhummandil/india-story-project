@@ -9,32 +9,98 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as StoriesRouteImport } from './routes/stories'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as JoinRouteImport } from './routes/join'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ExploreRouteImport } from './routes/explore'
+import { Route as EditorRouteImport } from './routes/editor'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StoriesIndexRouteImport } from './routes/stories/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as StoriesSlugRouteImport } from './routes/stories/$slug'
+import { Route as ApiUserStatsRouteImport } from './routes/api/user-stats'
 import { Route as ApiThemesRouteImport } from './routes/api/themes'
 import { Route as ApiStoriesCatalogueDataRouteImport } from './routes/api/stories-catalogue-data'
 import { Route as ApiStoriesCatalogueRouteImport } from './routes/api/stories-catalogue'
 import { Route as ApiStoriesRouteImport } from './routes/api/stories'
 import { Route as ApiStatesRouteImport } from './routes/api/states'
+import { Route as ApiReadingProgressRouteImport } from './routes/api/reading-progress'
+import { Route as ApiLikesRouteImport } from './routes/api/likes'
+import { Route as ApiHeroSlidesRouteImport } from './routes/api/hero-slides'
+import { Route as ApiFeaturedRouteImport } from './routes/api/featured'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiCategoriesRouteImport } from './routes/api/categories'
+import { Route as ApiBookmarksRouteImport } from './routes/api/bookmarks'
 import { Route as ApiAuthorsRouteImport } from './routes/api/authors'
+import { Route as AdminUsersIndexRouteImport } from './routes/admin/users/index'
+import { Route as AdminStoriesIndexRouteImport } from './routes/admin/stories/index'
+import { Route as AdminStatesIndexRouteImport } from './routes/admin/states/index'
+import { Route as AdminSettingsIndexRouteImport } from './routes/admin/settings/index'
+import { Route as AdminMediaIndexRouteImport } from './routes/admin/media/index'
+import { Route as AdminCategoriesIndexRouteImport } from './routes/admin/categories/index'
+import { Route as AdminAuthorsIndexRouteImport } from './routes/admin/authors/index'
+import { Route as AdminAnalyticsIndexRouteImport } from './routes/admin/analytics/index'
+import { Route as ApiUserStatsMeRouteImport } from './routes/api/user-stats/me'
 import { Route as ApiStoriesSearchRouteImport } from './routes/api/stories/search'
 import { Route as ApiStoriesRecommendedRouteImport } from './routes/api/stories/recommended'
 import { Route as ApiStoriesLatestRouteImport } from './routes/api/stories/latest'
 import { Route as ApiStoriesFilterRouteImport } from './routes/api/stories/filter'
 import { Route as ApiStoriesFeaturedRouteImport } from './routes/api/stories/featured'
 import { Route as ApiStoriesSlugRouteImport } from './routes/api/stories/$slug'
+import { Route as ApiAuthProfileRouteImport } from './routes/api/auth/profile'
+import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
+import { Route as ApiAdminStoriesRouteImport } from './routes/api/admin/stories'
+import { Route as ApiAdminStatesRouteImport } from './routes/api/admin/states'
+import { Route as ApiAdminSettingsRouteImport } from './routes/api/admin/settings'
+import { Route as ApiAdminMediaRouteImport } from './routes/api/admin/media'
+import { Route as ApiAdminCategoriesRouteImport } from './routes/api/admin/categories'
+import { Route as ApiAdminAuthorsRouteImport } from './routes/api/admin/authors'
+import { Route as ApiAdminAnalyticsRouteImport } from './routes/api/admin/analytics'
+import { Route as AdminStoriesNewRouteImport } from './routes/admin/stories/new'
+import { Route as ApiAdminUsersIdRouteImport } from './routes/api/admin/users.$id'
+import { Route as ApiAdminStoriesIdRouteImport } from './routes/api/admin/stories.$id'
+import { Route as ApiAdminStatesIdRouteImport } from './routes/api/admin/states.$id'
+import { Route as ApiAdminCategoriesIdRouteImport } from './routes/api/admin/categories.$id'
+import { Route as ApiAdminAuthorsIdRouteImport } from './routes/api/admin/authors.$id'
+import { Route as AdminStoriesIdEditRouteImport } from './routes/admin/stories/$id.edit'
 
+const VerifyEmailRoute = VerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StoriesRoute = StoriesRouteImport.update({
   id: '/stories',
   path: '/stories',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JoinRoute = JoinRouteImport.update({
@@ -42,14 +108,34 @@ const JoinRoute = JoinRouteImport.update({
   path: '/join',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ExploreRoute = ExploreRouteImport.update({
   id: '/explore',
   path: '/explore',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EditorRoute = EditorRouteImport.update({
+  id: '/editor',
+  path: '/editor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -67,10 +153,20 @@ const StoriesIndexRoute = StoriesIndexRouteImport.update({
   path: '/',
   getParentRoute: () => StoriesRoute,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const StoriesSlugRoute = StoriesSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => StoriesRoute,
+} as any)
+const ApiUserStatsRoute = ApiUserStatsRouteImport.update({
+  id: '/api/user-stats',
+  path: '/api/user-stats',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiThemesRoute = ApiThemesRouteImport.update({
   id: '/api/themes',
@@ -97,6 +193,26 @@ const ApiStatesRoute = ApiStatesRouteImport.update({
   path: '/api/states',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiReadingProgressRoute = ApiReadingProgressRouteImport.update({
+  id: '/api/reading-progress',
+  path: '/api/reading-progress',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLikesRoute = ApiLikesRouteImport.update({
+  id: '/api/likes',
+  path: '/api/likes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiHeroSlidesRoute = ApiHeroSlidesRouteImport.update({
+  id: '/api/hero-slides',
+  path: '/api/hero-slides',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFeaturedRoute = ApiFeaturedRouteImport.update({
+  id: '/api/featured',
+  path: '/api/featured',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -107,10 +223,60 @@ const ApiCategoriesRoute = ApiCategoriesRouteImport.update({
   path: '/api/categories',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiBookmarksRoute = ApiBookmarksRouteImport.update({
+  id: '/api/bookmarks',
+  path: '/api/bookmarks',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthorsRoute = ApiAuthorsRouteImport.update({
   id: '/api/authors',
   path: '/api/authors',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminUsersIndexRoute = AdminUsersIndexRouteImport.update({
+  id: '/users/',
+  path: '/users/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminStoriesIndexRoute = AdminStoriesIndexRouteImport.update({
+  id: '/stories/',
+  path: '/stories/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminStatesIndexRoute = AdminStatesIndexRouteImport.update({
+  id: '/states/',
+  path: '/states/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSettingsIndexRoute = AdminSettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminMediaIndexRoute = AdminMediaIndexRouteImport.update({
+  id: '/media/',
+  path: '/media/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCategoriesIndexRoute = AdminCategoriesIndexRouteImport.update({
+  id: '/categories/',
+  path: '/categories/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAuthorsIndexRoute = AdminAuthorsIndexRouteImport.update({
+  id: '/authors/',
+  path: '/authors/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAnalyticsIndexRoute = AdminAnalyticsIndexRouteImport.update({
+  id: '/analytics/',
+  path: '/analytics/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const ApiUserStatsMeRoute = ApiUserStatsMeRouteImport.update({
+  id: '/me',
+  path: '/me',
+  getParentRoute: () => ApiUserStatsRoute,
 } as any)
 const ApiStoriesSearchRoute = ApiStoriesSearchRouteImport.update({
   id: '/search',
@@ -142,177 +308,560 @@ const ApiStoriesSlugRoute = ApiStoriesSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => ApiStoriesRoute,
 } as any)
+const ApiAuthProfileRoute = ApiAuthProfileRouteImport.update({
+  id: '/api/auth/profile',
+  path: '/api/auth/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminUsersRoute = ApiAdminUsersRouteImport.update({
+  id: '/api/admin/users',
+  path: '/api/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminStoriesRoute = ApiAdminStoriesRouteImport.update({
+  id: '/api/admin/stories',
+  path: '/api/admin/stories',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminStatesRoute = ApiAdminStatesRouteImport.update({
+  id: '/api/admin/states',
+  path: '/api/admin/states',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminSettingsRoute = ApiAdminSettingsRouteImport.update({
+  id: '/api/admin/settings',
+  path: '/api/admin/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminMediaRoute = ApiAdminMediaRouteImport.update({
+  id: '/api/admin/media',
+  path: '/api/admin/media',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminCategoriesRoute = ApiAdminCategoriesRouteImport.update({
+  id: '/api/admin/categories',
+  path: '/api/admin/categories',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminAuthorsRoute = ApiAdminAuthorsRouteImport.update({
+  id: '/api/admin/authors',
+  path: '/api/admin/authors',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminAnalyticsRoute = ApiAdminAnalyticsRouteImport.update({
+  id: '/api/admin/analytics',
+  path: '/api/admin/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminStoriesNewRoute = AdminStoriesNewRouteImport.update({
+  id: '/stories/new',
+  path: '/stories/new',
+  getParentRoute: () => AdminRoute,
+} as any)
+const ApiAdminUsersIdRoute = ApiAdminUsersIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiAdminUsersRoute,
+} as any)
+const ApiAdminStoriesIdRoute = ApiAdminStoriesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiAdminStoriesRoute,
+} as any)
+const ApiAdminStatesIdRoute = ApiAdminStatesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiAdminStatesRoute,
+} as any)
+const ApiAdminCategoriesIdRoute = ApiAdminCategoriesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiAdminCategoriesRoute,
+} as any)
+const ApiAdminAuthorsIdRoute = ApiAdminAuthorsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiAdminAuthorsRoute,
+} as any)
+const AdminStoriesIdEditRoute = AdminStoriesIdEditRouteImport.update({
+  id: '/stories/$id/edit',
+  path: '/stories/$id/edit',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRouteWithChildren
   '/contact': typeof ContactRoute
+  '/dashboard': typeof DashboardRoute
+  '/editor': typeof EditorRoute
   '/explore': typeof ExploreRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/join': typeof JoinRoute
+  '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/signup': typeof SignupRoute
   '/stories': typeof StoriesRouteWithChildren
+  '/verify-email': typeof VerifyEmailRoute
   '/api/authors': typeof ApiAuthorsRoute
+  '/api/bookmarks': typeof ApiBookmarksRoute
   '/api/categories': typeof ApiCategoriesRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/featured': typeof ApiFeaturedRoute
+  '/api/hero-slides': typeof ApiHeroSlidesRoute
+  '/api/likes': typeof ApiLikesRoute
+  '/api/reading-progress': typeof ApiReadingProgressRoute
   '/api/states': typeof ApiStatesRoute
   '/api/stories': typeof ApiStoriesRouteWithChildren
   '/api/stories-catalogue': typeof ApiStoriesCatalogueRoute
   '/api/stories-catalogue-data': typeof ApiStoriesCatalogueDataRoute
   '/api/themes': typeof ApiThemesRoute
+  '/api/user-stats': typeof ApiUserStatsRouteWithChildren
   '/stories/$slug': typeof StoriesSlugRoute
+  '/admin/': typeof AdminIndexRoute
   '/stories/': typeof StoriesIndexRoute
+  '/admin/stories/new': typeof AdminStoriesNewRoute
+  '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
+  '/api/admin/authors': typeof ApiAdminAuthorsRouteWithChildren
+  '/api/admin/categories': typeof ApiAdminCategoriesRouteWithChildren
+  '/api/admin/media': typeof ApiAdminMediaRoute
+  '/api/admin/settings': typeof ApiAdminSettingsRoute
+  '/api/admin/states': typeof ApiAdminStatesRouteWithChildren
+  '/api/admin/stories': typeof ApiAdminStoriesRouteWithChildren
+  '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
+  '/api/auth/profile': typeof ApiAuthProfileRoute
   '/api/stories/$slug': typeof ApiStoriesSlugRoute
   '/api/stories/featured': typeof ApiStoriesFeaturedRoute
   '/api/stories/filter': typeof ApiStoriesFilterRoute
   '/api/stories/latest': typeof ApiStoriesLatestRoute
   '/api/stories/recommended': typeof ApiStoriesRecommendedRoute
   '/api/stories/search': typeof ApiStoriesSearchRoute
+  '/api/user-stats/me': typeof ApiUserStatsMeRoute
+  '/admin/analytics/': typeof AdminAnalyticsIndexRoute
+  '/admin/authors/': typeof AdminAuthorsIndexRoute
+  '/admin/categories/': typeof AdminCategoriesIndexRoute
+  '/admin/media/': typeof AdminMediaIndexRoute
+  '/admin/settings/': typeof AdminSettingsIndexRoute
+  '/admin/states/': typeof AdminStatesIndexRoute
+  '/admin/stories/': typeof AdminStoriesIndexRoute
+  '/admin/users/': typeof AdminUsersIndexRoute
+  '/admin/stories/$id/edit': typeof AdminStoriesIdEditRoute
+  '/api/admin/authors/$id': typeof ApiAdminAuthorsIdRoute
+  '/api/admin/categories/$id': typeof ApiAdminCategoriesIdRoute
+  '/api/admin/states/$id': typeof ApiAdminStatesIdRoute
+  '/api/admin/stories/$id': typeof ApiAdminStoriesIdRoute
+  '/api/admin/users/$id': typeof ApiAdminUsersIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
+  '/dashboard': typeof DashboardRoute
+  '/editor': typeof EditorRoute
   '/explore': typeof ExploreRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/join': typeof JoinRoute
+  '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/signup': typeof SignupRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/api/authors': typeof ApiAuthorsRoute
+  '/api/bookmarks': typeof ApiBookmarksRoute
   '/api/categories': typeof ApiCategoriesRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/featured': typeof ApiFeaturedRoute
+  '/api/hero-slides': typeof ApiHeroSlidesRoute
+  '/api/likes': typeof ApiLikesRoute
+  '/api/reading-progress': typeof ApiReadingProgressRoute
   '/api/states': typeof ApiStatesRoute
   '/api/stories': typeof ApiStoriesRouteWithChildren
   '/api/stories-catalogue': typeof ApiStoriesCatalogueRoute
   '/api/stories-catalogue-data': typeof ApiStoriesCatalogueDataRoute
   '/api/themes': typeof ApiThemesRoute
+  '/api/user-stats': typeof ApiUserStatsRouteWithChildren
   '/stories/$slug': typeof StoriesSlugRoute
+  '/admin': typeof AdminIndexRoute
   '/stories': typeof StoriesIndexRoute
+  '/admin/stories/new': typeof AdminStoriesNewRoute
+  '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
+  '/api/admin/authors': typeof ApiAdminAuthorsRouteWithChildren
+  '/api/admin/categories': typeof ApiAdminCategoriesRouteWithChildren
+  '/api/admin/media': typeof ApiAdminMediaRoute
+  '/api/admin/settings': typeof ApiAdminSettingsRoute
+  '/api/admin/states': typeof ApiAdminStatesRouteWithChildren
+  '/api/admin/stories': typeof ApiAdminStoriesRouteWithChildren
+  '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
+  '/api/auth/profile': typeof ApiAuthProfileRoute
   '/api/stories/$slug': typeof ApiStoriesSlugRoute
   '/api/stories/featured': typeof ApiStoriesFeaturedRoute
   '/api/stories/filter': typeof ApiStoriesFilterRoute
   '/api/stories/latest': typeof ApiStoriesLatestRoute
   '/api/stories/recommended': typeof ApiStoriesRecommendedRoute
   '/api/stories/search': typeof ApiStoriesSearchRoute
+  '/api/user-stats/me': typeof ApiUserStatsMeRoute
+  '/admin/analytics': typeof AdminAnalyticsIndexRoute
+  '/admin/authors': typeof AdminAuthorsIndexRoute
+  '/admin/categories': typeof AdminCategoriesIndexRoute
+  '/admin/media': typeof AdminMediaIndexRoute
+  '/admin/settings': typeof AdminSettingsIndexRoute
+  '/admin/states': typeof AdminStatesIndexRoute
+  '/admin/stories': typeof AdminStoriesIndexRoute
+  '/admin/users': typeof AdminUsersIndexRoute
+  '/admin/stories/$id/edit': typeof AdminStoriesIdEditRoute
+  '/api/admin/authors/$id': typeof ApiAdminAuthorsIdRoute
+  '/api/admin/categories/$id': typeof ApiAdminCategoriesIdRoute
+  '/api/admin/states/$id': typeof ApiAdminStatesIdRoute
+  '/api/admin/stories/$id': typeof ApiAdminStoriesIdRoute
+  '/api/admin/users/$id': typeof ApiAdminUsersIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRouteWithChildren
   '/contact': typeof ContactRoute
+  '/dashboard': typeof DashboardRoute
+  '/editor': typeof EditorRoute
   '/explore': typeof ExploreRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/join': typeof JoinRoute
+  '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/signup': typeof SignupRoute
   '/stories': typeof StoriesRouteWithChildren
+  '/verify-email': typeof VerifyEmailRoute
   '/api/authors': typeof ApiAuthorsRoute
+  '/api/bookmarks': typeof ApiBookmarksRoute
   '/api/categories': typeof ApiCategoriesRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/featured': typeof ApiFeaturedRoute
+  '/api/hero-slides': typeof ApiHeroSlidesRoute
+  '/api/likes': typeof ApiLikesRoute
+  '/api/reading-progress': typeof ApiReadingProgressRoute
   '/api/states': typeof ApiStatesRoute
   '/api/stories': typeof ApiStoriesRouteWithChildren
   '/api/stories-catalogue': typeof ApiStoriesCatalogueRoute
   '/api/stories-catalogue-data': typeof ApiStoriesCatalogueDataRoute
   '/api/themes': typeof ApiThemesRoute
+  '/api/user-stats': typeof ApiUserStatsRouteWithChildren
   '/stories/$slug': typeof StoriesSlugRoute
+  '/admin/': typeof AdminIndexRoute
   '/stories/': typeof StoriesIndexRoute
+  '/admin/stories/new': typeof AdminStoriesNewRoute
+  '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
+  '/api/admin/authors': typeof ApiAdminAuthorsRouteWithChildren
+  '/api/admin/categories': typeof ApiAdminCategoriesRouteWithChildren
+  '/api/admin/media': typeof ApiAdminMediaRoute
+  '/api/admin/settings': typeof ApiAdminSettingsRoute
+  '/api/admin/states': typeof ApiAdminStatesRouteWithChildren
+  '/api/admin/stories': typeof ApiAdminStoriesRouteWithChildren
+  '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
+  '/api/auth/profile': typeof ApiAuthProfileRoute
   '/api/stories/$slug': typeof ApiStoriesSlugRoute
   '/api/stories/featured': typeof ApiStoriesFeaturedRoute
   '/api/stories/filter': typeof ApiStoriesFilterRoute
   '/api/stories/latest': typeof ApiStoriesLatestRoute
   '/api/stories/recommended': typeof ApiStoriesRecommendedRoute
   '/api/stories/search': typeof ApiStoriesSearchRoute
+  '/api/user-stats/me': typeof ApiUserStatsMeRoute
+  '/admin/analytics/': typeof AdminAnalyticsIndexRoute
+  '/admin/authors/': typeof AdminAuthorsIndexRoute
+  '/admin/categories/': typeof AdminCategoriesIndexRoute
+  '/admin/media/': typeof AdminMediaIndexRoute
+  '/admin/settings/': typeof AdminSettingsIndexRoute
+  '/admin/states/': typeof AdminStatesIndexRoute
+  '/admin/stories/': typeof AdminStoriesIndexRoute
+  '/admin/users/': typeof AdminUsersIndexRoute
+  '/admin/stories/$id/edit': typeof AdminStoriesIdEditRoute
+  '/api/admin/authors/$id': typeof ApiAdminAuthorsIdRoute
+  '/api/admin/categories/$id': typeof ApiAdminCategoriesIdRoute
+  '/api/admin/states/$id': typeof ApiAdminStatesIdRoute
+  '/api/admin/stories/$id': typeof ApiAdminStoriesIdRoute
+  '/api/admin/users/$id': typeof ApiAdminUsersIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/about'
+    | '/admin'
     | '/contact'
+    | '/dashboard'
+    | '/editor'
     | '/explore'
+    | '/forgot-password'
     | '/join'
+    | '/login'
+    | '/profile'
+    | '/reset-password'
+    | '/signup'
     | '/stories'
+    | '/verify-email'
     | '/api/authors'
+    | '/api/bookmarks'
     | '/api/categories'
     | '/api/chat'
+    | '/api/featured'
+    | '/api/hero-slides'
+    | '/api/likes'
+    | '/api/reading-progress'
     | '/api/states'
     | '/api/stories'
     | '/api/stories-catalogue'
     | '/api/stories-catalogue-data'
     | '/api/themes'
+    | '/api/user-stats'
     | '/stories/$slug'
+    | '/admin/'
     | '/stories/'
+    | '/admin/stories/new'
+    | '/api/admin/analytics'
+    | '/api/admin/authors'
+    | '/api/admin/categories'
+    | '/api/admin/media'
+    | '/api/admin/settings'
+    | '/api/admin/states'
+    | '/api/admin/stories'
+    | '/api/admin/users'
+    | '/api/auth/profile'
     | '/api/stories/$slug'
     | '/api/stories/featured'
     | '/api/stories/filter'
     | '/api/stories/latest'
     | '/api/stories/recommended'
     | '/api/stories/search'
+    | '/api/user-stats/me'
+    | '/admin/analytics/'
+    | '/admin/authors/'
+    | '/admin/categories/'
+    | '/admin/media/'
+    | '/admin/settings/'
+    | '/admin/states/'
+    | '/admin/stories/'
+    | '/admin/users/'
+    | '/admin/stories/$id/edit'
+    | '/api/admin/authors/$id'
+    | '/api/admin/categories/$id'
+    | '/api/admin/states/$id'
+    | '/api/admin/stories/$id'
+    | '/api/admin/users/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
     | '/contact'
+    | '/dashboard'
+    | '/editor'
     | '/explore'
+    | '/forgot-password'
     | '/join'
+    | '/login'
+    | '/profile'
+    | '/reset-password'
+    | '/signup'
+    | '/verify-email'
     | '/api/authors'
+    | '/api/bookmarks'
     | '/api/categories'
     | '/api/chat'
+    | '/api/featured'
+    | '/api/hero-slides'
+    | '/api/likes'
+    | '/api/reading-progress'
     | '/api/states'
     | '/api/stories'
     | '/api/stories-catalogue'
     | '/api/stories-catalogue-data'
     | '/api/themes'
+    | '/api/user-stats'
     | '/stories/$slug'
+    | '/admin'
     | '/stories'
+    | '/admin/stories/new'
+    | '/api/admin/analytics'
+    | '/api/admin/authors'
+    | '/api/admin/categories'
+    | '/api/admin/media'
+    | '/api/admin/settings'
+    | '/api/admin/states'
+    | '/api/admin/stories'
+    | '/api/admin/users'
+    | '/api/auth/profile'
     | '/api/stories/$slug'
     | '/api/stories/featured'
     | '/api/stories/filter'
     | '/api/stories/latest'
     | '/api/stories/recommended'
     | '/api/stories/search'
+    | '/api/user-stats/me'
+    | '/admin/analytics'
+    | '/admin/authors'
+    | '/admin/categories'
+    | '/admin/media'
+    | '/admin/settings'
+    | '/admin/states'
+    | '/admin/stories'
+    | '/admin/users'
+    | '/admin/stories/$id/edit'
+    | '/api/admin/authors/$id'
+    | '/api/admin/categories/$id'
+    | '/api/admin/states/$id'
+    | '/api/admin/stories/$id'
+    | '/api/admin/users/$id'
   id:
     | '__root__'
     | '/'
     | '/about'
+    | '/admin'
     | '/contact'
+    | '/dashboard'
+    | '/editor'
     | '/explore'
+    | '/forgot-password'
     | '/join'
+    | '/login'
+    | '/profile'
+    | '/reset-password'
+    | '/signup'
     | '/stories'
+    | '/verify-email'
     | '/api/authors'
+    | '/api/bookmarks'
     | '/api/categories'
     | '/api/chat'
+    | '/api/featured'
+    | '/api/hero-slides'
+    | '/api/likes'
+    | '/api/reading-progress'
     | '/api/states'
     | '/api/stories'
     | '/api/stories-catalogue'
     | '/api/stories-catalogue-data'
     | '/api/themes'
+    | '/api/user-stats'
     | '/stories/$slug'
+    | '/admin/'
     | '/stories/'
+    | '/admin/stories/new'
+    | '/api/admin/analytics'
+    | '/api/admin/authors'
+    | '/api/admin/categories'
+    | '/api/admin/media'
+    | '/api/admin/settings'
+    | '/api/admin/states'
+    | '/api/admin/stories'
+    | '/api/admin/users'
+    | '/api/auth/profile'
     | '/api/stories/$slug'
     | '/api/stories/featured'
     | '/api/stories/filter'
     | '/api/stories/latest'
     | '/api/stories/recommended'
     | '/api/stories/search'
+    | '/api/user-stats/me'
+    | '/admin/analytics/'
+    | '/admin/authors/'
+    | '/admin/categories/'
+    | '/admin/media/'
+    | '/admin/settings/'
+    | '/admin/states/'
+    | '/admin/stories/'
+    | '/admin/users/'
+    | '/admin/stories/$id/edit'
+    | '/api/admin/authors/$id'
+    | '/api/admin/categories/$id'
+    | '/api/admin/states/$id'
+    | '/api/admin/stories/$id'
+    | '/api/admin/users/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  AdminRoute: typeof AdminRouteWithChildren
   ContactRoute: typeof ContactRoute
+  DashboardRoute: typeof DashboardRoute
+  EditorRoute: typeof EditorRoute
   ExploreRoute: typeof ExploreRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   JoinRoute: typeof JoinRoute
+  LoginRoute: typeof LoginRoute
+  ProfileRoute: typeof ProfileRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  SignupRoute: typeof SignupRoute
   StoriesRoute: typeof StoriesRouteWithChildren
+  VerifyEmailRoute: typeof VerifyEmailRoute
   ApiAuthorsRoute: typeof ApiAuthorsRoute
+  ApiBookmarksRoute: typeof ApiBookmarksRoute
   ApiCategoriesRoute: typeof ApiCategoriesRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiFeaturedRoute: typeof ApiFeaturedRoute
+  ApiHeroSlidesRoute: typeof ApiHeroSlidesRoute
+  ApiLikesRoute: typeof ApiLikesRoute
+  ApiReadingProgressRoute: typeof ApiReadingProgressRoute
   ApiStatesRoute: typeof ApiStatesRoute
   ApiStoriesRoute: typeof ApiStoriesRouteWithChildren
   ApiStoriesCatalogueRoute: typeof ApiStoriesCatalogueRoute
   ApiStoriesCatalogueDataRoute: typeof ApiStoriesCatalogueDataRoute
   ApiThemesRoute: typeof ApiThemesRoute
+  ApiUserStatsRoute: typeof ApiUserStatsRouteWithChildren
+  ApiAdminAnalyticsRoute: typeof ApiAdminAnalyticsRoute
+  ApiAdminAuthorsRoute: typeof ApiAdminAuthorsRouteWithChildren
+  ApiAdminCategoriesRoute: typeof ApiAdminCategoriesRouteWithChildren
+  ApiAdminMediaRoute: typeof ApiAdminMediaRoute
+  ApiAdminSettingsRoute: typeof ApiAdminSettingsRoute
+  ApiAdminStatesRoute: typeof ApiAdminStatesRouteWithChildren
+  ApiAdminStoriesRoute: typeof ApiAdminStoriesRouteWithChildren
+  ApiAdminUsersRoute: typeof ApiAdminUsersRouteWithChildren
+  ApiAuthProfileRoute: typeof ApiAuthProfileRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/verify-email': {
+      id: '/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof VerifyEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/stories': {
       id: '/stories'
       path: '/stories'
       fullPath: '/stories'
       preLoaderRoute: typeof StoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/join': {
@@ -322,6 +871,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JoinRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/explore': {
       id: '/explore'
       path: '/explore'
@@ -329,11 +885,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExploreRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/editor': {
+      id: '/editor'
+      path: '/editor'
+      fullPath: '/editor'
+      preLoaderRoute: typeof EditorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/contact': {
       id: '/contact'
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -357,12 +934,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoriesIndexRouteImport
       parentRoute: typeof StoriesRoute
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/stories/$slug': {
       id: '/stories/$slug'
       path: '/$slug'
       fullPath: '/stories/$slug'
       preLoaderRoute: typeof StoriesSlugRouteImport
       parentRoute: typeof StoriesRoute
+    }
+    '/api/user-stats': {
+      id: '/api/user-stats'
+      path: '/api/user-stats'
+      fullPath: '/api/user-stats'
+      preLoaderRoute: typeof ApiUserStatsRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/themes': {
       id: '/api/themes'
@@ -399,6 +990,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiStatesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/reading-progress': {
+      id: '/api/reading-progress'
+      path: '/api/reading-progress'
+      fullPath: '/api/reading-progress'
+      preLoaderRoute: typeof ApiReadingProgressRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/likes': {
+      id: '/api/likes'
+      path: '/api/likes'
+      fullPath: '/api/likes'
+      preLoaderRoute: typeof ApiLikesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/hero-slides': {
+      id: '/api/hero-slides'
+      path: '/api/hero-slides'
+      fullPath: '/api/hero-slides'
+      preLoaderRoute: typeof ApiHeroSlidesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/featured': {
+      id: '/api/featured'
+      path: '/api/featured'
+      fullPath: '/api/featured'
+      preLoaderRoute: typeof ApiFeaturedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -413,12 +1032,82 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCategoriesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/bookmarks': {
+      id: '/api/bookmarks'
+      path: '/api/bookmarks'
+      fullPath: '/api/bookmarks'
+      preLoaderRoute: typeof ApiBookmarksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/authors': {
       id: '/api/authors'
       path: '/api/authors'
       fullPath: '/api/authors'
       preLoaderRoute: typeof ApiAuthorsRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/users/': {
+      id: '/admin/users/'
+      path: '/users'
+      fullPath: '/admin/users/'
+      preLoaderRoute: typeof AdminUsersIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/stories/': {
+      id: '/admin/stories/'
+      path: '/stories'
+      fullPath: '/admin/stories/'
+      preLoaderRoute: typeof AdminStoriesIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/states/': {
+      id: '/admin/states/'
+      path: '/states'
+      fullPath: '/admin/states/'
+      preLoaderRoute: typeof AdminStatesIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/settings/': {
+      id: '/admin/settings/'
+      path: '/settings'
+      fullPath: '/admin/settings/'
+      preLoaderRoute: typeof AdminSettingsIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/media/': {
+      id: '/admin/media/'
+      path: '/media'
+      fullPath: '/admin/media/'
+      preLoaderRoute: typeof AdminMediaIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/categories/': {
+      id: '/admin/categories/'
+      path: '/categories'
+      fullPath: '/admin/categories/'
+      preLoaderRoute: typeof AdminCategoriesIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/authors/': {
+      id: '/admin/authors/'
+      path: '/authors'
+      fullPath: '/admin/authors/'
+      preLoaderRoute: typeof AdminAuthorsIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/analytics/': {
+      id: '/admin/analytics/'
+      path: '/analytics'
+      fullPath: '/admin/analytics/'
+      preLoaderRoute: typeof AdminAnalyticsIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/api/user-stats/me': {
+      id: '/api/user-stats/me'
+      path: '/me'
+      fullPath: '/api/user-stats/me'
+      preLoaderRoute: typeof ApiUserStatsMeRouteImport
+      parentRoute: typeof ApiUserStatsRoute
     }
     '/api/stories/search': {
       id: '/api/stories/search'
@@ -462,8 +1151,150 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiStoriesSlugRouteImport
       parentRoute: typeof ApiStoriesRoute
     }
+    '/api/auth/profile': {
+      id: '/api/auth/profile'
+      path: '/api/auth/profile'
+      fullPath: '/api/auth/profile'
+      preLoaderRoute: typeof ApiAuthProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/users': {
+      id: '/api/admin/users'
+      path: '/api/admin/users'
+      fullPath: '/api/admin/users'
+      preLoaderRoute: typeof ApiAdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/stories': {
+      id: '/api/admin/stories'
+      path: '/api/admin/stories'
+      fullPath: '/api/admin/stories'
+      preLoaderRoute: typeof ApiAdminStoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/states': {
+      id: '/api/admin/states'
+      path: '/api/admin/states'
+      fullPath: '/api/admin/states'
+      preLoaderRoute: typeof ApiAdminStatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/settings': {
+      id: '/api/admin/settings'
+      path: '/api/admin/settings'
+      fullPath: '/api/admin/settings'
+      preLoaderRoute: typeof ApiAdminSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/media': {
+      id: '/api/admin/media'
+      path: '/api/admin/media'
+      fullPath: '/api/admin/media'
+      preLoaderRoute: typeof ApiAdminMediaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/categories': {
+      id: '/api/admin/categories'
+      path: '/api/admin/categories'
+      fullPath: '/api/admin/categories'
+      preLoaderRoute: typeof ApiAdminCategoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/authors': {
+      id: '/api/admin/authors'
+      path: '/api/admin/authors'
+      fullPath: '/api/admin/authors'
+      preLoaderRoute: typeof ApiAdminAuthorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/analytics': {
+      id: '/api/admin/analytics'
+      path: '/api/admin/analytics'
+      fullPath: '/api/admin/analytics'
+      preLoaderRoute: typeof ApiAdminAnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/stories/new': {
+      id: '/admin/stories/new'
+      path: '/stories/new'
+      fullPath: '/admin/stories/new'
+      preLoaderRoute: typeof AdminStoriesNewRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/api/admin/users/$id': {
+      id: '/api/admin/users/$id'
+      path: '/$id'
+      fullPath: '/api/admin/users/$id'
+      preLoaderRoute: typeof ApiAdminUsersIdRouteImport
+      parentRoute: typeof ApiAdminUsersRoute
+    }
+    '/api/admin/stories/$id': {
+      id: '/api/admin/stories/$id'
+      path: '/$id'
+      fullPath: '/api/admin/stories/$id'
+      preLoaderRoute: typeof ApiAdminStoriesIdRouteImport
+      parentRoute: typeof ApiAdminStoriesRoute
+    }
+    '/api/admin/states/$id': {
+      id: '/api/admin/states/$id'
+      path: '/$id'
+      fullPath: '/api/admin/states/$id'
+      preLoaderRoute: typeof ApiAdminStatesIdRouteImport
+      parentRoute: typeof ApiAdminStatesRoute
+    }
+    '/api/admin/categories/$id': {
+      id: '/api/admin/categories/$id'
+      path: '/$id'
+      fullPath: '/api/admin/categories/$id'
+      preLoaderRoute: typeof ApiAdminCategoriesIdRouteImport
+      parentRoute: typeof ApiAdminCategoriesRoute
+    }
+    '/api/admin/authors/$id': {
+      id: '/api/admin/authors/$id'
+      path: '/$id'
+      fullPath: '/api/admin/authors/$id'
+      preLoaderRoute: typeof ApiAdminAuthorsIdRouteImport
+      parentRoute: typeof ApiAdminAuthorsRoute
+    }
+    '/admin/stories/$id/edit': {
+      id: '/admin/stories/$id/edit'
+      path: '/stories/$id/edit'
+      fullPath: '/admin/stories/$id/edit'
+      preLoaderRoute: typeof AdminStoriesIdEditRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
+
+interface AdminRouteChildren {
+  AdminIndexRoute: typeof AdminIndexRoute
+  AdminStoriesNewRoute: typeof AdminStoriesNewRoute
+  AdminAnalyticsIndexRoute: typeof AdminAnalyticsIndexRoute
+  AdminAuthorsIndexRoute: typeof AdminAuthorsIndexRoute
+  AdminCategoriesIndexRoute: typeof AdminCategoriesIndexRoute
+  AdminMediaIndexRoute: typeof AdminMediaIndexRoute
+  AdminSettingsIndexRoute: typeof AdminSettingsIndexRoute
+  AdminStatesIndexRoute: typeof AdminStatesIndexRoute
+  AdminStoriesIndexRoute: typeof AdminStoriesIndexRoute
+  AdminUsersIndexRoute: typeof AdminUsersIndexRoute
+  AdminStoriesIdEditRoute: typeof AdminStoriesIdEditRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminIndexRoute: AdminIndexRoute,
+  AdminStoriesNewRoute: AdminStoriesNewRoute,
+  AdminAnalyticsIndexRoute: AdminAnalyticsIndexRoute,
+  AdminAuthorsIndexRoute: AdminAuthorsIndexRoute,
+  AdminCategoriesIndexRoute: AdminCategoriesIndexRoute,
+  AdminMediaIndexRoute: AdminMediaIndexRoute,
+  AdminSettingsIndexRoute: AdminSettingsIndexRoute,
+  AdminStatesIndexRoute: AdminStatesIndexRoute,
+  AdminStoriesIndexRoute: AdminStoriesIndexRoute,
+  AdminUsersIndexRoute: AdminUsersIndexRoute,
+  AdminStoriesIdEditRoute: AdminStoriesIdEditRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface StoriesRouteChildren {
   StoriesSlugRoute: typeof StoriesSlugRoute
@@ -500,21 +1331,116 @@ const ApiStoriesRouteWithChildren = ApiStoriesRoute._addFileChildren(
   ApiStoriesRouteChildren,
 )
 
+interface ApiUserStatsRouteChildren {
+  ApiUserStatsMeRoute: typeof ApiUserStatsMeRoute
+}
+
+const ApiUserStatsRouteChildren: ApiUserStatsRouteChildren = {
+  ApiUserStatsMeRoute: ApiUserStatsMeRoute,
+}
+
+const ApiUserStatsRouteWithChildren = ApiUserStatsRoute._addFileChildren(
+  ApiUserStatsRouteChildren,
+)
+
+interface ApiAdminAuthorsRouteChildren {
+  ApiAdminAuthorsIdRoute: typeof ApiAdminAuthorsIdRoute
+}
+
+const ApiAdminAuthorsRouteChildren: ApiAdminAuthorsRouteChildren = {
+  ApiAdminAuthorsIdRoute: ApiAdminAuthorsIdRoute,
+}
+
+const ApiAdminAuthorsRouteWithChildren = ApiAdminAuthorsRoute._addFileChildren(
+  ApiAdminAuthorsRouteChildren,
+)
+
+interface ApiAdminCategoriesRouteChildren {
+  ApiAdminCategoriesIdRoute: typeof ApiAdminCategoriesIdRoute
+}
+
+const ApiAdminCategoriesRouteChildren: ApiAdminCategoriesRouteChildren = {
+  ApiAdminCategoriesIdRoute: ApiAdminCategoriesIdRoute,
+}
+
+const ApiAdminCategoriesRouteWithChildren =
+  ApiAdminCategoriesRoute._addFileChildren(ApiAdminCategoriesRouteChildren)
+
+interface ApiAdminStatesRouteChildren {
+  ApiAdminStatesIdRoute: typeof ApiAdminStatesIdRoute
+}
+
+const ApiAdminStatesRouteChildren: ApiAdminStatesRouteChildren = {
+  ApiAdminStatesIdRoute: ApiAdminStatesIdRoute,
+}
+
+const ApiAdminStatesRouteWithChildren = ApiAdminStatesRoute._addFileChildren(
+  ApiAdminStatesRouteChildren,
+)
+
+interface ApiAdminStoriesRouteChildren {
+  ApiAdminStoriesIdRoute: typeof ApiAdminStoriesIdRoute
+}
+
+const ApiAdminStoriesRouteChildren: ApiAdminStoriesRouteChildren = {
+  ApiAdminStoriesIdRoute: ApiAdminStoriesIdRoute,
+}
+
+const ApiAdminStoriesRouteWithChildren = ApiAdminStoriesRoute._addFileChildren(
+  ApiAdminStoriesRouteChildren,
+)
+
+interface ApiAdminUsersRouteChildren {
+  ApiAdminUsersIdRoute: typeof ApiAdminUsersIdRoute
+}
+
+const ApiAdminUsersRouteChildren: ApiAdminUsersRouteChildren = {
+  ApiAdminUsersIdRoute: ApiAdminUsersIdRoute,
+}
+
+const ApiAdminUsersRouteWithChildren = ApiAdminUsersRoute._addFileChildren(
+  ApiAdminUsersRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  AdminRoute: AdminRouteWithChildren,
   ContactRoute: ContactRoute,
+  DashboardRoute: DashboardRoute,
+  EditorRoute: EditorRoute,
   ExploreRoute: ExploreRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   JoinRoute: JoinRoute,
+  LoginRoute: LoginRoute,
+  ProfileRoute: ProfileRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  SignupRoute: SignupRoute,
   StoriesRoute: StoriesRouteWithChildren,
+  VerifyEmailRoute: VerifyEmailRoute,
   ApiAuthorsRoute: ApiAuthorsRoute,
+  ApiBookmarksRoute: ApiBookmarksRoute,
   ApiCategoriesRoute: ApiCategoriesRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiFeaturedRoute: ApiFeaturedRoute,
+  ApiHeroSlidesRoute: ApiHeroSlidesRoute,
+  ApiLikesRoute: ApiLikesRoute,
+  ApiReadingProgressRoute: ApiReadingProgressRoute,
   ApiStatesRoute: ApiStatesRoute,
   ApiStoriesRoute: ApiStoriesRouteWithChildren,
   ApiStoriesCatalogueRoute: ApiStoriesCatalogueRoute,
   ApiStoriesCatalogueDataRoute: ApiStoriesCatalogueDataRoute,
   ApiThemesRoute: ApiThemesRoute,
+  ApiUserStatsRoute: ApiUserStatsRouteWithChildren,
+  ApiAdminAnalyticsRoute: ApiAdminAnalyticsRoute,
+  ApiAdminAuthorsRoute: ApiAdminAuthorsRouteWithChildren,
+  ApiAdminCategoriesRoute: ApiAdminCategoriesRouteWithChildren,
+  ApiAdminMediaRoute: ApiAdminMediaRoute,
+  ApiAdminSettingsRoute: ApiAdminSettingsRoute,
+  ApiAdminStatesRoute: ApiAdminStatesRouteWithChildren,
+  ApiAdminStoriesRoute: ApiAdminStoriesRouteWithChildren,
+  ApiAdminUsersRoute: ApiAdminUsersRouteWithChildren,
+  ApiAuthProfileRoute: ApiAuthProfileRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

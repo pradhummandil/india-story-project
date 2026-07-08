@@ -24,16 +24,65 @@ export const Route = createFileRoute("/api/stories")({
         const query = url.searchParams.get("query") ?? undefined;
         const category = url.searchParams.get("category") ?? undefined;
         const region = url.searchParams.get("region") ?? undefined;
+        const author = url.searchParams.get("author") ?? undefined;
+        const tag = url.searchParams.get("tag") ?? undefined;
+        const sortBy = url.searchParams.get("sortBy") ?? undefined;
         const page = readPositiveInt(url.searchParams.get("page"), 1);
         const pageSize = readPositiveInt(url.searchParams.get("pageSize"), 12);
 
-        const payload = await storyService.getPublishedStories({
+        let payload = await storyService.getPublishedStories({
           query,
           category,
           region,
+          author,
+          tag,
+          sortBy,
           page,
           pageSize,
         });
+
+        // Fallback to stories-backup.json if database has no records
+        if (payload.total === 0) {
+          try {
+            const fallbackJson = (await import("@/../stories-backup.json")).default;
+            let fallbackStories = fallbackJson.stories || [];
+
+            // Apply filters manually to the fallback stories
+            if (category && category.toLowerCase() !== "all") {
+              fallbackStories = fallbackStories.filter(
+                (s: any) => s.category?.toLowerCase() === category.toLowerCase(),
+              );
+            }
+            if (region) {
+              fallbackStories = fallbackStories.filter(
+                (s: any) => s.region?.toLowerCase() === region.toLowerCase(),
+              );
+            }
+            if (query) {
+              const q = query.toLowerCase();
+              fallbackStories = fallbackStories.filter(
+                (s: any) =>
+                  s.title?.toLowerCase().includes(q) ||
+                  s.excerpt?.toLowerCase().includes(q) ||
+                  s.category?.toLowerCase().includes(q) ||
+                  s.region?.toLowerCase().includes(q) ||
+                  (s.content && s.content.toLowerCase().includes(q)),
+              );
+            }
+
+            const total = fallbackStories.length;
+            const start = (page - 1) * pageSize;
+            payload = {
+              stories: fallbackStories.slice(start, start + pageSize) as any[],
+              total,
+              page,
+              pageSize,
+              pageCount: Math.ceil(total / pageSize),
+            };
+          } catch (e) {
+            console.error("Failed to load fallback stories from JSON:", e);
+          }
+        }
 
         return json(payload);
       },

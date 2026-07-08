@@ -1,7 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { storyService } from "@/lib/services/story-service.server";
-import { invalidQueryResponse, json, readPositiveInt, readOptionalString } from "@/routes/api/-_utils";
+import {
+  invalidQueryResponse,
+  json,
+  readPositiveInt,
+  readOptionalString,
+} from "@/routes/api/-_utils";
 
 export const Route = createFileRoute("/api/stories/recommended")({
   server: {
@@ -18,7 +23,9 @@ export const Route = createFileRoute("/api/stories/recommended")({
           const stories = await storyService.getRecommendedStories(slug, limit);
           return json(stories);
         } catch (error) {
-          return invalidQueryResponse(error instanceof Error ? error.message : "Invalid query parameters");
+          return invalidQueryResponse(
+            error instanceof Error ? error.message : "Invalid query parameters",
+          );
         }
       },
     },

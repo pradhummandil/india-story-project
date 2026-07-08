@@ -3,32 +3,6 @@ import { useEffect, useSyncExternalStore } from "react";
 import type { Story } from "@/components/site/StoryCard";
 import { fetchStoriesCatalogue } from "@/lib/stories-api";
 
-import rawJson from "../../stories.json";
-
-type RawStory = {
-  id?: string;
-  slug: string;
-  title: string;
-  excerpt: string;
-  category: string;
-  region: string;
-  readTime?: string;
-  image?: string;
-  imageAlt?: string;
-  url?: string;
-  content?: string;
-  gradient?: string;
-
-  // Extra fields may exist in the generated JSON (author, publishDate, ...)
-  [key: string]: unknown;
-};
-
-type StoriesJson = {
-  fetchedAt?: string;
-  categories?: readonly string[];
-  stories: RawStory[];
-};
-
 type StoriesDataState = {
   stories: Story[];
   categories: readonly string[];
@@ -36,20 +10,9 @@ type StoriesDataState = {
   error: string | null;
 };
 
-const RAW = rawJson as unknown as StoriesJson;
-const FALLBACK_STORIES = (RAW.stories ?? []).map((story) => normalizeStory(story));
-const FALLBACK_CATEGORIES = (RAW.categories as readonly string[] | undefined) ?? ["All", "कहानी"];
-
-export let stories: Story[] = [...FALLBACK_STORIES];
-export let categories: string[] = [...FALLBACK_CATEGORIES];
-
-const listeners = new Set<() => void>();
-let loadPromise: Promise<void> | null = null;
-let hasLoadedRemote = false;
-let error: string | null = null;
-
-function normalizeStory(raw: RawStory | Record<string, unknown>): Story {
-  const getString = (value: unknown, fallback = "") => (typeof value === "string" ? value : fallback);
+function normalizeStory(raw: Record<string, unknown>): Story {
+  const getString = (value: unknown, fallback = "") =>
+    typeof value === "string" ? value : fallback;
 
   return {
     id: getString(raw.id),
@@ -64,18 +27,79 @@ function normalizeStory(raw: RawStory | Record<string, unknown>): Story {
     content: typeof raw.content === "string" && raw.content.length ? raw.content : undefined,
     url: getString(raw.url) || getString(raw.slug),
     gradient: typeof raw.gradient === "string" ? raw.gradient : undefined,
+    titleHi: getString(raw.titleHi) || undefined,
+    excerptHi: getString(raw.excerptHi) || undefined,
+    contentHi: getString(raw.contentHi) || undefined,
+    authorName: getString(raw.authorName) || undefined,
+    authorBio: getString(raw.authorBio) || undefined,
+    authorAvatar: getString(raw.authorAvatar) || undefined,
+    tags: Array.isArray(raw.tags) ? raw.tags.map(String) : [],
+    viewCount: typeof raw.viewCount === "number" ? raw.viewCount : 0,
+    publishedAt: getString(raw.publishedAt) || undefined,
+    createdAt: getString(raw.createdAt) || undefined,
   };
 }
 
+let initialStories: Story[] = [];
+let initialCategories: string[] = [
+  "All",
+  "Heritage",
+  "Innovation",
+  "Sustainability",
+  "Science",
+  "Culture",
+  "Environment",
+];
+
+if (typeof window === "undefined") {
+  try {
+    const fallbackJson = (await import("@/../stories-backup.json")).default;
+    initialStories = (fallbackJson.stories || []).map((s: Record<string, unknown>) =>
+      normalizeStory(s),
+    );
+    const fallbackCategories = (fallbackJson.categories as string[]) || [];
+    initialCategories = fallbackCategories.length
+      ? ["All", ...fallbackCategories]
+      : initialCategories;
+  } catch (e) {
+    console.error("Failed to load initial server fallback stories:", e);
+  }
+} else if (
+  typeof window !== "undefined" &&
+  (window as unknown as Record<string, { stories: Story[]; categories: string[] }>).__STORIES_DATA__
+) {
+  initialStories = (window as unknown as Record<string, { stories: Story[]; categories: string[] }>)
+    .__STORIES_DATA__.stories;
+  initialCategories = (
+    window as unknown as Record<string, { stories: Story[]; categories: string[] }>
+  ).__STORIES_DATA__.categories;
+}
+
+export const stories: Story[] = [...initialStories];
+export const categories: string[] = [...initialCategories];
+
+const listeners = new Set<() => void>();
+let loadPromise: Promise<void> | null = null;
+let hasLoadedRemote = false;
+let error: string | null = null;
+
+let cachedSnapshot: StoriesDataState | null = null;
+let cachedServerSnapshot: StoriesDataState | null = null;
+
 function emit() {
+  cachedSnapshot = null;
   for (const listener of listeners) {
     listener();
   }
 }
 
 function replaceData(nextStories: Story[], nextCategories: readonly string[]) {
-  stories.splice(0, stories.length, ...nextStories);
-  categories.splice(0, categories.length, ...nextCategories);
+  if (nextStories.length > 0) {
+    stories.splice(0, stories.length, ...nextStories);
+  }
+  if (nextCategories.length > 0) {
+    categories.splice(0, categories.length, ...nextCategories);
+  }
   hasLoadedRemote = true;
   error = null;
   emit();
@@ -87,21 +111,27 @@ function setError(message: string) {
 }
 
 function getSnapshot(): StoriesDataState {
-  return {
-    stories: [...stories],
-    categories: [...categories],
-    loading: !hasLoadedRemote && !error,
-    error,
-  };
+  if (!cachedSnapshot) {
+    cachedSnapshot = {
+      stories: [...stories],
+      categories: [...categories],
+      loading: !hasLoadedRemote && !error,
+      error,
+    };
+  }
+  return cachedSnapshot;
 }
 
 function getServerSnapshot(): StoriesDataState {
-  return {
-    stories: [...FALLBACK_STORIES],
-    categories: [...FALLBACK_CATEGORIES],
-    loading: false,
-    error: null,
-  };
+  if (!cachedServerSnapshot) {
+    cachedServerSnapshot = {
+      stories: [...initialStories],
+      categories: [...initialCategories],
+      loading: false,
+      error: null,
+    };
+  }
+  return cachedServerSnapshot;
 }
 
 function subscribe(listener: () => void) {

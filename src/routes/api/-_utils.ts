@@ -1,3 +1,6 @@
+import { supabase } from "@/lib/supabase-client";
+import { prisma } from "@/lib/repositories/prisma.server";
+
 export function json(data: unknown, init?: ResponseInit) {
   return new Response(JSON.stringify(data), {
     ...init,
@@ -6,6 +9,40 @@ export function json(data: unknown, init?: ResponseInit) {
       ...(init?.headers ?? {}),
     },
   });
+}
+
+export async function verifyUserRole(request: Request, allowedRoles: string[]) {
+  const authHeader = request.headers.get("Authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return null;
+  }
+  const token = authHeader.substring(7);
+
+  try {
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser(token);
+    if (error || !user) {
+      return null;
+    }
+
+    const profile = await prisma.profile.findUnique({
+      where: { id: user.id },
+    });
+
+    if (!profile || !allowedRoles.includes(profile.role.toLowerCase())) {
+      return null;
+    }
+
+    return user;
+  } catch {
+    return null;
+  }
+}
+
+export async function verifyAdmin(request: Request) {
+  return verifyUserRole(request, ["admin"]);
 }
 
 export function readOptionalString(value: string | null) {

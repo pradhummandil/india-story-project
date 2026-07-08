@@ -11,6 +11,36 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { stories, categories, useStoriesData } from "../lib/stories-data";
+import { CinematicLoader } from "../components/site/CinematicLoader";
+import { initAuthListener, useAuthStore } from "../lib/auth-store";
+
+if (typeof window !== "undefined") {
+  const originalFetch = window.fetch;
+  window.fetch = async function (input, init) {
+    let url = "";
+    if (typeof input === "string") {
+      url = input;
+    } else if (input instanceof URL) {
+      url = input.href;
+    } else if (input && typeof input === "object" && "url" in input) {
+      url = (input as any).url;
+    }
+
+    if (url.startsWith("/api/admin") || url.includes("/api/admin")) {
+      const session = useAuthStore.getState().session;
+      if (session?.access_token) {
+        init = init || {};
+        const headers = new Headers(init.headers || {});
+        if (!headers.has("Authorization")) {
+          headers.set("Authorization", `Bearer ${session.access_token}`);
+        }
+        init.headers = headers;
+      }
+    }
+    return originalFetch(input, init);
+  };
+}
 
 function NotFoundComponent() {
   return (
@@ -106,12 +136,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  const initialData = { stories, categories };
+  const serialized = JSON.stringify(initialData).replace(/</g, "\\u003c");
+
   return (
     <html lang="en" className="dark">
       <head>
         <HeadContent />
       </head>
       <body>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.__STORIES_DATA__ = ${serialized};`,
+          }}
+        />
         {children}
         <Scripts />
       </body>
@@ -122,8 +160,20 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  // Subscribe to stories-data updates so components re-render when fetching finishes on mount
+  useStoriesData();
+
+  // Initialize auth listener
+  useEffect(() => {
+    const unsubscribe = initAuthListener();
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
+      <CinematicLoader />
       <Outlet />
     </QueryClientProvider>
   );

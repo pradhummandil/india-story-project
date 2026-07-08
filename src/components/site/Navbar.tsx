@@ -1,65 +1,20 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { useEffect, useRef, useState, type MouseEvent } from "react";
-import { motion, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
-import { Menu, X, Compass } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import { Menu, X, Compass, User, LogOut, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LanguageToggle } from "./LanguageToggle";
 import { useI18nStore, getNavText } from "@/lib/i18n";
-
-function MagneticLink({ to, label, active }: { to: string; label: string; active: boolean }) {
-  const ref = useRef<HTMLAnchorElement>(null);
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const sx = useSpring(x, { stiffness: 200, damping: 18 });
-  const sy = useSpring(y, { stiffness: 200, damping: 18 });
-
-  const onMove = (e: MouseEvent<HTMLAnchorElement>) => {
-    const el = ref.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    x.set((e.clientX - (r.left + r.width / 2)) * 0.25);
-    y.set((e.clientY - (r.top + r.height / 2)) * 0.25);
-  };
-  const onLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
-
-  return (
-    <Link
-      ref={ref}
-      to={to}
-      onMouseMove={onMove}
-      onMouseLeave={onLeave}
-      className="relative px-4 py-2 text-sm tracking-wide transition-colors"
-    >
-      <motion.span
-        style={{ x: sx, y: sy }}
-        className={`relative inline-block ${active ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-      >
-        {label}
-        <span
-          className={`absolute left-0 -bottom-1 h-px bg-linear-to-r from-gold to-saffron transition-all duration-500 ${
-            active ? "w-full opacity-100" : "w-0 opacity-0 group-hover:w-full"
-          }`}
-        />
-        {active && (
-          <motion.span
-            layoutId="nav-underline"
-            className="absolute left-0 right-0 -bottom-1 h-px bg-linear-to-r from-gold to-saffron"
-            transition={{ type: "spring", stiffness: 380, damping: 32 }}
-          />
-        )}
-      </motion.span>
-    </Link>
-  );
-}
+import { motion, AnimatePresence } from "framer-motion";
+import { useAuthStore } from "@/lib/auth-store";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { location } = useRouterState();
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const { user, signOut } = useAuthStore();
   const lang = useI18nStore((s) => s.lang);
   const navText = getNavText(lang);
 
@@ -72,105 +27,300 @@ export function Navbar() {
   ];
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    const onScroll = () => setScrolled(window.scrollY > 10);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Handle click outside user dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const isTransparent = location.pathname === "/" && !scrolled;
+  const isAdmin = user?.app_metadata?.role === "Admin" || user?.app_metadata?.role === "SuperAdmin";
+  const avatarUrl = user?.user_metadata?.avatar_url as string | undefined;
+  const displayName = (user?.user_metadata?.name as string) || user?.email?.split("@")[0] || "User";
+
   return (
-    <motion.header
-      initial={{ y: -24, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-      className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
-        scrolled ? "glass-strong py-3" : "py-5"
+    <header
+      className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 fixed-header ${
+        isTransparent
+          ? "bg-transparent is-transparent py-6 text-white"
+          : "bg-background/80 backdrop-blur-md py-3 shadow-sm text-foreground"
       }`}
     >
       <div className="container mx-auto px-6 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3 group">
-          <motion.img
-            whileHover={{ rotate: 8, scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 300, damping: 18 }}
-            src="https://indiastoryproject.com/wp-content/uploads/2022/04/Logo-ISP.png"
-            alt="India Story Project logo"
-            className="size-10 rounded-full bg-background shadow-glow border border-border object-cover"
-          />
-          <span className="font-display text-lg leading-none">
-            <span className="text-gradient-gold font-semibold">India</span>{" "}
-            <span className="text-foreground/90">Story Project</span>
+          <div className="relative size-9 rounded-full border border-[#C8A96A]/40 overflow-hidden bg-white p-0.5 shadow-sm shadow-[#C8A96A]/10 transition-all duration-300 group-hover:scale-105 group-hover:border-[#C8A96A]/60 flex items-center justify-center">
+            <img
+              src="https://indiastoryproject.com/wp-content/uploads/2022/04/Logo-ISP.png"
+              alt="India Story Project logo"
+              className="w-full h-full rounded-full object-cover"
+            />
+          </div>
+          <span className="font-display text-xl tracking-tight">
+            <span
+              className={`${isTransparent ? "text-white group-hover:text-gold" : "text-primary"} font-bold transition-colors duration-300`}
+            >
+              India
+            </span>{" "}
+            <span
+              className={`transition-colors duration-300 ${isTransparent ? "text-white/95 group-hover:text-white" : "text-foreground/90 group-hover:text-primary"} font-medium`}
+            >
+              Story Project
+            </span>
           </span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-1">
-          {links.map((l) => (
-            <MagneticLink
-              key={l.to}
-              to={l.to}
-              label={l.label}
-              active={l.to === "/" ? location.pathname === "/" : location.pathname.startsWith(l.to)}
-            />
-          ))}
+        {/* Desktop Navigation Links */}
+        <nav className="hidden md:flex items-center gap-8 font-sans text-[11px] tracking-[0.15em] font-medium uppercase">
+          {links.map((l) => {
+            const active =
+              l.to === "/" ? location.pathname === "/" : location.pathname.startsWith(l.to);
+            return (
+              <Link
+                key={l.to}
+                to={l.to}
+                className={`relative py-1.5 transition-colors duration-300 ${
+                  active
+                    ? isTransparent
+                      ? "text-white font-semibold"
+                      : "text-primary font-semibold"
+                    : isTransparent
+                      ? "text-white/70 hover:text-white"
+                      : "text-foreground/60 hover:text-primary"
+                }`}
+              >
+                {l.label}
+                {active ? (
+                  <motion.span
+                    layoutId="activeNavLine"
+                    className={`absolute left-0 right-0 bottom-[-6px] h-[2.5px] ${
+                      isTransparent
+                        ? "bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"
+                        : "bg-primary shadow-[0_0_4px_rgba(139,0,0,0.3)]"
+                    }`}
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  />
+                ) : (
+                  <span className="absolute left-0 right-0 bottom-[-6px] h-[2.5px] bg-primary/80 scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300" />
+                )}
+              </Link>
+            );
+          })}
         </nav>
 
-        <div className="hidden md:block">
+        {/* Right side elements: Language Switch + Auth / Explore Button */}
+        <div className="hidden md:flex items-center gap-4">
+          <LanguageToggle />
+
+          {user ? (
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setUserMenuOpen((o) => !o)}
+                className="flex items-center gap-2 outline-none"
+              >
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt={displayName}
+                    className="size-8 rounded-full border border-border/50 object-cover hover:scale-105 transition-transform"
+                  />
+                ) : (
+                  <div className="size-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center hover:scale-105 transition-transform">
+                    <User className="size-4 text-primary" />
+                  </div>
+                )}
+              </button>
+
+              <AnimatePresence>
+                {userMenuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute right-0 mt-2 w-48 bg-[#161616] border border-white/10 rounded-sm shadow-xl py-1 z-50 text-white"
+                  >
+                    <div className="px-4 py-2 border-b border-white/5">
+                      <p className="text-xs text-white/45 font-sans">Signed in as</p>
+                      <p className="text-sm font-sans font-medium truncate">{displayName}</p>
+                    </div>
+
+                    <Link
+                      to="/profile"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2 text-xs font-sans text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                    >
+                      <User className="size-3.5" />
+                      My Profile
+                    </Link>
+
+                    {isAdmin && (
+                      <Link
+                        to="/admin"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-xs font-sans text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                      >
+                        <Shield className="size-3.5" />
+                        Admin Dashboard
+                      </Link>
+                    )}
+
+                    <button
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        void signOut();
+                      }}
+                      className="flex items-center gap-2 px-4 py-2 text-xs font-sans text-red-400 hover:bg-red-500/10 w-full text-left transition-colors border-t border-white/5 mt-1"
+                    >
+                      <LogOut className="size-3.5" />
+                      Sign Out
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ) : (
+            <Link to="/login" className="inline-flex">
+              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-sans uppercase tracking-[0.15em] text-[10px] font-semibold h-9 px-5 rounded-full shadow-sm shadow-primary/10 transition-all duration-300 hover:-translate-y-0.5">
+                Sign In
+              </Button>
+            </Link>
+          )}
+
           <Link to="/explore" className="inline-flex">
-            <Button className="btn-premium bg-linear-to-r from-gold to-saffron text-gold-foreground shadow-glow border-0">
-              <Compass className="size-4" />
-              Explore India
+            <Button
+              variant="outline"
+              className={`font-sans uppercase tracking-[0.15em] text-[10px] font-semibold h-9 px-5 rounded-full transition-all duration-300 hover:-translate-y-0.5 flex items-center ${
+                isTransparent
+                  ? "bg-white/10 text-white hover:text-white border border-white/20 hover:border-white/50 hover:bg-white/20"
+                  : "bg-transparent text-foreground hover:text-primary border border-border/80 hover:border-primary/40 hover:bg-primary/5"
+              }`}
+            >
+              <Compass className="size-4 mr-2" />
+              {navText.exploreIndia}
             </Button>
           </Link>
         </div>
 
-        <LanguageToggle />
-
-        <button
-          className="md:hidden p-2 text-foreground"
-          onClick={() => setOpen((v) => !v)}
-          aria-label="Toggle menu"
-        >
-          {open ? <X className="size-6" /> : <Menu className="size-6" />}
-        </button>
+        {/* Mobile controls */}
+        <div className="flex md:hidden items-center gap-4">
+          <LanguageToggle />
+          <button
+            className={`p-2 transition-colors duration-300 relative focus:outline-none ${
+              isTransparent ? "text-white" : "text-foreground"
+            }`}
+            onClick={() => setOpen((v) => !v)}
+            aria-label="Toggle menu"
+            aria-expanded={open}
+            aria-controls="mobile-menu"
+          >
+            {/* Animated Hamburger SVG */}
+            <div className="relative size-6 flex flex-col justify-center items-center">
+              <span
+                className={`block absolute h-[1.8px] w-5 bg-current transform transition duration-300 ease-in-out ${
+                  open ? "rotate-45" : "-translate-y-1.5"
+                }`}
+              />
+              <span
+                className={`block absolute h-[1.8px] w-5 bg-current transform transition duration-300 ease-in-out ${
+                  open ? "opacity-0" : ""
+                }`}
+              />
+              <span
+                className={`block absolute h-[1.8px] w-5 bg-current transform transition duration-300 ease-in-out ${
+                  open ? "-rotate-45" : "translate-y-1.5"
+                }`}
+              />
+            </div>
+          </button>
+        </div>
       </div>
 
+      {/* Mobile Drawer */}
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-            className="md:hidden glass-strong border-t border-border mt-3"
+            id="mobile-menu"
+            role="menu"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="md:hidden bg-background/95 backdrop-blur-md border-t border-border/60 overflow-hidden shadow-lg"
           >
-            <div className="container mx-auto px-6 py-6 flex flex-col gap-1">
-              {links.map((l, i) => (
-                <motion.div
+            <div className="container mx-auto px-6 py-6 flex flex-col gap-4 font-sans text-xs tracking-wider uppercase font-semibold">
+              {links.map((l) => (
+                <Link
                   key={l.to}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.05 + i * 0.05 }}
+                  to={l.to}
+                  onClick={() => setOpen(false)}
+                  className="py-2 text-muted-foreground hover:text-foreground border-b border-border/40"
                 >
-                  <Link
-                    to={l.to}
-                    onClick={() => setOpen(false)}
-                    className="py-3 text-base text-muted-foreground hover:text-foreground block"
-                  >
-                    {l.label}
-                  </Link>
-                </motion.div>
+                  {l.label}
+                </Link>
               ))}
-              <Button className="mt-3 bg-linear-to-r from-gold to-saffron text-gold-foreground border-0">
-                <Compass className="size-4" />
-                Explore India
-              </Button>
 
-              <div className="mt-3">
-                <LanguageToggle />
-              </div>
+              {user ? (
+                <>
+                  <Link
+                    to="/profile"
+                    onClick={() => setOpen(false)}
+                    className="py-2 text-muted-foreground hover:text-foreground border-b border-border/40 flex items-center gap-2"
+                  >
+                    <User className="size-4" />
+                    My Profile ({displayName})
+                  </Link>
+                  {isAdmin && (
+                    <Link
+                      to="/admin"
+                      onClick={() => setOpen(false)}
+                      className="py-2 text-muted-foreground hover:text-foreground border-b border-border/40 flex items-center gap-2"
+                    >
+                      <Shield className="size-4" />
+                      Admin Dashboard
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => {
+                      setOpen(false);
+                      void signOut();
+                    }}
+                    className="py-2 text-red-400 hover:text-red-300 text-left flex items-center gap-2"
+                  >
+                    <LogOut className="size-4" />
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <Link
+                  to="/login"
+                  onClick={() => setOpen(false)}
+                  className="py-2 text-muted-foreground hover:text-foreground border-b border-border/40"
+                >
+                  Sign In
+                </Link>
+              )}
+
+              <Link to="/explore" onClick={() => setOpen(false)} className="w-full mt-2">
+                <Button className="w-full bg-primary hover:bg-primary/95 text-primary-foreground rounded-full uppercase tracking-widest text-[10px] h-12 font-sans font-bold shadow-sm shadow-primary/10 hover:shadow-md hover:translate-y-[-1px] transition-all duration-300">
+                  <Compass className="size-4 mr-2" />
+                  {navText.exploreIndia}
+                </Button>
+              </Link>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.header>
+    </header>
   );
 }

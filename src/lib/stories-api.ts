@@ -31,7 +31,8 @@ async function requestJson(url: string): Promise<unknown> {
 }
 
 function mapStory(raw: Record<string, unknown>): Story {
-  const getString = (value: unknown, fallback = "") => (typeof value === "string" ? value : fallback);
+  const getString = (value: unknown, fallback = "") =>
+    typeof value === "string" ? value : fallback;
 
   return {
     id: getString(raw.id),
@@ -46,6 +47,16 @@ function mapStory(raw: Record<string, unknown>): Story {
     content: typeof raw.content === "string" && raw.content.length ? raw.content : undefined,
     url: getString(raw.url) || getString(raw.slug),
     gradient: typeof raw.gradient === "string" ? raw.gradient : undefined,
+    titleHi: getString(raw.titleHi) || undefined,
+    excerptHi: getString(raw.excerptHi) || undefined,
+    contentHi: getString(raw.contentHi) || undefined,
+    authorName: getString(raw.authorName) || undefined,
+    authorBio: getString(raw.authorBio) || undefined,
+    authorAvatar: getString(raw.authorAvatar) || undefined,
+    tags: Array.isArray(raw.tags) ? raw.tags.map(String) : [],
+    viewCount: typeof raw.viewCount === "number" ? raw.viewCount : 0,
+    publishedAt: getString(raw.publishedAt) || undefined,
+    createdAt: getString(raw.createdAt) || undefined,
   };
 }
 
@@ -71,7 +82,9 @@ async function fetchAllStories(): Promise<Story[]> {
   const pageSize = 60;
 
   for (let page = 1; ; page += 1) {
-    const payload = (await requestJson(`/api/stories?page=${page}&pageSize=${pageSize}`)) as StoryListResponse;
+    const payload = (await requestJson(
+      `/api/stories?page=${page}&pageSize=${pageSize}`,
+    )) as StoryListResponse;
     const pageStories = Array.isArray(payload.stories) ? payload.stories : [];
     stories.push(...pageStories.map((story) => mapStory(story as Record<string, unknown>)));
 

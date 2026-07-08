@@ -18,7 +18,10 @@ export function SiteLayout({ children }: { children: ReactNode }) {
       <ScrollProgress />
       <CursorGlow />
       <Navbar />
-      <main key={location.pathname} className="flex-1 pt-24 page-transition">
+      <main
+        key={location.pathname}
+        className={`flex-1 page-transition ${location.pathname === "/" ? "pt-0" : "pt-24"}`}
+      >
         {children}
       </main>
       <Footer />

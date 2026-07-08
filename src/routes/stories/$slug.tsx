@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import type { Story } from "@/components/site/StoryCard";
 import { StoryDetail } from "@/components/site/StoryDetail";
-import { stories } from "@/lib/stories-data";
+import { useStoriesData } from "@/lib/stories-data";
 
 export const Route = createFileRoute("/stories/$slug")({
   component: StoryDetailPage,
@@ -22,20 +22,18 @@ export const Route = createFileRoute("/stories/$slug")({
 
 function StoryDetailPage() {
   const { slug } = Route.useParams();
-  const [loading, setLoading] = useState(true);
+  const { stories: dbStories, loading: dataLoading } = useStoriesData();
 
   const story = useMemo(() => {
-    return (stories as Story[]).find((s) => s.slug === slug) ?? null;
-  }, [slug]);
+    return (dbStories as Story[]).find((s) => s.slug === slug) ?? null;
+  }, [slug, dbStories]);
 
-  useEffect(() => {
-    setLoading(false);
-  }, []);
-
-  if (loading) {
+  if (dataLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-muted-foreground">Loading story…</div>
+        <div className="text-muted-foreground font-sans font-semibold uppercase tracking-widest text-xs animate-pulse">
+          Loading story…
+        </div>
       </div>
     );
   }

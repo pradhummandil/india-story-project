@@ -1,7 +1,4 @@
-import {
-  AuthorRepository,
-  authorRepository,
-} from "@/lib/repositories/author-repository.server";
+import { AuthorRepository, authorRepository } from "@/lib/repositories/author-repository.server";
 
 export class AuthorService {
   constructor(private readonly authors = authorRepository) {}
@@ -16,4 +13,3 @@ export class AuthorService {
 }
 
 export const authorService = new AuthorService();
-

@@ -36,7 +36,9 @@ function write(s: JourneyState) {
   try {
     localStorage.setItem(KEY, JSON.stringify(s));
     window.dispatchEvent(new CustomEvent("isp:journey", { detail: s }));
-  } catch {}
+  } catch {
+    // Ignore storage quota errors
+  }
 }
 
 export function useJourney() {
@@ -98,19 +100,21 @@ export function scoreStory(s: Story, j: JourneyState): number {
   return cat * 3 + reg * 2 + Math.random() * 0.5;
 }
 
-export function getRecommendations(j: JourneyState, limit = 6): Story[] {
-  const scored = stories
+export function getRecommendations(j: JourneyState, limit = 6, storiesList?: Story[]): Story[] {
+  const list = storiesList && storiesList.length ? storiesList : stories;
+  const scored = list
     .map((s) => ({ s, score: scoreStory(s, j) }))
     .filter((x) => x.score >= 0)
     .sort((a, b) => b.score - a.score);
-  if (scored.length === 0) return stories.slice(0, limit);
+  if (scored.length === 0) return list.slice(0, limit);
   return scored.slice(0, limit).map((x) => x.s);
 }
 
-export function getSimilar(storyId: string, limit = 3): Story[] {
-  const base = stories.find((s) => s.id === storyId);
-  if (!base) return stories.slice(0, limit);
-  return stories
+export function getSimilar(storyId: string, limit = 3, storiesList?: Story[]): Story[] {
+  const list = storiesList && storiesList.length ? storiesList : stories;
+  const base = list.find((s) => s.id === storyId);
+  if (!base) return list.slice(0, limit);
+  return list
     .filter((s) => s.id !== storyId)
     .map((s) => ({
       s,

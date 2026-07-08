@@ -43,7 +43,9 @@ function write(s: ContributorState) {
   try {
     localStorage.setItem(KEY, JSON.stringify(s));
     window.dispatchEvent(new CustomEvent("isp:contrib", { detail: s }));
-  } catch {}
+  } catch {
+    // Ignore storage quota errors
+  }
 }
 
 export function useContributor() {

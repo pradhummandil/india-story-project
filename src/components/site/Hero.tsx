@@ -1,153 +1,328 @@
-import { useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Link } from "@tanstack/react-router";
-import { motion, useSpring, useTransform } from "framer-motion";
-import { ArrowRight, Sparkles, ChevronDown } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ChevronLeft,
+  ChevronRight,
+  MapPin,
+  Clock,
+  ArrowRight,
+  ChevronDown,
+  Pause,
+  Play,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ParticleField, useMouseParallax } from "./ParticleField";
-import { StoryNodes } from "./StoryNodes";
-import { IndiaSilhouette } from "./IndiaSilhouette";
-import { HeroStats } from "./AnimatedCounter";
+import { useStoriesData } from "@/lib/stories-data";
+import { useI18nStore, translateStory } from "@/lib/i18n";
+import { getStoryAuthor } from "@/lib/utils";
 
-const headingWords = ["Experience", "India's", "Stories"];
-const italicWords = ["Don't", "Just", "Read", "Them"];
+type HeroSlide = {
+  id: string;
+  storyId?: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  titleHi?: string;
+  excerptHi?: string;
+  category: string;
+  state: string;
+  author: string;
+  readingTime?: string | number;
+  image: string;
+  caption?: string;
+};
 
-export function Hero() {
-  const heroRef = useRef<HTMLElement>(null);
-  const { mouseX, mouseY } = useMouseParallax(heroRef);
+const SLIDE_DURATION = 8000;
 
-  // Content depth — opposite direction, very subtle
-  const contentX = useSpring(useTransform(mouseX, [-0.5, 0.5], [-8, 8]), {
-    stiffness: 60,
-    damping: 20,
-  });
-  const contentY = useSpring(useTransform(mouseY, [-0.5, 0.5], [-8, 8]), {
-    stiffness: 60,
-    damping: 20,
-  });
+const FALLBACK_IMAGES = [
+  "https://images.unsplash.com/photo-1524492449929-c42ab9ec4449?auto=format&fit=crop&q=80&w=1920",
+  "https://images.unsplash.com/photo-1506461883276-594a12b11cc3?auto=format&fit=crop&q=80&w=1920",
+  "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&q=80&w=1920",
+  "https://images.unsplash.com/photo-1532375810709-75b1da00537c?auto=format&fit=crop&q=80&w=1920",
+  "https://images.unsplash.com/photo-1585938338392-50a59970d8ee?auto=format&fit=crop&q=80&w=1920",
+];
+
+export function CinematicHero() {
+  const { stories: dbStories } = useStoriesData();
+  const lang = useI18nStore((s) => s.lang);
+
+  const [slides, setSlides] = useState<HeroSlide[]>([]);
+  const [current, setCurrent] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [direction, setDirection] = useState<1 | -1>(1);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [loaded, setLoaded] = useState(false);
+
+  // Build slides from DB stories (featured first) or API
+  useEffect(() => {
+    const buildSlides = async () => {
+      // Try API first
+      try {
+        const res = await fetch("/api/hero-slides");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.slides && data.slides.length > 0) {
+            setSlides(data.slides);
+            setLoaded(true);
+            return;
+          }
+        }
+      } catch {
+        // fall through to local stories
+      }
+
+      // Fallback: use featured/top stories from store
+      if (dbStories.length > 0) {
+        const featured = dbStories
+          .filter((s) => s.image)
+          .slice(0, 7)
+          .map((s, i) => {
+            const t = translateStory(s, "en");
+            return {
+              id: s.id || s.slug,
+              slug: s.slug,
+              title: t.title,
+              excerpt: t.excerpt,
+              titleHi: s.titleHi,
+              excerptHi: s.excerptHi,
+              category: s.category,
+              state: s.region || "India",
+              author: getStoryAuthor(s.slug),
+              readingTime: s.readTime,
+              image: s.image || FALLBACK_IMAGES[i % FALLBACK_IMAGES.length],
+            } as HeroSlide;
+          });
+        setSlides(featured.length > 0 ? featured : buildFallbackSlides());
+        setLoaded(true);
+      }
+    };
+
+    buildSlides();
+  }, [dbStories]);
+
+  function buildFallbackSlides(): HeroSlide[] {
+    return FALLBACK_IMAGES.map((img, i) => ({
+      id: `fallback-${i}`,
+      slug: "stories",
+      title: "Stories of India",
+      excerpt: "Discover the stories that define a nation.",
+      category: "Culture",
+      state: "India",
+      author: "India Story Project",
+      image: img,
+    }));
+  }
+
+  const goTo = useCallback(
+    (index: number, dir: 1 | -1 = 1) => {
+      setDirection(dir);
+      setCurrent((index + slides.length) % slides.length);
+    },
+    [slides.length],
+  );
+
+  const next = useCallback(() => {
+    goTo(current + 1, 1);
+  }, [current, goTo]);
+
+  const prev = useCallback(() => {
+    goTo(current - 1, -1);
+  }, [current, goTo]);
+
+  // Auto-advance
+  useEffect(() => {
+    if (!isPlaying || slides.length <= 1) return;
+    intervalRef.current = setInterval(next, SLIDE_DURATION);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [isPlaying, next, slides.length]);
+
+  const togglePlay = () => setIsPlaying((v) => !v);
+
+  if (!loaded || slides.length === 0) {
+    return (
+      <section className="relative w-full h-[100vh] bg-black flex items-center justify-center">
+        <div className="text-white/40 font-sans text-xs uppercase tracking-widest animate-pulse">
+          Loading…
+        </div>
+      </section>
+    );
+  }
+
+  const slide = slides[current];
+  const title = lang === "hi" && slide.titleHi ? slide.titleHi : slide.title;
+  const excerpt = lang === "hi" && slide.excerptHi ? slide.excerptHi : slide.excerpt;
+  const readTime =
+    typeof slide.readingTime === "number"
+      ? `${slide.readingTime} min read`
+      : slide.readingTime || "4 min read";
 
   return (
     <section
-      ref={heroRef}
-      className="relative bg-hero overflow-hidden min-h-[100svh] flex items-center"
+      className="relative w-full h-[100vh] flex items-center justify-center overflow-hidden bg-black text-white"
+      aria-label="Featured Stories"
     >
-      {/* India silhouette — low-opacity art accent */}
-      <IndiaSilhouette className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[820px] max-w-none pointer-events-none" />
-
-      {/* Particles + cinematic glow */}
-      <ParticleField mouseX={mouseX} mouseY={mouseY} />
-
-      {/* Floating story nodes */}
-      <StoryNodes mouseX={mouseX} mouseY={mouseY} />
-
-      {/* Hero content with depth parallax */}
-      <motion.div
-        style={{ x: contentX, y: contentY }}
-        className="container mx-auto px-6 py-24 md:py-32 text-center relative z-10"
-      >
+      {/* ── Background slides ── */}
+      <AnimatePresence mode="sync" initial={false}>
         <motion.div
-          initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass text-xs uppercase tracking-widest text-muted-foreground mb-8"
+          key={`bg-${current}`}
+          className="absolute inset-0 z-0"
+          initial={{ opacity: 0, scale: 1.06 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.98 }}
+          transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
         >
-          <Sparkles className="size-3 text-gold" />A premium storytelling platform
+          <img
+            src={slide.image}
+            alt={title}
+            className="w-full h-full object-cover filter saturate-[0.88] brightness-[0.72]"
+            loading="eager"
+          />
+          {/* Cinematic gradients */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/20 to-black/90 z-10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/15 to-transparent z-10" />
         </motion.div>
+      </AnimatePresence>
 
-        <h1 className="font-display text-5xl md:text-7xl lg:text-8xl leading-[1.05] max-w-5xl mx-auto text-balance">
-          <span className="block">
-            {headingWords.map((word, i) => (
-              <motion.span
-                key={word + i}
-                initial={{ opacity: 0, y: 40, filter: "blur(12px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                transition={{
-                  duration: 1.1,
-                  delay: 0.25 + i * 0.14,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
-                className="inline-block mr-[0.25em] hover:text-gradient-gold transition-all duration-500"
-              >
-                {word}
-              </motion.span>
-            ))}
-          </span>
-          <span className="block italic text-gradient-gold mt-2">
-            {italicWords.map((word, i) => (
-              <motion.span
-                key={word + i}
-                initial={{ opacity: 0, y: 40, filter: "blur(12px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                transition={{
-                  duration: 1.1,
-                  delay: 0.7 + i * 0.14,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
-                className="inline-block mr-[0.25em]"
-              >
-                {word}
-              </motion.span>
-            ))}
-          </span>
-        </h1>
+      {/* ── Slide progress bar ── */}
+      <div className="absolute bottom-0 left-0 right-0 z-30 h-[2px] bg-white/10">
+        {isPlaying && (
+          <motion.div
+            key={`progress-${current}`}
+            className="h-full bg-gold"
+            initial={{ width: "0%" }}
+            animate={{ width: "100%" }}
+            transition={{ duration: SLIDE_DURATION / 1000, ease: "linear" }}
+          />
+        )}
+      </div>
 
-        <motion.p
-          initial={{ opacity: 0, y: 20, filter: "blur(6px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ duration: 1, delay: 1.15 }}
-          className="mt-8 max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground leading-relaxed"
-        >
-          Discover inspiring stories of changemakers, innovators, and heroes across India — told
-          with the depth, craft, and care they deserve.
-        </motion.p>
-
+      {/* ── Content ── */}
+      <AnimatePresence mode="wait" initial={false}>
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 1.35 }}
-          className="mt-12 flex flex-col sm:flex-row gap-4 justify-center"
+          key={`content-${current}`}
+          className="relative z-20 w-full max-w-6xl mx-auto px-6 md:px-12 flex flex-col items-start text-left space-y-5 mt-16 md:mt-20"
+          initial={{ opacity: 0, y: 30, x: direction > 0 ? 20 : -20 }}
+          animate={{ opacity: 1, y: 0, x: 0 }}
+          exit={{ opacity: 0, y: -20, x: direction > 0 ? -20 : 20 }}
+          transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
         >
-          <Button
-            asChild
-            size="lg"
-            className="btn-premium bg-gradient-to-r from-gold to-saffron text-gold-foreground border-0 shadow-glow h-12 px-8 text-base group"
-          >
-            <Link to="/stories">
-              Explore Stories
-              <ArrowRight className="size-4 transition-transform duration-500 group-hover:translate-x-1" />
+          {/* Metadata */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[10px] sm:text-xs uppercase tracking-[0.22em] font-sans font-bold text-gold">
+            <span className="bg-primary/25 backdrop-blur-sm px-3 py-1 border border-primary/20">
+              {slide.category}
+            </span>
+            <span className="flex items-center gap-1 text-white/70">
+              <MapPin className="size-3" />
+              {slide.state}
+            </span>
+            <span className="flex items-center gap-1 text-white/60">
+              <Clock className="size-3" />
+              {readTime}
+            </span>
+          </div>
+
+          {/* Title */}
+          <h1 className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.04] text-white tracking-tight max-w-4xl font-bold drop-shadow-lg text-pretty">
+            {title}
+          </h1>
+
+          {/* Author */}
+          <p className="text-[10px] sm:text-xs uppercase tracking-[0.28em] text-white/75 font-sans font-semibold">
+            {lang === "en" ? `By ${slide.author}` : `लेखक: ${slide.author}`}
+          </p>
+
+          {/* Excerpt */}
+          <p className="text-sm sm:text-base md:text-lg text-white/88 max-w-2xl leading-relaxed font-sans font-medium text-balance drop-shadow hidden sm:block">
+            {excerpt}
+          </p>
+
+          {/* CTA */}
+          <div className="flex items-center gap-3 pt-2">
+            <Button
+              asChild
+              size="lg"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-sans uppercase tracking-[0.18em] text-xs h-12 px-8 rounded-full border border-primary/50 shadow-glow hover:-translate-y-0.5 transition-transform duration-300"
+            >
+              <Link to="/stories/$slug" params={{ slug: slide.slug }}>
+                {lang === "en" ? "Read Story" : "कहानी पढ़ें"}
+                <ArrowRight className="size-4 ml-2" />
+              </Link>
+            </Button>
+            <Link
+              to="/stories"
+              className="text-xs text-white/60 font-sans uppercase tracking-widest hover:text-white transition-colors"
+            >
+              {lang === "en" ? "All Stories" : "सभी कहानियां"}
             </Link>
-          </Button>
-          <Button
-            asChild
-            size="lg"
-            variant="outline"
-            className="btn-premium glass border-border h-12 px-8 text-base hover:bg-accent/10"
-          >
-            <Link to="/about">Learn More</Link>
-          </Button>
+          </div>
         </motion.div>
+      </AnimatePresence>
 
-        {/* Animated stats */}
-        <HeroStats />
-      </motion.div>
-
-      {/* Luxury scroll indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 2, duration: 1 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-3"
-      >
-        <span className="text-[10px] uppercase tracking-[0.35em] text-muted-foreground">
-          Begin The Journey
+      {/* ── Controls (bottom-right) ── */}
+      <div className="absolute bottom-10 right-6 md:right-12 z-30 flex items-center gap-3">
+        {/* Slide counter */}
+        <span className="text-[10px] font-sans tracking-widest text-white/50 uppercase tabular-nums">
+          {String(current + 1).padStart(2, "0")} / {String(slides.length).padStart(2, "0")}
         </span>
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="size-8 rounded-full glass grid place-items-center"
+
+        {/* Play/pause */}
+        <button
+          onClick={togglePlay}
+          className="size-8 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors"
+          aria-label={isPlaying ? "Pause slideshow" : "Play slideshow"}
         >
-          <ChevronDown className="size-4 text-gold" />
-        </motion.div>
-      </motion.div>
+          {isPlaying ? (
+            <Pause className="size-3 text-white" />
+          ) : (
+            <Play className="size-3 text-white" />
+          )}
+        </button>
+
+        {/* Prev / Next */}
+        <button
+          onClick={prev}
+          className="size-8 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors"
+          aria-label="Previous slide"
+        >
+          <ChevronLeft className="size-4 text-white" />
+        </button>
+        <button
+          onClick={next}
+          className="size-8 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors"
+          aria-label="Next slide"
+        >
+          <ChevronRight className="size-4 text-white" />
+        </button>
+      </div>
+
+      {/* ── Dot indicators (bottom-center) ── */}
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2">
+        {slides.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => goTo(i, i > current ? 1 : -1)}
+            className={`transition-all duration-300 rounded-full ${
+              i === current
+                ? "w-6 h-1.5 bg-gold"
+                : "w-1.5 h-1.5 bg-white/30 hover:bg-white/60"
+            }`}
+            aria-label={`Go to slide ${i + 1}`}
+          />
+        ))}
+      </div>
+
+      {/* ── Scroll indicator ── */}
+      <div className="absolute bottom-10 left-6 md:left-12 z-30 flex flex-col items-center gap-2 pointer-events-none">
+        <span className="text-[9px] uppercase tracking-[0.4em] text-white/50 font-sans font-bold">
+          {lang === "en" ? "Scroll" : "स्क्रॉल"}
+        </span>
+        <ChevronDown className="size-3.5 text-gold animate-bounce" />
+      </div>
     </section>
   );
 }
+
+// Keep backward-compatible named export
+export { CinematicHero as Hero };

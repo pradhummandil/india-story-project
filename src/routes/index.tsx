@@ -1,17 +1,36 @@
+import { useMemo } from "react";
 import { createFileRoute, Link, ClientOnly } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles, Leaf, Lightbulb, Landmark, Users, Globe2 } from "lucide-react";
+import {
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Mail,
+  Landmark,
+  Lightbulb,
+  Leaf,
+  Sparkles,
+  Users,
+  Globe2,
+  MapPin,
+  Calendar,
+  Clock,
+  ArrowUpRight,
+  TrendingUp,
+} from "lucide-react";
 import { SiteLayout } from "@/components/site/Layout";
 import { StoryCard } from "@/components/site/StoryCard";
 import { Hero } from "@/components/site/Hero";
 import { HeroOfTheDay } from "@/components/site/HeroOfTheDay";
-import { StoryConstellation } from "@/components/site/StoryConstellation";
-import { ExploreIndia3D } from "@/components/site/ExploreIndia3D";
+import { StoryMap } from "@/components/site/StoryMap";
 import { RecommendedForYou } from "@/components/site/RecommendedForYou";
 import { StoryJourney } from "@/components/site/StoryJourney";
 import { LiveIndiaNow } from "@/components/site/LiveIndiaNow";
 import { Button } from "@/components/ui/button";
-import { stories } from "@/lib/stories-data";
+import { Input } from "@/components/ui/input";
+import { useStoriesData } from "@/lib/stories-data";
+import { useI18nStore, translateStory, getCommonText } from "@/lib/i18n";
+import { getStoryAuthor } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -28,126 +47,486 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-const ICONS = [Landmark, Lightbulb, Leaf, Sparkles, Users, Globe2] as const;
-
-function iconForCategory(label: string) {
-  const hash = Array.from(label).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-  return ICONS[hash % ICONS.length];
-}
-
-function descForCategory(label: string) {
-  // Deterministic, category-derived micro-copy (no separate dataset).
-  const l = label.toLowerCase();
-  if (l.includes("sustain")) return "Stories exploring climate and sustainable futures";
-  if (l.includes("innov")) return "Stories of ideas becoming real change";
-  if (l.includes("women") || l.includes("empower")) return "Stories of women reshaping communities";
-  if (l.includes("educ")) return "Stories centered on learning and education";
-  if (l.includes("culture") || l.includes("herit"))
-    return "Stories celebrating heritage, art, and identity";
-  if (l.includes("rural")) return "Stories rooted in villages and community progress";
-  return "Stories across Bharat";
-}
+// Category curated illustrations
+// Category curated illustrations
+const CATEGORY_MEDIAS = [
+  {
+    id: "Culture",
+    title: { en: "Culture", hi: "संस्कृति" },
+    image:
+      "https://images.unsplash.com/photo-1514222134-b57cbb8ce073?auto=format&fit=crop&q=80&w=800",
+    desc: {
+      en: "Stories celebrating heritage, art, and identity",
+      hi: "विरासत, कला और पहचान का जश्न मनाती कहानियां",
+    },
+  },
+  {
+    id: "History",
+    title: { en: "History", hi: "इतिहास" },
+    image:
+      "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&q=80&w=800",
+    desc: {
+      en: "Deep dives into India's historic landscape",
+      hi: "भारत के ऐतिहासिक परिदृश्य की गहरी खोज",
+    },
+  },
+  {
+    id: "Food",
+    title: { en: "Food", hi: "व्यंजन" },
+    image:
+      "https://images.unsplash.com/photo-1585938338392-50a59970d8ee?auto=format&fit=crop&q=80&w=800",
+    desc: {
+      en: "Tracing culinary history across regions",
+      hi: "विभिन्न क्षेत्रों में पाक कला के इतिहास का पता लगाना",
+    },
+  },
+  {
+    id: "Festival",
+    title: { en: "Festival", hi: "त्योहार" },
+    image:
+      "https://images.unsplash.com/photo-1506461883276-594a12b11cc3?auto=format&fit=crop&q=80&w=800",
+    desc: {
+      en: "The colorful celebrations of change and unity",
+      hi: "बदलाव और एकता के रंगीन उत्सव",
+    },
+  },
+  {
+    id: "Innovation",
+    title: { en: "Innovation", hi: "नवाचार" },
+    image:
+      "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&q=80&w=800",
+    desc: {
+      en: "Stories of ideas becoming real change",
+      hi: "वास्तविक बदलाव बनते विचारों की कहानियां",
+    },
+  },
+  {
+    id: "Science",
+    title: { en: "Science", hi: "विज्ञान" },
+    image:
+      "https://images.unsplash.com/photo-1507668077129-56e32842fceb?auto=format&fit=crop&q=80&w=800",
+    desc: { en: "Discoveries that push boundaries", hi: "सीमाओं को पार करने वाली खोजें" },
+  },
+  {
+    id: "Environment",
+    title: { en: "Environment", hi: "पर्यावरण" },
+    image:
+      "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&q=80&w=800",
+    desc: {
+      en: "Stories exploring climate and sustainable futures",
+      hi: "जलवायु और सतत भविष्य की खोज करती कहानियां",
+    },
+  },
+  {
+    id: "Freedom",
+    title: { en: "Freedom", hi: "स्वतंत्रता" },
+    image:
+      "https://images.unsplash.com/photo-1532375810709-75b1da00537c?auto=format&fit=crop&q=80&w=800",
+    desc: {
+      en: "Chronicles of struggles and independent paths",
+      hi: "संघर्षों और स्वतंत्र रास्तों के इतिहास",
+    },
+  },
+];
 
 function Home() {
+  const { stories: dbStories } = useStoriesData();
+  const lang = useI18nStore((s) => s.lang);
+  const commonText = getCommonText(lang);
+
+  // Translate stories dynamically
+  const localizedStories = dbStories.map((s) => translateStory(s, lang));
+
+  const getSlice = (array: typeof localizedStories, start: number, count: number) => {
+    if (array.length === 0) return [];
+    let effectiveStart = start;
+    if (effectiveStart >= array.length) {
+      effectiveStart = 0;
+    }
+    const slice = array.slice(effectiveStart, effectiveStart + count);
+    if (slice.length >= count || slice.length >= array.length) {
+      return slice;
+    }
+    const padded = [...slice];
+    let i = 0;
+    while (padded.length < count) {
+      padded.push(array[i % array.length]);
+      i++;
+    }
+    return padded;
+  };
+
+  // Gating index slices safely
+  const featuredStory = localizedStories.length > 0 ? localizedStories[0] : null;
+  const gridStories = getSlice(localizedStories, 1, 6); // 6 secondary cards
+  const latestStories = getSlice(localizedStories, 7, 4); // 4 horizontal cards
+  const trendingStories = getSlice(localizedStories, 11, 6); // 6 carousel cards
+
+  // Category fallback image mapper (Task 6)
+  const categoryMediasWithImages = useMemo(() => {
+    return CATEGORY_MEDIAS.map((cat) => {
+      // Find first story belonging to this category (match against both 'Festival' and 'Festivals' if needed)
+      const matchingStory = dbStories.find(
+        (s) =>
+          s.category.toLowerCase() === cat.id.toLowerCase() ||
+          (cat.id === "Festival" && s.category.toLowerCase() === "festivals") ||
+          (cat.id === "Festival" && s.category.toLowerCase() === "त्योहार"),
+      );
+      const firstStoryImage = matchingStory?.image;
+      return {
+        ...cat,
+        image:
+          cat.image ||
+          firstStoryImage ||
+          "https://images.unsplash.com/photo-1524492449949-8f2414161295?w=800",
+      };
+    });
+  }, [dbStories]);
+
   return (
     <SiteLayout>
+      {/* SECTION 1: Full screen cinematic hero */}
       <Hero />
-      <HeroOfTheDay />
-      <StoryConstellation />
-      <ClientOnly fallback={<div className="min-h-[600px]" />}>
-        <ExploreIndia3D />
-      </ClientOnly>
 
-      {/* FEATURED STORIES */}
-      <section className="container mx-auto px-6 py-24">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-          <div>
-            <p className="text-xs uppercase tracking-widest text-gold mb-3">Featured</p>
-            <h2 className="font-display text-4xl md:text-5xl max-w-2xl">
-              Stories worth your evening
-            </h2>
-          </div>
-          <Link
-            to="/stories"
-            className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-2 group"
-          >
-            View all stories
-            <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
-        </div>
-
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {stories.slice(0, 3).map((s, i) => (
-            <StoryCard key={s.id} story={s} index={i} />
-          ))}
-        </div>
-      </section>
-
-      <LiveIndiaNow />
-      <RecommendedForYou />
-      <StoryJourney />
-
-      {/* CATEGORIES */}
-      <section className="container mx-auto px-6 py-24">
-        <div className="text-center mb-16">
-          <p className="text-xs uppercase tracking-widest text-gold mb-3">Explore by theme</p>
-          <h2 className="font-display text-4xl md:text-5xl">A India in every chapter</h2>
-        </div>
-
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {Array.from(new Set(stories.map((s) => s.category).filter(Boolean)))
-            .slice(0, 6)
-            .map((label, i) => (
-              <motion.div
-                key={label}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.05 }}
-                className="glass rounded-2xl p-6 hover-lift cursor-pointer"
-              >
-                <div className="size-12 rounded-xl bg-gradient-to-br from-gold/20 to-saffron/10 grid place-items-center mb-4 border border-gold/20">
-                  {(() => {
-                    const Icon = iconForCategory(label);
-                    return <Icon className="size-5 text-gold" />;
-                  })()}
-                </div>
-                <h3 className="font-display text-2xl mb-2">{label}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {descForCategory(label)}
-                </p>
-              </motion.div>
-            ))}
-        </div>
-      </section>
-
-      {/* MISSION */}
-      <section className="container mx-auto px-6 py-24">
-        <div className="glass rounded-3xl p-10 md:p-16 relative overflow-hidden">
-          <div className="absolute inset-0 bg-hero opacity-50 pointer-events-none" />
-          <div className="relative max-w-3xl mx-auto text-center">
-            <p className="text-xs uppercase tracking-widest text-gold mb-4">Our mission</p>
-            <h2 className="font-display text-4xl md:text-5xl leading-tight">
-              To tell <span className="text-gradient-gold italic">a billion stories</span> with the
-              craft they deserve.
-            </h2>
-            <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
-              India Story Project is a slow journalism initiative — we travel, listen, and document
-              the people quietly building the country's future. No clickbait. No noise. Just
-              stories, beautifully told.
+      {/* SECTION 2: Featured Stories magazine grid (1 large + 6 secondary) */}
+      {featuredStory && (
+        <section className="container mx-auto px-6 py-24 border-b border-border/70">
+          <div className="text-center mb-16">
+            <p className="text-xs uppercase tracking-[0.25em] font-sans font-bold text-gold mb-3">
+              {lang === "en" ? "Curated Collections" : "चुनिंदा संग्रह"}
             </p>
-            <Button
-              asChild
-              size="lg"
-              className="mt-10 bg-gradient-to-r from-gold to-saffron text-gold-foreground border-0"
+            <h2 className="font-display text-4xl md:text-5xl font-bold">
+              {commonText.featuredToday}
+            </h2>
+            <div className="w-12 h-[1px] bg-primary mx-auto mt-4" />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch mb-16">
+            {/* 1 featured large card */}
+            <div className="lg:col-span-12 border border-border/80 bg-card p-6 md:p-8 flex flex-col lg:flex-row gap-8 items-center shadow-sm">
+              <div className="w-full lg:w-3/5 aspect-[16/10] overflow-hidden border border-border/40 bg-muted">
+                {featuredStory.image ? (
+                  <img
+                    src={featuredStory.image}
+                    alt={featuredStory.imageAlt ?? featuredStory.title}
+                    className="w-full h-full object-cover filter saturate-[0.85] hover:scale-102 transition-transform duration-[1s]"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-red-950/40 to-stone-900 flex items-center justify-center">
+                    <span className="font-display italic text-3xl text-gold/30">ISP</span>
+                  </div>
+                )}
+              </div>
+              <div className="w-full lg:w-2/5 flex flex-col justify-center space-y-4">
+                <div className="flex items-center gap-3 text-[10px] tracking-[0.25em] uppercase font-bold text-gold font-sans">
+                  <span className="bg-primary/5 px-2.5 py-0.5 border border-primary/15">
+                    {featuredStory.category}
+                  </span>
+                  <span>•</span>
+                  <span>{featuredStory.region}</span>
+                </div>
+                <h3 className="font-display text-3xl md:text-5xl leading-[1.1] font-bold text-foreground hover:text-primary transition-colors">
+                  <Link to="/stories/$slug" params={{ slug: featuredStory.slug }}>
+                    {featuredStory.title}
+                  </Link>
+                </h3>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground font-sans font-medium">
+                  <span>
+                    {lang === "en"
+                      ? `By ${getStoryAuthor(featuredStory.slug)}`
+                      : `लेखक: ${getStoryAuthor(featuredStory.slug)}`}
+                  </span>
+                  <span>•</span>
+                  <span>{featuredStory.readTime || "4 min read"}</span>
+                </div>
+                <p className="text-sm md:text-base text-muted-foreground leading-relaxed font-sans font-normal">
+                  {featuredStory.excerpt}
+                </p>
+                <div className="pt-4">
+                  <Button
+                    asChild
+                    className="bg-primary hover:bg-primary/95 text-primary-foreground font-sans uppercase tracking-[0.15em] text-xs h-11 px-6 rounded-none shadow-sm btn-premium"
+                  >
+                    <Link to="/stories/$slug" params={{ slug: featuredStory.slug }}>
+                      {commonText.readStory}
+                      <ArrowRight className="size-4 ml-2" />
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 6 secondary cards */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {gridStories.map((s, i) => (
+              <StoryCard key={s.id} story={s} index={i} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* SECTION 3: Latest Stories (Horizontal cards) */}
+      {latestStories.length > 0 && (
+        <section className="container mx-auto px-6 py-24 border-b border-border/70">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-b border-border pb-6">
+            <div>
+              <p className="text-xs uppercase tracking-[0.25em] font-sans font-bold text-gold mb-2">
+                {lang === "en" ? "Fresh Perspectives" : "नए दृष्टिकोण"}
+              </p>
+              <h2 className="font-display text-4xl md:text-5xl font-bold">
+                {commonText.latestStories}
+              </h2>
+            </div>
+            <Link
+              to="/stories"
+              className="text-xs uppercase tracking-[0.15em] font-sans font-bold text-primary hover:text-gold inline-flex items-center gap-2 group transition-colors duration-300"
             >
-              <Link to="/about">
-                Read our story
-                <ArrowRight className="size-4" />
-              </Link>
+              {commonText.viewAllStories}
+              <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {latestStories.map((s, i) => {
+              const authorName = getStoryAuthor(s.slug);
+              return (
+                <motion.div
+                  key={s.id}
+                  initial={{ opacity: 0, y: 15 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: i * 0.05 }}
+                  className="border border-border/60 bg-card p-4 hover:border-gold/30 hover:bg-card/70 transition-all duration-300 flex flex-col sm:flex-row gap-5 shadow-sm"
+                >
+                  <div className="w-full sm:w-2/5 aspect-[4/3] sm:aspect-square overflow-hidden bg-muted border border-border/30 shrink-0">
+                    {s.image ? (
+                      <img
+                        src={s.image}
+                        alt={s.imageAlt ?? s.title}
+                        loading="lazy"
+                        className="w-full h-full object-cover filter saturate-[0.8] hover:scale-103 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-amber-950/40 to-stone-900 flex items-center justify-center">
+                        <span className="font-display italic text-xl text-gold/30">ISP</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col justify-between py-1">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-[9px] tracking-[0.2em] uppercase font-bold text-gold font-sans">
+                        <span>{s.category}</span>
+                        <span className="text-muted-foreground">{s.region}</span>
+                      </div>
+                      <h4 className="font-display text-xl font-bold leading-tight hover:text-primary transition-colors">
+                        <Link to="/stories/$slug" params={{ slug: s.slug }}>
+                          {s.title}
+                        </Link>
+                      </h4>
+                      <p className="text-xs text-muted-foreground line-clamp-2 font-sans">
+                        {s.excerpt}
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/40 text-[10px] text-muted-foreground font-sans font-medium">
+                      <span>{lang === "en" ? `By ${authorName}` : `लेखक: ${authorName}`}</span>
+                      <span>{s.readTime || "3 min read"}</span>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* SECTION 4: Trending Stories (Carousel) */}
+      {trendingStories.length > 0 && (
+        <section className="container mx-auto px-6 py-24 border-b border-border/70 bg-card/10">
+          <div className="mb-12 flex items-center gap-3">
+            <span className="p-2 rounded-full bg-primary/5 text-primary border border-primary/10">
+              <TrendingUp className="size-5" />
+            </span>
+            <div>
+              <p className="text-xs uppercase tracking-widest text-gold font-sans font-bold">
+                {lang === "en" ? "Popular Reading" : "लोकप्रिय पाठ"}
+              </p>
+              <h2 className="font-display text-3xl md:text-5xl font-bold">
+                {lang === "en" ? "Trending Stories" : "ट्रेंडिंग कहानियाँ"}
+              </h2>
+            </div>
+          </div>
+
+          {/* Framer motion draggable carousel container */}
+          <div className="relative">
+            <div className="flex gap-6 overflow-x-auto pb-6 scrollbar-none snap-x snap-mandatory">
+              {trendingStories.map((s, i) => (
+                <div key={s.id} className="w-[300px] sm:w-[350px] shrink-0 snap-start">
+                  <StoryCard story={s} index={i} />
+                </div>
+              ))}
+            </div>
+            {/* Soft fade gradients on edges */}
+            <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-background/40 to-transparent pointer-events-none" />
+          </div>
+        </section>
+      )}
+
+      {/* SECTION 5: Stories by Category */}
+      <section className="container mx-auto px-6 py-24 border-b border-border/70">
+        <div className="text-center mb-16">
+          <p className="text-xs uppercase tracking-[0.25em] font-sans font-bold text-gold mb-3">
+            {lang === "en" ? "Thematic Explorer" : "विषय-आधारित अन्वेषक"}
+          </p>
+          <h2 className="font-display text-4xl md:text-5xl font-bold">
+            {commonText.exploreByTheme}
+          </h2>
+          <div className="w-12 h-[1px] bg-primary mx-auto mt-4" />
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          {categoryMediasWithImages.map((cat: any, i: number) => {
+            const displayTitle = lang === "hi" ? cat.title.hi : cat.title.en;
+            const displayDesc = lang === "hi" ? cat.desc.hi : cat.desc.en;
+            return (
+              <motion.div
+                key={cat.id}
+                initial={{ opacity: 0, scale: 0.96 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: i * 0.05 }}
+                className="group relative aspect-[3/4] overflow-hidden border border-border/40 bg-black cursor-pointer shadow-sm hover:border-gold/50"
+              >
+                {/* Background Category Image */}
+                <img
+                  src={cat.image}
+                  alt={displayTitle}
+                  loading="lazy"
+                  className="absolute inset-0 w-full h-full object-cover filter saturate-[0.7] brightness-[0.55] group-hover:scale-105 group-hover:brightness-[0.45] transition-all duration-[1s] ease-out"
+                />
+                {/* Gold gradient sweep */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent z-10" />
+
+                {/* Content Overlay */}
+                <div className="absolute inset-0 p-5 flex flex-col justify-end z-20">
+                  <h3 className="font-display text-2xl md:text-3xl text-white font-bold tracking-tight mb-2 group-hover:text-gold transition-colors duration-300">
+                    {displayTitle}
+                  </h3>
+                  <p className="text-[10px] sm:text-xs text-white/70 font-sans leading-relaxed line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    {displayDesc}
+                  </p>
+                  <Link
+                    to="/stories"
+                    search={{ category: cat.id }}
+                    className="absolute inset-0 z-30"
+                  />
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* SECTION 6: Stories by State */}
+      <StoryMap />
+
+      {/* SECTION 7: Hero Of The Day */}
+      <HeroOfTheDay />
+
+      {/* SECTION 8: Recommended For You */}
+      <section className="border-b border-border/80 bg-card/20">
+        <RecommendedForYou />
+      </section>
+
+      {/* SECTION 9: Story Timeline */}
+      <section className="container mx-auto px-6 py-24 border-b border-border/70">
+        <div className="text-center mb-16">
+          <p className="text-xs uppercase tracking-[0.25em] font-sans font-bold text-gold mb-3">
+            {lang === "en" ? "Chronological Archives" : "कालानुक्रमिक अभिलेखागार"}
+          </p>
+          <h2 className="font-display text-4xl md:text-5xl font-bold">
+            {lang === "en" ? "The Storytelling Journey" : "कहानी यात्रा"}
+          </h2>
+          <div className="w-12 h-[1px] bg-primary mx-auto mt-4" />
+        </div>
+
+        <div className="max-w-3xl mx-auto relative border-l border-border/60 pl-8 space-y-12">
+          <div className="relative group">
+            <div className="absolute -left-[39px] top-1.5 size-4 bg-primary rounded-full border-4 border-background group-hover:scale-125 transition-transform duration-300 shadow-glow" />
+            <h4 className="font-display text-2xl font-bold text-foreground">2022: Genesis</h4>
+            <p className="text-sm text-muted-foreground font-sans mt-2 leading-relaxed">
+              {lang === "en"
+                ? "ISP launched with a small team of journalists traveling rural Rajasthan and Karnataka."
+                : "ग्रामीण राजस्थान और कर्नाटक की यात्रा करने वाले पत्रकारों की एक छोटी टीम के साथ ISP की शुरुआत हुई।"}
+            </p>
+          </div>
+          <div className="relative group">
+            <div className="absolute -left-[39px] top-1.5 size-4 bg-accent rounded-full border-4 border-background group-hover:scale-125 transition-transform duration-300 shadow-glow" />
+            <h4 className="font-display text-2xl font-bold text-foreground">
+              2023: Pinned Changemakers
+            </h4>
+            <p className="text-sm text-muted-foreground font-sans mt-2 leading-relaxed">
+              {lang === "en"
+                ? "Published over 100 deep-dives on sustainable farming, solar pioneers, and women cooperative leaders."
+                : "सतत खेती, सौर अग्रदूतों और महिला सहकारी नेताओं पर 100 से अधिक गहन कहानियां प्रकाशित कीं।"}
+            </p>
+          </div>
+          <div className="relative group">
+            <div className="absolute -left-[39px] top-1.5 size-4 bg-primary/70 rounded-full border-4 border-background group-hover:scale-125 transition-transform duration-300 shadow-glow" />
+            <h4 className="font-display text-2xl font-bold text-foreground">
+              2024: Spatial Constellations
+            </h4>
+            <p className="text-sm text-muted-foreground font-sans mt-2 leading-relaxed">
+              {lang === "en"
+                ? "Launched the 3D visual archive and interactive spatial maps of storytelling."
+                : "कहानी कहने का 3D विज़ुअल आर्काइव और इंटरैक्टिव स्पेसियल मैप्स लॉन्च किए।"}
+            </p>
+          </div>
+          <div className="relative group">
+            <div className="absolute -left-[39px] top-1.5 size-4 bg-accent/70 rounded-full border-4 border-background group-hover:scale-125 transition-transform duration-300 shadow-glow" />
+            <h4 className="font-display text-2xl font-bold text-foreground">
+              2026: Living Archive of Bharat
+            </h4>
+            <p className="text-sm text-muted-foreground font-sans mt-2 leading-relaxed">
+              {lang === "en"
+                ? "Over 500+ stories cataloged, covering every single state and union territory in India."
+                : "500 से अधिक कहानियां सूचीबद्ध की गईं, जो भारत के प्रत्येक राज्य और केंद्र शासित प्रदेश को कवर करती हैं।"}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 10: Join Community */}
+      <section className="bg-gradient-to-b from-card/30 to-card/75 border-b border-border/70 py-24">
+        <div className="container mx-auto px-6 max-w-4xl text-center space-y-8">
+          <div className="relative inline-flex items-center justify-center p-3 rounded-full bg-primary/5 text-primary border border-primary/10">
+            <Mail className="size-6 text-gold" />
+          </div>
+          <h2 className="font-display text-4xl md:text-5xl font-bold max-w-2xl mx-auto leading-tight">
+            {lang === "en" ? "Join the Story Hub" : "स्टोरी हब से जुड़ें"}
+          </h2>
+          <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto font-sans leading-relaxed">
+            {lang === "en"
+              ? "Subscribe to receive weekly dispatches on changemakers, artists, and innovators reshaping modern India."
+              : "आधुनिक भारत को नया आकार देने वाले बदलावों, कलाकारों और नवप्रवर्तकों पर साप्ताहिक समाचार प्राप्त करने के लिए सदस्यता लें।"}
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto pt-2">
+            <Input
+              type="email"
+              placeholder={lang === "en" ? "Enter your email address" : "अपना ईमेल दर्ज करें"}
+              className="h-12 bg-background border-border text-foreground font-sans rounded-none focus-visible:ring-primary/40 px-4"
+            />
+            <Button className="w-full sm:w-auto bg-primary hover:bg-primary/95 text-primary-foreground font-sans uppercase tracking-widest text-xs h-12 px-6 rounded-none btn-premium shrink-0">
+              {lang === "en" ? "Subscribe" : "सदस्यता लें"}
             </Button>
           </div>
         </div>
+      </section>
+
+      {/* Background interactions & ancillary community blocks */}
+      <section className="bg-card/10">
+        <StoryJourney />
+        <LiveIndiaNow />
       </section>
     </SiteLayout>
   );

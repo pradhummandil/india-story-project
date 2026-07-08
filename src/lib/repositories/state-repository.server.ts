@@ -17,4 +17,3 @@ export class StateRepository {
 }
 
 export const stateRepository = new StateRepository();
-

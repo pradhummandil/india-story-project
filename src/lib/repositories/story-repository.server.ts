@@ -1,5 +1,5 @@
 import { StoryStatus } from "@/generated/prisma/client.ts";
-import type { Category, State, Story, StoryImage } from "@/generated/prisma/client.ts";
+import type { Category, State, Story, StoryImage, Author, Tag } from "@/generated/prisma/client.ts";
 
 import { prisma } from "./prisma.server";
 
@@ -16,17 +16,35 @@ export type StoryCardCompatible = {
   url: string;
   content?: string;
   gradient?: string;
+  titleHi?: string | null;
+  excerptHi?: string | null;
+  contentHi?: string | null;
+  authorName?: string;
+  authorBio?: string | null;
+  authorAvatar?: string | null;
+  tags?: string[];
+  publishedAt?: Date | null;
+  createdAt?: Date;
+  viewCount?: number;
 };
 
 type StoryWithDisplayRelations = Story & {
   category: Category;
   state: State;
   images: StoryImage[];
+  author?: Author;
+  tags?: Array<{ tag: Tag }>;
 };
 
 const storyIncludes = {
   category: true,
   state: true,
+  author: true,
+  tags: {
+    include: {
+      tag: true,
+    },
+  },
   images: {
     orderBy: [{ heroImage: "desc" as const }, { sortOrder: "asc" as const }],
   },
@@ -51,6 +69,16 @@ function toStoryCardCompatible(story: StoryWithDisplayRelations): StoryCardCompa
     imageAlt: image?.caption ?? undefined,
     url: story.slug,
     content: story.content,
+    titleHi: story.titleHi,
+    excerptHi: story.excerptHi,
+    contentHi: story.contentHi,
+    authorName: story.author?.name,
+    authorBio: story.author?.bio,
+    authorAvatar: story.author?.avatar,
+    tags: story.tags?.map((t) => t.tag.name) ?? [],
+    publishedAt: story.publishedAt,
+    createdAt: story.createdAt,
+    viewCount: story.viewCount,
   };
 }
 

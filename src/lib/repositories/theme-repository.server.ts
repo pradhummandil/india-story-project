@@ -17,4 +17,3 @@ export class ThemeRepository {
 }
 
 export const themeRepository = new ThemeRepository();
-

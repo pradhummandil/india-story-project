@@ -1,0 +1,342 @@
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { ArrowLeft, Save, Send, Trash2 } from "lucide-react";
+import { AdminLayout } from "@/components/admin/AdminLayout";
+import { useAuthStore } from "@/lib/auth-store";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+export const Route = createFileRoute("/admin/stories/$id/edit")({
+  head: () => ({ meta: [{ title: "Edit Story — Admin" }] }),
+  component: EditStoryPage,
+});
+
+type StoryFull = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  titleHi?: string;
+  excerptHi?: string;
+  contentHi?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  readingTime?: number;
+  featured: boolean;
+  heroOfTheDay: boolean;
+  status: string;
+  categoryId: string;
+  stateId: string;
+  authorId: string;
+  themeId: string;
+  images: Array<{ id: string; imageUrl: string; caption?: string; heroImage: boolean }>;
+};
+type DropdownOption = { id: string; name: string; slug: string };
+
+export default function EditStoryPage() {
+  const { id } = Route.useParams();
+  const navigate = useNavigate();
+  const { user, initialized } = useAuthStore();
+  const [story, setStory] = useState<StoryFull | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [categories, setCategories] = useState<DropdownOption[]>([]);
+  const [states, setStates] = useState<DropdownOption[]>([]);
+  const [authors, setAuthors] = useState<DropdownOption[]>([]);
+  const [themes, setThemes] = useState<DropdownOption[]>([]);
+
+  useEffect(() => {
+    if (initialized && !user) void navigate({ to: "/login" });
+  }, [user, initialized, navigate]);
+
+  useEffect(() => {
+    if (!user) return;
+    Promise.all([
+      fetch(`/api/admin/stories/${id}`).then((r) => r.json()),
+      fetch("/api/categories").then((r) => r.json()),
+      fetch("/api/states").then((r) => r.json()),
+      fetch("/api/authors").then((r) => r.json()),
+      fetch("/api/themes").then((r) => r.json()),
+    ])
+      .then(([s, cats, sts, auths, thms]) => {
+        setStory(s as StoryFull);
+        setCategories(cats.categories ?? []);
+        setStates(sts.states ?? []);
+        setAuthors(auths.authors ?? []);
+        setThemes(thms.themes ?? []);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [user, id]);
+
+  const handleSave = async (publish?: boolean) => {
+    if (!story) return;
+    setSaving(true);
+    setError(null);
+    const body = { ...story, status: publish ? "Published" : story.status };
+    const res = await fetch(`/api/admin/stories/${id}`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const err: any = await res.json();
+      setError(err.error ?? "Save failed.");
+      setSaving(false);
+      return;
+    }
+    void navigate({ to: "/admin/stories" });
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("Delete this story permanently?")) return;
+    await fetch(`/api/admin/stories/${id}`, { method: "DELETE" });
+    void navigate({ to: "/admin/stories" });
+  };
+
+  if (loading || !story) {
+    return (
+      <AdminLayout title="Edit Story">
+        <div className="flex items-center justify-center h-64 text-white/20 font-sans text-xs animate-pulse">
+          Loading…
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  const inputCls =
+    "h-10 rounded-sm bg-white/5 border-white/10 text-white/80 placeholder:text-white/20 font-sans text-sm focus:border-primary/50";
+  const textareaCls =
+    "w-full rounded-sm bg-white/5 border border-white/10 text-white/80 placeholder:text-white/20 font-sans text-sm px-3 py-2 resize-none focus:outline-none focus:border-primary/50 transition-colors";
+  const selectCls =
+    "h-10 w-full rounded-sm bg-[#0F0F0F] border border-white/10 text-white/80 font-sans text-sm px-3 focus:outline-none focus:border-primary/50 transition-colors";
+  const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
+    <div>
+      <label className="block text-xs font-sans font-bold uppercase tracking-widest text-white/40 mb-2">
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+
+  return (
+    <AdminLayout title="Edit Story" subtitle={story.title}>
+      <div className="max-w-5xl">
+        <div className="flex items-center justify-between mb-8">
+          <Link
+            to="/admin/stories"
+            className="flex items-center gap-2 text-white/40 hover:text-white text-sm font-sans transition-colors"
+          >
+            <ArrowLeft className="size-4" /> Back to Stories
+          </Link>
+          <div className="flex items-center gap-3">
+            <Button
+              id="delete-story-btn"
+              variant="outline"
+              className="h-10 px-4 rounded-sm border-red-500/20 text-red-400 hover:bg-red-500/10 font-sans text-xs uppercase tracking-widest gap-2 bg-transparent"
+              onClick={handleDelete}
+              disabled={saving}
+            >
+              <Trash2 className="size-4" /> Delete
+            </Button>
+            <Button
+              id="edit-save-draft-btn"
+              variant="outline"
+              className="h-10 px-4 rounded-sm border-white/20 text-white/60 hover:text-white font-sans text-xs uppercase tracking-widest gap-2 bg-transparent"
+              onClick={() => void handleSave()}
+              disabled={saving}
+            >
+              <Save className="size-4" /> Save Draft
+            </Button>
+            <Button
+              id="edit-publish-btn"
+              className="h-10 px-4 rounded-sm bg-primary hover:bg-primary/90 text-white font-sans text-xs uppercase tracking-widest gap-2"
+              onClick={() => void handleSave(true)}
+              disabled={saving}
+            >
+              <Send className="size-4" /> {story.status === "Published" ? "Update" : "Publish"}
+            </Button>
+          </div>
+        </div>
+        {error && (
+          <div className="mb-6 text-xs text-red-400 bg-red-500/10 border border-red-500/20 px-4 py-3 rounded-sm font-sans">
+            {error}
+          </div>
+        )}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-[#161616] border border-white/10 rounded-sm p-6 space-y-5">
+              <Field label="Title (English)">
+                <Input
+                  value={story.title}
+                  onChange={(e) => setStory((s) => s && { ...s, title: e.target.value })}
+                  className={inputCls}
+                  id="edit-story-title"
+                />
+              </Field>
+              <Field label="Slug">
+                <Input
+                  value={story.slug}
+                  onChange={(e) => setStory((s) => s && { ...s, slug: e.target.value })}
+                  className={inputCls}
+                  id="edit-story-slug"
+                />
+              </Field>
+              <Field label="Excerpt (English)">
+                <textarea
+                  value={story.excerpt}
+                  onChange={(e) => setStory((s) => s && { ...s, excerpt: e.target.value })}
+                  rows={3}
+                  className={textareaCls}
+                  id="edit-story-excerpt"
+                />
+              </Field>
+              <Field label="Content (English)">
+                <textarea
+                  value={story.content}
+                  onChange={(e) => setStory((s) => s && { ...s, content: e.target.value })}
+                  rows={16}
+                  className={textareaCls}
+                  id="edit-story-content"
+                />
+              </Field>
+            </div>
+            <div className="bg-[#161616] border border-white/10 rounded-sm p-6 space-y-5">
+              <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-white/40">
+                Hindi Translation
+              </h3>
+              <Field label="शीर्षक">
+                <Input
+                  value={story.titleHi ?? ""}
+                  onChange={(e) => setStory((s) => s && { ...s, titleHi: e.target.value })}
+                  className={inputCls}
+                  id="edit-title-hi"
+                />
+              </Field>
+              <Field label="संक्षेप">
+                <textarea
+                  value={story.excerptHi ?? ""}
+                  onChange={(e) => setStory((s) => s && { ...s, excerptHi: e.target.value })}
+                  rows={3}
+                  className={textareaCls}
+                  id="edit-excerpt-hi"
+                />
+              </Field>
+              <Field label="सामग्री">
+                <textarea
+                  value={story.contentHi ?? ""}
+                  onChange={(e) => setStory((s) => s && { ...s, contentHi: e.target.value })}
+                  rows={12}
+                  className={textareaCls}
+                  id="edit-content-hi"
+                />
+              </Field>
+            </div>
+          </div>
+          <div className="space-y-6">
+            <div className="bg-[#161616] border border-white/10 rounded-sm p-5 space-y-4">
+              <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-white/40">
+                Story Details
+              </h3>
+              <Field label="Author">
+                <select
+                  value={story.authorId}
+                  onChange={(e) => setStory((s) => s && { ...s, authorId: e.target.value })}
+                  className={selectCls}
+                  id="edit-author"
+                >
+                  {authors.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Category">
+                <select
+                  value={story.categoryId}
+                  onChange={(e) => setStory((s) => s && { ...s, categoryId: e.target.value })}
+                  className={selectCls}
+                  id="edit-category"
+                >
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="State">
+                <select
+                  value={story.stateId}
+                  onChange={(e) => setStory((s) => s && { ...s, stateId: e.target.value })}
+                  className={selectCls}
+                  id="edit-state"
+                >
+                  {states.map((s2) => (
+                    <option key={s2.id} value={s2.id}>
+                      {s2.name}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Theme">
+                <select
+                  value={story.themeId}
+                  onChange={(e) => setStory((s) => s && { ...s, themeId: e.target.value })}
+                  className={selectCls}
+                  id="edit-theme"
+                >
+                  {themes.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            </div>
+            <div className="bg-[#161616] border border-white/10 rounded-sm p-5 space-y-4">
+              <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-white/40">
+                Options
+              </h3>
+              {(
+                [
+                  { label: "Featured Story", key: "featured" },
+                  { label: "Hero of the Day", key: "heroOfTheDay" },
+                ] as const
+              ).map(({ label, key }) => (
+                <label key={key} className="flex items-center justify-between cursor-pointer">
+                  <span className="text-sm font-sans text-white/60">{label}</span>
+                  <button
+                    id={`edit-${key}`}
+                    type="button"
+                    onClick={() => setStory((s) => s && { ...s, [key]: !s[key] })}
+                    className={`relative w-10 h-5 rounded-full transition-colors ${story[key] ? "bg-primary" : "bg-white/10"}`}
+                  >
+                    <span
+                      className={`absolute top-0.5 size-4 rounded-full bg-white transition-all ${story[key] ? "left-5" : "left-0.5"}`}
+                    />
+                  </button>
+                </label>
+              ))}
+            </div>
+            {story.images?.[0] && (
+              <div className="bg-[#161616] border border-white/10 rounded-sm p-5">
+                <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-white/40 mb-4">
+                  Cover Image
+                </h3>
+                <img
+                  src={story.images[0].imageUrl}
+                  alt="Cover"
+                  className="w-full aspect-video object-cover border border-white/10"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </AdminLayout>
+  );
+}
