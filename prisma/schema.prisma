@@ -154,8 +154,14 @@ model Story {
   readingTime     Int?
   seoTitle        String?
   seoDescription  String?
+  seoKeywords     String?
   featured        Boolean         @default(false)
   heroOfTheDay    Boolean         @default(false)
+  homepageSlideshow Boolean       @default(false)
+  slideshowOrder  Int             @default(0)
+  shares          Int             @default(0)
+  deleted         Boolean         @default(false)
+  version         Int             @default(1)
   status          StoryStatus     @default(Draft)
   authorId        String          @db.Uuid
   author          Author          @relation(fields: [authorId], references: [id], onDelete: Restrict, onUpdate: Cascade)

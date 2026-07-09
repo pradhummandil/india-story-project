@@ -780,8 +780,26 @@ export function StoryDetail({ story }: { story: Story }) {
               <span>Zen</span>
             </button>
 
-            {/* Font settings */}
+            {/* Language switch */}
             <div className="flex items-center gap-1 border border-border/50 rounded-full px-2 py-1 bg-black/25">
+              <button
+                onClick={() => useI18nStore.getState().setLang("en")}
+                className={`px-2 py-0.5 rounded text-[10px] uppercase font-sans font-extrabold cursor-pointer tracking-wider ${lang === "en" ? "bg-primary text-white" : "text-white/60 hover:text-white"}`}
+                title="English"
+              >
+                EN
+              </button>
+              <button
+                onClick={() => useI18nStore.getState().setLang("hi")}
+                className={`px-2 py-0.5 rounded text-[10px] uppercase font-sans font-extrabold cursor-pointer tracking-wider ${lang === "hi" ? "bg-primary text-white" : "text-white/60 hover:text-white"}`}
+                title="Hindi"
+              >
+                HI
+              </button>
+            </div>
+
+            {/* Font settings */}
+            <div className="flex items-center gap-1 border border-border/50 rounded-full px-2 py-1 bg-black/25 font-sans">
               <button onClick={() => setFontSize("sm")} className={`px-1.5 rounded text-[10px] ${fontSize === "sm" ? "bg-primary text-white" : ""}`}>A</button>
               <button onClick={() => setFontSize("md")} className={`px-1.5 rounded text-xs ${fontSize === "md" ? "bg-primary text-white" : ""}`}>A</button>
               <button onClick={() => setFontSize("lg")} className={`px-1.5 rounded text-sm ${fontSize === "lg" ? "bg-primary text-white" : ""}`}>A</button>

@@ -27,6 +27,8 @@ function toAdminRow(story: any) {
     readingTime: story.readingTime,
     featured: story.featured,
     heroOfTheDay: story.heroOfTheDay,
+    homepageSlideshow: story.homepageSlideshow,
+    slideshowOrder: story.slideshowOrder,
     status: story.status,
     viewCount: story.viewCount,
     publishedAt: story.publishedAt?.toISOString() ?? null,
@@ -71,6 +73,9 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
 
         const featured = body.featured ?? false;
         const heroOfTheDay = body.heroOfTheDay ?? false;
+        const homepageSlideshow = body.homepageSlideshow ?? false;
+        const slideshowOrder = body.slideshowOrder ? parseInt(body.slideshowOrder, 10) : 0;
+        const seoKeywords = body.seoKeywords ?? null;
 
         // Mutual exclusivity enforcement
         if (featured) {
@@ -178,9 +183,13 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
             contentHi: body.contentHi ?? null,
             seoTitle: body.seoTitle ?? null,
             seoDescription: body.seoDescription ?? null,
+            seoKeywords: body.seoKeywords ?? null,
             readingTime: body.readingTime ? parseInt(body.readingTime, 10) : null,
             featured,
             heroOfTheDay,
+            homepageSlideshow,
+            slideshowOrder,
+            version: { increment: 1 },
             status: body.status as StoryStatus,
             publishedAt:
               body.status === "Published" && !body.publishedAt
@@ -225,11 +234,12 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
           });
         }
 
-        const allowed = ["featured", "heroOfTheDay", "status", "viewCount"];
+        const allowed = ["featured", "heroOfTheDay", "homepageSlideshow", "slideshowOrder", "status", "viewCount", "seoKeywords"];
         const data: Record<string, unknown> = {};
         for (const key of allowed) {
           if (key in body) data[key] = body[key];
         }
+        data.version = { increment: 1 };
 
         // Adjust publishedAt if status is updated to Published
         if (body.status === "Published") {

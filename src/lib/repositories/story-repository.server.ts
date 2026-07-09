@@ -27,6 +27,9 @@ export type StoryCardCompatible = {
   viewCount?: number;
   featured?: boolean;
   heroOfTheDay?: boolean;
+  homepageSlideshow?: boolean;
+  slideshowOrder?: number;
+  seoKeywords?: string | null;
 };
 
 // Projections: Select specific columns to reduce egress (exclude content/contentHi in lists)
@@ -43,6 +46,9 @@ const storyCardSelect = {
   createdAt: true,
   featured: true,
   heroOfTheDay: true,
+  homepageSlideshow: true,
+  slideshowOrder: true,
+  seoKeywords: true,
   status: true,
   categoryId: true,
   stateId: true,
@@ -107,6 +113,9 @@ function toStoryCardCompatible(story: any): StoryCardCompatible {
     viewCount: story.viewCount,
     featured: story.featured,
     heroOfTheDay: story.heroOfTheDay,
+    homepageSlideshow: story.homepageSlideshow,
+    slideshowOrder: story.slideshowOrder,
+    seoKeywords: story.seoKeywords,
   };
 }
 

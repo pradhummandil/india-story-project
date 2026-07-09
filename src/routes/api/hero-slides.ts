@@ -9,57 +9,14 @@ export const Route = createFileRoute("/api/hero-slides")({
     handlers: {
       GET: async () => {
         try {
-          // Fetch active hero slides from DB
-          const heroSlides = await prisma.heroSlide.findMany({
+          // Fetch stories marked for slideshow
+          const slideshowStories = await prisma.story.findMany({
             where: {
-              active: true,
-              story: {
-                status: "Published",
-              },
+              homepageSlideshow: true,
+              status: "Published",
+              deleted: false,
             },
-            orderBy: { sortOrder: "asc" },
-            include: {
-              story: {
-                include: {
-                  author: true,
-                  category: true,
-                  state: true,
-                  images: true,
-                },
-              },
-            },
-          });
-
-          if (heroSlides.length > 0) {
-            const slides = heroSlides.map((hs) => {
-              const s = hs.story;
-              const heroImage =
-                s.images?.find((img) => img.heroImage)?.imageUrl ??
-                FALLBACK_IMAGE;
-              return {
-                id: hs.id,
-                storyId: s.id,
-                slug: s.slug,
-                title: s.title,
-                excerpt: s.excerpt,
-                titleHi: s.titleHi ?? null,
-                excerptHi: s.excerptHi ?? null,
-                category: s.category?.name ?? null,
-                state: s.state?.name ?? null,
-                author: s.author?.name ?? null,
-                readingTime: s.readingTime,
-                image: heroImage,
-                caption: hs.caption ?? null,
-              };
-            });
-            return json({ slides });
-          }
-
-          // Fallback: Latest Published Stories
-          const latestStories = await prisma.story.findMany({
-            where: { status: "Published" },
-            orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
-            take: 5,
+            orderBy: { slideshowOrder: "asc" },
             include: {
               author: true,
               category: true,
@@ -68,12 +25,27 @@ export const Route = createFileRoute("/api/hero-slides")({
             },
           });
 
-          const slides = latestStories.map((s) => {
+          const activeStories = slideshowStories.length > 0
+            ? slideshowStories
+            : await prisma.story.findMany({
+                where: { status: "Published", deleted: false },
+                orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+                take: 5,
+                include: {
+                  author: true,
+                  category: true,
+                  state: true,
+                  images: true,
+                },
+              });
+
+          const slides = activeStories.map((s) => {
             const heroImage =
               s.images?.find((img) => img.heroImage)?.imageUrl ??
+              (s.images?.[0]?.imageUrl) ??
               FALLBACK_IMAGE;
             return {
-              id: `fallback-${s.id}`,
+              id: s.id,
               storyId: s.id,
               slug: s.slug,
               title: s.title,

@@ -25,6 +25,8 @@ type StoryFull = {
   readingTime?: number;
   featured: boolean;
   heroOfTheDay: boolean;
+  homepageSlideshow: boolean;
+  slideshowOrder: number;
   status: string;
   categoryId: string;
   stateId: string;
@@ -416,6 +418,7 @@ export default function EditStoryPage() {
                 [
                   { label: "Featured Story", key: "featured" },
                   { label: "Hero of the Day", key: "heroOfTheDay" },
+                  { label: "Homepage Slideshow", key: "homepageSlideshow" },
                 ] as const
               ).map(({ label, key }) => (
                 <label key={key} className="flex items-center justify-between cursor-pointer">
@@ -432,6 +435,21 @@ export default function EditStoryPage() {
                   </button>
                 </label>
               ))}
+
+              {story.homepageSlideshow && (
+                <Field label="Slideshow Order">
+                  <Input
+                    type="number"
+                    value={story.slideshowOrder}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
+                      setStory((s) => s && { ...s, slideshowOrder: isNaN(val) ? 0 : val });
+                    }}
+                    className={inputCls}
+                    id="edit-slideshow-order"
+                  />
+                </Field>
+              )}
             </div>
 
             {/* Premium Cover Image Controls */}

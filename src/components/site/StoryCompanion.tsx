@@ -102,31 +102,31 @@ export function StoryCompanion() {
     <>
       {/* Floating Button */}
       <motion.button
-        onClick={() => setOpen((v) => !v)}
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.6, type: "spring", stiffness: 220, damping: 18 }}
-        whileHover={{ scale: 1.06 }}
-        whileTap={{ scale: 0.94 }}
-        aria-label="Open Story Companion"
-        className="fixed bottom-6 right-6 z-[60] grid place-items-center size-14 rounded-full bg-gradient-to-br from-gold to-saffron text-gold-foreground shadow-glow border border-gold/40"
+        //onClick={() => setOpen((v) => !v)}
+        //initial={{ scale: 0, opacity: 0 }}
+        //animate={{ scale: 1, opacity: 1 }}
+        //transition={{ delay: 0.6, type: "spring", stiffness: 220, damping: 18 }}
+        //whileHover={{ scale: 1.06 }}
+        //whileTap={{ scale: 0.94 }}
+        //aria-label="Open Story Companion"
+        //className="fixed bottom-6 right-6 z-[60] grid place-items-center size-14 rounded-full bg-gradient-to-br from-gold to-saffron text-gold-foreground shadow-glow border border-gold/40"
       >
         <AnimatePresence mode="wait" initial={false}>
           {open ? (
             <motion.span
-              key="x"
-              initial={{ rotate: -90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: 90, opacity: 0 }}
+              //key="x"
+              //initial={{ rotate: -90, opacity: 0 }}
+              //animate={{ rotate: 0, opacity: 1 }}
+              //exit={{ rotate: 90, opacity: 0 }}
             >
               <X className="size-6" />
             </motion.span>
           ) : (
             <motion.span
-              key="s"
-              initial={{ rotate: 90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: -90, opacity: 0 }}
+              //key="s"
+              //initial={{ rotate: 90, opacity: 0 }}
+              //animate={{ rotate: 0, opacity: 1 }}
+              //exit={{ rotate: -90, opacity: 0 }}
             >
               <Sparkles className="size-6" />
             </motion.span>
@@ -134,9 +134,9 @@ export function StoryCompanion() {
         </AnimatePresence>
         {!open && (
           <motion.span
-            className="absolute inset-0 rounded-full bg-gold/30"
-            animate={{ scale: [1, 1.4], opacity: [0.5, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
+            //className="absolute inset-0 rounded-full bg-gold/30"
+            //animate={{ scale: [1, 1.4], opacity: [0.5, 0] }}
+            //transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
           />
         )}
       </motion.button>

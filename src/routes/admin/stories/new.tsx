@@ -36,6 +36,8 @@ export default function NewStoryPage() {
   const [readingTime, setReadingTime] = useState("");
   const [featured, setFeatured] = useState(false);
   const [heroOfTheDay, setHeroOfTheDay] = useState(false);
+  const [homepageSlideshow, setHomepageSlideshow] = useState(false);
+  const [slideshowOrder, setSlideshowOrder] = useState(0);
 
   // Dropdowns
   const [categories, setCategories] = useState<DropdownOption[]>([]);
@@ -187,6 +189,8 @@ export default function NewStoryPage() {
       readingTime: readingTime ? parseInt(readingTime, 10) : null,
       featured,
       heroOfTheDay,
+      homepageSlideshow,
+      slideshowOrder,
       status: publish ? "Published" : "Draft",
       categoryId,
       stateId,
@@ -579,40 +583,61 @@ export default function NewStoryPage() {
               />
             </div>
 
-            {/* Options */}
-            <div className="bg-[#161616] border border-white/10 rounded-sm p-5 space-y-4">
-              <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-white/40">
-                Options
-              </h3>
-              {[
-                {
-                  label: "Featured Story",
-                  value: featured,
-                  set: setFeatured,
-                  id: "story-featured",
-                },
-                {
-                  label: "Hero of the Day",
-                  value: heroOfTheDay,
-                  set: setHeroOfTheDay,
-                  id: "story-hero-of-day",
-                },
-              ].map(({ label, value, set, id }) => (
-                <label key={id} className="flex items-center justify-between cursor-pointer">
-                  <span className="text-sm font-sans text-white/60">{label}</span>
-                  <button
-                    id={id}
-                    type="button"
-                    onClick={() => set((v) => !v)}
-                    className={`relative w-10 h-5 rounded-full transition-colors ${value ? "bg-primary" : "bg-white/10"}`}
-                  >
-                    <span
-                      className={`absolute top-0.5 size-4 rounded-full bg-white transition-all ${value ? "left-5" : "left-0.5"}`}
-                    />
-                  </button>
-                </label>
-              ))}
-            </div>
+             {/* Options */}
+             <div className="bg-[#161616] border border-white/10 rounded-sm p-5 space-y-4">
+               <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-white/40">
+                 Options
+               </h3>
+               {[
+                 {
+                   label: "Featured Story",
+                   value: featured,
+                   set: setFeatured,
+                   id: "story-featured",
+                 },
+                 {
+                   label: "Hero of the Day",
+                   value: heroOfTheDay,
+                   set: setHeroOfTheDay,
+                   id: "story-hero-of-day",
+                 },
+                 {
+                   label: "Homepage Slideshow",
+                   value: homepageSlideshow,
+                   set: setHomepageSlideshow,
+                   id: "story-homepage-slideshow",
+                 },
+               ].map(({ label, value, set, id }) => (
+                 <label key={id} className="flex items-center justify-between cursor-pointer">
+                   <span className="text-sm font-sans text-white/60">{label}</span>
+                   <button
+                     id={id}
+                     type="button"
+                     onClick={() => set((v) => !v)}
+                     className={`relative w-10 h-5 rounded-full transition-colors ${value ? "bg-primary" : "bg-white/10"}`}
+                   >
+                     <span
+                       className={`absolute top-0.5 size-4 rounded-full bg-white transition-all ${value ? "left-5" : "left-0.5"}`}
+                     />
+                   </button>
+                 </label>
+               ))}
+
+               {homepageSlideshow && (
+                 <Field label="Slideshow Order">
+                   <Input
+                     type="number"
+                     value={slideshowOrder}
+                     onChange={(e) => {
+                       const val = parseInt(e.target.value, 10);
+                       setSlideshowOrder(isNaN(val) ? 0 : val);
+                     }}
+                     className={inputCls}
+                     id="story-slideshow-order"
+                   />
+                 </Field>
+               )}
+             </div>
           </div>
         </div>
       </div>

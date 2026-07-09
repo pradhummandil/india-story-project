@@ -31,6 +31,9 @@ export interface Story {
   viewCount?: number;
   featured?: boolean;
   heroOfTheDay?: boolean;
+  homepageSlideshow?: boolean;
+  slideshowOrder?: number;
+  seoKeywords?: string | null;
 }
 
 export function StoryCard({ story, index = 0 }: { story: Story; index?: number }) {
