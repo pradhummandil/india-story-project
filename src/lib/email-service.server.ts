@@ -2,7 +2,8 @@ import { prisma } from "@/lib/repositories/prisma.server";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "India Story Project <onboarding@resend.dev>";
-const SUPPORT_EMAIL = "indiastoryprojectmanager21@gmail.com";
+const APP_URL = process.env.APP_URL || "https://india-story-project.vercel.app";
+const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "indiastoryprojectmanager21@gmail.com";
 
 interface SendEmailParams {
   to: string;
@@ -139,7 +140,7 @@ function wrapHtmlTemplate(title: string, bodyContent: string): string {
         <div class="wrapper">
           <div class="container">
             <div class="header">
-              <a href="https://indiastoryproject.com" class="logo">India Story Project</a>
+              <a href="${APP_URL}" class="logo">India Story Project</a>
             </div>
             <div class="content">
               ${bodyContent}
@@ -173,7 +174,7 @@ export async function sendWelcomeEmail(toEmail: string, name: string): Promise<b
       <li>Submit your own inspiring story about local heroes or history.</li>
     </ul>
     <div class="button-container">
-      <a href="https://indiastoryproject.com/explore" class="button">Explore Portal</a>
+      <a href="${APP_URL}/explore" class="button">Explore Portal</a>
     </div>
     `
   );
@@ -183,8 +184,7 @@ export async function sendWelcomeEmail(toEmail: string, name: string): Promise<b
 export async function sendVerificationEmail(toEmail: string, token: string, language = "en"): Promise<boolean> {
   const isHi = language === "hi";
   const subject = isHi ? "अपना ईमेल सत्यापित करें" : "Verify Your Email";
-  const link = `https://indiastoryproject.com/verify-email?token=${token}`;
-
+  const link = `${APP_URL}/api/newsletter/verify?token=${token}`;
   const html = wrapHtmlTemplate(
     subject,
     isHi
@@ -212,7 +212,7 @@ export async function sendVerificationEmail(toEmail: string, token: string, lang
 
 export async function sendPasswordResetEmail(toEmail: string, token: string): Promise<boolean> {
   const subject = "Reset Your Password";
-  const link = `https://indiastoryproject.com/reset-password?token=${token}`;
+  const link = `${APP_URL}/reset-password?token=${token}`;
 
   const html = wrapHtmlTemplate(
     subject,
@@ -238,7 +238,7 @@ export async function sendStoryPublishedEmail(toEmail: string, storyTitle: strin
     <p>Your submitted story <strong>"${storyTitle}"</strong> has been approved and published on India Story Project!</p>
     <p>It is now live on our portal for readers worldwide to discover and learn from.</p>
     <div class="button-container">
-      <a href="https://indiastoryproject.com/explore" class="button">View Portal</a>
+      <a href="${APP_URL}/explore" class="button">View Portal</a>
     </div>
     `
   );
@@ -322,7 +322,7 @@ export async function sendNewsletterEmail(
         ${s.image ? `<img src="${s.image}" style="width: 100%; max-height: 240px; object-fit: cover; border-radius: 4px; margin-bottom: 15px;" />` : ""}
         <h2 style="font-size: 18px; margin: 0 0 10px 0; color: #ffffff;">${s.title}</h2>
         <p style="font-size: 14px; color: #aaaaaa; margin: 0 0 15px 0; line-height: 1.5;">${s.excerpt}</p>
-        <a href="https://indiastoryproject.com/stories/${s.slug}" style="font-size: 13px; color: #d4af37; font-weight: bold; text-decoration: none; text-transform: uppercase; letter-spacing: 0.05em;">Read Story &rarr;</a>
+        <a href="${APP_URL}/stories/${s.slug}" style="font-size: 13px; color: #d4af37; font-weight: bold; text-decoration: none; text-transform: uppercase; letter-spacing: 0.05em;">Read Story &rarr;</a>
       </div>
     `;
   }
@@ -335,7 +335,7 @@ export async function sendNewsletterEmail(
       ${storiesHtml}
     </div>
     <div style="margin-top: 20px; text-align: center; font-size: 12px; color: #555555;">
-      <a href="https://indiastoryproject.com/newsletter/unsubscribe?email=${encodeURIComponent(toEmail)}" style="color: #666666; text-decoration: underline;">Unsubscribe</a>
+      <a href="${APP_URL}/newsletter/unsubscribe?email=${encodeURIComponent(toEmail)}" style="color: #666666; text-decoration: underline;">Unsubscribe</a>
     </div>
     `
   );
