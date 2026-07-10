@@ -27,6 +27,11 @@ type StoryFull = {
   heroOfTheDay: boolean;
   homepageSlideshow: boolean;
   slideshowOrder: number;
+  seoPriority: number;
+  readingPriority: number;
+  pinnedStory: boolean;
+  trendingStory: boolean;
+  editorsPick: boolean;
   status: string;
   categoryId: string;
   stateId: string;
@@ -419,6 +424,9 @@ export default function EditStoryPage() {
                   { label: "Featured Story", key: "featured" },
                   { label: "Hero of the Day", key: "heroOfTheDay" },
                   { label: "Homepage Slideshow", key: "homepageSlideshow" },
+                  { label: "Pinned Story", key: "pinnedStory" },
+                  { label: "Trending Story", key: "trendingStory" },
+                  { label: "Editor's Pick", key: "editorsPick" },
                 ] as const
               ).map(({ label, key }) => (
                 <label key={key} className="flex items-center justify-between cursor-pointer">
@@ -450,6 +458,33 @@ export default function EditStoryPage() {
                   />
                 </Field>
               )}
+
+              <Field label="SEO Priority (Float 0.0 - 1.0)">
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={story.seoPriority ?? 0.5}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    setStory((s) => s && { ...s, seoPriority: isNaN(val) ? 0.5 : val });
+                  }}
+                  className={inputCls}
+                  id="edit-seo-priority"
+                />
+              </Field>
+
+              <Field label="Reading Priority (Integer)">
+                <Input
+                  type="number"
+                  value={story.readingPriority ?? 0}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value, 10);
+                    setStory((s) => s && { ...s, readingPriority: isNaN(val) ? 0 : val });
+                  }}
+                  className={inputCls}
+                  id="edit-reading-priority"
+                />
+              </Field>
             </div>
 
             {/* Premium Cover Image Controls */}

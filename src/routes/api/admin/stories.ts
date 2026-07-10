@@ -31,6 +31,11 @@ function toAdminRow(story: any) {
     heroOfTheDay: story.heroOfTheDay,
     homepageSlideshow: story.homepageSlideshow,
     slideshowOrder: story.slideshowOrder,
+    seoPriority: story.seoPriority,
+    readingPriority: story.readingPriority,
+    pinnedStory: story.pinnedStory,
+    trendingStory: story.trendingStory,
+    editorsPick: story.editorsPick,
     status: story.status,
     viewCount: story.viewCount,
     publishedAt: story.publishedAt?.toISOString() ?? null,
@@ -175,6 +180,11 @@ export const Route = createFileRoute("/api/admin/stories")({
         const heroOfTheDay = body.heroOfTheDay ?? false;
         const homepageSlideshow = body.homepageSlideshow ?? false;
         const slideshowOrder = body.slideshowOrder ? parseInt(body.slideshowOrder, 10) : 0;
+        const seoPriority = body.seoPriority ? parseFloat(body.seoPriority) : 0.5;
+        const readingPriority = body.readingPriority ? parseInt(body.readingPriority, 10) : 0;
+        const pinnedStory = body.pinnedStory ?? false;
+        const trendingStory = body.trendingStory ?? false;
+        const editorsPick = body.editorsPick ?? false;
         const seoKeywords = body.seoKeywords ?? null;
 
         // Mutual exclusivity enforcement
@@ -206,6 +216,11 @@ export const Route = createFileRoute("/api/admin/stories")({
             heroOfTheDay,
             homepageSlideshow,
             slideshowOrder,
+            seoPriority,
+            readingPriority,
+            pinnedStory,
+            trendingStory,
+            editorsPick,
             status: body.status === "Published" ? StoryStatus.Published : StoryStatus.Draft,
             publishedAt: body.status === "Published" ? new Date() : null,
             categoryId,

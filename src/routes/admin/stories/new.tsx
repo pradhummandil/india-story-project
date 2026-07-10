@@ -38,6 +38,11 @@ export default function NewStoryPage() {
   const [heroOfTheDay, setHeroOfTheDay] = useState(false);
   const [homepageSlideshow, setHomepageSlideshow] = useState(false);
   const [slideshowOrder, setSlideshowOrder] = useState(0);
+  const [seoPriority, setSeoPriority] = useState(0.5);
+  const [readingPriority, setReadingPriority] = useState(0);
+  const [pinnedStory, setPinnedStory] = useState(false);
+  const [trendingStory, setTrendingStory] = useState(false);
+  const [editorsPick, setEditorsPick] = useState(false);
 
   // Dropdowns
   const [categories, setCategories] = useState<DropdownOption[]>([]);
@@ -191,6 +196,11 @@ export default function NewStoryPage() {
       heroOfTheDay,
       homepageSlideshow,
       slideshowOrder,
+      seoPriority,
+      readingPriority,
+      pinnedStory,
+      trendingStory,
+      editorsPick,
       status: publish ? "Published" : "Draft",
       categoryId,
       stateId,
@@ -607,6 +617,24 @@ export default function NewStoryPage() {
                    set: setHomepageSlideshow,
                    id: "story-homepage-slideshow",
                  },
+                 {
+                   label: "Pinned Story",
+                   value: pinnedStory,
+                   set: setPinnedStory,
+                   id: "story-pinned",
+                 },
+                 {
+                   label: "Trending Story",
+                   value: trendingStory,
+                   set: setTrendingStory,
+                   id: "story-trending",
+                 },
+                 {
+                   label: "Editor's Pick",
+                   value: editorsPick,
+                   set: setEditorsPick,
+                   id: "story-editors-pick",
+                 },
                ].map(({ label, value, set, id }) => (
                  <label key={id} className="flex items-center justify-between cursor-pointer">
                    <span className="text-sm font-sans text-white/60">{label}</span>
@@ -637,6 +665,33 @@ export default function NewStoryPage() {
                    />
                  </Field>
                )}
+
+               <Field label="SEO Priority (Float 0.0 - 1.0)">
+                 <Input
+                   type="number"
+                   step="0.1"
+                   value={seoPriority}
+                   onChange={(e) => {
+                     const val = parseFloat(e.target.value);
+                     setSeoPriority(isNaN(val) ? 0.5 : val);
+                   }}
+                   className={inputCls}
+                   id="story-seo-priority"
+                 />
+               </Field>
+
+               <Field label="Reading Priority (Integer)">
+                 <Input
+                   type="number"
+                   value={readingPriority}
+                   onChange={(e) => {
+                     const val = parseInt(e.target.value, 10);
+                     setReadingPriority(isNaN(val) ? 0 : val);
+                   }}
+                   className={inputCls}
+                   id="story-reading-priority"
+                 />
+               </Field>
              </div>
           </div>
         </div>

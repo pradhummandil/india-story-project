@@ -159,6 +159,11 @@ model Story {
   heroOfTheDay    Boolean         @default(false)
   homepageSlideshow Boolean       @default(false)
   slideshowOrder  Int             @default(0)
+  seoPriority     Float           @default(0.5)
+  readingPriority Int             @default(0)
+  pinnedStory     Boolean         @default(false)
+  trendingStory   Boolean         @default(false)
+  editorsPick     Boolean         @default(false)
   shares          Int             @default(0)
   deleted         Boolean         @default(false)
   version         Int             @default(1)
@@ -189,6 +194,9 @@ model Story {
   @@index([publishedAt])
   @@index([featured])
   @@index([heroOfTheDay])
+  @@index([pinnedStory])
+  @@index([trendingStory])
+  @@index([editorsPick])
   @@index([viewCount])
   @@index([categoryId])
   @@index([stateId])
@@ -421,4 +429,38 @@ model SubmittedStory {
 
   @@index([userId])
   @@index([status])
+}
+
+model NewsletterSubscriber {
+  id                String   @id @default(uuid()) @db.Uuid
+  email             String   @unique
+  verified          Boolean  @default(false)
+  status            String   @default("active") // "active", "unsubscribed"
+  language          String   @default("en")
+  verificationToken String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([email])
+  @@index([verified])
+}
+
+model ContactMessage {
+  id           String    @id @default(uuid()) @db.Uuid
+  name         String
+  email        String
+  subject      String
+  message      String    @db.Text
+  ipAddress    String?
+  userAgent    String?   @db.Text
+  country      String?
+  status       String    @default("unread") // "unread", "read", "archived"
+  replyContent String?   @db.Text
+  repliedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
 }
