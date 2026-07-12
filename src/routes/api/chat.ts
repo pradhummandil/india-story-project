@@ -177,17 +177,16 @@ use Gemini knowledge.
                   "Indian Culture",
                 ],
           });
-        } catch (error: any) {
-  console.error("Gemini Error:", error);
+                } catch (error: any) {
+          console.error("Gemini Error:", error);
 
-  return json(
-    {
-      error: error.message,
-      stack: error.stack,
-    },
-    { status: 500 }
-  );
-}
+          return json(
+            {
+              error: error.message,
+              stack: error.stack,
+            },
+            { status: 500 }
+          );
         }
       },
     },
