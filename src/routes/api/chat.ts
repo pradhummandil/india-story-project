@@ -148,7 +148,7 @@ use Gemini knowledge.
 `;
 
           const result = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-2.0-flash",
             contents: prompt,
           });
 
@@ -178,17 +178,22 @@ use Gemini knowledge.
                 ],
           });
                 } catch (error: any) {
-          console.error("Gemini Error:", error);
+  console.error("Gemini Error:", error);
 
-          return json(
-            {
-              error: error.message,
-              stack: error.stack,
-            },
-            { status: 500 }
-          );
-        }
-      },
+  if (error?.response) {
+    try {
+      console.error("Gemini Response:", await error.response.text());
+    } catch (_) {}
+  }
+
+  console.error("Status:", error?.status);
+  console.error("Message:", error?.message);
+
+  return json(
+    {
+      error: error?.message,
+      status: error?.status,
     },
-  },
-});
+    { status: 500 }
+  );
+}
