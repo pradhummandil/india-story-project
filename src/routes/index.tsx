@@ -130,6 +130,8 @@ const CATEGORY_MEDIAS = [
 ];
 
 function Home() {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
   const { stories: dbStories } = useStoriesData();
   const lang = useI18nStore((s) => s.lang);
   const commonText = getCommonText(lang);
@@ -138,6 +140,41 @@ function Home() {
   const [gridStoriesRaw, setGridStoriesRaw] = useState<Story[]>([]);
   const [latestStoriesRaw, setLatestStoriesRaw] = useState<Story[]>([]);
   const [trendingStoriesRaw, setTrendingStoriesRaw] = useState<Story[]>([]);
+  const handleSubscribe = async () => {
+    if (!email.trim()) {
+      alert("Please enter your email.");
+       return;
+        }
+
+  try {
+    setLoading(true);
+
+    const response = await fetch("/api/newsletter/subscribe", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        language: lang,
+      }),
+    });
+
+    const data = await response.json();
+
+      if (response.ok) {
+            alert(data.message || "Verification email sent!");
+      setEmail("");
+    } else {
+      alert(data.error || "Subscription failed.");
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Server Error");
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     const fetchHomeData = async () => {
@@ -565,12 +602,22 @@ function Home() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto pt-2">
             <Input
               type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder={lang === "en" ? "Enter your email address" : "अपना ईमेल दर्ज करें"}
               className="h-12 bg-background border-border text-foreground font-sans rounded-none focus-visible:ring-primary/40 px-4"
             />
-            <Button className="w-full sm:w-auto bg-primary hover:bg-primary/95 text-primary-foreground font-sans uppercase tracking-widest text-xs h-12 px-6 rounded-none btn-premium shrink-0">
-              {lang === "en" ? "Subscribe" : "सदस्यता लें"}
-            </Button>
+            <Button
+  onClick={handleSubscribe}
+  disabled={loading}
+  className="w-full sm:w-auto bg-primary hover:bg-primary/95 text-primary-foreground font-sans uppercase tracking-widest text-xs h-12 px-6 rounded-none btn-premium shrink-0"
+>
+  {loading
+    ? "Subscribing..."
+    : lang === "en"
+      ? "Subscribe"
+      : "सदस्यता लें"}
+</Button>
           </div>
         </div>
       </section>
