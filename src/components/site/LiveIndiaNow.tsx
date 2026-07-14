@@ -31,8 +31,8 @@ function formatSeqAge(seq: number, windowSize = 12) {
   return "earlier";
 }
 
-function emojiForCategory(category: string) {
-  const c = category.trim().toLowerCase();
+function emojiForTheme(theme: string) {
+  const c = theme.trim().toLowerCase();
   if (c.includes("sustain")) return "🌿";
   if (c.includes("innov")) return "✨";
   if (c.includes("women") || c.includes("empower")) return "👩";
@@ -40,11 +40,12 @@ function emojiForCategory(category: string) {
   if (c.includes("culture") || c.includes("herit")) return "🪔";
   if (c.includes("rural")) return "🚜";
   if (c.includes("env")) return "🌊";
+  if (c.includes("hist") || c.includes("freedom")) return "📜";
   return "💡";
 }
 
-function kindForCategory(category: string) {
-  const c = category.trim().toLowerCase();
+function kindForTheme(theme: string) {
+  const c = theme.trim().toLowerCase();
   if (c.includes("innov")) return "Innovation";
   if (c.includes("sustain")) return "Sustainability";
   if (c.includes("women") || c.includes("empower")) return "Women empowerment";
@@ -52,6 +53,7 @@ function kindForCategory(category: string) {
   if (c.includes("culture") || c.includes("herit")) return "Heritage & Culture";
   if (c.includes("rural")) return "Rural innovation";
   if (c.includes("env")) return "Environmental hero";
+  if (c.includes("hist") || c.includes("freedom")) return "History & Freedom";
   return "New story";
 }
 
@@ -64,14 +66,17 @@ function pickSeedStories() {
 
 function getInitialFeed(): FeedItem[] {
   const picked = pickSeedStories();
-  return picked.slice(0, 4).map((s, i) => ({
-    id: s.id || s.slug || `feed-${i}`,
-    kind: kindForCategory(s.category),
-    emoji: emojiForCategory(s.category),
-    region: s.region,
-    title: s.title,
-    seq: i,
-  }));
+  return picked.slice(0, 4).map((s, i) => {
+    const firstTheme = Array.isArray(s.themes) && s.themes.length > 0 ? s.themes[0] : "";
+    return {
+      id: s.id || s.slug || `feed-${i}`,
+      kind: kindForTheme(firstTheme),
+      emoji: emojiForTheme(firstTheme),
+      region: s.region,
+      title: s.title,
+      seq: i,
+    };
+  });
 }
 
 function deriveFeedFromStories(seqStart: number, count: number): FeedItem[] {
@@ -80,10 +85,11 @@ function deriveFeedFromStories(seqStart: number, count: number): FeedItem[] {
   const out: FeedItem[] = [];
   for (let i = 0; i < count; i++) {
     const s = picked[i % picked.length];
+    const firstTheme = Array.isArray(s.themes) && s.themes.length > 0 ? s.themes[0] : "";
     out.push({
       id: s.id || s.slug || `feed-${seqStart + i}`,
-      kind: kindForCategory(s.category),
-      emoji: emojiForCategory(s.category),
+      kind: kindForTheme(firstTheme),
+      emoji: emojiForTheme(firstTheme),
       region: s.region,
       title: s.title,
       seq: seqStart + i,
@@ -97,12 +103,14 @@ export function LiveIndiaNow() {
   const [stats, setStats] = useState(() => {
     const all = stories;
     const regions = new Set(all.map((s) => s.region).filter(Boolean));
-    const categories = new Set(all.map((s) => s.category).filter(Boolean));
+    const themesSet = new Set(
+      all.flatMap((s) => Array.isArray(s.themes) ? s.themes : []).filter(Boolean)
+    );
     return {
       stories: all.length,
       states: regions.size,
       communities: Math.min(99999, regions.size * 7),
-      contributors: Math.min(99999, categories.size * 11),
+      contributors: Math.min(99999, themesSet.size * 11),
     };
   });
   const [feed, setFeed] = useState<FeedItem[]>(() => getInitialFeed());

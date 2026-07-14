@@ -72,10 +72,9 @@ function pickHeroStory(all: Story[]): StoryWithOptionalFields {
 }
 
 function getTheme(s: StoryWithOptionalFields): string {
-  // Prefer explicit theme if present in JSON/DB.
+  if (Array.isArray(s.themes) && s.themes.length > 0) return s.themes[0];
   if (typeof s.theme === "string" && s.theme.trim()) return s.theme.trim();
-  // Fall back to category if theme isn't available.
-  return typeof s.category === "string" && s.category.trim() ? s.category : "All";
+  return "All";
 }
 
 export function HeroOfTheDay() {
@@ -222,7 +221,7 @@ export function HeroOfTheDay() {
 
               {/* Floating tag */}
               <div className="absolute top-5 left-5 glass px-3 py-1.5 rounded-full text-[10px] uppercase tracking-widest text-gold">
-                {hero.category} · {stateOrRegion}
+                {theme} · {stateOrRegion}
               </div>
             </div>
           </motion.div>
@@ -291,12 +290,11 @@ export function HeroOfTheDay() {
             </motion.div>
 
             {/* Meta line (replaces hardcoded info cards while keeping premium spacing) */}
-            <div className="mt-10 grid grid-cols-2 gap-3">
+            <div className="mt-10 grid grid-cols-3 gap-3">
               {[
                 { icon: BookOpen, label: "Reading Time", value: hero.readTime },
                 { icon: Play, label: "Published", value: publishDate ?? "" },
-                { icon: Users, label: "Category", value: hero.category },
-                { icon: Quote, label: "Theme", value: theme },
+                { icon: Quote, label: "Themes", value: (hero.themes || []).join(", ") || theme },
               ].map((c) => (
                 <motion.div
                   key={c.label}
@@ -493,9 +491,9 @@ export function HeroOfTheDay() {
 
           <div className="grid sm:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {[
-              { label: "Category", value: hero.category },
-              { label: "Theme", value: theme },
+              { label: "Themes", value: (hero.themes || []).join(", ") || theme },
               { label: "Region", value: stateOrRegion },
+              { label: "Reading Time", value: hero.readTime ?? "3 min" },
             ].map((it, i) => {
               const radius = 56;
               const circumference = 2 * Math.PI * radius;

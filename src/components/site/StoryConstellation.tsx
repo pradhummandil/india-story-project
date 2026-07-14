@@ -9,7 +9,7 @@ type Node = {
   id: string;
   title: string;
   state: string;
-  category: string;
+  category: string; // primary theme
   summary: string;
   x: number; // 0-100
   y: number; // 0-100
@@ -69,7 +69,11 @@ export function StoryConstellation() {
         id: s.id || s.slug || `c-${idx}`,
         title: s.title,
         state: s.region,
-        category: (s.category as Node["category"]) ?? "Culture",
+        category: (
+          Array.isArray((s as any).themes) && (s as any).themes.length > 0
+            ? (s as any).themes[0]
+            : (s as any).category ?? "Culture"
+        ) as Node["category"],
 
         summary: s.excerpt,
         x,

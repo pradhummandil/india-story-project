@@ -42,10 +42,9 @@ export const Route = createFileRoute("/api/submissions")({
             titleHi,
             excerptHi,
             contentHi,
-            categoryName,
+            themes,
             stateName,
             cityName,
-            themeName,
             authorName,
             imageUrl,
             imageCaption,
@@ -68,8 +67,8 @@ export const Route = createFileRoute("/api/submissions")({
             return json({ error: "Title is required." }, { status: 400 });
           }
 
-          if (status !== "Draft" && (!excerpt || !content || !categoryName || !stateName)) {
-            return json({ error: "Excerpt, Content, Category, and State are required for non-draft submissions." }, { status: 400 });
+          if (status !== "Draft" && (!excerpt || !content || !themes || !stateName)) {
+            return json({ error: "Excerpt, Content, Themes, and State are required for non-draft submissions." }, { status: 400 });
           }
 
           // Create UserProfile record if missing
@@ -93,10 +92,9 @@ export const Route = createFileRoute("/api/submissions")({
             titleHi: titleHi?.trim() || null,
             excerptHi: excerptHi?.trim() || null,
             contentHi: contentHi?.trim() || null,
-            categoryName: categoryName?.trim() || "Heritage",
             stateName: stateName?.trim() || "Delhi",
             cityName: cityName?.trim() || null,
-            themeName: themeName?.trim() || null,
+            themes: themes?.trim() || null,
             authorName: authorName?.trim() || userProfile.name || "Anonymous Contributor",
             imageUrl: imageUrl?.trim() || null,
             imageCaption: imageCaption?.trim() || null,

@@ -174,7 +174,7 @@ export function getCommonText(lang: Lang) {
 
 export function translateStory<
   T extends {
-    category: string;
+    themes: string[];
     region: string;
     title: string;
     excerpt: string;
@@ -186,7 +186,7 @@ export function translateStory<
 >(story: T, lang: Lang): T {
   if (lang === "en") return story;
 
-  const categoryTrans: Record<string, string> = {
+  const themeTrans: Record<string, string> = {
     Heritage: "धरोहर",
     Innovation: "नवाचार",
     Sustainability: "सतत विकास",
@@ -245,7 +245,7 @@ export function translateStory<
     title: story.titleHi || story.title,
     excerpt: story.excerptHi || story.excerpt,
     content: story.contentHi || story.content,
-    category: categoryTrans[story.category] || story.category,
+    themes: story.themes?.map((t) => themeTrans[t] || t) ?? [],
     region: regionTrans[story.region] || story.region,
   };
 }

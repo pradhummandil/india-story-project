@@ -2,7 +2,7 @@ import type { Story } from "@/components/site/StoryCard";
 
 export type StoriesCatalogueResponse = {
   stories: Story[];
-  categories: readonly string[];
+  themes: readonly string[];
   fetchedAt: string;
 };
 
@@ -14,7 +14,7 @@ type StoryListResponse = {
   pageCount?: number;
 };
 
-type CategoryPayload = string[] | Array<{ name?: string; slug?: string }> | undefined | null;
+type ThemePayload = string[] | Array<{ name?: string; slug?: string }> | undefined | null;
 
 async function requestJson(url: string): Promise<unknown> {
   const res = await fetch(url, {
@@ -39,7 +39,13 @@ function mapStory(raw: Record<string, unknown>): Story {
     slug: getString(raw.slug),
     title: getString(raw.title),
     excerpt: getString(raw.excerpt),
-    category: getString(raw.category) || "All",
+    themes: Array.isArray(raw.themes)
+      ? raw.themes.map(String)
+      : typeof raw.category === "string" && raw.category
+        ? [raw.category]
+        : typeof raw.theme === "string" && raw.theme
+          ? [raw.theme]
+          : [],
     region: getString(raw.region) || "India",
     readTime: getString(raw.readTime),
     image: typeof raw.image === "string" && raw.image.trim() ? raw.image : undefined,
@@ -60,7 +66,7 @@ function mapStory(raw: Record<string, unknown>): Story {
   };
 }
 
-function normalizeCategories(payload: CategoryPayload): readonly string[] {
+function normalizeThemes(payload: ThemePayload): readonly string[] {
   if (!Array.isArray(payload)) return [];
 
   if (payload.every((entry) => typeof entry === "string")) {
@@ -97,16 +103,16 @@ async function fetchAllStories(): Promise<Story[]> {
 }
 
 export async function fetchStoriesCatalogue(): Promise<StoriesCatalogueResponse> {
-  const [stories, categoriesPayload] = await Promise.all([
+  const [stories, themesPayload] = await Promise.all([
     fetchAllStories(),
-    requestJson("/api/categories").catch(() => []),
+    requestJson("/api/themes").catch(() => []),
   ]);
 
-  const categories = normalizeCategories(categoriesPayload as CategoryPayload);
+  const themes = normalizeThemes(themesPayload as ThemePayload);
 
   return {
     stories,
-    categories: categories.length ? ["All", ...categories] : ["All", "कहानी"],
+    themes: themes.length ? ["All", ...themes] : ["All", "कहानी"],
     fetchedAt: new Date().toISOString(),
   };
 }

@@ -25,7 +25,7 @@ export const Route = createFileRoute("/api/stories/$slug")({
                 title: fallbackStory.title,
                 excerpt: fallbackStory.excerpt,
                 content: fallbackStory.content,
-                category: fallbackStory.category || "All",
+                themes: fallbackStory.themes || [fallbackStory.category || "All"],
                 region: fallbackStory.region || "India",
                 readTime: fallbackStory.readTime || "4 min read",
                 image: fallbackStory.image,

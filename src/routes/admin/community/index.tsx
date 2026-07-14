@@ -40,7 +40,7 @@ export default function AdminCommunityPage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("newest");
-  const [filterCategory, setFilterCategory] = useState("");
+  const [filterTheme, setFilterTheme] = useState("");
   const [filterState, setFilterState] = useState("");
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
 
@@ -270,7 +270,7 @@ export default function AdminCommunityPage() {
         s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         s.user?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         s.user?.email?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchCat = !filterCategory || s.categoryName === filterCategory;
+      const matchCat = !filterTheme || s.themes?.includes(filterTheme) || s.categoryName === filterTheme;
       const matchSt = !filterState || s.stateName === filterState;
       return matchSearch && matchCat && matchSt;
     })
@@ -288,7 +288,11 @@ export default function AdminCommunityPage() {
         !searchQuery ||
         s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         s.authorName?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchCat = !filterCategory || s.category === filterCategory;
+      const matchCat = !filterTheme || (
+        Array.isArray((s as any).themes)
+          ? (s as any).themes.includes(filterTheme)
+          : (s as any).category === filterTheme
+      );
       const matchSt = !filterState || s.region === filterState;
       return matchSearch && matchCat && matchSt;
     })
@@ -300,11 +304,11 @@ export default function AdminCommunityPage() {
       return 0;
     });
 
-  const categoryOptions = Array.from(
+  const themeOptions = Array.from(
     new Set(
       activeTab === "pending" || activeTab === "approved" || activeTab === "rejected"
-        ? submissions.map((s) => s.categoryName).filter(Boolean)
-        : stories.map((s) => s.category).filter(Boolean)
+        ? submissions.flatMap((s) => s.themes ? (Array.isArray(s.themes) ? s.themes : [s.themes]) : s.categoryName ? [s.categoryName] : []).filter(Boolean)
+        : stories.flatMap((s: any) => Array.isArray(s.themes) ? s.themes : s.category ? [s.category] : []).filter(Boolean)
     )
   ) as string[];
 
@@ -374,13 +378,13 @@ export default function AdminCommunityPage() {
               className="bg-zinc-900 border border-white/10 text-white text-xs px-3 h-9 rounded focus:outline-none focus:border-primary/50 w-full sm:w-[200px]"
             />
             <select
-              value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
+              value={filterTheme}
+              onChange={(e) => setFilterTheme(e.target.value)}
               className="bg-zinc-900 border border-white/10 text-white/70 text-xs px-2 h-9 rounded outline-none"
             >
-              <option value="">All Categories</option>
-              {categoryOptions.map((cat) => (
-                <option key={cat} value={cat}>{cat}</option>
+              <option value="">All Themes</option>
+              {themeOptions.map((t) => (
+                <option key={t} value={t}>{t}</option>
               ))}
             </select>
             <select
@@ -513,7 +517,11 @@ export default function AdminCommunityPage() {
                           </td>
                           <td className="p-4 max-w-xs font-semibold text-white truncate">{s.title}</td>
                           <td className="p-4">
-                            <p className="text-primary font-bold">{s.categoryName}</p>
+                            <p className="text-primary font-bold">
+                              {Array.isArray(s.themes) && s.themes.length > 0
+                                ? s.themes.join(", ")
+                                : s.categoryName || "—"}
+                            </p>
                             <p className="text-white/40">{s.stateName}</p>
                           </td>
                           <td className="p-4 text-white/40">{new Date(s.createdAt).toLocaleDateString("en-IN")}</td>
@@ -559,7 +567,7 @@ export default function AdminCommunityPage() {
                         </th>
                         <th className="p-4 font-bold">Title</th>
                         <th className="p-4 font-bold">Author</th>
-                        <th className="p-4 font-bold">Category/Region</th>
+                        <th className="p-4 font-bold">Themes/Region</th>
                         <th className="p-4 font-bold">Views</th>
                         <th className="p-4 font-bold text-right">Actions</th>
                       </tr>
@@ -578,7 +586,11 @@ export default function AdminCommunityPage() {
                           <td className="p-4 max-w-sm font-semibold text-white truncate">{st.title}</td>
                           <td className="p-4 font-semibold text-white/70">{st.authorName || "Staff"}</td>
                           <td className="p-4">
-                            <p className="text-primary font-bold">{st.category}</p>
+                            <p className="text-primary font-bold">
+                              {Array.isArray((st as any).themes) && (st as any).themes.length > 0
+                                ? (st as any).themes.join(", ")
+                                : (st as any).category || "—"}
+                            </p>
                             <p className="text-white/40">{st.region}</p>
                           </td>
                           <td className="p-4 text-white/40">{st.viewCount || 0}</td>
@@ -624,7 +636,11 @@ export default function AdminCommunityPage() {
               >
                 <div className="p-6 border-b border-white/10 flex justify-between items-start">
                   <div>
-                    <span className="text-[9px] uppercase tracking-widest text-primary font-bold">{previewStory.categoryName}</span>
+                    <span className="text-[9px] uppercase tracking-widest text-primary font-bold">
+                      {Array.isArray(previewStory.themes) && previewStory.themes.length > 0
+                        ? previewStory.themes.join(", ")
+                        : previewStory.categoryName || "—"}
+                    </span>
                     <h2 className="font-display text-xl font-bold text-white mt-1">{previewStory.title}</h2>
                     <p className="text-[10px] text-white/40 font-sans mt-0.5">By {previewStory.authorName} ({previewStory.stateName})</p>
                   </div>

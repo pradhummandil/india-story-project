@@ -70,7 +70,14 @@ export function ExploreIndia() {
 
     return regions.map((region, idx) => {
       const list = byRegion.get(region)!;
-      const categories = Array.from(new Set(list.map((s) => s.category).filter(Boolean)));
+      // Collect unique themes from all stories in this region
+      const themesSet = new Set<string>();
+      list.forEach((s: any) => {
+        const storyThemes: string[] = Array.isArray(s.themes) ? s.themes : 
+          (typeof s.category === "string" && s.category ? [s.category] : []);
+        storyThemes.forEach((t) => themesSet.add(t));
+      });
+      const categories = Array.from(themesSet).slice(0, 3);
 
       const featured = list[0];
       const pos = stableMapPositionForRegion(`${region}|${idx}`);
@@ -82,7 +89,7 @@ export function ExploreIndia() {
         y: pos.y,
         stories: list.length,
         hero: "Featured",
-        categories: categories.slice(0, 3),
+        categories,
         preview: featured.excerpt,
         featuredTitle: featured.title,
       };

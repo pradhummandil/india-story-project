@@ -14,7 +14,11 @@ export const Route = createFileRoute("/api/trending")({
             take: 6,
             include: {
               author: true,
-              category: true,
+              themes: {
+                include: {
+                  theme: true,
+                },
+              },
               state: true,
               images: true,
             },

@@ -14,11 +14,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useContributor, regionDots } from "@/lib/contributor-store";
-import { categories } from "@/lib/stories-data";
+import { themes } from "@/lib/stories-data";
 import { useAuthStore } from "@/lib/auth-store";
 
 const steps = [
-  { id: 0, label: "Category", icon: Sparkles },
+  { id: 0, label: "Themes", icon: Sparkles },
   { id: 1, label: "Location", icon: MapPin },
   { id: 2, label: "Media", icon: ImageIcon },
   { id: 3, label: "Story", icon: FileText },
@@ -28,15 +28,21 @@ const steps = [
 export function ShareStoryWizard() {
   const { submit } = useContributor();
   const [step, setStep] = useState(0);
-  const [category, setCategory] = useState<string>("");
+  const [selectedThemes, setSelectedThemes] = useState<string[]>([]);
   const [region, setRegion] = useState<string>("");
   const [media, setMedia] = useState(0);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [done, setDone] = useState(false);
 
+  const toggleTheme = (t: string) => {
+    setSelectedThemes((prev) =>
+      prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]
+    );
+  };
+
   const canNext =
-    (step === 0 && !!category) ||
+    (step === 0 && selectedThemes.length > 0) ||
     (step === 1 && !!region) ||
     step === 2 ||
     (step === 3 && title.length > 3 && body.length > 20) ||
@@ -60,7 +66,7 @@ export function ShareStoryWizard() {
           title,
           excerpt: body.length > 150 ? body.slice(0, 150) + "..." : body,
           content: body,
-          categoryName: category,
+          themes: selectedThemes.join(", "),
           stateName: region,
           imageUrl: media > 0 ? "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800" : null,
         }),
@@ -79,7 +85,7 @@ export function ShareStoryWizard() {
 
   const handleReset = () => {
     setStep(0);
-    setCategory("");
+    setSelectedThemes([]);
     setRegion("");
     setMedia(0);
     setTitle("");
@@ -167,17 +173,17 @@ export function ShareStoryWizard() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
               >
-                <h3 className="font-display text-2xl mb-1">Choose a category</h3>
-                <p className="text-sm text-muted-foreground mb-5">What kind of story is this?</p>
+                <h3 className="font-display text-2xl mb-1">Choose your themes</h3>
+                <p className="text-sm text-muted-foreground mb-5">What kind of story is this? Pick one or more.</p>
                 <div className="flex flex-wrap gap-2">
-                  {categories
+                  {themes
                     .filter((c) => c !== "All")
                     .map((c) => (
                       <button
                         key={c}
-                        onClick={() => setCategory(c)}
+                        onClick={() => toggleTheme(c)}
                         className={`px-4 py-2 rounded-full text-sm transition-all ${
-                          category === c
+                          selectedThemes.includes(c)
                             ? "bg-gradient-to-r from-gold to-saffron text-gold-foreground shadow-glow"
                             : "glass text-muted-foreground hover:text-foreground"
                         }`}
@@ -281,7 +287,7 @@ export function ShareStoryWizard() {
                   A quick check before we send it to editors.
                 </p>
                 <dl className="grid sm:grid-cols-2 gap-3 text-sm">
-                  <Row label="Category" value={category} />
+                  <Row label="Themes" value={selectedThemes.join(", ") || "—"} />
                   <Row label="Region" value={region} />
                   <Row label="Media" value={media > 0 ? `${media} attached` : "None"} />
                   <Row label="Title" value={title} />

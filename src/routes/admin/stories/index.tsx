@@ -31,7 +31,7 @@ type StoryRow = {
   title: string;
   status: string;
   featured: boolean;
-  category: string;
+  themes: string[];
   region: string;
   viewCount: number;
   publishedAt: string | null;
@@ -60,7 +60,7 @@ export default function AdminStoriesPage() {
 
   // State Lists
   const [stories, setStories] = useState<StoryRow[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [themesList, setThemesList] = useState<any[]>([]);
   const [states, setStates] = useState<any[]>([]);
 
   // Filtering / Sorting / Pagination States
@@ -68,7 +68,7 @@ export default function AdminStoriesPage() {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [themeFilter, setThemeFilter] = useState("all");
   const [stateFilter, setStateFilter] = useState("all");
   const [sortBy, setSortBy] = useState("date"); // "date", "views", "title"
   const [page, setPage] = useState(1);
@@ -92,12 +92,12 @@ export default function AdminStoriesPage() {
     return () => clearTimeout(timer);
   }, [query]);
 
-  // Load Categories & States
+  // Load Themes & States
   useEffect(() => {
     if (!user) return;
-    fetch("/api/categories")
+    fetch("/api/themes")
       .then((r) => r.json())
-      .then((d) => setCategories(d.categories ?? []))
+      .then((d) => setThemesList(d.themes ?? []))
       .catch(console.error);
 
     fetch("/api/states")
@@ -116,7 +116,7 @@ export default function AdminStoriesPage() {
       sortBy,
       ...(debouncedQuery ? { query: debouncedQuery } : {}),
       ...(statusFilter !== "all" ? { status: statusFilter } : {}),
-      ...(categoryFilter !== "all" ? { category: categoryFilter } : {}),
+      ...(themeFilter !== "all" ? { theme: themeFilter } : {}),
       ...(stateFilter !== "all" ? { region: stateFilter } : {}),
     });
 
@@ -132,7 +132,7 @@ export default function AdminStoriesPage() {
 
   useEffect(() => {
     void loadStories();
-  }, [user, page, debouncedQuery, statusFilter, categoryFilter, stateFilter, sortBy]);
+  }, [user, page, debouncedQuery, statusFilter, themeFilter, stateFilter, sortBy]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this story permanently?")) return;
@@ -288,21 +288,21 @@ export default function AdminStoriesPage() {
               ))}
             </div>
 
-            {/* Category filter */}
+            {/* Theme filter */}
             <div className="flex items-center gap-2">
-              <span className="text-[9px] uppercase font-bold text-white/35 font-sans">Category</span>
+              <span className="text-[9px] uppercase font-bold text-white/35 font-sans">Theme</span>
               <select
-                value={categoryFilter}
+                value={themeFilter}
                 onChange={(e) => {
-                  setCategoryFilter(e.target.value);
+                  setThemeFilter(e.target.value);
                   setPage(1);
                 }}
                 className="bg-[#0F0F0F] border border-white/10 text-white/70 font-sans text-[11px] px-2 py-1 rounded focus:outline-none"
               >
-                <option value="all">All Categories</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.slug}>
-                    {c.name}
+                <option value="all">All Themes</option>
+                {themesList.map((t) => (
+                  <option key={t.id} value={t.slug}>
+                    {t.name}
                   </option>
                 ))}
               </select>
@@ -345,7 +345,7 @@ export default function AdminStoriesPage() {
                     />
                   </th>
                   <th className="p-4 font-bold">Title</th>
-                  <th className="p-4 font-bold">Category</th>
+                  <th className="p-4 font-bold">Themes</th>
                   <th className="p-4 font-bold">State</th>
                   <th className="p-4 font-bold">Status</th>
                   <th className="p-4 font-bold">Views</th>
@@ -396,7 +396,9 @@ export default function AdminStoriesPage() {
                             </span>
                           </div>
                         </td>
-                        <td className="p-4 text-white/40">{story.category}</td>
+                        <td className="p-4 text-white/40">
+                          {Array.isArray(story.themes) ? story.themes.join(", ") : (story as any).category ?? "—"}
+                        </td>
                         <td className="p-4 text-white/40">{story.region}</td>
                         <td className="p-4">
                           <StatusBadge status={story.status} />

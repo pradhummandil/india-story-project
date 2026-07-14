@@ -18,7 +18,7 @@ export const Route = createFileRoute("/api/featured")({
               excerpt: s.excerpt,
               titleHi: s.titleHi ?? null,
               excerptHi: s.excerptHi ?? null,
-              category: s.category ?? null,
+              themes: s.themes,
               state: s.region ?? null,
               author: s.authorName ?? null,
               readingTime: s.readTime ? parseInt(s.readTime.split(" ")[0], 10) || 4 : 4,

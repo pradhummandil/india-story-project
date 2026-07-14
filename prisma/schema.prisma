@@ -63,7 +63,7 @@ model UserProfile {
   readingStreak    Int       @default(0)
   totalReadingTime Int       @default(0)
   lastActiveAt     DateTime?
-  favoriteCategory String?
+  favoriteTheme    String?
   favoriteState    String?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
@@ -88,24 +88,25 @@ model SiteSetting {
   updatedAt DateTime @updatedAt
 }
 
-model Category {
-  id        String   @id @default(uuid()) @db.Uuid
+model Theme {
+  id        String       @id @default(uuid()) @db.Uuid
   name      String
-  slug      String   @unique
-  stories   Story[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  slug      String       @unique
+  stories   StoryTheme[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
   @@index([slug])
 }
 
-model Theme {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String
-  slug      String   @unique
-  stories   Story[]
+model StoryTheme {
+  storyId   String   @db.Uuid
+  themeId   String   @db.Uuid
+  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  theme     Theme    @relation(fields: [themeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  @@index([slug])
+
+  @@id([storyId, themeId])
+  @@index([themeId])
 }
 
 model State {
@@ -176,14 +177,11 @@ model Story {
   status          StoryStatus     @default(Draft)
   authorId        String          @db.Uuid
   author          Author          @relation(fields: [authorId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  categoryId      String          @db.Uuid
-  category        Category        @relation(fields: [categoryId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  themeId         String          @db.Uuid
-  theme           Theme           @relation(fields: [themeId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   stateId         String          @db.Uuid
   state           State           @relation(fields: [stateId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   cityId          String?         @db.Uuid
   city            City?           @relation(fields: [cityId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  themes          StoryTheme[]
   tags            StoryTag[]
   images          StoryImage[]
   views           StoryView[]
@@ -204,10 +202,8 @@ model Story {
   @@index([trendingStory])
   @@index([editorsPick])
   @@index([viewCount])
-  @@index([categoryId])
   @@index([stateId])
   @@index([authorId])
-  @@index([themeId])
   @@index([homepageSlideshow, slideshowOrder])
   @@index([createdAt])
   @@index([updatedAt])
@@ -426,10 +422,9 @@ model SubmittedStory {
   titleHi       String?
   excerptHi     String?          @db.Text
   contentHi     String?          @db.Text
-  categoryName  String
   stateName     String
   cityName      String?
-  themeName     String?
+  themes        String?          @db.Text
   authorName    String?
   imageUrl      String?          @db.Text
   imageCaption  String?          @db.Text

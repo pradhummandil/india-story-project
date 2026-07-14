@@ -65,18 +65,26 @@ export const Route = createFileRoute("/api/admin/submissions/action")({
 
           // If published, create the published Story record
           if (finalAction === "Published") {
-            // 1. Find or create Category
-            const catName = submission.categoryName || "Heritage";
-            let category = await prisma.category.findFirst({
-              where: { name: { equals: catName, mode: "insensitive" } },
-            });
-            if (!category) {
-              category = await prisma.category.create({
-                data: {
-                  name: catName,
-                  slug: slugify(catName),
-                },
+            // 1. Find or create Themes
+            const submissionThemes = (submission.themes || "Heritage")
+              .split(/[ ,+]+/)
+              .map((t: string) => t.trim())
+              .filter(Boolean);
+            const themeIds: string[] = [];
+
+            for (const themeName of submissionThemes) {
+              let theme = await prisma.theme.findFirst({
+                where: { name: { equals: themeName, mode: "insensitive" } },
               });
+              if (!theme) {
+                theme = await prisma.theme.create({
+                  data: {
+                    name: themeName,
+                    slug: slugify(themeName),
+                  },
+                });
+              }
+              themeIds.push(theme.id);
             }
 
             // 2. Find or create State
@@ -93,21 +101,7 @@ export const Route = createFileRoute("/api/admin/submissions/action")({
               });
             }
 
-            // 3. Find or create Theme
-            const thName = submission.themeName || "General";
-            let theme = await prisma.theme.findFirst({
-              where: { name: { equals: thName, mode: "insensitive" } },
-            });
-            if (!theme) {
-              theme = await prisma.theme.create({
-                data: {
-                  name: thName,
-                  slug: slugify(thName),
-                },
-              });
-            }
-
-            // 4. Find or create Author
+            // 3. Find or create Author
             const autName = submission.authorName || submission.user?.name || "Contributor";
             let author = await prisma.author.findFirst({
               where: { name: { equals: autName, mode: "insensitive" } },
@@ -121,7 +115,7 @@ export const Route = createFileRoute("/api/admin/submissions/action")({
               });
             }
 
-            // 5. Generate unique slug
+            // 4. Generate unique slug
             let baseSlug = slugify(submission.title);
             let finalSlug = baseSlug;
             let count = 1;
@@ -130,7 +124,7 @@ export const Route = createFileRoute("/api/admin/submissions/action")({
               count++;
             }
 
-            // 6. Create Story
+            // 5. Create Story
             const story = await prisma.story.create({
               data: {
                 title: submission.title,
@@ -141,9 +135,7 @@ export const Route = createFileRoute("/api/admin/submissions/action")({
                 contentHi: submission.contentHi,
                 slug: finalSlug,
                 status: "Published",
-                categoryId: category.id,
                 stateId: state.id,
-                themeId: theme.id,
                 authorId: author.id,
                 readingTime: Math.max(1, Math.ceil(submission.content.split(/\s+/).length / 200)),
                 publishedAt: new Date(),
@@ -153,6 +145,16 @@ export const Route = createFileRoute("/api/admin/submissions/action")({
                 slideshowOrder,
               },
             });
+
+            // 5.1 Create many-to-many StoryTheme records
+            for (const themeId of themeIds) {
+              await prisma.storyTheme.create({
+                data: {
+                  storyId: story.id,
+                  themeId: themeId,
+                },
+              });
+            }
 
             // 7. Create StoryImage if url exists
             if (submission.imageUrl) {

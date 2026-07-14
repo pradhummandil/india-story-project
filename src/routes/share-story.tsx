@@ -36,7 +36,7 @@ import { Label } from "@/components/ui/label";
 import { SiteLayout } from "@/components/site/Layout";
 import { useAuthStore } from "@/lib/auth-store";
 import { supabase } from "@/lib/supabase-client";
-import { categories as defaultCategories } from "@/lib/stories-data";
+import { themes as defaultThemes } from "@/lib/stories-data";
 
 export const Route = createFileRoute("/share-story")({
   head: () => ({
@@ -208,7 +208,45 @@ function ShareStoryPage() {
   const [heroName, setHeroName] = useState("");
   const [story, setStory] = useState("");
   const [summary, setSummary] = useState("");
-  const [category, setCategory] = useState("Heritage");
+  const [selectedThemes, setSelectedThemes] = useState<string[]>(["Heritage"]);
+  const [allThemes, setAllThemes] = useState<string[]>(
+    defaultThemes.filter((t) => t !== "All")
+  );
+  const [themeSearch, setThemeSearch] = useState("");
+  const [showThemeDropdown, setShowThemeDropdown] = useState(false);
+  const themeDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetch("/api/themes")
+      .then((res) => res.json())
+      .then((data) => {
+        const list = Array.isArray(data) ? data : (data.themes || []);
+        if (list.length > 0) {
+          setAllThemes(list.map((t: any) => t.name));
+        }
+      })
+      .catch((err) => console.error("Failed to fetch themes:", err));
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (themeDropdownRef.current && !themeDropdownRef.current.contains(event.target as Node)) {
+        setShowThemeDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const toggleTheme = (themeName: string) => {
+    if (selectedThemes.includes(themeName)) {
+      setSelectedThemes(selectedThemes.filter((t) => t !== themeName));
+    } else {
+      setSelectedThemes([...selectedThemes, themeName]);
+    }
+    setThemeSearch("");
+  };
+
   const [stateName, setStateName] = useState("Delhi");
   const [district, setDistrict] = useState("");
   const [language, setLanguage] = useState("en");
@@ -478,7 +516,7 @@ function ShareStoryPage() {
           heroName,
           content: story,
           excerpt: summary,
-          categoryName: category,
+          themes: selectedThemes.join(", "),
           stateName,
           district,
           language,
@@ -520,7 +558,7 @@ function ShareStoryPage() {
     setHeroName("");
     setStory("");
     setSummary("");
-    setCategory("Heritage");
+    setSelectedThemes(["Heritage"]);
     setStateName("Delhi");
     setDistrict("");
     setLanguage("en");
@@ -1017,10 +1055,12 @@ function ShareStoryPage() {
                             )}
 
                             <div className="space-y-3">
-                              <div className="flex items-center gap-2 text-[10px] tracking-[0.25em] uppercase font-bold text-gold font-sans">
-                                <span className="bg-primary/10 border border-primary/20 px-2 py-0.5 rounded">
-                                  {category}
-                                </span>
+                              <div className="flex flex-wrap items-center gap-2 text-[10px] tracking-[0.25em] uppercase font-bold text-gold font-sans">
+                                {selectedThemes.map((t, idx) => (
+                                  <span key={idx} className="bg-primary/10 border border-primary/20 px-2 py-0.5 rounded">
+                                    {t}
+                                  </span>
+                                ))}
                                 <span>•</span>
                                 <span>{stateName}{district ? `, ${district}` : ""}</span>
                                 <span>•</span>
@@ -1124,20 +1164,58 @@ function ShareStoryPage() {
 
                           {/* Category, State, District */}
                           <div className="grid sm:grid-cols-3 gap-5">
-                            <div className="space-y-2">
-                              <Label htmlFor="category" className="text-xs uppercase tracking-wider text-muted-foreground font-sans">
-                                Category *
+                            <div className="space-y-2 relative" ref={themeDropdownRef}>
+                              <Label className="text-xs uppercase tracking-wider text-muted-foreground font-sans block">
+                                Themes *
                               </Label>
-                              <select
-                                id="category"
-                                value={category}
-                                onChange={(e) => setCategory(e.target.value)}
-                                className="w-full bg-background border border-border/60 text-foreground h-11 px-3 rounded-xl font-sans text-sm outline-none focus:border-gold/40 transition-colors"
-                              >
-                                {defaultCategories.map((c) => (
-                                  <option key={c} value={c}>{c}</option>
+                              <div className="w-full bg-background border border-border/60 rounded-xl p-2 font-sans text-sm focus-within:border-gold/40 transition-colors flex flex-wrap gap-1.5 min-h-[44px] items-center">
+                                {selectedThemes.map((t) => (
+                                  <span key={t} className="bg-primary/10 border border-primary/20 text-gold px-2 py-0.5 rounded-lg text-xs flex items-center gap-1 font-sans">
+                                    {t}
+                                    <button
+                                      type="button"
+                                      onClick={() => toggleTheme(t)}
+                                      className="hover:text-red-400 font-bold ml-0.5 text-[10px]"
+                                    >
+                                      ✕
+                                    </button>
+                                  </span>
                                 ))}
-                              </select>
+                                <input
+                                  type="text"
+                                  placeholder={selectedThemes.length === 0 ? "Select themes..." : "Add theme..."}
+                                  value={themeSearch}
+                                  onChange={(e) => {
+                                    setThemeSearch(e.target.value);
+                                    setShowThemeDropdown(true);
+                                  }}
+                                  onFocus={() => setShowThemeDropdown(true)}
+                                  className="bg-transparent border-none outline-none flex-1 min-w-[80px] text-foreground font-sans text-sm p-0"
+                                />
+                              </div>
+                              {showThemeDropdown && (
+                                <div className="absolute z-50 w-full mt-1 bg-zinc-900 border border-border/80 rounded-xl shadow-xl max-h-48 overflow-y-auto">
+                                  {allThemes
+                                    .filter(
+                                      (t) =>
+                                        t.toLowerCase().includes(themeSearch.toLowerCase()) &&
+                                        !selectedThemes.includes(t)
+                                    )
+                                    .map((t) => (
+                                      <button
+                                        key={t}
+                                        type="button"
+                                        onClick={() => {
+                                          toggleTheme(t);
+                                          setShowThemeDropdown(false);
+                                        }}
+                                        className="w-full text-left px-3 py-2 text-xs hover:bg-white/10 text-foreground transition-colors font-sans"
+                                      >
+                                        {t}
+                                      </button>
+                                    ))}
+                                </div>
+                              )}
                             </div>
                             <div className="space-y-2">
                               <Label htmlFor="stateName" className="text-xs uppercase tracking-wider text-muted-foreground font-sans">

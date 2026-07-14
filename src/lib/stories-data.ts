@@ -5,7 +5,7 @@ import { fetchStoriesCatalogue } from "@/lib/stories-api";
 
 type StoriesDataState = {
   stories: Story[];
-  categories: readonly string[];
+  themes: readonly string[];
   loading: boolean;
   error: string | null;
 };
@@ -19,7 +19,13 @@ function normalizeStory(raw: Record<string, unknown>): Story {
     slug: getString(raw.slug),
     title: getString(raw.title),
     excerpt: getString(raw.excerpt),
-    category: getString(raw.category) || "All",
+    themes: Array.isArray(raw.themes)
+      ? raw.themes.map(String)
+      : typeof raw.category === "string" && raw.category
+        ? [raw.category]
+        : typeof raw.theme === "string" && raw.theme
+          ? [raw.theme]
+          : [],
     region: getString(raw.region) || "India",
     readTime: getString(raw.readTime),
     image: typeof raw.image === "string" && raw.image.trim() ? raw.image : undefined,
@@ -46,7 +52,7 @@ function normalizeStory(raw: Record<string, unknown>): Story {
 }
 
 let initialStories: Story[] = [];
-let initialCategories: string[] = [
+let initialThemes: string[] = [
   "All",
   "Heritage",
   "Innovation",
@@ -62,26 +68,24 @@ if (typeof window === "undefined") {
     initialStories = (fallbackJson.stories || []).map((s: Record<string, unknown>) =>
       normalizeStory(s),
     );
-    const fallbackCategories = (fallbackJson.categories as string[]) || [];
-    initialCategories = fallbackCategories.length
-      ? ["All", ...fallbackCategories]
-      : initialCategories;
+    const fallbackThemes = (fallbackJson.themes as string[]) || (fallbackJson.categories as string[]) || [];
+    initialThemes = fallbackThemes.length
+      ? ["All", ...fallbackThemes]
+      : initialThemes;
   } catch (e) {
     console.error("Failed to load initial server fallback stories:", e);
   }
 } else if (
   typeof window !== "undefined" &&
-  (window as unknown as Record<string, { stories: Story[]; categories: string[] }>).__STORIES_DATA__
+  (window as unknown as Record<string, { stories: Story[]; themes: string[]; categories?: string[] }>).__STORIES_DATA__
 ) {
-  initialStories = (window as unknown as Record<string, { stories: Story[]; categories: string[] }>)
-    .__STORIES_DATA__.stories;
-  initialCategories = (
-    window as unknown as Record<string, { stories: Story[]; categories: string[] }>
-  ).__STORIES_DATA__.categories;
+  const windowData = (window as unknown as Record<string, { stories: Story[]; themes: string[]; categories?: string[] }>).__STORIES_DATA__;
+  initialStories = windowData.stories;
+  initialThemes = windowData.themes || windowData.categories || [];
 }
 
 export const stories: Story[] = [...initialStories];
-export const categories: string[] = [...initialCategories];
+export const themes: string[] = [...initialThemes];
 
 const listeners = new Set<() => void>();
 let loadPromise: Promise<void> | null = null;
@@ -98,12 +102,12 @@ function emit() {
   }
 }
 
-function replaceData(nextStories: Story[], nextCategories: readonly string[]) {
+function replaceData(nextStories: Story[], nextThemes: readonly string[]) {
   if (nextStories.length > 0) {
     stories.splice(0, stories.length, ...nextStories);
   }
-  if (nextCategories.length > 0) {
-    categories.splice(0, categories.length, ...nextCategories);
+  if (nextThemes.length > 0) {
+    themes.splice(0, themes.length, ...nextThemes);
   }
   hasLoadedRemote = true;
   error = null;
@@ -119,7 +123,7 @@ function getSnapshot(): StoriesDataState {
   if (!cachedSnapshot) {
     cachedSnapshot = {
       stories: [...stories],
-      categories: [...categories],
+      themes: [...themes],
       loading: !hasLoadedRemote && !error,
       error,
     };
@@ -131,7 +135,7 @@ function getServerSnapshot(): StoriesDataState {
   if (!cachedServerSnapshot) {
     cachedServerSnapshot = {
       stories: [...initialStories],
-      categories: [...initialCategories],
+      themes: [...initialThemes],
       loading: false,
       error: null,
     };
@@ -152,7 +156,7 @@ export async function loadStoriesData(force = false): Promise<void> {
   loadPromise = (async () => {
     try {
       const catalogue = await fetchStoriesCatalogue();
-      replaceData(catalogue.stories, catalogue.categories);
+      replaceData(catalogue.stories, catalogue.themes);
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : "Unable to load stories";
       setError(message);

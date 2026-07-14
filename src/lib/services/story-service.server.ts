@@ -10,7 +10,7 @@ import { prisma } from "../repositories/prisma.server";
 
 export type StoryListFilters = {
   query?: string;
-  category?: string;
+  theme?: string;
   region?: string;
   author?: string;
   tag?: string;
@@ -38,9 +38,9 @@ const MAX_PAGE_SIZE = 60;
 
 function recommendationScore(base: StoryCardCompatible, candidate: StoryCardCompatible) {
   let score = 0;
-  if (candidate.category === base.category) score += 4;
+  const sharedThemes = candidate.themes.filter(t => base.themes.includes(t));
+  score += sharedThemes.length * 2;
   if (candidate.region === base.region) score += 2;
-  if (candidate.title.toLowerCase().includes(base.category.toLowerCase())) score += 1;
   return score;
 }
 
@@ -57,7 +57,7 @@ export class StoryService {
 
     const { stories, total } = await this.stories.findPublishedPaginated({
       query: options.query,
-      category: options.category,
+      theme: options.theme,
       region: options.region,
       author: options.author,
       tag: options.tag,
@@ -95,13 +95,13 @@ export class StoryService {
     const base = await this.stories.findPublishedBySlug(slug);
     if (!base) return [];
 
-    // Query database directly for candidates matching same category or region
+    // Query database directly for candidates matching same theme or region
     const candidates = await prisma.story.findMany({
       where: {
         status: StoryStatus.Published,
         slug: { not: slug },
         OR: [
-          { category: { name: base.category } },
+          { themes: { some: { theme: { name: { in: base.themes } } } } },
           { state: { name: base.region } },
         ],
       },

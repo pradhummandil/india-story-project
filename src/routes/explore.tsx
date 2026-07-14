@@ -2,14 +2,12 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
-  Sparkles,
   Compass,
   Filter,
   Globe2,
   Search,
   TrendingUp,
   MapPin,
-  ChevronRight,
   Clock,
   BookOpen,
   LayoutGrid,
@@ -43,25 +41,32 @@ export const Route = createFileRoute("/explore")({
   component: RouteComponent,
 });
 
-
-// Category emojis
-const CATEGORY_EMOJIS: Record<string, string> = {
+// Theme emojis configuration
+const THEME_EMOJIS: Record<string, string> = {
   heritage: "🏛️",
   innovation: "💡",
   sustainability: "🌱",
   science: "🔬",
   culture: "🎭",
   environment: "🌳",
+  history: "📜",
+  freedom: "🇮🇳",
+  food: "🍲",
+  festival: "🎉",
   कहानी: "📖",
 };
 
-const CATEGORY_GRADIENTS: Record<string, string> = {
+const THEME_GRADIENTS: Record<string, string> = {
   heritage: "from-amber-950/60 to-stone-900/80",
   innovation: "from-blue-950/60 to-stone-900/80",
   sustainability: "from-emerald-950/60 to-stone-900/80",
   science: "from-indigo-950/60 to-stone-900/80",
   culture: "from-red-950/60 to-stone-900/80",
   environment: "from-teal-950/60 to-stone-900/80",
+  history: "from-amber-900/50 to-stone-900/80",
+  freedom: "from-orange-950/60 to-stone-900/80",
+  food: "from-rose-950/60 to-stone-900/80",
+  festival: "from-purple-950/60 to-stone-900/80",
 };
 
 function RouteComponent() {
@@ -72,11 +77,11 @@ function RouteComponent() {
   // Search/Filter state
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedState, setSelectedState] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedThemes, setSelectedThemes] = useState<string[]>([]);
   const [visibleCount, setVisibleCount] = useState(12);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-  // New Filters states
+  // Extended Filters states
   const [showFilters, setShowFilters] = useState(false);
   const [langFilter, setLangFilter] = useState("all");
   const [readTimeFilter, setReadTimeFilter] = useState("all");
@@ -104,23 +109,40 @@ function RouteComponent() {
       .sort((a, b) => b.count - a.count);
   }, [stories]);
 
-  // Compute categories dynamically
-  const categoryStats = useMemo(() => {
+  // Compute themes dynamically from actual stories payload
+  const themeStats = useMemo(() => {
     const counts: Record<string, number> = {};
     stories.forEach((s) => {
-      if (s.category && s.category.toLowerCase() !== "all") {
-        counts[s.category] = (counts[s.category] ?? 0) + 1;
-      }
+      const storyThemes = Array.isArray(s.themes)
+        ? s.themes
+        : typeof s.category === "string" && s.category
+          ? [s.category]
+          : [];
+
+      storyThemes.forEach((t) => {
+        if (t && t.toLowerCase() !== "all") {
+          counts[t] = (counts[t] ?? 0) + 1;
+        }
+      });
     });
+
     return Object.entries(counts).map(([name, count]) => ({
       name,
       count,
-      emoji: CATEGORY_EMOJIS[name.toLowerCase()] ?? "✨",
-      gradient: CATEGORY_GRADIENTS[name.toLowerCase()] ?? "from-stone-950 to-stone-900/80",
+      emoji: THEME_EMOJIS[name.toLowerCase()] ?? "✨",
+      gradient: THEME_GRADIENTS[name.toLowerCase()] ?? "from-stone-950 to-stone-900/80",
     }));
   }, [stories]);
 
-  // Filter stories based on query, state, category, language, read time, district, author
+  const toggleTheme = (themeName: string) => {
+    if (selectedThemes.includes(themeName)) {
+      setSelectedThemes(selectedThemes.filter((t) => t !== themeName));
+    } else {
+      setSelectedThemes([...selectedThemes, themeName]);
+    }
+  };
+
+  // Filter stories based on query, state, themes list, language, read time, district, author
   const filteredStories = useMemo(() => {
     return stories.filter((s: any) => {
       const title = s.title.toLowerCase();
@@ -128,17 +150,28 @@ function RouteComponent() {
       const content = (s.content ?? "").toLowerCase();
       const query = searchQuery.toLowerCase();
 
+      const storyThemes: string[] = Array.isArray(s.themes)
+        ? s.themes
+        : typeof s.category === "string" && s.category
+          ? [s.category]
+          : [];
+
       const matchesSearch =
         !searchQuery ||
         title.includes(query) ||
         excerpt.includes(query) ||
         content.includes(query) ||
         s.region.toLowerCase().includes(query) ||
-        s.category.toLowerCase().includes(query);
+        storyThemes.some((t) => t.toLowerCase().includes(query));
 
       const matchesState = !selectedState || s.region === selectedState;
-      const matchesCategory =
-        !selectedCategory || s.category.toLowerCase() === selectedCategory.toLowerCase();
+
+      // Intersection combination filtering (Must contain all selected themes)
+      const matchesThemes =
+        selectedThemes.length === 0 ||
+        selectedThemes.every((selTheme) =>
+          storyThemes.some((t) => t.toLowerCase() === selTheme.toLowerCase())
+        );
 
       const matchesLanguage =
         langFilter === "all" ||
@@ -161,7 +194,7 @@ function RouteComponent() {
       return (
         matchesSearch &&
         matchesState &&
-        matchesCategory &&
+        matchesThemes &&
         matchesLanguage &&
         matchesReadTime &&
         matchesDistrict &&
@@ -172,7 +205,7 @@ function RouteComponent() {
     stories,
     searchQuery,
     selectedState,
-    selectedCategory,
+    selectedThemes,
     langFilter,
     readTimeFilter,
     districtQuery,
@@ -234,7 +267,7 @@ function RouteComponent() {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
                   type="text"
-                  placeholder="Search stories, states, categories..."
+                  placeholder="Search stories, states, themes..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full h-14 pl-12 pr-4 bg-card/65 border-border/80 focus-visible:ring-gold/40 rounded-xl font-sans text-sm shadow-elegant"
@@ -316,7 +349,7 @@ function RouteComponent() {
         </section>
 
         {/* ─── Trending Today (Netflix-style scroll) ─── */}
-        {trendingStories.length > 0 && !searchQuery && !selectedState && !selectedCategory && (
+        {trendingStories.length > 0 && !searchQuery && !selectedState && selectedThemes.length === 0 && (
           <section className="container mx-auto px-6 py-12">
             <div className="flex items-center gap-2 mb-6">
               <TrendingUp className="size-4.5 text-gold animate-pulse" />
@@ -325,7 +358,7 @@ function RouteComponent() {
             {/* Scrollable list wrapper */}
             <div className="flex gap-5 overflow-x-auto pb-4 scrollbar-thin snap-x snap-mandatory">
               {trendingStories.map((story) => {
-                const localized = translateStory(story, lang);
+                const localized = translateStory(story as any, lang);
                 return (
                   <Link
                     key={story.id}
@@ -344,7 +377,7 @@ function RouteComponent() {
                         <div className="w-full h-full bg-gradient-to-br from-primary/10 to-gold/10" />
                       )}
                       <span className="absolute top-3 left-3 bg-black/60 backdrop-blur text-[9px] uppercase tracking-widest text-gold px-2 py-0.5 rounded font-sans font-bold border border-gold/20">
-                        {localized.category}
+                        {localized.themes?.[0] ?? "Story"}
                       </span>
                     </div>
                     <div className="p-4 space-y-2">
@@ -408,30 +441,52 @@ function RouteComponent() {
           </section>
         )}
 
-        {/* ─── Browse by Category (Grid) ─── */}
-        {categoryStats.length > 0 && !selectedCategory && (
+        {/* ─── Browse by Themes (Grid) ─── */}
+        {themeStats.length > 0 && (
           <section className="container mx-auto px-6 py-10 border-t border-border/40">
-            <div className="flex items-center gap-2 mb-6">
-              <Filter className="size-4 text-gold" />
-              <span className="text-xs uppercase tracking-[0.18em] font-sans font-bold text-gold">Themes & Topics</span>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <Filter className="size-4 text-gold" />
+                <span className="text-xs uppercase tracking-[0.18em] font-sans font-bold text-gold">Themes & Topics (Multi-Select)</span>
+              </div>
+              {selectedThemes.length > 0 && (
+                <button
+                  onClick={() => setSelectedThemes([])}
+                  className="text-[10px] uppercase tracking-widest font-sans font-bold text-muted-foreground hover:text-foreground"
+                >
+                  Reset Themes
+                </button>
+              )}
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              {categoryStats.map((cat) => (
-                <button
-                  key={cat.name}
-                  onClick={() => setSelectedCategory(cat.name)}
-                  className={`relative rounded-2xl border p-5 flex flex-col items-center justify-center text-center gap-2 transition-all duration-300 hover:scale-[1.02] border-border/30 bg-gradient-to-b ${cat.gradient} group`}
-                >
-                  <span className="text-3xl group-hover:scale-110 transition-transform duration-300">
-                    {cat.emoji}
-                  </span>
-                  <span className="font-sans font-bold text-xs text-white leading-tight">
-                    {cat.name}
-                  </span>
-                  <span className="text-[10px] text-white/60 font-sans">{cat.count} stories</span>
-                </button>
-              ))}
+              {themeStats.map((cat) => {
+                const isSelected = selectedThemes.includes(cat.name);
+                return (
+                  <button
+                    key={cat.name}
+                    onClick={() => toggleTheme(cat.name)}
+                    className={`relative rounded-2xl border p-5 flex flex-col items-center justify-center text-center gap-2 transition-all duration-300 hover:scale-[1.02] bg-gradient-to-b group ${
+                      isSelected
+                        ? "border-gold bg-primary/20 shadow-glow"
+                        : "border-border/30 bg-card/40 hover:border-gold/30"
+                    } ${cat.gradient}`}
+                  >
+                    <span className="text-3xl group-hover:scale-110 transition-transform duration-300">
+                      {cat.emoji}
+                    </span>
+                    <span className="font-sans font-bold text-xs text-white leading-tight">
+                      {cat.name}
+                    </span>
+                    <span className="text-[10px] text-white/60 font-sans">{cat.count} stories</span>
+                    {isSelected && (
+                      <span className="absolute top-2 right-2 bg-gold text-background rounded-full text-[9px] size-4 flex items-center justify-center font-bold">
+                        ✓
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </section>
         )}
@@ -441,7 +496,9 @@ function RouteComponent() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div>
               <h2 className="font-display text-2xl font-bold">
-                {selectedCategory ? `${selectedCategory} Stories` : "Explore Stories"}
+                {selectedThemes.length > 0
+                  ? `Themes: ${selectedThemes.join(" + ")}`
+                  : "Explore Stories"}
               </h2>
               <p className="text-xs text-muted-foreground font-sans mt-1">
                 {filteredStories.length} {filteredStories.length === 1 ? "story" : "stories"} found
@@ -451,12 +508,12 @@ function RouteComponent() {
 
             <div className="flex items-center gap-3">
               {/* Clear filters */}
-              {(selectedCategory || selectedState || searchQuery || langFilter !== "all" || readTimeFilter !== "all" || districtQuery || authorQuery) && (
+              {(selectedThemes.length > 0 || selectedState || searchQuery || langFilter !== "all" || readTimeFilter !== "all" || districtQuery || authorQuery) && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    setSelectedCategory(null);
+                    setSelectedThemes([]);
                     setSelectedState(null);
                     setSearchQuery("");
                     setLangFilter("all");
@@ -495,6 +552,27 @@ function RouteComponent() {
             </div>
           </div>
 
+          {/* Active filter tags */}
+          {selectedThemes.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-6">
+              {selectedThemes.map((t) => (
+                <span
+                  key={t}
+                  className="bg-primary/20 text-gold border border-primary/40 px-3 py-1 rounded-full text-xs font-sans font-bold flex items-center gap-1.5"
+                >
+                  {t}
+                  <button
+                    type="button"
+                    onClick={() => toggleTheme(t)}
+                    className="hover:text-red-400 font-bold text-[10px]"
+                  >
+                    ✕
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+
           {loading ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
@@ -519,7 +597,7 @@ function RouteComponent() {
               ) : (
                 <div className="space-y-6">
                   {filteredStories.slice(0, visibleCount).map((story, i) => {
-                    const localized = translateStory(story, lang);
+                    const localized = translateStory(story as any, lang);
                     return (
                       <motion.div
                         key={story.id}
@@ -543,7 +621,7 @@ function RouteComponent() {
                             <div className="w-full h-full bg-gradient-to-br from-primary/10 to-gold/10" />
                           )}
                           <span className="absolute top-3 left-3 bg-black/60 backdrop-blur text-[9px] uppercase tracking-widest text-gold px-2 py-0.5 rounded font-sans font-bold border border-gold/20">
-                            {localized.category}
+                            {localized.themes?.[0] ?? "Story"}
                           </span>
                         </Link>
                         <div className="flex-1 flex flex-col justify-between py-1">

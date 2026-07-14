@@ -2,10 +2,18 @@ import { createFileRoute } from "@tanstack/react-router";
 import { prisma } from "@/lib/repositories/prisma.server";
 import { json } from "@/routes/api/-_utils";
 
-export const Route = createFileRoute("/api/admin/categories/$id")({
+export const Route = createFileRoute("/api/admin/themes")({
   server: {
     handlers: {
-      PUT: async ({ params, request }) => {
+      GET: async () => {
+        const themes = await prisma.theme.findMany({
+          orderBy: [{ name: "asc" }],
+          include: { _count: { select: { stories: true } } },
+        });
+        return json({ themes });
+      },
+
+      POST: async ({ request }) => {
         let body: any;
         try {
           body = await request.json();
@@ -15,16 +23,13 @@ export const Route = createFileRoute("/api/admin/categories/$id")({
         if (!body.name || !body.slug)
           return json({ error: "name and slug are required" }, { status: 400 });
 
-        const category = await prisma.category.update({
-          where: { id: params.id },
-          data: { name: body.name, slug: body.slug },
+        const theme = await prisma.theme.create({
+          data: {
+            name: body.name,
+            slug: body.slug,
+          },
         });
-        return json({ category });
-      },
-
-      DELETE: async ({ params }) => {
-        await prisma.category.delete({ where: { id: params.id } });
-        return json({ success: true });
+        return json({ theme }, { status: 201 });
       },
     },
   },

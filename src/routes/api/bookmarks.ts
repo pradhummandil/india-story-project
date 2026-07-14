@@ -32,7 +32,11 @@ export const Route = createFileRoute("/api/bookmarks")({
               story: {
                 include: {
                   author: true,
-                  category: true,
+                  themes: {
+                    include: {
+                      theme: true,
+                    },
+                  },
                   state: true,
                   images: true,
                 },
@@ -54,7 +58,7 @@ export const Route = createFileRoute("/api/bookmarks")({
               excerpt: s.excerpt,
               titleHi: (s as any).titleHi ?? null,
               excerptHi: (s as any).excerptHi ?? null,
-              category: (s as any).category?.name ?? null,
+              themes: (s as any).themes?.map((t: any) => t.theme?.name).filter(Boolean) ?? [],
               state: (s as any).state?.name ?? null,
               author: (s as any).author?.name ?? null,
               readingTime: s.readingTime,

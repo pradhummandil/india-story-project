@@ -7,7 +7,7 @@ export type StoryCardCompatible = {
   slug: string;
   title: string;
   excerpt: string;
-  category: string;
+  themes: string[];
   region: string;
   readTime: string;
   image?: string;
@@ -50,17 +50,19 @@ const storyCardSelect = {
   slideshowOrder: true,
   seoKeywords: true,
   status: true,
-  categoryId: true,
   stateId: true,
   authorId: true,
-  themeId: true,
-  category: { select: { id: true, name: true, slug: true } },
   state: { select: { id: true, name: true, slug: true } },
   author: { select: { id: true, name: true, bio: true, avatar: true } },
   tags: {
     include: {
       tag: true,
     },
+  },
+  themes: {
+    select: {
+      theme: { select: { id: true, name: true, slug: true } }
+    }
   },
   images: {
     orderBy: { sortOrder: "asc" as any },
@@ -70,7 +72,6 @@ const storyCardSelect = {
 };
 
 const storyDetailIncludes = {
-  category: true,
   state: true,
   author: true,
   tags: {
@@ -81,6 +82,11 @@ const storyDetailIncludes = {
   images: {
     orderBy: [{ heroImage: "desc" as const }, { sortOrder: "asc" as const }],
   },
+  themes: {
+    include: {
+      theme: true,
+    },
+  },
 };
 
 function formatReadTime(readingTime: number | null) {
@@ -88,14 +94,14 @@ function formatReadTime(readingTime: number | null) {
 }
 
 function toStoryCardCompatible(story: any): StoryCardCompatible {
-  const image = story.images[0] ?? null;
+  const image = story.images?.[0] ?? null;
 
   return {
     id: story.id,
     slug: story.slug,
     title: story.title,
     excerpt: story.excerpt,
-    category: story.category?.name ?? "All",
+    themes: story.themes?.map((t: any) => t.theme?.name).filter(Boolean) ?? [],
     region: story.state?.name ?? "India",
     readTime: formatReadTime(story.readingTime),
     image: image?.imageUrl,
@@ -150,7 +156,7 @@ export class StoryRepository {
 
   async findPublishedPaginated(options: {
     query?: string;
-    category?: string;
+    theme?: string;
     region?: string;
     author?: string;
     tag?: string;
@@ -160,13 +166,20 @@ export class StoryRepository {
   }): Promise<{ stories: StoryCardCompatible[]; total: number }> {
     const where: any = { status: StoryStatus.Published };
 
-    if (options.category && options.category.toLowerCase() !== "all") {
-      where.category = {
-        OR: [
-          { slug: { equals: options.category, mode: "insensitive" } },
-          { name: { equals: options.category, mode: "insensitive" } },
-        ],
-      };
+    if (options.theme && options.theme.toLowerCase() !== "all") {
+      const themeList = options.theme.split(/[ ,+]+/).filter(Boolean);
+      if (themeList.length > 0) {
+        where.themes = {
+          some: {
+            theme: {
+              OR: [
+                { slug: { in: themeList, mode: "insensitive" } },
+                { name: { in: themeList, mode: "insensitive" } },
+              ],
+            },
+          },
+        };
+      }
     }
     if (options.region) {
       where.state = {
@@ -185,7 +198,7 @@ export class StoryRepository {
         { title: { contains: q, mode: "insensitive" } },
         { excerpt: { contains: q, mode: "insensitive" } },
         { content: { contains: q, mode: "insensitive" } },
-        { category: { name: { contains: q, mode: "insensitive" } } },
+        { themes: { some: { theme: { name: { contains: q, mode: "insensitive" } } } } },
         { state: { name: { contains: q, mode: "insensitive" } } },
       ];
     }

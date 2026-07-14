@@ -45,11 +45,9 @@ export default function NewStoryPage() {
   const [editorsPick, setEditorsPick] = useState(false);
 
   // Dropdowns
-  const [categories, setCategories] = useState<DropdownOption[]>([]);
   const [states, setStates] = useState<DropdownOption[]>([]);
   const [authors, setAuthors] = useState<DropdownOption[]>([]);
   const [themes, setThemes] = useState<DropdownOption[]>([]);
-  const [categoryId, setCategoryId] = useState("");
   const [stateId, setStateId] = useState("");
   const [authorId, setAuthorId] = useState("");
   const [themeId, setThemeId] = useState("");
@@ -87,13 +85,11 @@ export default function NewStoryPage() {
   useEffect(() => {
     if (!user) return;
     Promise.all([
-      fetch("/api/categories").then((r) => r.json()),
       fetch("/api/states").then((r) => r.json()),
       fetch("/api/authors").then((r) => r.json()),
       fetch("/api/themes").then((r) => r.json()),
     ])
-      .then(([cats, sts, auths, thms]) => {
-        setCategories(cats.categories ?? []);
+      .then(([sts, auths, thms]) => {
         setStates(sts.states ?? []);
         setAuthors(auths.authors ?? []);
         setThemes(thms.themes ?? []);
@@ -173,8 +169,8 @@ export default function NewStoryPage() {
   };
 
   const handleSubmit = async (publish: boolean) => {
-    if (!title || !excerpt || !content || !categoryId || !stateId || !authorId || !themeId) {
-      setError("Title, Excerpt, Content, Category, State, Author, and Theme are required.");
+    if (!title || !excerpt || !content || !stateId || !authorId || !themeId) {
+      setError("Title, Excerpt, Content, State, Author, and Theme are required.");
       return;
     }
 
@@ -202,7 +198,6 @@ export default function NewStoryPage() {
       trendingStory,
       editorsPick,
       status: publish ? "Published" : "Draft",
-      categoryId,
       stateId,
       authorId,
       themeId,
@@ -413,22 +408,6 @@ export default function NewStoryPage() {
                   {authors.map((a) => (
                     <option key={a.id} value={a.id}>
                       {a.name}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field label="Category">
-                <select
-                  value={categoryId}
-                  onChange={(e) => setCategoryId(e.target.value)}
-                  className={selectCls}
-                  id="story-category"
-                  required
-                >
-                  <option value="">Select category…</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
                     </option>
                   ))}
                 </select>

@@ -17,7 +17,11 @@ export const Route = createFileRoute("/api/hero-slides")({
             titleHi: true,
             excerptHi: true,
             readingTime: true,
-            category: { select: { name: true } },
+            themes: {
+              select: {
+                theme: { select: { name: true } }
+              }
+            },
             state: { select: { name: true } },
             author: { select: { name: true } },
             images: {
@@ -80,7 +84,7 @@ export const Route = createFileRoute("/api/hero-slides")({
               excerpt: s.excerpt,
               titleHi: s.titleHi ?? null,
               excerptHi: s.excerptHi ?? null,
-              category: s.category?.name ?? null,
+              themes: s.themes?.map((t: any) => t.theme?.name).filter(Boolean) ?? [],
               state: s.state?.name ?? null,
               author: s.author?.name ?? null,
               readingTime: s.readingTime,

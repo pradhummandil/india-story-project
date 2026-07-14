@@ -520,9 +520,9 @@ export function StoryDetail({ story }: { story: Story }) {
 
   const isHindiUnavailable = lang === "hi" && !story.contentHi;
 
-  // Related Stories (same category, up to 3)
+  // Related Stories (same themes, up to 3)
   const related = activeStories
-    .filter((s) => s.slug !== story.slug && s.category === story.category)
+    .filter((s) => s.slug !== story.slug && s.themes?.some((t: string) => story.themes?.includes(t)))
     .slice(0, 3)
     .map((s) => translateStory(s, lang));
 
@@ -761,9 +761,13 @@ export function StoryDetail({ story }: { story: Story }) {
           {/* Title banner */}
           <div className="absolute inset-x-0 bottom-0 z-15 py-16">
             <div className="max-w-5xl mx-auto px-6">
-              <span className="inline-block mb-4 text-xs uppercase tracking-[0.2em] font-bold text-gold border border-gold/40 bg-black/45 px-3 py-1 font-sans">
-                {localizedStory.category}
-              </span>
+              <div className="flex flex-wrap gap-1.5 mb-4">
+                {(localizedStory.themes || []).map((t, idx) => (
+                  <span key={idx} className="inline-block text-xs uppercase tracking-[0.2em] font-bold text-gold border border-gold/40 bg-black/45 px-3 py-1 font-sans">
+                    {t}
+                  </span>
+                ))}
+              </div>
               <h1 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold text-white leading-[1.08] tracking-tight max-w-4xl">
                 {localizedStory.title}
               </h1>

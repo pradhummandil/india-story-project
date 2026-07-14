@@ -25,7 +25,7 @@ type HeroSlide = {
   excerpt: string;
   titleHi?: string;
   excerptHi?: string;
-  category: string;
+  themes?: string[];
   state: string;
   author: string;
   readingTime?: string | number;
@@ -90,7 +90,7 @@ export function CinematicHero() {
       slug: "stories",
       title: "Stories of India",
       excerpt: "Discover the stories that define a nation.",
-      category: "Culture",
+      themes: ["Culture"],
       state: "India",
       author: "India Story Project",
       image: img,
@@ -194,9 +194,11 @@ export function CinematicHero() {
         >
           {/* Metadata */}
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[10px] sm:text-xs uppercase tracking-[0.22em] font-sans font-bold text-gold">
-            <span className="bg-primary/25 backdrop-blur-sm px-3 py-1 border border-primary/20">
-              {slide.category}
-            </span>
+            {(slide.themes || []).map((t, idx) => (
+              <span key={idx} className="bg-primary/25 backdrop-blur-sm px-3 py-1 border border-primary/20">
+                {t}
+              </span>
+            ))}
             <span className="flex items-center gap-1 text-white/70">
               <MapPin className="size-3" />
               {slide.state}

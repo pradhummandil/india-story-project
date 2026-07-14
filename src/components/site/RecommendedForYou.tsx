@@ -8,11 +8,11 @@ type Mode = {
   id: string;
   emoji: string;
   label: string;
-  match: (story: { category: string; title: string; excerpt: string }) => boolean;
+  match: (story: { themes: string[]; title: string; excerpt: string }) => boolean;
 };
 
-const emojiForCategory = (category: string) => {
-  const c = category.trim().toLowerCase();
+const emojiForTheme = (theme: string) => {
+  const c = theme.trim().toLowerCase();
   if (!c) return "✨";
   if (c.includes("sustain") || c.includes("env")) return "🌿";
   if (c.includes("women") || c.includes("empower")) return "👩";
@@ -20,16 +20,23 @@ const emojiForCategory = (category: string) => {
   if (c.includes("culture") || c.includes("herit")) return "🪔";
   if (c.includes("rural")) return "🚜";
   if (c.includes("innov") || c.includes("science")) return "🚀";
+  if (c.includes("hist") || c.includes("freedom")) return "📜";
   return "✨";
 };
 
 import { useStoriesData } from "@/lib/stories-data";
 
 function deriveModesFromStories(storyList: Story[]) {
-  // Keep the same UI “modes” shape, but drive them from stories.json.
-  const uniqueCategories = Array.from(new Set(storyList.map((s) => s.category).filter(Boolean)));
+  // Drive discovery modes from actual themes in stories.
+  const uniqueThemes = Array.from(
+    new Set(
+      storyList.flatMap((s) =>
+        Array.isArray(s.themes) ? s.themes : []
+      ).filter(Boolean)
+    )
+  );
 
-  const top = uniqueCategories.slice(0, 6);
+  const top = uniqueThemes.slice(0, 6);
 
   const modes: Mode[] = [
     {
@@ -38,11 +45,12 @@ function deriveModesFromStories(storyList: Story[]) {
       label: "For You",
       match: () => true,
     },
-    ...top.map((cat) => ({
-      id: cat,
-      emoji: emojiForCategory(cat),
-      label: cat,
-      match: (st: { category: string }) => st.category === cat,
+    ...top.map((t) => ({
+      id: t,
+      emoji: emojiForTheme(t),
+      label: t,
+      match: (st: { themes: string[] }) =>
+        Array.isArray(st.themes) && st.themes.some((x) => x.toLowerCase() === t.toLowerCase()),
     })),
   ];
   return modes;
@@ -62,7 +70,7 @@ export function RecommendedForYou() {
     if (!m) return getRecommendations(state, 6, dbStories);
     const filtered = dbStories.filter((s) =>
       m.match({
-        category: s.category,
+        themes: Array.isArray(s.themes) ? s.themes : [],
         title: s.title,
         excerpt: s.excerpt,
       }),

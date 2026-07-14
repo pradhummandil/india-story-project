@@ -13,7 +13,7 @@ export const Route = createFileRoute("/api/admin/stories/duplicate")({
 
           const story = await prisma.story.findUnique({
             where: { id },
-            include: { images: true, tags: true },
+            include: { images: true, tags: true, themes: true },
           });
 
           if (!story) return json({ error: "Story not found" }, { status: 404 });
@@ -35,10 +35,13 @@ export const Route = createFileRoute("/api/admin/stories/duplicate")({
               featured: false, // Avoid duplicate featured/hero on duplication
               heroOfTheDay: false,
               status: "Draft",
-              categoryId: story.categoryId,
               stateId: story.stateId,
               authorId: story.authorId,
-              themeId: story.themeId,
+              themes: {
+                create: story.themes.map((t) => ({
+                  themeId: t.themeId,
+                })),
+              },
               images: {
                 create: story.images.map((img) => ({
                   imageUrl: img.imageUrl,

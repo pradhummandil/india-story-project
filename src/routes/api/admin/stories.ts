@@ -4,10 +4,14 @@ import { json } from "@/routes/api/-_utils";
 import { StoryStatus } from "@prisma/client";
 
 const storyIncludes: any = {
-  category: { select: { id: true, name: true, slug: true } },
   state: { select: { id: true, name: true, slug: true } },
   author: { select: { id: true, name: true } },
-  theme: { select: { id: true, name: true, slug: true } },
+  themes: {
+    select: {
+      themeId: true,
+      theme: { select: { id: true, name: true, slug: true } }
+    }
+  },
   images: {
     orderBy: [{ heroImage: "desc" }, { sortOrder: "asc" }],
     take: 3,
@@ -42,12 +46,11 @@ function toAdminRow(story: any) {
     scheduledAt: story.scheduledAt?.toISOString() ?? null,
     createdAt: story.createdAt.toISOString(),
     updatedAt: story.updatedAt.toISOString(),
-    category: story.category?.name ?? "",
+    themes: story.themes?.map((t: any) => t.theme?.name).filter(Boolean) ?? [],
     region: story.state?.name ?? "",
-    categoryId: story.categoryId,
+    themeIds: story.themes?.map((t: any) => t.themeId) ?? [],
     stateId: story.stateId,
     authorId: story.authorId,
-    themeId: story.themeId,
     images:
       story.images?.map((img: any) => ({
         id: img.id,
@@ -66,7 +69,7 @@ export const Route = createFileRoute("/api/admin/stories")({
         const query = url.searchParams.get("query") ?? undefined;
         const status = url.searchParams.get("status") ?? undefined;
         const region = url.searchParams.get("region") ?? undefined;
-        const category = url.searchParams.get("category") ?? undefined;
+        const theme = url.searchParams.get("theme") || url.searchParams.get("category") ?? undefined;
         const sortBy = url.searchParams.get("sortBy") ?? "date";
         const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10));
         const pageSize = Math.min(
@@ -79,8 +82,15 @@ export const Route = createFileRoute("/api/admin/stories")({
         if (region && region !== "all") {
           where.state = { slug: region };
         }
-        if (category && category !== "all") {
-          where.category = { slug: category };
+        if (theme && theme !== "all") {
+          const themeList = theme.split(/[ ,+]+/).filter(Boolean);
+          where.themes = {
+            some: {
+              theme: {
+                slug: { in: themeList },
+              },
+            },
+          };
         }
         if (query) {
           where.OR = [
@@ -92,8 +102,7 @@ export const Route = createFileRoute("/api/admin/stories")({
             { content: { contains: query, mode: "insensitive" } },
             { contentHi: { contains: query, mode: "insensitive" } },
             { author: { name: { contains: query, mode: "insensitive" } } },
-            { category: { name: { contains: query, mode: "insensitive" } } },
-            { theme: { name: { contains: query, mode: "insensitive" } } },
+            { themes: { some: { theme: { name: { contains: query, mode: "insensitive" } } } } },
             { state: { name: { contains: query, mode: "insensitive" } } },
             { tags: { some: { tag: { name: { contains: query, mode: "insensitive" } } } } }
           ];
@@ -126,14 +135,16 @@ export const Route = createFileRoute("/api/admin/stories")({
               scheduledAt: true,
               createdAt: true,
               updatedAt: true,
-              categoryId: true,
               stateId: true,
               authorId: true,
-              themeId: true,
-              category: { select: { id: true, name: true, slug: true } },
               state: { select: { id: true, name: true, slug: true } },
               author: { select: { id: true, name: true } },
-              theme: { select: { id: true, name: true, slug: true } },
+              themes: {
+                select: {
+                  themeId: true,
+                  theme: { select: { id: true, name: true, slug: true } }
+                }
+              },
               images: {
                 orderBy: { sortOrder: "asc" },
                 select: { id: true, imageUrl: true, caption: true, heroImage: true },
@@ -161,21 +172,21 @@ export const Route = createFileRoute("/api/admin/stories")({
           return json({ error: "Invalid JSON" }, { status: 400 });
         }
 
-        const { title, excerpt, content, slug, categoryId, stateId, authorId, themeId } = body;
+        const { title, excerpt, content, slug, stateId, authorId, themeIds } = body;
         if (
           !title ||
           !excerpt ||
           !content ||
           !slug ||
-          !categoryId ||
           !stateId ||
           !authorId ||
-          !themeId
+          !Array.isArray(themeIds) ||
+          themeIds.length === 0
         ) {
           return json(
             {
               error:
-                "title, excerpt, content, slug, categoryId, stateId, authorId, themeId are required",
+                "title, excerpt, content, slug, stateId, authorId, themeIds are required",
             },
             { status: 400 },
           );
@@ -233,10 +244,13 @@ export const Route = createFileRoute("/api/admin/stories")({
             editorsPick,
             status: body.status === "Published" ? StoryStatus.Published : StoryStatus.Draft,
             publishedAt: body.status === "Published" ? new Date() : null,
-            categoryId,
             stateId,
             authorId,
-            themeId,
+            themes: {
+              create: themeIds.map((tId: string) => ({
+                themeId: tId,
+              })),
+            },
             images: {
               create: [
                 ...(body.imageUrl

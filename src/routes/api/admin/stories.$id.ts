@@ -5,10 +5,14 @@ import { StoryStatus } from "@prisma/client";
 import { supabase } from "@/lib/supabase-client";
 
 const storyIncludes: any = {
-  category: { select: { id: true, name: true, slug: true } },
   state: { select: { id: true, name: true, slug: true } },
   author: { select: { id: true, name: true } },
-  theme: { select: { id: true, name: true, slug: true } },
+  themes: {
+    select: {
+      themeId: true,
+      theme: { select: { id: true, name: true, slug: true } }
+    }
+  },
   images: { orderBy: [{ heroImage: "desc" }, { sortOrder: "asc" }] },
 };
 
@@ -40,12 +44,11 @@ function toAdminRow(story: any) {
     scheduledAt: story.scheduledAt?.toISOString() ?? null,
     createdAt: story.createdAt.toISOString(),
     updatedAt: story.updatedAt.toISOString(),
-    category: story.category?.name ?? "",
+    themes: story.themes?.map((t: any) => t.theme?.name).filter(Boolean) ?? [],
     region: story.state?.name ?? "",
-    categoryId: story.categoryId,
+    themeIds: story.themes?.map((t: any) => t.themeId) ?? [],
     stateId: story.stateId,
     authorId: story.authorId,
-    themeId: story.themeId,
     images:
       story.images?.map((img: any) => ({
         id: img.id,
@@ -213,10 +216,14 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
                   ? new Date(body.publishedAt)
                   : null,
             scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : null,
-            categoryId: body.categoryId,
             stateId: body.stateId,
             authorId: body.authorId,
-            themeId: body.themeId,
+            themes: {
+              deleteMany: {},
+              create: (body.themeIds || []).map((tId: string) => ({
+                themeId: tId,
+              })),
+            },
           },
           include: storyIncludes,
         });

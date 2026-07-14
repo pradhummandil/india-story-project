@@ -33,7 +33,6 @@ type StoryFull = {
   trendingStory: boolean;
   editorsPick: boolean;
   status: string;
-  categoryId: string;
   stateId: string;
   authorId: string;
   themeId: string;
@@ -49,7 +48,6 @@ export default function EditStoryPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [categories, setCategories] = useState<DropdownOption[]>([]);
   const [states, setStates] = useState<DropdownOption[]>([]);
   const [authors, setAuthors] = useState<DropdownOption[]>([]);
   const [themes, setThemes] = useState<DropdownOption[]>([]);
@@ -72,15 +70,13 @@ export default function EditStoryPage() {
     if (!user) return;
     Promise.all([
       fetch(`/api/admin/stories/${id}`).then((r) => r.json()),
-      fetch("/api/categories").then((r) => r.json()),
       fetch("/api/states").then((r) => r.json()),
       fetch("/api/authors").then((r) => r.json()),
       fetch("/api/themes").then((r) => r.json()),
     ])
-      .then(([s, cats, sts, auths, thms]) => {
+      .then(([s, sts, auths, thms]) => {
         const fullStory = s as StoryFull;
         setStory(fullStory);
-        setCategories(cats.categories ?? []);
         setStates(sts.states ?? []);
         setAuthors(auths.authors ?? []);
         setThemes(thms.themes ?? []);
@@ -368,20 +364,6 @@ export default function EditStoryPage() {
                   {authors.map((a) => (
                     <option key={a.id} value={a.id}>
                       {a.name}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field label="Category">
-                <select
-                  value={story.categoryId}
-                  onChange={(e) => setStory((s) => s && { ...s, categoryId: e.target.value })}
-                  className={selectCls}
-                  id="edit-category"
-                >
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
                     </option>
                   ))}
                 </select>

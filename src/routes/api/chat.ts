@@ -42,10 +42,14 @@ export const Route = createFileRoute("/api/chat")({
                   },
                 },
                 {
-                  category: {
-                    name: {
-                      contains: message,
-                      mode: "insensitive",
+                  themes: {
+                    some: {
+                      theme: {
+                        name: {
+                          contains: message,
+                          mode: "insensitive",
+                        },
+                      },
                     },
                   },
                 },
@@ -71,9 +75,13 @@ export const Route = createFileRoute("/api/chat")({
                   name: true,
                 },
               },
-              category: {
+              themes: {
                 select: {
-                  name: true,
+                  theme: {
+                    select: {
+                      name: true,
+                    },
+                  },
                 },
               },
             },
@@ -85,7 +93,7 @@ export const Route = createFileRoute("/api/chat")({
 Title: ${story.title}
 Hindi Title: ${story.titleHi ?? ""}
 State: ${story.state?.name ?? ""}
-Category: ${story.category?.name ?? ""}
+Themes: ${story.themes?.map((t: any) => t.theme?.name).filter(Boolean).join(", ") ?? ""}
 Excerpt: ${story.excerpt}
 Slug: ${story.slug}
 `

@@ -43,7 +43,7 @@ export const Route = createFileRoute("/api/admin/analytics")({
             prisma.comment.count(),
             prisma.bookmark.count(),
             prisma.author.count(),
-            prisma.category.count(),
+            prisma.theme.count(),
             prisma.state.count(),
             // Top stories by views
             prisma.story.findMany({
@@ -131,7 +131,7 @@ export const Route = createFileRoute("/api/admin/analytics")({
           const totalComments = getValue(results[9], 0);
           const totalBookmarks = getValue(results[10], 0);
           const totalAuthors = getValue(results[11], 0);
-          const totalCategories = getValue(results[12], 0);
+          const totalThemes = getValue(results[12], 0);
           const totalStates = getValue(results[13], 0);
           const topStories = getValue(results[14], []);
           const topAuthorsList = getValue(results[15], []);

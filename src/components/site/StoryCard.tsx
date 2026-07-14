@@ -11,7 +11,7 @@ export interface Story {
   slug: string;
   title: string;
   excerpt: string;
-  category: string;
+  themes: string[];
   region: string;
   readTime: string;
   image?: string;
@@ -83,12 +83,21 @@ export const StoryCard = React.memo(function StoryCard({ story, index = 0 }: { s
         className="block group"
       >
         <article className="border border-border/70 bg-card hover:bg-card/70 hover:border-gold/40 transition-all duration-500 flex flex-col h-full overflow-hidden shadow-sm hover:shadow-md p-5 rounded-none">
-          {/* Category & State Banner */}
-          <div className="flex items-center justify-between text-[10px] tracking-[0.2em] uppercase font-bold text-gold mb-4 font-sans">
-            <span className="bg-primary/5 px-2 py-0.5 border border-primary/10">
-              {localizedStory.category}
-            </span>
-            <span className="flex items-center gap-1 text-muted-foreground/90">
+          {/* Themes & State Banner */}
+          <div className="flex items-center justify-between text-[10px] tracking-[0.2em] uppercase font-bold text-gold mb-4 font-sans gap-2">
+            <div className="flex flex-wrap gap-1">
+              {(localizedStory.themes || []).slice(0, 2).map((t, idx) => (
+                <span key={idx} className="bg-primary/5 px-2 py-0.5 border border-primary/10 text-[9px]">
+                  {t}
+                </span>
+              ))}
+              {(localizedStory.themes || []).length > 2 && (
+                <span className="bg-primary/5 px-1.5 py-0.5 border border-primary/10 text-[9px] text-muted-foreground/80">
+                  +{(localizedStory.themes || []).length - 2}
+                </span>
+              )}
+            </div>
+            <span className="flex items-center gap-1 text-muted-foreground/90 shrink-0">
               <MapPin className="size-3 text-gold/80" />
               {localizedStory.region}
             </span>

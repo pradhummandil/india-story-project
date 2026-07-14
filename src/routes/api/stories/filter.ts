@@ -14,13 +14,13 @@ export const Route = createFileRoute("/api/stories/filter")({
       GET: async ({ request }) => {
         try {
           const url = new URL(request.url);
-          const category = readOptionalString(url.searchParams.get("category"));
+          const theme = readOptionalString(url.searchParams.get("theme") || url.searchParams.get("category"));
           const region = readOptionalString(url.searchParams.get("region"));
           const page = readPositiveInt(url.searchParams.get("page"), 1, "page");
           const pageSize = readPositiveInt(url.searchParams.get("pageSize"), 12, "pageSize");
 
           const payload = await storyService.getPublishedStories({
-            category,
+            theme,
             region,
             page,
             pageSize,
