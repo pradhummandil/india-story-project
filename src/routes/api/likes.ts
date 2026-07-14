@@ -21,8 +21,8 @@ export const Route = createFileRoute("/api/likes")({
                 story: {
                   include: {
                     images: true,
-                    category: true,
                     state: true,
+                    themes: { select: { theme: { select: { name: true } } } },
                   },
                 },
               },
@@ -35,12 +35,12 @@ export const Route = createFileRoute("/api/likes")({
                 storyId: l.storyId,
                 createdAt: l.createdAt.toISOString(),
                 story: {
-                  id: l.story.id,
-                  slug: l.story.slug,
-                  title: l.story.title,
-                  excerpt: l.story.excerpt,
-                  category: l.story.category?.name || "Uncategorized",
-                  image: l.story.images[0]?.imageUrl || null,
+                  id: l.storyId,
+                  slug: (l as any).story?.slug || "",
+                  title: (l as any).story?.title || "",
+                  excerpt: (l as any).story?.excerpt || "",
+                  themes: ((l as any).story?.themes || []).map((st: any) => st.theme?.name).filter(Boolean),
+                  image: (l as any).story?.images?.[0]?.imageUrl || null,
                 },
               })),
             });

@@ -77,7 +77,9 @@ function hashCode(str: string): number {
 }
 
 export function deriveDNA(story: Story): StoryDNA {
-  const category = story.category || "All";
+  const category = (Array.isArray(story.themes) && story.themes.length > 0
+    ? story.themes[0]
+    : (story as any).category) || "All";
   const hashVal = hashCode(category);
 
   const impactType = IMPACT_OPTIONS[hashVal % IMPACT_OPTIONS.length];
@@ -124,7 +126,10 @@ export function getConnections(storyId: string, limit = 6): Connection[] {
     .map((s) => {
       const reasons: string[] = [];
       let score = 0;
-      if (s.category === base.category) {
+      const baseThemes = Array.isArray(base.themes) ? base.themes : [];
+      const sThemes = Array.isArray(s.themes) ? s.themes : [];
+      const themeOverlap = sThemes.some((t) => baseThemes.includes(t));
+      if (themeOverlap) {
         score += 3;
         reasons.push("Similar mission");
       }

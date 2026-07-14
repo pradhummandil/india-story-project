@@ -113,11 +113,7 @@ function RouteComponent() {
   const themeStats = useMemo(() => {
     const counts: Record<string, number> = {};
     stories.forEach((s) => {
-      const storyThemes = Array.isArray(s.themes)
-        ? s.themes
-        : typeof s.category === "string" && s.category
-          ? [s.category]
-          : [];
+      const storyThemes = Array.isArray(s.themes) ? s.themes : [];
 
       storyThemes.forEach((t) => {
         if (t && t.toLowerCase() !== "all") {

@@ -257,12 +257,15 @@ function Home() {
   // Category fallback image mapper (Task 6)
   const categoryMediasWithImages = useMemo(() => {
     return CATEGORY_MEDIAS.map((cat) => {
-      // Find first story belonging to this category (match against both 'Festival' and 'Festivals' if needed)
+      // Find first story with a matching theme
       const matchingStory = dbStories.find(
-        (s) =>
-          s.category.toLowerCase() === cat.id.toLowerCase() ||
-          (cat.id === "Festival" && s.category.toLowerCase() === "festivals") ||
-          (cat.id === "Festival" && s.category.toLowerCase() === "त्योहार"),
+        (s) => {
+          const storyThemes = Array.isArray(s.themes) ? s.themes : [];
+          return storyThemes.some((t) =>
+            t.toLowerCase() === cat.id.toLowerCase() ||
+            (cat.id === "Festival" && (t.toLowerCase() === "festivals" || t.toLowerCase() === "त्योहार"))
+          );
+        }
       );
       const firstStoryImage = matchingStory?.image;
       return {
@@ -394,7 +397,9 @@ function Home() {
                   <div className="w-full lg:w-2/5 flex flex-col justify-center space-y-4">
                     <div className="flex items-center gap-3 text-[10px] tracking-[0.25em] uppercase font-bold text-gold font-sans">
                       <span className="bg-primary/5 px-2.5 py-0.5 border border-primary/15">
-                        {featuredStory.category}
+                        {(Array.isArray((featuredStory as any).themes) && (featuredStory as any).themes.length > 0
+                            ? (featuredStory as any).themes[0]
+                            : "")}
                       </span>
                       <span>•</span>
                       <span>{featuredStory.region}</span>
@@ -490,7 +495,7 @@ function Home() {
                       <div className="flex flex-col justify-between py-1">
                         <div className="space-y-2">
                           <div className="flex items-center justify-between text-[9px] tracking-[0.2em] uppercase font-bold text-gold font-sans">
-                            <span>{s.category}</span>
+                            <span>{Array.isArray((s as any).themes) && (s as any).themes.length > 0 ? (s as any).themes[0] : ""}</span>
                             <span className="text-muted-foreground">{s.region}</span>
                           </div>
                           <h4 className="font-display text-xl font-bold leading-tight hover:text-primary transition-colors">

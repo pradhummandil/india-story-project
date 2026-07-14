@@ -43,7 +43,7 @@ function makeNodes(): StoryNode[] {
       storySlug: s.slug,
       name: s.title,
       state: s.region,
-      category: s.category,
+      category: Array.isArray(s.themes) && s.themes.length > 0 ? s.themes[0] : ((s as any).category ?? ""),
       top: jitter(a.top, i),
       left: jitter(a.left, i),
       delay: seededNumber(`${s.slug}|delay`) * 2.4,

@@ -321,7 +321,10 @@ export function StoryDNA() {
             label: "Similar Innovations",
             icon: Sparkles,
             items: connections
-              .filter((c) => c.story.category === "Innovation" || c.story.category === "Science")
+              .filter((c) => {
+                const themes = Array.isArray(c.story.themes) ? c.story.themes : [];
+                return themes.some((t) => t === "Innovation" || t === "Science");
+              })
               .slice(0, 2),
           },
           {

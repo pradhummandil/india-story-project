@@ -71,10 +71,14 @@ export function useJourney() {
       viewedIds,
       lastViewedId: story.id,
       totalReadMs: cur.totalReadMs + readMs,
-      categoryCounts: {
-        ...cur.categoryCounts,
-        [story.category]: (cur.categoryCounts[story.category] ?? 0) + 1,
-      },
+      categoryCounts: (() => {
+        const storyThemes = Array.isArray(story.themes) && story.themes.length > 0
+          ? story.themes
+          : (story as any).category ? [(story as any).category] : [];
+        const updated = { ...cur.categoryCounts };
+        storyThemes.forEach((t: string) => { updated[t] = (updated[t] ?? 0) + 1; });
+        return updated;
+      })(),
       regionCounts: {
         ...cur.regionCounts,
         [story.region]: (cur.regionCounts[story.region] ?? 0) + 1,
@@ -95,7 +99,10 @@ export function useJourney() {
 
 export function scoreStory(s: Story, j: JourneyState): number {
   if (j.viewedIds.includes(s.id)) return -1; // hide already-viewed
-  const cat = j.categoryCounts[s.category] ?? 0;
+  const storyThemes = Array.isArray(s.themes) && s.themes.length > 0
+    ? s.themes
+    : (s as any).category ? [(s as any).category] : [];
+  const cat = storyThemes.reduce((sum: number, t: string) => sum + (j.categoryCounts[t] ?? 0), 0);
   const reg = j.regionCounts[s.region] ?? 0;
   return cat * 3 + reg * 2 + Math.random() * 0.5;
 }
@@ -114,12 +121,18 @@ export function getSimilar(storyId: string, limit = 3, storiesList?: Story[]): S
   const list = storiesList && storiesList.length ? storiesList : stories;
   const base = list.find((s) => s.id === storyId);
   if (!base) return list.slice(0, limit);
+  const baseThemes = Array.isArray(base.themes) && base.themes.length > 0
+    ? base.themes
+    : (base as any).category ? [(base as any).category] : [];
   return list
     .filter((s) => s.id !== storyId)
-    .map((s) => ({
-      s,
-      score: (s.category === base.category ? 3 : 0) + (s.region === base.region ? 2 : 0),
-    }))
+    .map((s) => {
+      const sThemes = Array.isArray(s.themes) && s.themes.length > 0
+        ? s.themes
+        : (s as any).category ? [(s as any).category] : [];
+      const themeOverlap = sThemes.filter((t: string) => baseThemes.includes(t)).length;
+      return { s, score: themeOverlap * 3 + (s.region === base.region ? 2 : 0) };
+    })
     .sort((a, b) => b.score - a.score)
     .slice(0, limit)
     .map((x) => x.s);

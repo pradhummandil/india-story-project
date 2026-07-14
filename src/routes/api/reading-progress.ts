@@ -21,8 +21,8 @@ export const Route = createFileRoute("/api/reading-progress")({
                 story: {
                   include: {
                     images: true,
-                    category: true,
                     state: true,
+                    themes: { select: { theme: { select: { name: true } } } },
                   },
                 },
               },
@@ -38,12 +38,12 @@ export const Route = createFileRoute("/api/reading-progress")({
                 completed: p.completed,
                 lastReadAt: p.lastReadAt.toISOString(),
                 story: {
-                  id: p.story.id,
-                  slug: p.story.slug,
-                  title: p.story.title,
-                  excerpt: p.story.excerpt,
-                  category: p.story.category?.name || "Uncategorized",
-                  image: p.story.images[0]?.imageUrl || null,
+                  id: p.storyId,
+                  slug: (p as any).story?.slug || "",
+                  title: (p as any).story?.title || "",
+                  excerpt: (p as any).story?.excerpt || "",
+                  themes: ((p as any).story?.themes || []).map((st: any) => st.theme?.name).filter(Boolean),
+                  image: (p as any).story?.images?.[0]?.imageUrl || null,
                 },
               })),
             });

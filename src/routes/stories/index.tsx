@@ -109,8 +109,7 @@ function StoriesList() {
     const list = [{ value: "All", label: lang === "en" ? "All Themes" : "सभी विषय" }];
     categories.forEach((c) => {
       if (c && c !== "All") {
-        const trans = translateStory({ category: c, region: "", title: "", excerpt: "" }, lang);
-        list.push({ value: c, label: trans.category });
+        list.push({ value: c, label: c });
       }
     });
     return list;
@@ -122,11 +121,11 @@ function StoriesList() {
     // Filter on raw database values first to avoid translation tag mismatches
     let filtered = dbStories;
 
-    // Category Filter
+    // Theme Filter (previously Category)
     if (activeCategory !== "All") {
       filtered = filtered.filter((s) => {
-        const cat = s.category || "";
-        return cat.toLowerCase() === activeCategory.toLowerCase();
+        const storyThemes = Array.isArray(s.themes) ? s.themes : [];
+        return storyThemes.some((t) => t.toLowerCase() === activeCategory.toLowerCase());
       });
     }
 
@@ -154,10 +153,11 @@ function StoriesList() {
     // Search Query Filter
     if (q) {
       result = result.filter((s) => {
+        const themeStr = Array.isArray((s as any).themes) ? (s as any).themes.join(" ") : "";
         return (
           s.title.toLowerCase().includes(q) ||
           s.excerpt.toLowerCase().includes(q) ||
-          s.category.toLowerCase().includes(q) ||
+          themeStr.toLowerCase().includes(q) ||
           s.region.toLowerCase().includes(q) ||
           (s.content?.toLowerCase().includes(q) ?? false)
         );

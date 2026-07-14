@@ -6,6 +6,8 @@ import { fetchStoriesCatalogue } from "@/lib/stories-api";
 type StoriesDataState = {
   stories: Story[];
   themes: readonly string[];
+  /** @deprecated Use themes */
+  categories: readonly string[];
   loading: boolean;
   error: string | null;
 };
@@ -64,7 +66,7 @@ let initialThemes: string[] = [
 
 if (typeof window === "undefined") {
   try {
-    const fallbackJson = (await import("@/../stories-backup.json")).default;
+    const fallbackJson = (await import("@/../stories-backup.json")).default as any;
     initialStories = (fallbackJson.stories || []).map((s: Record<string, unknown>) =>
       normalizeStory(s),
     );
@@ -86,6 +88,8 @@ if (typeof window === "undefined") {
 
 export const stories: Story[] = [...initialStories];
 export const themes: string[] = [...initialThemes];
+/** @deprecated Use `themes` instead — kept for backward compatibility */
+export const categories: string[] = themes;
 
 const listeners = new Set<() => void>();
 let loadPromise: Promise<void> | null = null;
@@ -124,6 +128,7 @@ function getSnapshot(): StoriesDataState {
     cachedSnapshot = {
       stories: [...stories],
       themes: [...themes],
+      categories: [...themes],
       loading: !hasLoadedRemote && !error,
       error,
     };
@@ -136,6 +141,7 @@ function getServerSnapshot(): StoriesDataState {
     cachedServerSnapshot = {
       stories: [...initialStories],
       themes: [...initialThemes],
+      categories: [...initialThemes],
       loading: false,
       error: null,
     };

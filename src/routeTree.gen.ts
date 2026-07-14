@@ -45,7 +45,6 @@ import { Route as ApiFeaturedRouteImport } from './routes/api/featured'
 import { Route as ApiContactRouteImport } from './routes/api/contact'
 import { Route as ApiCommentsRouteImport } from './routes/api/comments'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
-import { Route as ApiCategoriesRouteImport } from './routes/api/categories'
 import { Route as ApiBookmarksRouteImport } from './routes/api/bookmarks'
 import { Route as ApiAuthorsRouteImport } from './routes/api/authors'
 import { Route as AdminSlideshowRouteImport } from './routes/admin/slideshow'
@@ -77,6 +76,7 @@ import { Route as ApiCommentsReportRouteImport } from './routes/api/comments/rep
 import { Route as ApiCommentsLikeRouteImport } from './routes/api/comments/like'
 import { Route as ApiAuthProfileRouteImport } from './routes/api/auth/profile'
 import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
+import { Route as ApiAdminThemesRouteImport } from './routes/api/admin/themes'
 import { Route as ApiAdminSubmissionsRouteImport } from './routes/api/admin/submissions'
 import { Route as ApiAdminStoriesRouteImport } from './routes/api/admin/stories'
 import { Route as ApiAdminStatesRouteImport } from './routes/api/admin/states'
@@ -86,19 +86,18 @@ import { Route as ApiAdminNewsletterRouteImport } from './routes/api/admin/newsl
 import { Route as ApiAdminMediaRouteImport } from './routes/api/admin/media'
 import { Route as ApiAdminContactRouteImport } from './routes/api/admin/contact'
 import { Route as ApiAdminCommentsRouteImport } from './routes/api/admin/comments'
-import { Route as ApiAdminCategoriesRouteImport } from './routes/api/admin/categories'
 import { Route as ApiAdminAuthorsRouteImport } from './routes/api/admin/authors'
 import { Route as ApiAdminAnalyticsRouteImport } from './routes/api/admin/analytics'
 import { Route as ApiAdminAchievementsRouteImport } from './routes/api/admin/achievements'
 import { Route as AdminStoriesNewRouteImport } from './routes/admin/stories/new'
 import { Route as ApiAdminUsersIdRouteImport } from './routes/api/admin/users.$id'
+import { Route as ApiAdminThemesIdRouteImport } from './routes/api/admin/themes.$id'
 import { Route as ApiAdminSubmissionsActionRouteImport } from './routes/api/admin/submissions/action'
 import { Route as ApiAdminStoriesVisibilityRouteImport } from './routes/api/admin/stories/visibility'
 import { Route as ApiAdminStoriesDuplicateRouteImport } from './routes/api/admin/stories/duplicate'
 import { Route as ApiAdminStoriesBulkRouteImport } from './routes/api/admin/stories/bulk'
 import { Route as ApiAdminStoriesIdRouteImport } from './routes/api/admin/stories.$id'
 import { Route as ApiAdminStatesIdRouteImport } from './routes/api/admin/states.$id'
-import { Route as ApiAdminCategoriesIdRouteImport } from './routes/api/admin/categories.$id'
 import { Route as ApiAdminAuthorsIdRouteImport } from './routes/api/admin/authors.$id'
 import { Route as AdminStoriesIdEditRouteImport } from './routes/admin/stories/$id.edit'
 
@@ -282,11 +281,6 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiCategoriesRoute = ApiCategoriesRouteImport.update({
-  id: '/api/categories',
-  path: '/api/categories',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiBookmarksRoute = ApiBookmarksRouteImport.update({
   id: '/api/bookmarks',
   path: '/api/bookmarks',
@@ -442,6 +436,11 @@ const ApiAdminUsersRoute = ApiAdminUsersRouteImport.update({
   path: '/api/admin/users',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminThemesRoute = ApiAdminThemesRouteImport.update({
+  id: '/api/admin/themes',
+  path: '/api/admin/themes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminSubmissionsRoute = ApiAdminSubmissionsRouteImport.update({
   id: '/api/admin/submissions',
   path: '/api/admin/submissions',
@@ -487,11 +486,6 @@ const ApiAdminCommentsRoute = ApiAdminCommentsRouteImport.update({
   path: '/api/admin/comments',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAdminCategoriesRoute = ApiAdminCategoriesRouteImport.update({
-  id: '/api/admin/categories',
-  path: '/api/admin/categories',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiAdminAuthorsRoute = ApiAdminAuthorsRouteImport.update({
   id: '/api/admin/authors',
   path: '/api/admin/authors',
@@ -516,6 +510,11 @@ const ApiAdminUsersIdRoute = ApiAdminUsersIdRouteImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => ApiAdminUsersRoute,
+} as any)
+const ApiAdminThemesIdRoute = ApiAdminThemesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiAdminThemesRoute,
 } as any)
 const ApiAdminSubmissionsActionRoute =
   ApiAdminSubmissionsActionRouteImport.update({
@@ -549,11 +548,6 @@ const ApiAdminStatesIdRoute = ApiAdminStatesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => ApiAdminStatesRoute,
-} as any)
-const ApiAdminCategoriesIdRoute = ApiAdminCategoriesIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => ApiAdminCategoriesRoute,
 } as any)
 const ApiAdminAuthorsIdRoute = ApiAdminAuthorsIdRouteImport.update({
   id: '/$id',
@@ -591,7 +585,6 @@ export interface FileRoutesByFullPath {
   '/admin/slideshow': typeof AdminSlideshowRoute
   '/api/authors': typeof ApiAuthorsRoute
   '/api/bookmarks': typeof ApiBookmarksRoute
-  '/api/categories': typeof ApiCategoriesRoute
   '/api/chat': typeof ApiChatRoute
   '/api/comments': typeof ApiCommentsRouteWithChildren
   '/api/contact': typeof ApiContactRoute
@@ -616,7 +609,6 @@ export interface FileRoutesByFullPath {
   '/api/admin/achievements': typeof ApiAdminAchievementsRoute
   '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
   '/api/admin/authors': typeof ApiAdminAuthorsRouteWithChildren
-  '/api/admin/categories': typeof ApiAdminCategoriesRouteWithChildren
   '/api/admin/comments': typeof ApiAdminCommentsRoute
   '/api/admin/contact': typeof ApiAdminContactRoute
   '/api/admin/media': typeof ApiAdminMediaRoute
@@ -626,6 +618,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/states': typeof ApiAdminStatesRouteWithChildren
   '/api/admin/stories': typeof ApiAdminStoriesRouteWithChildren
   '/api/admin/submissions': typeof ApiAdminSubmissionsRouteWithChildren
+  '/api/admin/themes': typeof ApiAdminThemesRouteWithChildren
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/auth/profile': typeof ApiAuthProfileRoute
   '/api/comments/like': typeof ApiCommentsLikeRoute
@@ -651,13 +644,13 @@ export interface FileRoutesByFullPath {
   '/admin/users/': typeof AdminUsersIndexRoute
   '/admin/stories/$id/edit': typeof AdminStoriesIdEditRoute
   '/api/admin/authors/$id': typeof ApiAdminAuthorsIdRoute
-  '/api/admin/categories/$id': typeof ApiAdminCategoriesIdRoute
   '/api/admin/states/$id': typeof ApiAdminStatesIdRoute
   '/api/admin/stories/$id': typeof ApiAdminStoriesIdRoute
   '/api/admin/stories/bulk': typeof ApiAdminStoriesBulkRoute
   '/api/admin/stories/duplicate': typeof ApiAdminStoriesDuplicateRoute
   '/api/admin/stories/visibility': typeof ApiAdminStoriesVisibilityRoute
   '/api/admin/submissions/action': typeof ApiAdminSubmissionsActionRoute
+  '/api/admin/themes/$id': typeof ApiAdminThemesIdRoute
   '/api/admin/users/$id': typeof ApiAdminUsersIdRoute
 }
 export interface FileRoutesByTo {
@@ -683,7 +676,6 @@ export interface FileRoutesByTo {
   '/admin/slideshow': typeof AdminSlideshowRoute
   '/api/authors': typeof ApiAuthorsRoute
   '/api/bookmarks': typeof ApiBookmarksRoute
-  '/api/categories': typeof ApiCategoriesRoute
   '/api/chat': typeof ApiChatRoute
   '/api/comments': typeof ApiCommentsRouteWithChildren
   '/api/contact': typeof ApiContactRoute
@@ -708,7 +700,6 @@ export interface FileRoutesByTo {
   '/api/admin/achievements': typeof ApiAdminAchievementsRoute
   '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
   '/api/admin/authors': typeof ApiAdminAuthorsRouteWithChildren
-  '/api/admin/categories': typeof ApiAdminCategoriesRouteWithChildren
   '/api/admin/comments': typeof ApiAdminCommentsRoute
   '/api/admin/contact': typeof ApiAdminContactRoute
   '/api/admin/media': typeof ApiAdminMediaRoute
@@ -718,6 +709,7 @@ export interface FileRoutesByTo {
   '/api/admin/states': typeof ApiAdminStatesRouteWithChildren
   '/api/admin/stories': typeof ApiAdminStoriesRouteWithChildren
   '/api/admin/submissions': typeof ApiAdminSubmissionsRouteWithChildren
+  '/api/admin/themes': typeof ApiAdminThemesRouteWithChildren
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/auth/profile': typeof ApiAuthProfileRoute
   '/api/comments/like': typeof ApiCommentsLikeRoute
@@ -743,13 +735,13 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AdminUsersIndexRoute
   '/admin/stories/$id/edit': typeof AdminStoriesIdEditRoute
   '/api/admin/authors/$id': typeof ApiAdminAuthorsIdRoute
-  '/api/admin/categories/$id': typeof ApiAdminCategoriesIdRoute
   '/api/admin/states/$id': typeof ApiAdminStatesIdRoute
   '/api/admin/stories/$id': typeof ApiAdminStoriesIdRoute
   '/api/admin/stories/bulk': typeof ApiAdminStoriesBulkRoute
   '/api/admin/stories/duplicate': typeof ApiAdminStoriesDuplicateRoute
   '/api/admin/stories/visibility': typeof ApiAdminStoriesVisibilityRoute
   '/api/admin/submissions/action': typeof ApiAdminSubmissionsActionRoute
+  '/api/admin/themes/$id': typeof ApiAdminThemesIdRoute
   '/api/admin/users/$id': typeof ApiAdminUsersIdRoute
 }
 export interface FileRoutesById {
@@ -778,7 +770,6 @@ export interface FileRoutesById {
   '/admin/slideshow': typeof AdminSlideshowRoute
   '/api/authors': typeof ApiAuthorsRoute
   '/api/bookmarks': typeof ApiBookmarksRoute
-  '/api/categories': typeof ApiCategoriesRoute
   '/api/chat': typeof ApiChatRoute
   '/api/comments': typeof ApiCommentsRouteWithChildren
   '/api/contact': typeof ApiContactRoute
@@ -803,7 +794,6 @@ export interface FileRoutesById {
   '/api/admin/achievements': typeof ApiAdminAchievementsRoute
   '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
   '/api/admin/authors': typeof ApiAdminAuthorsRouteWithChildren
-  '/api/admin/categories': typeof ApiAdminCategoriesRouteWithChildren
   '/api/admin/comments': typeof ApiAdminCommentsRoute
   '/api/admin/contact': typeof ApiAdminContactRoute
   '/api/admin/media': typeof ApiAdminMediaRoute
@@ -813,6 +803,7 @@ export interface FileRoutesById {
   '/api/admin/states': typeof ApiAdminStatesRouteWithChildren
   '/api/admin/stories': typeof ApiAdminStoriesRouteWithChildren
   '/api/admin/submissions': typeof ApiAdminSubmissionsRouteWithChildren
+  '/api/admin/themes': typeof ApiAdminThemesRouteWithChildren
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/auth/profile': typeof ApiAuthProfileRoute
   '/api/comments/like': typeof ApiCommentsLikeRoute
@@ -838,13 +829,13 @@ export interface FileRoutesById {
   '/admin/users/': typeof AdminUsersIndexRoute
   '/admin/stories/$id/edit': typeof AdminStoriesIdEditRoute
   '/api/admin/authors/$id': typeof ApiAdminAuthorsIdRoute
-  '/api/admin/categories/$id': typeof ApiAdminCategoriesIdRoute
   '/api/admin/states/$id': typeof ApiAdminStatesIdRoute
   '/api/admin/stories/$id': typeof ApiAdminStoriesIdRoute
   '/api/admin/stories/bulk': typeof ApiAdminStoriesBulkRoute
   '/api/admin/stories/duplicate': typeof ApiAdminStoriesDuplicateRoute
   '/api/admin/stories/visibility': typeof ApiAdminStoriesVisibilityRoute
   '/api/admin/submissions/action': typeof ApiAdminSubmissionsActionRoute
+  '/api/admin/themes/$id': typeof ApiAdminThemesIdRoute
   '/api/admin/users/$id': typeof ApiAdminUsersIdRoute
 }
 export interface FileRouteTypes {
@@ -874,7 +865,6 @@ export interface FileRouteTypes {
     | '/admin/slideshow'
     | '/api/authors'
     | '/api/bookmarks'
-    | '/api/categories'
     | '/api/chat'
     | '/api/comments'
     | '/api/contact'
@@ -899,7 +889,6 @@ export interface FileRouteTypes {
     | '/api/admin/achievements'
     | '/api/admin/analytics'
     | '/api/admin/authors'
-    | '/api/admin/categories'
     | '/api/admin/comments'
     | '/api/admin/contact'
     | '/api/admin/media'
@@ -909,6 +898,7 @@ export interface FileRouteTypes {
     | '/api/admin/states'
     | '/api/admin/stories'
     | '/api/admin/submissions'
+    | '/api/admin/themes'
     | '/api/admin/users'
     | '/api/auth/profile'
     | '/api/comments/like'
@@ -934,13 +924,13 @@ export interface FileRouteTypes {
     | '/admin/users/'
     | '/admin/stories/$id/edit'
     | '/api/admin/authors/$id'
-    | '/api/admin/categories/$id'
     | '/api/admin/states/$id'
     | '/api/admin/stories/$id'
     | '/api/admin/stories/bulk'
     | '/api/admin/stories/duplicate'
     | '/api/admin/stories/visibility'
     | '/api/admin/submissions/action'
+    | '/api/admin/themes/$id'
     | '/api/admin/users/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -966,7 +956,6 @@ export interface FileRouteTypes {
     | '/admin/slideshow'
     | '/api/authors'
     | '/api/bookmarks'
-    | '/api/categories'
     | '/api/chat'
     | '/api/comments'
     | '/api/contact'
@@ -991,7 +980,6 @@ export interface FileRouteTypes {
     | '/api/admin/achievements'
     | '/api/admin/analytics'
     | '/api/admin/authors'
-    | '/api/admin/categories'
     | '/api/admin/comments'
     | '/api/admin/contact'
     | '/api/admin/media'
@@ -1001,6 +989,7 @@ export interface FileRouteTypes {
     | '/api/admin/states'
     | '/api/admin/stories'
     | '/api/admin/submissions'
+    | '/api/admin/themes'
     | '/api/admin/users'
     | '/api/auth/profile'
     | '/api/comments/like'
@@ -1026,13 +1015,13 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/admin/stories/$id/edit'
     | '/api/admin/authors/$id'
-    | '/api/admin/categories/$id'
     | '/api/admin/states/$id'
     | '/api/admin/stories/$id'
     | '/api/admin/stories/bulk'
     | '/api/admin/stories/duplicate'
     | '/api/admin/stories/visibility'
     | '/api/admin/submissions/action'
+    | '/api/admin/themes/$id'
     | '/api/admin/users/$id'
   id:
     | '__root__'
@@ -1060,7 +1049,6 @@ export interface FileRouteTypes {
     | '/admin/slideshow'
     | '/api/authors'
     | '/api/bookmarks'
-    | '/api/categories'
     | '/api/chat'
     | '/api/comments'
     | '/api/contact'
@@ -1085,7 +1073,6 @@ export interface FileRouteTypes {
     | '/api/admin/achievements'
     | '/api/admin/analytics'
     | '/api/admin/authors'
-    | '/api/admin/categories'
     | '/api/admin/comments'
     | '/api/admin/contact'
     | '/api/admin/media'
@@ -1095,6 +1082,7 @@ export interface FileRouteTypes {
     | '/api/admin/states'
     | '/api/admin/stories'
     | '/api/admin/submissions'
+    | '/api/admin/themes'
     | '/api/admin/users'
     | '/api/auth/profile'
     | '/api/comments/like'
@@ -1120,13 +1108,13 @@ export interface FileRouteTypes {
     | '/admin/users/'
     | '/admin/stories/$id/edit'
     | '/api/admin/authors/$id'
-    | '/api/admin/categories/$id'
     | '/api/admin/states/$id'
     | '/api/admin/stories/$id'
     | '/api/admin/stories/bulk'
     | '/api/admin/stories/duplicate'
     | '/api/admin/stories/visibility'
     | '/api/admin/submissions/action'
+    | '/api/admin/themes/$id'
     | '/api/admin/users/$id'
   fileRoutesById: FileRoutesById
 }
@@ -1149,7 +1137,6 @@ export interface RootRouteChildren {
   VerifyEmailRoute: typeof VerifyEmailRoute
   ApiAuthorsRoute: typeof ApiAuthorsRoute
   ApiBookmarksRoute: typeof ApiBookmarksRoute
-  ApiCategoriesRoute: typeof ApiCategoriesRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiCommentsRoute: typeof ApiCommentsRouteWithChildren
   ApiContactRoute: typeof ApiContactRoute
@@ -1170,7 +1157,6 @@ export interface RootRouteChildren {
   ApiAdminAchievementsRoute: typeof ApiAdminAchievementsRoute
   ApiAdminAnalyticsRoute: typeof ApiAdminAnalyticsRoute
   ApiAdminAuthorsRoute: typeof ApiAdminAuthorsRouteWithChildren
-  ApiAdminCategoriesRoute: typeof ApiAdminCategoriesRouteWithChildren
   ApiAdminCommentsRoute: typeof ApiAdminCommentsRoute
   ApiAdminContactRoute: typeof ApiAdminContactRoute
   ApiAdminMediaRoute: typeof ApiAdminMediaRoute
@@ -1180,6 +1166,7 @@ export interface RootRouteChildren {
   ApiAdminStatesRoute: typeof ApiAdminStatesRouteWithChildren
   ApiAdminStoriesRoute: typeof ApiAdminStoriesRouteWithChildren
   ApiAdminSubmissionsRoute: typeof ApiAdminSubmissionsRouteWithChildren
+  ApiAdminThemesRoute: typeof ApiAdminThemesRouteWithChildren
   ApiAdminUsersRoute: typeof ApiAdminUsersRouteWithChildren
   ApiAuthProfileRoute: typeof ApiAuthProfileRoute
   ApiNewsletterCronRoute: typeof ApiNewsletterCronRoute
@@ -1441,13 +1428,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/categories': {
-      id: '/api/categories'
-      path: '/api/categories'
-      fullPath: '/api/categories'
-      preLoaderRoute: typeof ApiCategoriesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/bookmarks': {
       id: '/api/bookmarks'
       path: '/api/bookmarks'
@@ -1665,6 +1645,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminUsersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/themes': {
+      id: '/api/admin/themes'
+      path: '/api/admin/themes'
+      fullPath: '/api/admin/themes'
+      preLoaderRoute: typeof ApiAdminThemesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin/submissions': {
       id: '/api/admin/submissions'
       path: '/api/admin/submissions'
@@ -1728,13 +1715,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminCommentsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/admin/categories': {
-      id: '/api/admin/categories'
-      path: '/api/admin/categories'
-      fullPath: '/api/admin/categories'
-      preLoaderRoute: typeof ApiAdminCategoriesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/admin/authors': {
       id: '/api/admin/authors'
       path: '/api/admin/authors'
@@ -1769,6 +1749,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/admin/users/$id'
       preLoaderRoute: typeof ApiAdminUsersIdRouteImport
       parentRoute: typeof ApiAdminUsersRoute
+    }
+    '/api/admin/themes/$id': {
+      id: '/api/admin/themes/$id'
+      path: '/$id'
+      fullPath: '/api/admin/themes/$id'
+      preLoaderRoute: typeof ApiAdminThemesIdRouteImport
+      parentRoute: typeof ApiAdminThemesRoute
     }
     '/api/admin/submissions/action': {
       id: '/api/admin/submissions/action'
@@ -1811,13 +1798,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/admin/states/$id'
       preLoaderRoute: typeof ApiAdminStatesIdRouteImport
       parentRoute: typeof ApiAdminStatesRoute
-    }
-    '/api/admin/categories/$id': {
-      id: '/api/admin/categories/$id'
-      path: '/$id'
-      fullPath: '/api/admin/categories/$id'
-      preLoaderRoute: typeof ApiAdminCategoriesIdRouteImport
-      parentRoute: typeof ApiAdminCategoriesRoute
     }
     '/api/admin/authors/$id': {
       id: '/api/admin/authors/$id'
@@ -1953,17 +1933,6 @@ const ApiAdminAuthorsRouteWithChildren = ApiAdminAuthorsRoute._addFileChildren(
   ApiAdminAuthorsRouteChildren,
 )
 
-interface ApiAdminCategoriesRouteChildren {
-  ApiAdminCategoriesIdRoute: typeof ApiAdminCategoriesIdRoute
-}
-
-const ApiAdminCategoriesRouteChildren: ApiAdminCategoriesRouteChildren = {
-  ApiAdminCategoriesIdRoute: ApiAdminCategoriesIdRoute,
-}
-
-const ApiAdminCategoriesRouteWithChildren =
-  ApiAdminCategoriesRoute._addFileChildren(ApiAdminCategoriesRouteChildren)
-
 interface ApiAdminStatesRouteChildren {
   ApiAdminStatesIdRoute: typeof ApiAdminStatesIdRoute
 }
@@ -2005,6 +1974,18 @@ const ApiAdminSubmissionsRouteChildren: ApiAdminSubmissionsRouteChildren = {
 const ApiAdminSubmissionsRouteWithChildren =
   ApiAdminSubmissionsRoute._addFileChildren(ApiAdminSubmissionsRouteChildren)
 
+interface ApiAdminThemesRouteChildren {
+  ApiAdminThemesIdRoute: typeof ApiAdminThemesIdRoute
+}
+
+const ApiAdminThemesRouteChildren: ApiAdminThemesRouteChildren = {
+  ApiAdminThemesIdRoute: ApiAdminThemesIdRoute,
+}
+
+const ApiAdminThemesRouteWithChildren = ApiAdminThemesRoute._addFileChildren(
+  ApiAdminThemesRouteChildren,
+)
+
 interface ApiAdminUsersRouteChildren {
   ApiAdminUsersIdRoute: typeof ApiAdminUsersIdRoute
 }
@@ -2036,7 +2017,6 @@ const rootRouteChildren: RootRouteChildren = {
   VerifyEmailRoute: VerifyEmailRoute,
   ApiAuthorsRoute: ApiAuthorsRoute,
   ApiBookmarksRoute: ApiBookmarksRoute,
-  ApiCategoriesRoute: ApiCategoriesRoute,
   ApiChatRoute: ApiChatRoute,
   ApiCommentsRoute: ApiCommentsRouteWithChildren,
   ApiContactRoute: ApiContactRoute,
@@ -2057,7 +2037,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminAchievementsRoute: ApiAdminAchievementsRoute,
   ApiAdminAnalyticsRoute: ApiAdminAnalyticsRoute,
   ApiAdminAuthorsRoute: ApiAdminAuthorsRouteWithChildren,
-  ApiAdminCategoriesRoute: ApiAdminCategoriesRouteWithChildren,
   ApiAdminCommentsRoute: ApiAdminCommentsRoute,
   ApiAdminContactRoute: ApiAdminContactRoute,
   ApiAdminMediaRoute: ApiAdminMediaRoute,
@@ -2067,6 +2046,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminStatesRoute: ApiAdminStatesRouteWithChildren,
   ApiAdminStoriesRoute: ApiAdminStoriesRouteWithChildren,
   ApiAdminSubmissionsRoute: ApiAdminSubmissionsRouteWithChildren,
+  ApiAdminThemesRoute: ApiAdminThemesRouteWithChildren,
   ApiAdminUsersRoute: ApiAdminUsersRouteWithChildren,
   ApiAuthProfileRoute: ApiAuthProfileRoute,
   ApiNewsletterCronRoute: ApiNewsletterCronRoute,

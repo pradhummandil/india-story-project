@@ -1,19 +1,21 @@
 import { createServerFn } from "@tanstack/react-start";
 import { storyService } from "../services/story-service.server";
-import { categoryService } from "../services/category-service.server";
+import { themeService } from "../services/theme-service.server";
 
 export const getInitialStoriesAndCategories = createServerFn({ method: "GET" }).handler(
   async () => {
     try {
       const storiesResult = await storyService.getPublishedStories({ pageSize: 1000 });
-      const categoriesResult = await categoryService.getPublishedCategoryNames();
+      const themesResult = await themeService.getAllThemeNames();
       return {
         stories: storiesResult.stories,
-        categories: categoriesResult,
+        themes: themesResult,
+        // backward compat alias
+        categories: themesResult,
       };
     } catch (err) {
       console.error("Failed to load initial stories in server function:", err);
-      return { stories: [], categories: ["All", "कहानी"] };
+      return { stories: [], themes: ["All", "Heritage"], categories: ["All", "Heritage"] };
     }
   },
 );

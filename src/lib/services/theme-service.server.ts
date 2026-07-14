@@ -30,6 +30,11 @@ export class ThemeService {
   async deleteTheme(id: string) {
     return this.themes.delete(id);
   }
+
+  async getAllThemeNames(): Promise<string[]> {
+    const allThemes = await this.themes.listAll();
+    return ["All", ...allThemes.map((t: { name: string }) => t.name)];
+  }
 }
 
 export const themeService = new ThemeService();

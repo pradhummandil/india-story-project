@@ -46,7 +46,7 @@ function MiniStoryCard({ story }: { story: Story }) {
       <div className="flex flex-col justify-between py-1 min-w-0 flex-1">
         <div>
           <span className="text-[9px] uppercase tracking-widest text-gold font-sans font-bold">
-            {story.category}
+            {Array.isArray(story.themes) && story.themes.length > 0 ? story.themes[0] : ""}
           </span>
           <h4 className="font-display text-sm font-bold leading-tight line-clamp-2 mt-1 group-hover:text-primary transition-colors">
             {story.title}
@@ -350,7 +350,7 @@ export function StoryMap() {
                   </p>
 
                   <div className="flex items-center justify-between text-[9px] text-muted-foreground font-bold uppercase tracking-wider mb-3">
-                    <span>{active.stories[0]?.category}</span>
+                    <span>{Array.isArray(active.stories[0]?.themes) && active.stories[0].themes.length > 0 ? active.stories[0].themes[0] : ""}</span>
                     <span>{active.stories[0]?.readTime || "4 min read"}</span>
                   </div>
 

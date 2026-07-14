@@ -1,5 +1,5 @@
 import { StoryStatus } from "@prisma/client";
-import type { Category, State, Story, StoryImage, Author, Tag } from "@prisma/client";
+import type { State, Story, StoryImage, Author, Tag } from "@prisma/client";
 import { prisma } from "./prisma.server";
 
 export type StoryCardCompatible = {
