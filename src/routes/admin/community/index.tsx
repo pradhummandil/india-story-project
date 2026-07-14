@@ -115,6 +115,11 @@ export default function AdminCommunityPage() {
         setRejectNotesText("");
         setPreviewStory(null);
         void loadData();
+        try {
+          new BroadcastChannel("isp-stories-updates").postMessage("update");
+        } catch (bcErr) {
+          console.error("Broadcast failed:", bcErr);
+        }
       }
     } catch (e) {
       console.error(e);
@@ -135,6 +140,11 @@ export default function AdminCommunityPage() {
 
       if (res.ok) {
         void loadData();
+        try {
+          new BroadcastChannel("isp-stories-updates").postMessage("update");
+        } catch (bcErr) {
+          console.error("Broadcast failed:", bcErr);
+        }
       }
     } catch (e) {
       console.error(e);
@@ -152,6 +162,11 @@ export default function AdminCommunityPage() {
 
       if (res.ok) {
         void loadData();
+        try {
+          new BroadcastChannel("isp-stories-updates").postMessage("update");
+        } catch (bcErr) {
+          console.error("Broadcast failed:", bcErr);
+        }
       }
     } catch (e) {
       console.error(e);
@@ -177,6 +192,11 @@ export default function AdminCommunityPage() {
       );
       setSelectedIds([]);
       void loadData();
+      try {
+        new BroadcastChannel("isp-stories-updates").postMessage("update");
+      } catch (bcErr) {
+        console.error("Broadcast failed:", bcErr);
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -204,6 +224,11 @@ export default function AdminCommunityPage() {
       );
       setSelectedIds([]);
       void loadData();
+      try {
+        new BroadcastChannel("isp-stories-updates").postMessage("update");
+      } catch (bcErr) {
+        console.error("Broadcast failed:", bcErr);
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -226,6 +251,11 @@ export default function AdminCommunityPage() {
       );
       setSelectedIds([]);
       void loadData();
+      try {
+        new BroadcastChannel("isp-stories-updates").postMessage("update");
+      } catch (bcErr) {
+        console.error("Broadcast failed:", bcErr);
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -610,6 +640,26 @@ export default function AdminCommunityPage() {
                   <hr className="border-white/10" />
                   <strong>Story Body:</strong>
                   <p>{previewStory.content}</p>
+                  {previewStory.galleryUrls && (() => {
+                    try {
+                      const urls = JSON.parse(previewStory.galleryUrls);
+                      if (Array.isArray(urls) && urls.length > 0) {
+                        return (
+                          <div className="space-y-2 mt-4">
+                            <strong className="text-white">Gallery Images:</strong>
+                            <div className="grid grid-cols-3 gap-2">
+                              {urls.map((url: string, index: number) => (
+                                <img key={index} src={url} className="w-full h-24 object-cover rounded border border-white/10" alt="" />
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      }
+                    } catch (e) {
+                      console.error("Failed to parse previewStory.galleryUrls", e);
+                    }
+                    return null;
+                  })()}
                 </div>
 
                 <div className="p-6 border-t border-white/10 flex justify-end gap-2">

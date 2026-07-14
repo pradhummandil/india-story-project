@@ -33,8 +33,13 @@ export const Route = createFileRoute("/api/admin/submissions/action")({
             return json({ error: "submissionId and action are required" }, { status: 400 });
           }
 
-          const VALID_ACTIONS = ["UnderReview", "FactChecking", "Approved", "Published", "ChangesRequested", "Rejected"];
-          if (!VALID_ACTIONS.includes(action)) {
+          let finalAction = action;
+          if (action === "Approve" || action === "Approved") {
+            finalAction = "Published";
+          }
+
+          const VALID_ACTIONS = ["UnderReview", "FactChecking", "Published", "ChangesRequested", "Rejected"];
+          if (!VALID_ACTIONS.includes(finalAction)) {
             return json({ error: `Action must be one of: ${VALID_ACTIONS.join(", ")}` }, { status: 400 });
           }
 
@@ -53,13 +58,13 @@ export const Route = createFileRoute("/api/admin/submissions/action")({
           const updatedSubmission = await prisma.submittedStory.update({
             where: { id: submissionId },
             data: {
-              status: action as any,
+              status: finalAction as any,
               adminNotes: adminNotes || null,
             },
           });
 
           // If published, create the published Story record
-          if (action === "Published") {
+          if (finalAction === "Published") {
             // 1. Find or create Category
             const catName = submission.categoryName || "Heritage";
             let category = await prisma.category.findFirst({
@@ -160,6 +165,28 @@ export const Route = createFileRoute("/api/admin/submissions/action")({
                   heroImage: true,
                 },
               });
+            }
+
+            // 7.2 Create non-hero StoryImages for gallery URLs
+            if (submission.galleryUrls) {
+              try {
+                const galleryUrls: string[] = JSON.parse(submission.galleryUrls);
+                if (Array.isArray(galleryUrls)) {
+                  for (let i = 0; i < galleryUrls.length; i++) {
+                    await prisma.storyImage.create({
+                      data: {
+                        storyId: story.id,
+                        imageUrl: galleryUrls[i],
+                        caption: `Gallery Image ${i + 1}`,
+                        sortOrder: i + 1,
+                        heroImage: false,
+                      },
+                    });
+                  }
+                }
+              } catch (parseErr) {
+                console.error("[action] failed to parse galleryUrls:", parseErr);
+              }
             }
 
             // Award +50 XP for publication to the submitting contributor!

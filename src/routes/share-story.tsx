@@ -234,6 +234,12 @@ function ShareStoryPage() {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [coverUploadError, setCoverUploadError] = useState<string | null>(null);
+  const [coverUploadSuccess, setCoverUploadSuccess] = useState<boolean>(false);
+  const [galleryUploadError, setGalleryUploadError] = useState<string | null>(null);
+  const [galleryUploadSuccess, setGalleryUploadSuccess] = useState<boolean>(false);
+  const [videoUploadError, setVideoUploadError] = useState<string | null>(null);
+  const [videoUploadSuccess, setVideoUploadSuccess] = useState<boolean>(false);
 
   // Pre-populate user details
   useEffect(() => {
@@ -277,10 +283,30 @@ function ShareStoryPage() {
     }
   };
 
-  const uploadFile = async (file: File): Promise<string | null> => {
-    if (!session) return null;
+  const validateImageFile = (file: File): string | null => {
+    const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/avif"];
+    const fileExtension = file.name.split(".").pop()?.toLowerCase();
+    const validExtensions = ["jpg", "jpeg", "png", "webp", "avif"];
+    
+    if (!validTypes.includes(file.type) && !validExtensions.includes(fileExtension || "")) {
+      return `Invalid file type for "${file.name}". Allowed types are: JPG, JPEG, PNG, WEBP, AVIF.`;
+    }
+    
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      return `File "${file.name}" exceeds the maximum size limit of 10MB (actual: ${(file.size / (1024 * 1024)).toFixed(2)}MB).`;
+    }
+    
+    return null;
+  };
+
+  const uploadFile = async (file: File): Promise<string> => {
+    if (!session) throw new Error("No session found. Please sign in.");
+    
     const formData = new FormData();
     formData.append("files", file);
+
+    console.log(`[Upload Client] Requesting upload for file: ${file.name}, type: ${file.type}, size: ${file.size} bytes`);
 
     const res = await fetch("/api/admin/media", {
       method: "POST",
@@ -290,20 +316,65 @@ function ShareStoryPage() {
       body: formData,
     });
 
-    if (!res.ok) throw new Error("Upload failed");
+    if (!res.ok) {
+      let errMsg = `Upload failed with status code ${res.status}`;
+      try {
+        const errData = await res.json();
+        errMsg = errData.error || errMsg;
+      } catch (_) {}
+      throw new Error(errMsg);
+    }
+
     const data = await res.json();
-    return data.files?.[0]?.url || null;
+    const uploadedUrl = data.files?.[0]?.url;
+    if (!uploadedUrl) {
+      throw new Error("Server succeeded but did not return any media URL.");
+    }
+
+    return uploadedUrl;
+  };
+
+  const uploadFileWithRetry = async (file: File): Promise<string> => {
+    let attempts = 0;
+    while (attempts < 2) {
+      try {
+        const url = await uploadFile(file);
+        return url;
+      } catch (err: any) {
+        attempts++;
+        if (attempts >= 2) {
+          throw err;
+        }
+        console.warn(`[Upload Client] Attempt 1 failed for ${file.name}. Retrying once. Error:`, err);
+      }
+    }
+    throw new Error("Upload failed after retry");
   };
 
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      alert(validationError);
+      return;
+    }
+    
     setUploadingCover(true);
+    setCoverUploadError(null);
+    setCoverUploadSuccess(false);
+    
     try {
-      const url = await uploadFile(file);
-      if (url) setCoverImage(url);
-    } catch {
-      alert("Failed to upload cover image.");
+      console.log(`[Upload Cover] Uploading: ${file.name}`);
+      const url = await uploadFileWithRetry(file);
+      setCoverImage(url);
+      setCoverUploadSuccess(true);
+      console.log(`[Upload Cover] Successfully uploaded: ${url}`);
+    } catch (err: any) {
+      console.error(`[Upload Cover] Failed to upload ${file.name}:`, err);
+      setCoverUploadError(err.message || "Failed to upload cover image.");
+      alert(`Cover upload failed: ${err.message}`);
     } finally {
       setUploadingCover(false);
     }
@@ -314,16 +385,32 @@ function ShareStoryPage() {
   ) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-    setUploadingGallery(true);
-    try {
-      const urls: string[] = [];
-      for (let i = 0; i < files.length; i++) {
-        const url = await uploadFile(files[i]);
-        if (url) urls.push(url);
+    
+    const fileList = Array.from(files);
+    for (const file of fileList) {
+      const validationError = validateImageFile(file);
+      if (validationError) {
+        alert(validationError);
+        return;
       }
+    }
+    
+    setUploadingGallery(true);
+    setGalleryUploadError(null);
+    setGalleryUploadSuccess(false);
+    
+    try {
+      console.log(`[Upload Gallery] Uploading ${fileList.length} files in parallel`);
+      const uploadPromises = fileList.map((file) => uploadFileWithRetry(file));
+      const urls = await Promise.all(uploadPromises);
+      
       setGalleryImages((prev) => [...prev, ...urls]);
-    } catch {
-      alert("Failed to upload gallery images.");
+      setGalleryUploadSuccess(true);
+      console.log(`[Upload Gallery] Successfully uploaded:`, urls);
+    } catch (err: any) {
+      console.error(`[Upload Gallery] Failed to upload gallery:`, err);
+      setGalleryUploadError(err.message || "Failed to upload gallery images.");
+      alert(`Gallery upload failed: ${err.message}`);
     } finally {
       setUploadingGallery(false);
     }
@@ -332,12 +419,27 @@ function ShareStoryPage() {
   const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    
+    const maxSize = 20 * 1024 * 1024; // 20MB for video
+    if (file.size > maxSize) {
+      alert("Video file size cannot exceed 20MB.");
+      return;
+    }
+    
     setUploadingVideo(true);
+    setVideoUploadError(null);
+    setVideoUploadSuccess(false);
+    
     try {
-      const url = await uploadFile(file);
-      if (url) setVideoUrl(url);
-    } catch {
-      alert("Failed to upload video file.");
+      console.log(`[Upload Video] Uploading: ${file.name}`);
+      const url = await uploadFileWithRetry(file);
+      setVideoUrl(url);
+      setVideoUploadSuccess(true);
+      console.log(`[Upload Video] Successfully uploaded: ${url}`);
+    } catch (err: any) {
+      console.error(`[Upload Video] Failed to upload ${file.name}:`, err);
+      setVideoUploadError(err.message || "Failed to upload video file.");
+      alert(`Video upload failed: ${err.message}`);
     } finally {
       setUploadingVideo(false);
     }
@@ -346,6 +448,10 @@ function ShareStoryPage() {
   const handleSubmit = async (e: React.FormEvent | null, isDraft = false) => {
     if (e) e.preventDefault();
     if (!session) return;
+    if (uploadingCover || uploadingGallery || uploadingVideo) {
+      setErrorMessage("Please wait for all image and video uploads to complete before submitting.");
+      return;
+    }
 
     if (!title.trim()) {
       setErrorMessage("Please fill in Title.");
@@ -1250,6 +1356,15 @@ function ShareStoryPage() {
                                   </label>
                                 )}
                               </div>
+                              {coverUploadError && (
+                                <p className="text-[10px] text-red-500 font-sans mt-1 font-semibold">{coverUploadError}</p>
+                              )}
+                              {coverImage && coverUploadSuccess && (
+                                <p className="text-[10px] text-emerald-400 font-sans mt-1 flex items-center gap-1">
+                                  <span className="size-1.5 rounded-full bg-emerald-400 inline-block" />
+                                  ✓ Cover image ready
+                                </p>
+                              )}
                             </div>
 
                             <div className="space-y-2">
@@ -1279,6 +1394,15 @@ function ShareStoryPage() {
                                   </div>
                                 )}
                               </div>
+                              {galleryUploadError && (
+                                <p className="text-[10px] text-red-500 font-sans mt-1 font-semibold">{galleryUploadError}</p>
+                              )}
+                              {galleryImages.length > 0 && galleryUploadSuccess && (
+                                <p className="text-[10px] text-emerald-400 font-sans mt-1 flex items-center gap-1">
+                                  <span className="size-1.5 rounded-full bg-emerald-400 inline-block" />
+                                  ✓ Gallery images ready
+                                </p>
+                              )}
                             </div>
                           </div>
 
