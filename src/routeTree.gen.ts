@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as StoriesRouteImport } from './routes/stories'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as ShareStoryRouteImport } from './routes/share-story'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LoginRouteImport } from './routes/login'
@@ -48,7 +49,9 @@ import { Route as ApiCategoriesRouteImport } from './routes/api/categories'
 import { Route as ApiBookmarksRouteImport } from './routes/api/bookmarks'
 import { Route as ApiAuthorsRouteImport } from './routes/api/authors'
 import { Route as AdminSlideshowRouteImport } from './routes/admin/slideshow'
+import { Route as AdminNewsletterRouteImport } from './routes/admin/newsletter'
 import { Route as AdminLeaderboardRouteImport } from './routes/admin/leaderboard'
+import { Route as AdminContactRouteImport } from './routes/admin/contact'
 import { Route as AdminCommentsRouteImport } from './routes/admin/comments'
 import { Route as AdminAchievementsRouteImport } from './routes/admin/achievements'
 import { Route as AdminUsersIndexRouteImport } from './routes/admin/users/index'
@@ -112,6 +115,11 @@ const StoriesRoute = StoriesRouteImport.update({
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShareStoryRoute = ShareStoryRouteImport.update({
+  id: '/share-story',
+  path: '/share-story',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -294,9 +302,19 @@ const AdminSlideshowRoute = AdminSlideshowRouteImport.update({
   path: '/slideshow',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminNewsletterRoute = AdminNewsletterRouteImport.update({
+  id: '/newsletter',
+  path: '/newsletter',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminLeaderboardRoute = AdminLeaderboardRouteImport.update({
   id: '/leaderboard',
   path: '/leaderboard',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminContactRoute = AdminContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminCommentsRoute = AdminCommentsRouteImport.update({
@@ -561,12 +579,15 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/share-story': typeof ShareStoryRoute
   '/signup': typeof SignupRoute
   '/stories': typeof StoriesRouteWithChildren
   '/verify-email': typeof VerifyEmailRoute
   '/admin/achievements': typeof AdminAchievementsRoute
   '/admin/comments': typeof AdminCommentsRoute
+  '/admin/contact': typeof AdminContactRoute
   '/admin/leaderboard': typeof AdminLeaderboardRoute
+  '/admin/newsletter': typeof AdminNewsletterRoute
   '/admin/slideshow': typeof AdminSlideshowRoute
   '/api/authors': typeof ApiAuthorsRoute
   '/api/bookmarks': typeof ApiBookmarksRoute
@@ -651,11 +672,14 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/share-story': typeof ShareStoryRoute
   '/signup': typeof SignupRoute
   '/verify-email': typeof VerifyEmailRoute
   '/admin/achievements': typeof AdminAchievementsRoute
   '/admin/comments': typeof AdminCommentsRoute
+  '/admin/contact': typeof AdminContactRoute
   '/admin/leaderboard': typeof AdminLeaderboardRoute
+  '/admin/newsletter': typeof AdminNewsletterRoute
   '/admin/slideshow': typeof AdminSlideshowRoute
   '/api/authors': typeof ApiAuthorsRoute
   '/api/bookmarks': typeof ApiBookmarksRoute
@@ -742,12 +766,15 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/share-story': typeof ShareStoryRoute
   '/signup': typeof SignupRoute
   '/stories': typeof StoriesRouteWithChildren
   '/verify-email': typeof VerifyEmailRoute
   '/admin/achievements': typeof AdminAchievementsRoute
   '/admin/comments': typeof AdminCommentsRoute
+  '/admin/contact': typeof AdminContactRoute
   '/admin/leaderboard': typeof AdminLeaderboardRoute
+  '/admin/newsletter': typeof AdminNewsletterRoute
   '/admin/slideshow': typeof AdminSlideshowRoute
   '/api/authors': typeof ApiAuthorsRoute
   '/api/bookmarks': typeof ApiBookmarksRoute
@@ -835,12 +862,15 @@ export interface FileRouteTypes {
     | '/login'
     | '/profile'
     | '/reset-password'
+    | '/share-story'
     | '/signup'
     | '/stories'
     | '/verify-email'
     | '/admin/achievements'
     | '/admin/comments'
+    | '/admin/contact'
     | '/admin/leaderboard'
+    | '/admin/newsletter'
     | '/admin/slideshow'
     | '/api/authors'
     | '/api/bookmarks'
@@ -925,11 +955,14 @@ export interface FileRouteTypes {
     | '/login'
     | '/profile'
     | '/reset-password'
+    | '/share-story'
     | '/signup'
     | '/verify-email'
     | '/admin/achievements'
     | '/admin/comments'
+    | '/admin/contact'
     | '/admin/leaderboard'
+    | '/admin/newsletter'
     | '/admin/slideshow'
     | '/api/authors'
     | '/api/bookmarks'
@@ -1015,12 +1048,15 @@ export interface FileRouteTypes {
     | '/login'
     | '/profile'
     | '/reset-password'
+    | '/share-story'
     | '/signup'
     | '/stories'
     | '/verify-email'
     | '/admin/achievements'
     | '/admin/comments'
+    | '/admin/contact'
     | '/admin/leaderboard'
+    | '/admin/newsletter'
     | '/admin/slideshow'
     | '/api/authors'
     | '/api/bookmarks'
@@ -1107,6 +1143,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ShareStoryRoute: typeof ShareStoryRoute
   SignupRoute: typeof SignupRoute
   StoriesRoute: typeof StoriesRouteWithChildren
   VerifyEmailRoute: typeof VerifyEmailRoute
@@ -1171,6 +1208,13 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/share-story': {
+      id: '/share-story'
+      path: '/share-story'
+      fullPath: '/share-story'
+      preLoaderRoute: typeof ShareStoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -1425,11 +1469,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSlideshowRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/newsletter': {
+      id: '/admin/newsletter'
+      path: '/newsletter'
+      fullPath: '/admin/newsletter'
+      preLoaderRoute: typeof AdminNewsletterRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/leaderboard': {
       id: '/admin/leaderboard'
       path: '/leaderboard'
       fullPath: '/admin/leaderboard'
       preLoaderRoute: typeof AdminLeaderboardRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/contact': {
+      id: '/admin/contact'
+      path: '/contact'
+      fullPath: '/admin/contact'
+      preLoaderRoute: typeof AdminContactRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/comments': {
@@ -1781,7 +1839,9 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminAchievementsRoute: typeof AdminAchievementsRoute
   AdminCommentsRoute: typeof AdminCommentsRoute
+  AdminContactRoute: typeof AdminContactRoute
   AdminLeaderboardRoute: typeof AdminLeaderboardRoute
+  AdminNewsletterRoute: typeof AdminNewsletterRoute
   AdminSlideshowRoute: typeof AdminSlideshowRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminStoriesNewRoute: typeof AdminStoriesNewRoute
@@ -1800,7 +1860,9 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAchievementsRoute: AdminAchievementsRoute,
   AdminCommentsRoute: AdminCommentsRoute,
+  AdminContactRoute: AdminContactRoute,
   AdminLeaderboardRoute: AdminLeaderboardRoute,
+  AdminNewsletterRoute: AdminNewsletterRoute,
   AdminSlideshowRoute: AdminSlideshowRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminStoriesNewRoute: AdminStoriesNewRoute,
@@ -1968,6 +2030,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ShareStoryRoute: ShareStoryRoute,
   SignupRoute: SignupRoute,
   StoriesRoute: StoriesRouteWithChildren,
   VerifyEmailRoute: VerifyEmailRoute,

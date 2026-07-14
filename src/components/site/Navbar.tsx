@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
-import { Menu, X, Compass, User, LogOut, Shield } from "lucide-react";
+import { Menu, X, Compass, User, LogOut, Shield, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LanguageToggle } from "./LanguageToggle";
 import { useI18nStore, getNavText } from "@/lib/i18n";
@@ -21,7 +21,8 @@ export function Navbar() {
   const links = [
     { to: "/", label: navText.home },
     { to: "/stories", label: navText.stories },
-    { to: "/join", label: navText.join },
+    { to: "/share-story", label: lang === "hi" ? "कहानी साझा करें" : "Share Story" },
+    { to: "/explore", label: lang === "hi" ? "अन्वेषण" : "Explore" },
     { to: "/about", label: navText.about },
     { to: "/contact", label: navText.contact },
   ];
@@ -58,7 +59,7 @@ export function Navbar() {
       }`}
     >
       <div className="container mx-auto px-6 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-3 group">
+        <Link to="/" preload="intent" className="flex items-center gap-3 group">
           <div className="relative size-9 rounded-full border border-[#C8A96A]/40 overflow-hidden p-0.5 shadow-sm shadow-[#C8A96A]/10 transition-all duration-300 group-hover:scale-105 group-hover:border-[#C8A96A]/60 flex items-center justify-center">
             <img
               src="https://indiastoryproject.com/wp-content/uploads/2022/04/Logo-ISP.png"
@@ -89,6 +90,7 @@ export function Navbar() {
               <Link
                 key={l.to}
                 to={l.to}
+                preload="intent"
                 className={`relative py-1.5 transition-colors duration-300 ${
                   active
                     ? isTransparent
@@ -157,6 +159,7 @@ export function Navbar() {
 
                     <Link
                       to="/profile"
+                      preload="intent"
                       onClick={() => setUserMenuOpen(false)}
                       className="flex items-center gap-2 px-4 py-2 text-xs font-sans text-white/70 hover:text-white hover:bg-white/5 transition-colors"
                     >
@@ -167,6 +170,7 @@ export function Navbar() {
                     {isAdmin && (
                       <Link
                         to="/admin"
+                        preload="intent"
                         onClick={() => setUserMenuOpen(false)}
                         className="flex items-center gap-2 px-4 py-2 text-xs font-sans text-white/70 hover:text-white hover:bg-white/5 transition-colors"
                       >
@@ -197,17 +201,12 @@ export function Navbar() {
             </Link>
           )}
 
-          <Link to="/explore" className="inline-flex">
+          <Link to="/share-story" preload="intent" className="inline-flex">
             <Button
-              variant="outline"
-              className={`font-sans uppercase tracking-[0.15em] text-[10px] font-semibold h-9 px-5 rounded-full transition-all duration-300 hover:-translate-y-0.5 flex items-center ${
-                isTransparent
-                  ? "bg-white/10 text-white hover:text-white border border-white/20 hover:border-white/50 hover:bg-white/20"
-                  : "bg-transparent text-foreground hover:text-primary border border-border/80 hover:border-primary/40 hover:bg-primary/5"
-              }`}
+              className="bg-red-700 hover:bg-red-700 text-white font-sans uppercase tracking-[0.15em] text-[10px] font-bold h-9 px-5 rounded-full shadow-glow transition-all duration-300 hover:-translate-y-0.5 flex items-center"
             >
-              <Compass className="size-4 mr-2" />
-              {navText.exploreIndia}
+              <Sparkles className="size-3.5 mr-2 animate-pulse" />
+              {lang === "hi" ? "अपनी कहानी साझा करें" : "Share Your Story"}
             </Button>
           </Link>
         </div>
@@ -311,10 +310,10 @@ export function Navbar() {
                 </Link>
               )}
 
-              <Link to="/explore" onClick={() => setOpen(false)} className="w-full mt-2">
+              <Link to="/share-story" onClick={() => setOpen(false)} className="w-full mt-2">
                 <Button className="w-full bg-primary hover:bg-primary/95 text-primary-foreground rounded-full uppercase tracking-widest text-[10px] h-12 font-sans font-bold shadow-sm shadow-primary/10 hover:shadow-md hover:translate-y-[-1px] transition-all duration-300">
-                  <Compass className="size-4 mr-2" />
-                  {navText.exploreIndia}
+                  <Sparkles className="size-4 mr-2" />
+                  {lang === "hi" ? "अपनी कहानी साझा करें" : "Share Your Story"}
                 </Button>
               </Link>
             </div>

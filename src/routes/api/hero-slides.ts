@@ -9,41 +9,69 @@ export const Route = createFileRoute("/api/hero-slides")({
     handlers: {
       GET: async () => {
         try {
+          const slideSelect = {
+            id: true,
+            slug: true,
+            title: true,
+            excerpt: true,
+            titleHi: true,
+            excerptHi: true,
+            readingTime: true,
+            category: { select: { name: true } },
+            state: { select: { name: true } },
+            author: { select: { name: true } },
+            images: {
+              orderBy: [{ heroImage: "desc" as const }, { sortOrder: "asc" as const }],
+              select: { imageUrl: true, heroImage: true },
+              take: 1,
+            },
+          };
+
+          // Fetch Hero of the Day
+          const heroStory = await prisma.story.findFirst({
+            where: {
+              heroOfTheDay: true,
+              status: "Published",
+              deleted: false,
+            },
+            select: slideSelect,
+          });
+
           // Fetch stories marked for slideshow
           const slideshowStories = await prisma.story.findMany({
             where: {
               homepageSlideshow: true,
               status: "Published",
               deleted: false,
+              heroOfTheDay: false,
             },
             orderBy: { slideshowOrder: "asc" },
-            include: {
-              author: true,
-              category: true,
-              state: true,
-              images: true,
-            },
+            select: slideSelect,
           });
 
-          const activeStories = slideshowStories.length > 0
-            ? slideshowStories
-            : await prisma.story.findMany({
-                where: { status: "Published", deleted: false },
-                orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
-                take: 5,
-                include: {
-                  author: true,
-                  category: true,
-                  state: true,
-                  images: true,
-                },
-              });
+          const activeStories = [];
+          if (heroStory) {
+            activeStories.push(heroStory);
+          }
+          activeStories.push(...slideshowStories);
 
-          const slides = activeStories.map((s) => {
-            const heroImage =
-              s.images?.find((img) => img.heroImage)?.imageUrl ??
-              (s.images?.[0]?.imageUrl) ??
-              FALLBACK_IMAGE;
+          if (activeStories.length === 0) {
+            const fallbackStories = await prisma.story.findMany({
+              where: {
+                status: "Published",
+                deleted: false,
+                featured: false,
+                heroOfTheDay: false,
+              },
+              orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+              take: 5,
+              select: slideSelect,
+            });
+            activeStories.push(...fallbackStories);
+          }
+
+          const slides = activeStories.map((s: any) => {
+            const heroImage = s.images?.[0]?.imageUrl ?? FALLBACK_IMAGE;
             return {
               id: s.id,
               storyId: s.id,

@@ -85,7 +85,17 @@ export const Route = createFileRoute("/api/admin/stories")({
         if (query) {
           where.OR = [
             { title: { contains: query, mode: "insensitive" } },
+            { titleHi: { contains: query, mode: "insensitive" } },
+            { slug: { contains: query, mode: "insensitive" } },
             { excerpt: { contains: query, mode: "insensitive" } },
+            { excerptHi: { contains: query, mode: "insensitive" } },
+            { content: { contains: query, mode: "insensitive" } },
+            { contentHi: { contains: query, mode: "insensitive" } },
+            { author: { name: { contains: query, mode: "insensitive" } } },
+            { category: { name: { contains: query, mode: "insensitive" } } },
+            { theme: { name: { contains: query, mode: "insensitive" } } },
+            { state: { name: { contains: query, mode: "insensitive" } } },
+            { tags: { some: { tag: { name: { contains: query, mode: "insensitive" } } } } }
           ];
         }
 

@@ -40,7 +40,7 @@ export const Route = createFileRoute("/api/newsletter/verify")({
           return new Response("", {
             status: 302,
             headers: {
-              Location: "/join?verified=true",
+              Location: "/share-story?verified=true",
             },
           });
         } catch (error: any) {

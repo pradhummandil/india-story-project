@@ -27,22 +27,49 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const PAGE_SIZE = 20;
 
   useEffect(() => {
     if (initialized && !user) void navigate({ to: "/login" });
   }, [user, initialized, navigate]);
+
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  const loadUsers = () => {
     if (!user || !session) return;
-    fetch("/api/admin/users", {
+    setLoading(true);
+    const params = new URLSearchParams({
+      page: String(page),
+      pageSize: String(PAGE_SIZE),
+      ...(debouncedQuery ? { query: debouncedQuery } : {}),
+    });
+
+    fetch(`/api/admin/users?${params}`, {
       headers: {
         Authorization: `Bearer ${session.access_token}`,
       },
     })
       .then((r) => r.json())
-      .then((d: any) => setUsers(d.users ?? []))
+      .then((d: any) => {
+        setUsers(d.users ?? []);
+        setTotal(d.total ?? 0);
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [user, session]);
+  };
+
+  useEffect(() => {
+    loadUsers();
+  }, [user, session, page, debouncedQuery]);
 
   const handleRoleChange = async (id: string, role: RoleType) => {
     if (!session) return;
@@ -69,15 +96,8 @@ export default function AdminUsersPage() {
     setUsers((p) => p.map((u) => (u.id === id ? { ...u, active: !active } : u)));
   };
 
-  const filtered = users.filter(
-    (u) =>
-      !query ||
-      u.email.includes(query) ||
-      (u.name ?? "").toLowerCase().includes(query.toLowerCase()),
-  );
-
   return (
-    <AdminLayout title="Users" subtitle={`${users.length} registered users`}>
+    <AdminLayout title="Users" subtitle={`${total} registered users`}>
       <div className="max-w-5xl">
         <div className="mb-6">
           <div className="relative max-w-sm">
@@ -116,7 +136,7 @@ export default function AdminUsersPage() {
                     ))}
                   </tr>
                 ))
-              ) : filtered.length === 0 ? (
+              ) : users.length === 0 ? (
                 <tr>
                   <td
                     colSpan={4}
@@ -126,7 +146,7 @@ export default function AdminUsersPage() {
                   </td>
                 </tr>
               ) : (
-                filtered.map((u) => (
+                users.map((u) => (
                   <tr key={u.id} className="hover:bg-white/3 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
@@ -173,6 +193,34 @@ export default function AdminUsersPage() {
               )}
             </tbody>
           </table>
+
+          {/* Pagination Footer */}
+          {total > PAGE_SIZE && (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-white/10 font-sans text-xs">
+              <span className="text-white/30">
+                Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} of {total}
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="px-3 py-1 text-white/40 hover:text-white disabled:opacity-20 transition-colors"
+                >
+                  Prev
+                </button>
+                <span className="text-white/40">
+                  {page} / {Math.ceil(total / PAGE_SIZE)}
+                </span>
+                <button
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={page >= Math.ceil(total / PAGE_SIZE)}
+                  className="px-3 py-1 text-white/40 hover:text-white disabled:opacity-20 transition-colors"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </AdminLayout>

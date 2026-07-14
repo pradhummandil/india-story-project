@@ -1,6 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { json, authenticate } from "@/routes/api/-_utils";
+import { json, authenticate, checkRateLimit, getClientIp } from "@/routes/api/-_utils";
 import { prisma } from "@/lib/repositories/prisma.server";
+
+function sanitizeHtml(str: string): string {
+  if (typeof str !== "string") return str;
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;")
+    .replace(/\//g, "&#x2F;");
+}
 
 export const Route = createFileRoute("/api/comments")({
   server: {
@@ -112,6 +123,12 @@ export const Route = createFileRoute("/api/comments")({
         const user = await authenticate(request);
         if (!user) return json({ error: "Unauthorized" }, { status: 401 });
 
+        const ip = getClientIp(request);
+        const { allowed } = checkRateLimit(ip, 10, 60 * 1000); // 10 comments per minute limit
+        if (!allowed) {
+          return json({ error: "Too many comments. Please wait a minute before posting again." }, { status: 429 });
+        }
+
         try {
           const body = await request.json();
           const { storyId, content, parentId } = body;
@@ -137,7 +154,7 @@ export const Route = createFileRoute("/api/comments")({
             data: {
               storyId,
               userId: user.id,
-              content: content.trim(),
+              content: sanitizeHtml(content.trim()),
               parentId: parentId || null,
               status: "approved", // default to auto-approved in ISP
             },
@@ -220,7 +237,7 @@ export const Route = createFileRoute("/api/comments")({
           const updated = await prisma.comment.update({
             where: { id: commentId },
             data: {
-              content: content.trim(),
+              content: sanitizeHtml(content.trim()),
               edited: true,
             },
           });

@@ -89,6 +89,7 @@ function ProfilePage() {
   const navigate = useNavigate();
   const { user, session, signOut, loading, profile } = useAuthStore();
   const [activeTab, setActiveTab] = useState<Tab>("overview");
+  const [readingSubTab, setReadingSubTab] = useState("continue");
   const [stats, setStats] = useState<UserStats | null>(null);
   const [bookmarks, setBookmarks] = useState<any[]>([]);
   const [likes, setLikes] = useState<any[]>([]);
@@ -96,15 +97,25 @@ function ProfilePage() {
   const [progressList, setProgressList] = useState<any[]>([]);
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [statsLoading, setStatsLoading] = useState(true);
+
+  // Sub-counts
+  const [bookmarksCount, setBookmarksCount] = useState(0);
+  const [likesCount, setLikesCount] = useState(0);
+  const [commentsCount, setCommentsCount] = useState(0);
+  const [continueCount, setContinueCount] = useState(0);
+  const [historyCount, setHistoryCount] = useState(0);
+  const [submissionsCount, setSubmissionsCount] = useState(0);
+
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const hasInitializedForm = useRef(false);
 
   // Edit form state
   const [name, setName] = useState(user?.user_metadata?.name ?? "");
   const [bio, setBio] = useState(user?.user_metadata?.bio ?? "");
-  const [website, setWebsite] = useState("");
-  const [twitter, setTwitter] = useState("");
-  const [instagram, setInstagram] = useState("");
-  const [linkedin, setLinkedin] = useState("");
+  const [website, setWebsite] = useState(user?.user_metadata?.website ?? "");
+  const [twitter, setTwitter] = useState(user?.user_metadata?.twitter ?? "");
+  const [instagram, setInstagram] = useState(user?.user_metadata?.instagram ?? "");
+  const [linkedin, setLinkedin] = useState(user?.user_metadata?.linkedin ?? "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -119,23 +130,40 @@ function ProfilePage() {
     if (!user || !session) return;
     const token = session.access_token;
 
-    // Load stats
+    setStatsLoading(true);
+    // Load core stats & profile details
     fetch("/api/user-stats/me", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())
       .then((d) => {
-        if (d.userStat) {
-          setStats({
-            ...d.userStat,
-            role: d.role,
-          });
+        if (d.stats) {
+          setStats(d.stats);
         }
+        if (d.userProfile) {
+          if (!hasInitializedForm.current) {
+            setName(d.userProfile.name || "");
+            setBio(d.userProfile.bio || "");
+            setWebsite(d.userProfile.website || "");
+            setTwitter(d.userProfile.twitter || "");
+            setInstagram(d.userProfile.instagram || "");
+            setLinkedin(d.userProfile.linkedin || "");
+            hasInitializedForm.current = true;
+          }
+        }
+        // Cache tab counts
+        setBookmarksCount(d.bookmarksCount ?? 0);
+        setLikesCount(d.likesCount ?? 0);
+        setCommentsCount(d.commentsCount ?? 0);
+        setContinueCount(d.continueCount ?? 0);
+        setHistoryCount(d.historyCount ?? 0);
+        setSubmissionsCount(d.submissionsCount ?? 0);
+        
         setStatsLoading(false);
       })
       .catch(() => setStatsLoading(false));
 
-    // Load bookmarks
+    // Load recent bookmarks for overview tab
     fetch("/api/bookmarks", {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -144,47 +172,73 @@ function ProfilePage() {
         if (d.bookmarks) setBookmarks(d.bookmarks);
       })
       .catch(() => {});
-
-    // Load likes
-    fetch("/api/likes", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.likes) setLikes(d.likes);
-      })
-      .catch(() => {});
-
-    // Load comments
-    fetch("/api/comments", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.comments) setComments(d.comments);
-      })
-      .catch(() => {});
-
-    // Load reading progress
-    fetch("/api/reading-progress", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.progress) setProgressList(d.progress);
-      })
-      .catch(() => {});
-
-    // Load submissions
-    fetch("/api/submissions", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.submissions) setSubmissions(d.submissions);
-      })
-      .catch(() => {});
   }, [user, session]);
+
+  // Lazy load specific lists based on sub-tab activation
+  useEffect(() => {
+    if (!user || !session) return;
+    const token = session.access_token;
+
+    if (activeTab === "reading") {
+      if (readingSubTab === "bookmarks") {
+        fetch("/api/bookmarks", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+          .then((r) => r.json())
+          .then((d) => {
+            if (d.bookmarks) {
+              setBookmarks(d.bookmarks);
+              setBookmarksCount(d.bookmarks.length);
+            }
+          });
+      } else if (readingSubTab === "likes") {
+        fetch("/api/likes", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+          .then((r) => r.json())
+          .then((d) => {
+            if (d.likes) {
+              setLikes(d.likes);
+              setLikesCount(d.likes.length);
+            }
+          });
+      } else if (readingSubTab === "comments") {
+        fetch("/api/comments", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+          .then((r) => r.json())
+          .then((d) => {
+            if (d.comments) {
+              setComments(d.comments);
+              setCommentsCount(d.comments.length);
+            }
+          });
+      } else if (readingSubTab === "continue" || readingSubTab === "history") {
+        fetch("/api/reading-progress", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+          .then((r) => r.json())
+          .then((d) => {
+            if (d.progress) {
+              setProgressList(d.progress);
+              setContinueCount(d.progress.filter((p: any) => !p.completed && p.progressPercent > 0).length);
+              setHistoryCount(d.progress.length);
+            }
+          });
+      } else if (readingSubTab === "submissions") {
+        fetch("/api/submissions", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+          .then((r) => r.json())
+          .then((d) => {
+            if (d.submissions) {
+              setSubmissions(d.submissions);
+              setSubmissionsCount(d.submissions.length);
+            }
+          });
+      }
+    }
+  }, [activeTab, readingSubTab, user, session]);
 
   // Sync on tab change
   useEffect(() => {
@@ -239,6 +293,8 @@ function ProfilePage() {
     e.preventDefault();
     setSaving(true);
     setError(null);
+
+    // 1. Update Supabase auth user metadata
     const { error: updateError } = await supabase.auth.updateUser({
       data: { name, bio, website, twitter, instagram, linkedin },
     });
@@ -247,9 +303,31 @@ function ProfilePage() {
       setSaving(false);
       return;
     }
-    setSaved(true);
-    setSaving(false);
-    setTimeout(() => setSaved(false), 3000);
+
+    // 2. Sync changes with the database Profile and UserProfile tables
+    try {
+      if (session) {
+        const res = await fetch("/api/auth/profile", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ name, bio, website, twitter, instagram, linkedin }),
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Failed to sync profile changes with server.");
+        }
+      }
+      setSaved(true);
+      refetchData();
+    } catch (err: any) {
+      setError(err.message || "Failed to sync profile changes with database.");
+    } finally {
+      setSaving(false);
+      setTimeout(() => setSaved(false), 3000);
+    }
   };
 
   const handleSignOut = async () => {
@@ -567,21 +645,20 @@ function ProfilePage() {
                   {/* Sub-tabs Selector */}
                   <div className="flex gap-2 border-b border-border/30 pb-3 overflow-x-auto">
                     {[
-                      { id: "continue", label: "Continue", count: progressList.filter(p => !p.completed && p.progressPercent > 0).length },
-                      { id: "bookmarks", label: "Bookmarks", count: bookmarks.length },
-                      { id: "likes", label: "Likes", count: likes.length },
-                      { id: "history", label: "History", count: progressList.length },
-                      { id: "comments", label: "Comments", count: comments.length },
-                      { id: "submissions", label: "Submissions", count: submissions.length },
+                      { id: "continue", label: "Continue", count: continueCount },
+                      { id: "bookmarks", label: "Bookmarks", count: bookmarksCount },
+                      { id: "likes", label: "Likes", count: likesCount },
+                      { id: "history", label: "History", count: historyCount },
+                      { id: "comments", label: "Comments", count: commentsCount },
+                      { id: "submissions", label: "Submissions", count: submissionsCount },
                     ].map((sub) => {
-                      const isActive = (window as any).readingSubTab === sub.id || (!(window as any).readingSubTab && sub.id === "continue");
+                      const isActive = readingSubTab === sub.id;
                       return (
                         <button
                           key={sub.id}
                           type="button"
                           onClick={() => {
-                            (window as any).readingSubTab = sub.id;
-                            setActiveTab("reading"); // trigger rerender
+                            setReadingSubTab(sub.id);
                           }}
                           className={`px-3 py-1.5 rounded-full text-xs font-sans font-medium transition-all ${
                             isActive
@@ -597,7 +674,7 @@ function ProfilePage() {
 
                   {/* Sub-tab content */}
                   {(() => {
-                    const activeSub = (window as any).readingSubTab || "continue";
+                    const activeSub = readingSubTab;
 
                     // CONTINUE READING
                     if (activeSub === "continue") {

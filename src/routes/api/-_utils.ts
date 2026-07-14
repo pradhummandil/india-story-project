@@ -84,3 +84,32 @@ export function readPositiveInt(value: string | null, fallback: number, fieldNam
 export function invalidQueryResponse(message: string) {
   return json({ error: message }, { status: 400 });
 }
+
+// Simple in-memory IP rate limiter
+const ipRequestCounts = new Map<string, { count: number; resetAt: number }>();
+
+export function checkRateLimit(ip: string, limit = 60, windowMs = 60 * 1000): { allowed: boolean; remaining: number; resetAt: number } {
+  const now = Date.now();
+  const record = ipRequestCounts.get(ip);
+
+  if (!record || now > record.resetAt) {
+    const newRecord = { count: 1, resetAt: now + windowMs };
+    ipRequestCounts.set(ip, newRecord);
+    return { allowed: true, remaining: limit - 1, resetAt: newRecord.resetAt };
+  }
+
+  if (record.count >= limit) {
+    return { allowed: false, remaining: 0, resetAt: record.resetAt };
+  }
+
+  record.count += 1;
+  return { allowed: true, remaining: limit - record.count, resetAt: record.resetAt };
+}
+
+export function getClientIp(request: Request): string {
+  const xForwardedFor = request.headers.get("x-forwarded-for");
+  if (xForwardedFor) {
+    return xForwardedFor.split(",")[0].trim();
+  }
+  return "127.0.0.1";
+}

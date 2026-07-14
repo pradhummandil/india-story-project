@@ -12,6 +12,50 @@ type Message = {
   timestamp: Date;
 };
 
+function TypewriterText({ text, speed = 8 }: { text: string; speed?: number }) {
+  const [displayedText, setDisplayedText] = useState("");
+
+  useEffect(() => {
+    let index = 0;
+    const interval = setInterval(() => {
+      setDisplayedText((prev) => prev + text.charAt(index));
+      index++;
+      if (index >= text.length) {
+        clearInterval(interval);
+      }
+    }, speed);
+
+    return () => clearInterval(interval);
+  }, [text, speed]);
+
+  return (
+    <div className="space-y-1">
+      {displayedText.split("\n\n").map((para, pIdx) => {
+        let content: React.ReactNode = para;
+        if (para.includes("**") || para.includes("[")) {
+          const tokens = para.split(/(\*\*.*?\*\*|\[.*?\]\(.*?\))/g);
+          content = tokens.map((tok, tIdx) => {
+            if (tok.startsWith("**") && tok.endsWith("**")) {
+              return <strong key={tIdx} className="text-gold font-bold">{tok.slice(2, -2)}</strong>;
+            }
+            if (tok.startsWith("[") && tok.includes("](")) {
+              const label = tok.slice(1, tok.indexOf("]("));
+              const url = tok.slice(tok.indexOf("](") + 2, -1);
+              return (
+                <a key={tIdx} href={url} className="text-gold underline hover:text-primary transition-colors font-bold inline-flex items-center gap-0.5">
+                  {label}
+                </a>
+              );
+            }
+            return tok;
+          });
+        }
+        return <p key={pIdx}>{content}</p>;
+      })}
+    </div>
+  );
+}
+
 export function Chatbot() {
   const lang = useI18nStore((s) => s.lang);
   const [isOpen, setIsOpen] = useState(false);
@@ -19,6 +63,7 @@ export function Chatbot() {
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [latestBotMsgId, setLatestBotMsgId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const isHindi = lang === "hi";
@@ -78,6 +123,7 @@ export function Chatbot() {
           text: data.reply,
           timestamp: new Date(),
         };
+        setLatestBotMsgId(botMsg.id);
         setMessages((prev) => [...prev, botMsg]);
         if (data.suggestions && data.suggestions.length > 0) {
           setSuggestions(data.suggestions.slice(0, 3));
@@ -203,43 +249,63 @@ export function Chatbot() {
                           : "bg-primary text-white"
                       }`}
                     >
-                      {/* Render markdown format tags manually to avoid heavy markdown parsing libraries inside chat bubble */}
-                      <div className="space-y-1">
-                        {m.text.split("\n\n").map((para, pIdx) => {
-                          // Simple bold/link inline markdown formatter
-                          let content: React.ReactNode = para;
-                          if (para.includes("**") || para.includes("[")) {
-                            const tokens = para.split(/(\*\*.*?\*\*|\[.*?\]\(.*?\))/g);
-                            content = tokens.map((tok, tIdx) => {
-                              if (tok.startsWith("**") && tok.endsWith("**")) {
-                                return <strong key={tIdx} className="text-gold font-bold">{tok.slice(2, -2)}</strong>;
-                              }
-                              if (tok.startsWith("[") && tok.includes("](")) {
-                                const label = tok.slice(1, tok.indexOf("]("));
-                                const url = tok.slice(tok.indexOf("](") + 2, -1);
-                                return (
-                                  <a key={tIdx} href={url} className="text-gold underline hover:text-primary transition-colors font-bold inline-flex items-center gap-0.5">
-                                    {label}
-                                  </a>
-                                );
-                              }
-                              return tok;
-                            });
-                          }
-                          return <p key={pIdx}>{content}</p>;
-                        })}
-                      </div>
+                      {isBot && m.id === latestBotMsgId ? (
+                        <TypewriterText text={m.text} speed={6} />
+                      ) : (
+                        <div className="space-y-1">
+                          {m.text.split("\n\n").map((para, pIdx) => {
+                            // Simple bold/link inline markdown formatter
+                            let content: React.ReactNode = para;
+                            if (para.includes("**") || para.includes("[")) {
+                              const tokens = para.split(/(\*\*.*?\*\*|\[.*?\]\(.*?\))/g);
+                              content = tokens.map((tok, tIdx) => {
+                                if (tok.startsWith("**") && tok.endsWith("**")) {
+                                  return <strong key={tIdx} className="text-gold font-bold">{tok.slice(2, -2)}</strong>;
+                                }
+                                if (tok.startsWith("[") && tok.includes("](")) {
+                                  const label = tok.slice(1, tok.indexOf("]("));
+                                  const url = tok.slice(tok.indexOf("](") + 2, -1);
+                                  return (
+                                    <a key={tIdx} href={url} className="text-gold underline hover:text-primary transition-colors font-bold inline-flex items-center gap-0.5">
+                                      {label}
+                                    </a>
+                                  );
+                                }
+                                return tok;
+                              });
+                            }
+                            return <p key={pIdx}>{content}</p>;
+                          })}
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
               })}
               {loading && (
                 <div className="flex gap-2.5 justify-start">
-                  <div className="size-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 animate-spin">
-                    <Loader2 className="size-3.5 text-gold" />
+                  <div className="size-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                    <Sparkles className="size-3.5 text-gold animate-pulse" />
                   </div>
-                  <div className="bg-white/5 border border-white/5 text-white/40 rounded-sm px-3 py-2 text-[10px] font-sans italic flex items-center gap-1.5 animate-pulse">
-                    Typing...
+                  <div className="bg-white/5 border border-white/5 text-white/40 rounded-sm px-3 py-2 text-[10px] font-sans flex items-center gap-1">
+                    <span className="text-[10px] italic">Assistant is thinking</span>
+                    <div className="flex gap-1 ml-1 items-center h-2">
+                      <motion.span
+                        animate={{ y: [0, -3, 0] }}
+                        transition={{ repeat: Infinity, duration: 0.6, delay: 0 }}
+                        className="size-1 rounded-full bg-gold inline-block"
+                      />
+                      <motion.span
+                        animate={{ y: [0, -3, 0] }}
+                        transition={{ repeat: Infinity, duration: 0.6, delay: 0.15 }}
+                        className="size-1 rounded-full bg-gold inline-block"
+                      />
+                      <motion.span
+                        animate={{ y: [0, -3, 0] }}
+                        transition={{ repeat: Infinity, duration: 0.6, delay: 0.3 }}
+                        className="size-1 rounded-full bg-gold inline-block"
+                      />
+                    </div>
                   </div>
                 </div>
               )}

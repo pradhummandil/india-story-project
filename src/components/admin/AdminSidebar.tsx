@@ -16,6 +16,8 @@ import {
   MessageSquare,
   Trophy,
   Award,
+  Mail,
+  Layers,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/lib/auth-store";
@@ -23,6 +25,9 @@ import { useAuthStore } from "@/lib/auth-store";
 const NAV_ITEMS = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/stories", label: "Stories", icon: BookOpen },
+  { to: "/admin/slideshow", label: "Slideshow", icon: Layers },
+  { to: "/admin/contact", label: "Inbox", icon: Mail },
+  { to: "/admin/newsletter", label: "Newsletter", icon: Mail },
   { to: "/admin/community", label: "Community", icon: FolderOpen },
   { to: "/admin/comments", label: "Comments", icon: MessageSquare },
   { to: "/admin/leaderboard", label: "Leaderboard", icon: Trophy },

@@ -65,6 +65,7 @@ const storyCardSelect = {
   images: {
     orderBy: { sortOrder: "asc" as any },
     select: { id: true, imageUrl: true, caption: true, heroImage: true },
+    take: 1,
   },
 };
 

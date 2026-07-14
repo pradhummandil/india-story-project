@@ -111,7 +111,10 @@ export function StoryDetail({ story }: { story: Story }) {
   const [streakEarned, setStreakEarned] = useState(false);
   const [streakToast, setStreakToast] = useState(false);
 
-  const authorName = getStoryAuthor(story.slug);
+  const rawAuthor = story.authorName || getStoryAuthor(story.slug);
+  const authorName = (!rawAuthor || rawAuthor.toLowerCase().includes("unknown") || rawAuthor.trim() === "")
+    ? "Pradhum Mandil"
+    : rawAuthor;
   const dateStr = lang === "en" ? "India Dispatch" : "भारतीय प्रेषण";
 
   const loadComments = useCallback(async () => {
@@ -693,6 +696,28 @@ export function StoryDetail({ story }: { story: Story }) {
         />
       </div>
 
+      {/* Sticky Header with Title */}
+      <AnimatePresence>
+        {scrollProgress > 8 && !isZen && (
+          <motion.div
+            initial={{ y: -60, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -60, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed top-0 inset-x-0 z-[49] bg-background/95 backdrop-blur-md border-b border-border/80 h-14 flex items-center justify-between px-6 shadow-sm"
+          >
+            <span className="font-display font-bold text-sm truncate max-w-xl text-foreground">
+              {localizedStory.title}
+            </span>
+            <div className="flex items-center gap-4">
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-sans font-bold">
+                {Math.round(scrollProgress)}% read
+              </span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Fullscreen Zen mode controls */}
       {isZen && (
         <div className="fixed top-6 right-6 z-[99] flex items-center gap-3 bg-black/80 backdrop-blur border border-white/10 rounded-full px-4 py-2 shadow-lg">
@@ -809,6 +834,7 @@ export function StoryDetail({ story }: { story: Story }) {
             <div className="flex items-center gap-1 border border-border/50 rounded-full px-2 py-1 bg-black/25">
               <button onClick={() => setReadTheme("light")} className={`size-3.5 rounded-full bg-white border ${readTheme === "light" ? "border-primary" : "border-transparent"}`} title="Light Theme" />
               <button onClick={() => setReadTheme("sepia")} className={`size-3.5 rounded-full bg-[#f8f1e5] border ${readTheme === "sepia" ? "border-primary" : "border-transparent"}`} title="Sepia Theme" />
+              <button onClick={() => setReadTheme("dark")} className={`size-3.5 rounded-full bg-zinc-950 border ${readTheme === "dark" ? "border-primary" : "border-transparent"}`} title="Dark Theme" />
             </div>
 
             {/* Like */}

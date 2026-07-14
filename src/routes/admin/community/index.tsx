@@ -37,6 +37,16 @@ export default function AdminCommunityPage() {
   const [previewStory, setPreviewStory] = useState<any | null>(null);
   const [rejectNotesId, setRejectNotesId] = useState<string | null>(null);
   const [rejectNotesText, setRejectNotesText] = useState("");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("newest");
+  const [filterCategory, setFilterCategory] = useState("");
+  const [filterState, setFilterState] = useState("");
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
+
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [activeTab]);
 
   useEffect(() => {
     if (initialized && !user) void navigate({ to: "/login" });
@@ -148,6 +158,148 @@ export default function AdminCommunityPage() {
     }
   };
 
+  const handleBulkApprove = async () => {
+    if (!session || selectedIds.length === 0) return;
+    if (!confirm(`Are you sure you want to approve ${selectedIds.length} submissions?`)) return;
+    setBulkActionLoading(true);
+    try {
+      await Promise.all(
+        selectedIds.map((id) =>
+          fetch("/api/admin/submissions/action", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ submissionId: id, action: "Approve" }),
+          })
+        )
+      );
+      setSelectedIds([]);
+      void loadData();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkReject = async () => {
+    if (!session || selectedIds.length === 0) return;
+    const notes = prompt("Enter rejection reason for selected submissions:");
+    if (notes === null) return;
+    setBulkActionLoading(true);
+    try {
+      await Promise.all(
+        selectedIds.map((id) =>
+          fetch("/api/admin/submissions/action", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ submissionId: id, action: "Reject", adminNotes: notes }),
+          })
+        )
+      );
+      setSelectedIds([]);
+      void loadData();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!session || selectedIds.length === 0) return;
+    if (!confirm(`Are you sure you want to delete ${selectedIds.length} stories? This cannot be undone.`)) return;
+    setBulkActionLoading(true);
+    try {
+      await Promise.all(
+        selectedIds.map((id) =>
+          fetch(`/api/admin/stories/${id}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          })
+        )
+      );
+      setSelectedIds([]);
+      void loadData();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const processedSubmissions = submissions
+    .filter((s) => {
+      const matchSearch =
+        !searchQuery ||
+        s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.user?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.user?.email?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchCat = !filterCategory || s.categoryName === filterCategory;
+      const matchSt = !filterState || s.stateName === filterState;
+      return matchSearch && matchCat && matchSt;
+    })
+    .sort((a, b) => {
+      if (sortBy === "newest") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      if (sortBy === "oldest") return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      if (sortBy === "author") return (a.user?.name || "").localeCompare(b.user?.name || "");
+      if (sortBy === "title") return a.title.localeCompare(b.title);
+      return 0;
+    });
+
+  const processedStories = stories
+    .filter((s) => {
+      const matchSearch =
+        !searchQuery ||
+        s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.authorName?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchCat = !filterCategory || s.category === filterCategory;
+      const matchSt = !filterState || s.region === filterState;
+      return matchSearch && matchCat && matchSt;
+    })
+    .sort((a, b) => {
+      if (sortBy === "newest") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      if (sortBy === "oldest") return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      if (sortBy === "author") return (a.authorName || "").localeCompare(b.authorName || "");
+      if (sortBy === "title") return a.title.localeCompare(b.title);
+      return 0;
+    });
+
+  const categoryOptions = Array.from(
+    new Set(
+      activeTab === "pending" || activeTab === "approved" || activeTab === "rejected"
+        ? submissions.map((s) => s.categoryName).filter(Boolean)
+        : stories.map((s) => s.category).filter(Boolean)
+    )
+  ) as string[];
+
+  const stateOptions = Array.from(
+    new Set(
+      activeTab === "pending" || activeTab === "approved" || activeTab === "rejected"
+        ? submissions.map((s) => s.stateName).filter(Boolean)
+        : stories.map((s) => s.region).filter(Boolean)
+    )
+  ) as string[];
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = (allIds: string[]) => {
+    if (selectedIds.length === allIds.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(allIds);
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -180,6 +332,96 @@ export default function AdminCommunityPage() {
           ))}
         </div>
 
+        {/* Search, Filter, Sort and Bulk Actions Bar */}
+        <div className="flex flex-col md:flex-row gap-3 items-start md:items-center justify-between bg-zinc-950/40 p-4 border border-white/10 rounded">
+          {/* Left: Search, Filter, Sort */}
+          <div className="flex flex-wrap gap-2 items-center flex-1 max-w-2xl">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search title, contributor..."
+              className="bg-zinc-900 border border-white/10 text-white text-xs px-3 h-9 rounded focus:outline-none focus:border-primary/50 w-full sm:w-[200px]"
+            />
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="bg-zinc-900 border border-white/10 text-white/70 text-xs px-2 h-9 rounded outline-none"
+            >
+              <option value="">All Categories</option>
+              {categoryOptions.map((cat) => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+            <select
+              value={filterState}
+              onChange={(e) => setFilterState(e.target.value)}
+              className="bg-zinc-900 border border-white/10 text-white/70 text-xs px-2 h-9 rounded outline-none"
+            >
+              <option value="">All States</option>
+              {stateOptions.map((st) => (
+                <option key={st} value={st}>{st}</option>
+              ))}
+            </select>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="bg-zinc-900 border border-white/10 text-white/70 text-xs px-2 h-9 rounded outline-none"
+            >
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="author">Author (A-Z)</option>
+              <option value="title">Title (A-Z)</option>
+            </select>
+          </div>
+
+          {/* Right: Bulk Actions */}
+          {selectedIds.length > 0 && (
+            <div className="flex items-center gap-2 bg-primary/10 border border-primary/20 px-3 py-1.5 rounded">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-primary">
+                {selectedIds.length} selected
+              </span>
+              {bulkActionLoading ? (
+                <span className="text-[10px] text-white/50 animate-pulse font-sans">Processing...</span>
+              ) : (
+                <div className="flex gap-1.5">
+                  {(activeTab === "pending" || activeTab === "approved" || activeTab === "rejected") ? (
+                    <>
+                      {activeTab === "pending" && (
+                        <button
+                          onClick={handleBulkApprove}
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white font-sans font-bold text-[9px] uppercase tracking-wider h-6 px-2.5 rounded cursor-pointer"
+                        >
+                          Approve
+                        </button>
+                      )}
+                      <button
+                        onClick={handleBulkReject}
+                        className="bg-destructive hover:bg-destructive/95 text-white font-sans font-bold text-[9px] uppercase tracking-wider h-6 px-2.5 rounded cursor-pointer"
+                      >
+                        Reject
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={handleBulkDelete}
+                      className="bg-destructive hover:bg-destructive/95 text-white font-sans font-bold text-[9px] uppercase tracking-wider h-6 px-2.5 rounded cursor-pointer"
+                    >
+                      Delete
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setSelectedIds([])}
+                    className="bg-white/5 border border-white/10 hover:bg-white/10 text-white/70 font-sans text-[9px] uppercase tracking-wider h-6 px-2 rounded cursor-pointer"
+                  >
+                    Clear
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* Content Listing */}
         {loading ? (
           <div className="space-y-3">
@@ -192,12 +434,20 @@ export default function AdminCommunityPage() {
             {/* SUBMISSIONS LIST */}
             {(activeTab === "pending" || activeTab === "approved" || activeTab === "rejected") && (
               <div className="bg-[#161616] border border-white/10 rounded overflow-hidden">
-                {submissions.length === 0 ? (
-                  <div className="p-8 text-center text-sm font-sans text-white/40">No contributions found in this state.</div>
+                {processedSubmissions.length === 0 ? (
+                  <div className="p-8 text-center text-sm font-sans text-white/40">No contributions found matching your filters.</div>
                 ) : (
                   <table className="w-full text-left font-sans text-xs border-collapse">
                     <thead>
                       <tr className="border-b border-white/10 bg-white/5 text-white/60 uppercase tracking-wider text-[10px]">
+                        <th className="p-4 w-10">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.length > 0 && selectedIds.length === processedSubmissions.length}
+                            onChange={() => toggleSelectAll(processedSubmissions.map((s) => s.id))}
+                            className="rounded bg-zinc-900 border-white/10 cursor-pointer"
+                          />
+                        </th>
                         <th className="p-4 font-bold">Contributor</th>
                         <th className="p-4 font-bold">Title</th>
                         <th className="p-4 font-bold">Category/Region</th>
@@ -206,8 +456,16 @@ export default function AdminCommunityPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5 text-white/80">
-                      {submissions.map((s) => (
+                      {processedSubmissions.map((s) => (
                         <tr key={s.id} className="hover:bg-white/5 transition-colors">
+                          <td className="p-4 w-10">
+                            <input
+                              type="checkbox"
+                              checked={selectedIds.includes(s.id)}
+                              onChange={() => toggleSelect(s.id)}
+                              className="rounded bg-zinc-900 border-white/10 cursor-pointer"
+                            />
+                          </td>
                           <td className="p-4 font-medium">
                             <div className="flex items-center gap-2">
                               {s.user?.avatarUrl ? (
@@ -255,12 +513,20 @@ export default function AdminCommunityPage() {
             {/* SYSTEM STORIES LIST */}
             {(activeTab === "published" || activeTab === "hidden" || activeTab === "archived") && (
               <div className="bg-[#161616] border border-white/10 rounded overflow-hidden">
-                {stories.length === 0 ? (
-                  <div className="p-8 text-center text-sm font-sans text-white/40">No stories found in this state.</div>
+                {processedStories.length === 0 ? (
+                  <div className="p-8 text-center text-sm font-sans text-white/40">No stories found matching your filters.</div>
                 ) : (
                   <table className="w-full text-left font-sans text-xs border-collapse">
                     <thead>
                       <tr className="border-b border-white/10 bg-white/5 text-white/60 uppercase tracking-wider text-[10px]">
+                        <th className="p-4 w-10">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.length > 0 && selectedIds.length === processedStories.length}
+                            onChange={() => toggleSelectAll(processedStories.map((s) => s.id))}
+                            className="rounded bg-zinc-900 border-white/10 cursor-pointer"
+                          />
+                        </th>
                         <th className="p-4 font-bold">Title</th>
                         <th className="p-4 font-bold">Author</th>
                         <th className="p-4 font-bold">Category/Region</th>
@@ -269,8 +535,16 @@ export default function AdminCommunityPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5 text-white/80">
-                      {stories.map((st) => (
+                      {processedStories.map((st) => (
                         <tr key={st.id} className="hover:bg-white/5 transition-colors">
+                          <td className="p-4 w-10">
+                            <input
+                              type="checkbox"
+                              checked={selectedIds.includes(st.id)}
+                              onChange={() => toggleSelect(st.id)}
+                              className="rounded bg-zinc-900 border-white/10 cursor-pointer"
+                            />
+                          </td>
                           <td className="p-4 max-w-sm font-semibold text-white truncate">{st.title}</td>
                           <td className="p-4 font-semibold text-white/70">{st.authorName || "Staff"}</td>
                           <td className="p-4">

@@ -1,6 +1,6 @@
+import React, { useRef } from "react";
 import { motion } from "framer-motion";
 import { ArrowUpRight, Clock, MapPin, User } from "lucide-react";
-import { useRef } from "react";
 import { Link } from "@tanstack/react-router";
 import { useJourney } from "@/lib/journey-store";
 import { useI18nStore, translateStory, getCommonText } from "@/lib/i18n";
@@ -36,7 +36,7 @@ export interface Story {
   seoKeywords?: string | null;
 }
 
-export function StoryCard({ story, index = 0 }: { story: Story; index?: number }) {
+export const StoryCard = React.memo(function StoryCard({ story, index = 0 }: { story: Story; index?: number }) {
   const { trackView } = useJourney();
   const hoverStart = useRef<number | null>(null);
 
@@ -101,6 +101,7 @@ export function StoryCard({ story, index = 0 }: { story: Story; index?: number }
                 src={getOptimizedImageUrl(story.image, 600)}
                 alt={story.imageAlt ?? story.title}
                 loading="lazy"
+                decoding="async"
                 className="absolute inset-0 w-full h-full object-cover filter saturate-[0.8] brightness-[0.95] group-hover:scale-105 group-hover:saturate-100 group-hover:brightness-100 transition-all duration-[1.2s] ease-out"
               />
             ) : (
@@ -145,4 +146,4 @@ export function StoryCard({ story, index = 0 }: { story: Story; index?: number }
       </Link>
     </motion.div>
   );
-}
+});

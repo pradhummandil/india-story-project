@@ -12,6 +12,8 @@ import {
   ChevronRight,
   Clock,
   BookOpen,
+  LayoutGrid,
+  List,
 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { SiteLayout } from "@/components/site/Layout";
@@ -20,6 +22,7 @@ import { useStoriesData } from "@/lib/stories-data";
 import { useI18nStore, translateStory } from "@/lib/i18n";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { z } from "zod";
 
 const exploreSearchSchema = z.object({
@@ -71,6 +74,14 @@ function RouteComponent() {
   const [selectedState, setSelectedState] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(12);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+  // New Filters states
+  const [showFilters, setShowFilters] = useState(false);
+  const [langFilter, setLangFilter] = useState("all");
+  const [readTimeFilter, setReadTimeFilter] = useState("all");
+  const [districtQuery, setDistrictQuery] = useState("");
+  const [authorQuery, setAuthorQuery] = useState("");
 
   const search = Route.useSearch();
   const q = search.q;
@@ -109,9 +120,9 @@ function RouteComponent() {
     }));
   }, [stories]);
 
-  // Filter stories based on query, state, category
+  // Filter stories based on query, state, category, language, read time, district, author
   const filteredStories = useMemo(() => {
-    return stories.filter((s) => {
+    return stories.filter((s: any) => {
       const title = s.title.toLowerCase();
       const excerpt = s.excerpt.toLowerCase();
       const content = (s.content ?? "").toLowerCase();
@@ -129,9 +140,44 @@ function RouteComponent() {
       const matchesCategory =
         !selectedCategory || s.category.toLowerCase() === selectedCategory.toLowerCase();
 
-      return matchesSearch && matchesState && matchesCategory;
+      const matchesLanguage =
+        langFilter === "all" ||
+        (s.language || "en").toLowerCase() === langFilter.toLowerCase();
+
+      let matchesReadTime = true;
+      const rt = s.readTime || 4;
+      if (readTimeFilter === "short") matchesReadTime = rt <= 3;
+      else if (readTimeFilter === "medium") matchesReadTime = rt > 3 && rt <= 6;
+      else if (readTimeFilter === "long") matchesReadTime = rt > 6;
+
+      const matchesDistrict =
+        !districtQuery ||
+        (s.district || "").toLowerCase().includes(districtQuery.toLowerCase());
+
+      const matchesAuthor =
+        !authorQuery ||
+        (s.authorName || "").toLowerCase().includes(authorQuery.toLowerCase());
+
+      return (
+        matchesSearch &&
+        matchesState &&
+        matchesCategory &&
+        matchesLanguage &&
+        matchesReadTime &&
+        matchesDistrict &&
+        matchesAuthor
+      );
     });
-  }, [stories, searchQuery, selectedState, selectedCategory]);
+  }, [
+    stories,
+    searchQuery,
+    selectedState,
+    selectedCategory,
+    langFilter,
+    readTimeFilter,
+    districtQuery,
+    authorQuery,
+  ]);
 
   // Trending stories (sorted by viewCount DESC)
   const trendingStories = useMemo(() => {
@@ -194,6 +240,77 @@ function RouteComponent() {
                   className="w-full h-14 pl-12 pr-4 bg-card/65 border-border/80 focus-visible:ring-gold/40 rounded-xl font-sans text-sm shadow-elegant"
                 />
               </motion.form>
+
+              <div className="flex justify-center gap-2 mt-4 z-20 relative">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="rounded-full border-white/20 hover:border-gold/30 bg-black/40 hover:bg-black/60 text-xs font-sans text-white h-9 px-4 gap-2"
+                >
+                  <Filter className="size-3.5 text-gold" />
+                  {showFilters ? "Hide Filters" : "Show Filters"}
+                </Button>
+              </div>
+
+              <AnimatePresence>
+                {showFilters && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="max-w-xl mx-auto mt-6 bg-black/60 backdrop-blur-md border border-white/10 rounded-xl p-5 text-left space-y-4 shadow-xl z-20 relative"
+                  >
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <Label className="text-[10px] uppercase font-bold tracking-wider text-white/50">Language</Label>
+                        <select
+                          value={langFilter}
+                          onChange={(e) => setLangFilter(e.target.value)}
+                          className="w-full h-10 bg-background border border-white/10 text-white rounded px-2.5 text-xs font-sans outline-none focus:border-gold/30"
+                        >
+                          <option value="all">All Languages</option>
+                          <option value="en">English</option>
+                          <option value="hi">Hindi (हिन्दी)</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] uppercase font-bold tracking-wider text-white/50">Read Time</Label>
+                        <select
+                          value={readTimeFilter}
+                          onChange={(e) => setReadTimeFilter(e.target.value)}
+                          className="w-full h-10 bg-background border border-white/10 text-white rounded px-2.5 text-xs font-sans outline-none focus:border-gold/30"
+                        >
+                          <option value="all">Any Read Time</option>
+                          <option value="short">Short (≤ 3 min)</option>
+                          <option value="medium">Medium (4-6 min)</option>
+                          <option value="long">Long (&gt; 6 min)</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <Label className="text-[10px] uppercase font-bold tracking-wider text-white/50">District</Label>
+                        <Input
+                          value={districtQuery}
+                          onChange={(e) => setDistrictQuery(e.target.value)}
+                          placeholder="e.g. Jodhpur"
+                          className="h-10 bg-background border-white/10 text-white rounded text-xs font-sans"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] uppercase font-bold tracking-wider text-white/50">Author</Label>
+                        <Input
+                          value={authorQuery}
+                          onChange={(e) => setAuthorQuery(e.target.value)}
+                          placeholder="e.g. Pradhum"
+                          className="h-10 bg-background border-white/10 text-white rounded text-xs font-sans"
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </section>
@@ -332,22 +449,50 @@ function RouteComponent() {
               </p>
             </div>
 
-            {/* Clear filters */}
-            {(selectedCategory || selectedState || searchQuery) && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setSelectedCategory(null);
-                  setSelectedState(null);
-                  setSearchQuery("");
-                  void navigate({ search: {} });
-                }}
-                className="rounded-full border-border font-sans text-xs h-9"
-              >
-                Clear all filters
-              </Button>
-            )}
+            <div className="flex items-center gap-3">
+              {/* Clear filters */}
+              {(selectedCategory || selectedState || searchQuery || langFilter !== "all" || readTimeFilter !== "all" || districtQuery || authorQuery) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedCategory(null);
+                    setSelectedState(null);
+                    setSearchQuery("");
+                    setLangFilter("all");
+                    setReadTimeFilter("all");
+                    setDistrictQuery("");
+                    setAuthorQuery("");
+                    void navigate({ search: {} });
+                  }}
+                  className="rounded-full border-border font-sans text-xs h-9"
+                >
+                  Clear all filters
+                </Button>
+              )}
+
+              {/* View Switcher */}
+              <div className="flex items-center gap-1 border border-border/60 rounded-full p-1 bg-card/45">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-1.5 rounded-full transition-colors ${
+                    viewMode === "grid" ? "bg-primary text-white" : "text-muted-foreground hover:text-white"
+                  }`}
+                  title="Grid View"
+                >
+                  <LayoutGrid className="size-3.5" />
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-1.5 rounded-full transition-colors ${
+                    viewMode === "list" ? "bg-primary text-white" : "text-muted-foreground hover:text-white"
+                  }`}
+                  title="List View"
+                >
+                  <List className="size-3.5" />
+                </button>
+              </div>
+            </div>
           </div>
 
           {loading ? (
@@ -365,11 +510,81 @@ function RouteComponent() {
             </div>
           ) : (
             <div className="space-y-10">
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredStories.slice(0, visibleCount).map((story, i) => (
-                  <StoryCard key={story.id} story={story} index={i} />
-                ))}
-              </div>
+              {viewMode === "grid" ? (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredStories.slice(0, visibleCount).map((story, i) => (
+                    <StoryCard key={story.id} story={story} index={i} />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {filteredStories.slice(0, visibleCount).map((story, i) => {
+                    const localized = translateStory(story, lang);
+                    return (
+                      <motion.div
+                        key={story.id}
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: Math.min(i * 0.05, 0.3) }}
+                        className="flex flex-col sm:flex-row gap-5 bg-card/35 border border-border/40 hover:border-gold/30 rounded-2xl overflow-hidden p-4 group hover:shadow-glow transition-all duration-300"
+                      >
+                        <Link
+                          to="/stories/$slug"
+                          params={{ slug: story.slug }}
+                          className="w-full sm:w-60 aspect-[16/10] sm:aspect-square md:aspect-[16/10] shrink-0 overflow-hidden bg-muted rounded-xl relative"
+                        >
+                          {story.image ? (
+                            <img
+                              src={story.image}
+                              alt={localized.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-primary/10 to-gold/10" />
+                          )}
+                          <span className="absolute top-3 left-3 bg-black/60 backdrop-blur text-[9px] uppercase tracking-widest text-gold px-2 py-0.5 rounded font-sans font-bold border border-gold/20">
+                            {localized.category}
+                          </span>
+                        </Link>
+                        <div className="flex-1 flex flex-col justify-between py-1">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-3 text-[10px] text-muted-foreground font-sans uppercase font-bold tracking-wider">
+                              <span className="flex items-center gap-1">
+                                <MapPin className="size-3 text-gold" />
+                                {localized.region}
+                              </span>
+                              <span>•</span>
+                              <span className="flex items-center gap-1">
+                                <Clock className="size-3 text-gold" />
+                                {localized.readTime || "4 min"}
+                              </span>
+                            </div>
+                            <Link to="/stories/$slug" params={{ slug: story.slug }}>
+                              <h3 className="font-display font-bold text-lg sm:text-xl leading-snug text-foreground group-hover:text-primary transition-colors">
+                                {localized.title}
+                              </h3>
+                            </Link>
+                            <p className="text-xs sm:text-sm text-muted-foreground font-sans line-clamp-3 leading-relaxed">
+                              {localized.excerpt}
+                            </p>
+                          </div>
+                          <div className="flex items-center justify-between border-t border-white/5 pt-3 mt-4 text-xs font-sans text-muted-foreground">
+                            <span>By {story.authorName || "Anonymous Contributor"}</span>
+                            <Link
+                              to="/stories/$slug"
+                              params={{ slug: story.slug }}
+                              className="inline-flex items-center gap-1 text-gold group-hover:text-white transition-colors uppercase font-bold tracking-wider text-[10px]"
+                            >
+                              Read Story
+                              <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
+                            </Link>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
 
               {filteredStories.length > visibleCount && (
                 <div className="text-center pt-4">

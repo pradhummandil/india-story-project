@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { json } from "@/routes/api/-_utils";
 import { supabase } from "@/lib/supabase-client";
+import { uploadToCloudinary } from "@/lib/cloudinary.server";
 
 export const Route = createFileRoute("/api/admin/media")({
   server: {
@@ -52,19 +53,30 @@ export const Route = createFileRoute("/api/admin/media")({
             const arrayBuffer = await file.arrayBuffer();
             const buffer = Buffer.from(arrayBuffer);
 
-            const { error } = await supabase.storage.from("media").upload(cleanName, buffer, {
-              contentType: file.type,
-              upsert: true,
-            });
+            // Attempt Cloudinary upload first
+            let url = await uploadToCloudinary(buffer, file.name, file.type).catch(() => null);
+            let name = cleanName;
 
-            if (error) {
-              return json({ error: `Upload error for ${file.name}: ${error.message}` }, { status: 500 });
+            if (!url) {
+              // Fallback to Supabase storage
+              const { error } = await supabase.storage.from("media").upload(cleanName, buffer, {
+                contentType: file.type,
+                upsert: true,
+              });
+
+              if (error) {
+                return json({ error: `Upload error for ${file.name}: ${error.message}` }, { status: 500 });
+              }
+
+              const { data: { publicUrl } } = supabase.storage.from("media").getPublicUrl(cleanName);
+              url = publicUrl;
+            } else {
+              name = `cloudinary-${cleanName}`;
             }
 
-            const { data: { publicUrl } } = supabase.storage.from("media").getPublicUrl(cleanName);
             results.push({
-              name: cleanName,
-              url: publicUrl,
+              name,
+              url,
               size: file.size,
               created_at: new Date().toISOString(),
             });

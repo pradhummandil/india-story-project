@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { json, authenticate } from "@/routes/api/-_utils";
+import { json, authenticate, checkRateLimit, getClientIp } from "@/routes/api/-_utils";
 import { prisma } from "@/lib/repositories/prisma.server";
 
 export const Route = createFileRoute("/api/submissions")({
@@ -26,9 +26,16 @@ export const Route = createFileRoute("/api/submissions")({
         const user = await authenticate(request);
         if (!user) return json({ error: "Unauthorized" }, { status: 401 });
 
+        const ip = getClientIp(request);
+        const { allowed } = checkRateLimit(ip, 5, 60 * 1000); // 5 submissions per minute limit
+        if (!allowed) {
+          return json({ error: "Too many submissions. Please wait a minute before trying again." }, { status: 429 });
+        }
+
         try {
           const body = await request.json();
           const {
+            id,
             title,
             excerpt,
             content,
@@ -42,10 +49,27 @@ export const Route = createFileRoute("/api/submissions")({
             authorName,
             imageUrl,
             imageCaption,
+            heroName,
+            district,
+            language,
+            email,
+            galleryUrls,
+            videoUrl,
+            externalLinks,
+            phone,
+            tags,
+            seoTitle,
+            seoDescription,
+            seoKeywords,
+            status,
           } = body;
 
-          if (!title || !excerpt || !content || !categoryName || !stateName) {
-            return json({ error: "Title, Excerpt, Content, Category, and State are required." }, { status: 400 });
+          if (!title) {
+            return json({ error: "Title is required." }, { status: 400 });
+          }
+
+          if (status !== "Draft" && (!excerpt || !content || !categoryName || !stateName)) {
+            return json({ error: "Excerpt, Content, Category, and State are required for non-draft submissions." }, { status: 400 });
           }
 
           // Create UserProfile record if missing
@@ -61,45 +85,71 @@ export const Route = createFileRoute("/api/submissions")({
             });
           }
 
-          const submission = await prisma.submittedStory.create({
-            data: {
-              userId: user.id,
-              title: title.trim(),
-              excerpt: excerpt.trim(),
-              content: content.trim(),
-              titleHi: titleHi?.trim() || null,
-              excerptHi: excerptHi?.trim() || null,
-              contentHi: contentHi?.trim() || null,
-              categoryName: categoryName.trim(),
-              stateName: stateName.trim(),
-              cityName: cityName?.trim() || null,
-              themeName: themeName?.trim() || null,
-              authorName: authorName?.trim() || userProfile.name || "Anonymous Contributor",
-              imageUrl: imageUrl?.trim() || null,
-              imageCaption: imageCaption?.trim() || null,
-              status: "Pending",
-            },
-          });
+          let submission;
+          const dataPayload = {
+            title: title.trim(),
+            excerpt: excerpt?.trim() || "",
+            content: content?.trim() || "",
+            titleHi: titleHi?.trim() || null,
+            excerptHi: excerptHi?.trim() || null,
+            contentHi: contentHi?.trim() || null,
+            categoryName: categoryName?.trim() || "Heritage",
+            stateName: stateName?.trim() || "Delhi",
+            cityName: cityName?.trim() || null,
+            themeName: themeName?.trim() || null,
+            authorName: authorName?.trim() || userProfile.name || "Anonymous Contributor",
+            imageUrl: imageUrl?.trim() || null,
+            imageCaption: imageCaption?.trim() || null,
+            status: status || "Pending",
+            heroName: heroName?.trim() || null,
+            district: district?.trim() || null,
+            language: language || "en",
+            email: email?.trim() || null,
+            galleryUrls: galleryUrls?.trim() || null,
+            videoUrl: videoUrl?.trim() || null,
+            externalLinks: externalLinks?.trim() || null,
+            phone: phone?.trim() || null,
+            tags: tags?.trim() || null,
+            seoTitle: seoTitle?.trim() || null,
+            seoDescription: seoDescription?.trim() || null,
+            seoKeywords: seoKeywords?.trim() || null,
+          };
 
-          // Award +20 XP for story submission
-          try {
-            await prisma.userStat.upsert({
-              where: { userId: user.id },
-              create: {
-                userId: user.id,
-                totalXP: 20,
-              },
-              update: {
-                totalXP: { increment: 20 },
-              },
+          if (id) {
+            submission = await (prisma.submittedStory as any).update({
+              where: { id, userId: user.id },
+              data: dataPayload,
             });
-            await prisma.userProfile.update({
-              where: { id: user.id },
+          } else {
+            submission = await (prisma.submittedStory as any).create({
               data: {
-                totalXP: { increment: 20 },
+                userId: user.id,
+                ...dataPayload,
               },
             });
-          } catch {/* ignore stats updates */}
+          }
+
+          // Award +20 XP only for non-draft submissions
+          if (status !== "Draft") {
+            try {
+              await prisma.userStat.upsert({
+                where: { userId: user.id },
+                create: {
+                  userId: user.id,
+                  totalXP: 20,
+                },
+                update: {
+                  totalXP: { increment: 20 },
+                },
+              });
+              await prisma.userProfile.update({
+                where: { id: user.id },
+                data: {
+                  totalXP: { increment: 20 },
+                },
+              });
+            } catch {/* ignore stats updates */}
+          }
 
           return json({ success: true, submission });
         } catch (e: any) {

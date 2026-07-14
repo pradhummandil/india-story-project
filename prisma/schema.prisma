@@ -16,8 +16,13 @@ enum StoryStatus {
 }
 
 enum SubmissionStatus {
+  Draft
   Pending
+  UnderReview
+  FactChecking
   Approved
+  ChangesRequested
+  Published
   Rejected
 }
 
@@ -203,6 +208,9 @@ model Story {
   @@index([stateId])
   @@index([authorId])
   @@index([themeId])
+  @@index([homepageSlideshow, slideshowOrder])
+  @@index([createdAt])
+  @@index([updatedAt])
 }
 
 model StoryTag {
@@ -275,6 +283,8 @@ model ReadingProgress {
   lastReadAt      DateTime    @default(now())
   @@unique([userId, storyId])
   @@index([userId])
+  @@index([storyId])
+  @@index([completed])
   @@index([lastReadAt])
 }
 
@@ -407,26 +417,38 @@ model CommentReport {
 }
 
 model SubmittedStory {
-  id           String           @id @default(uuid()) @db.Uuid
-  userId       String           @db.Uuid
-  user         UserProfile      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title        String
-  excerpt      String           @db.Text
-  content      String           @db.Text
-  titleHi      String?
-  excerptHi    String?          @db.Text
-  contentHi    String?          @db.Text
-  categoryName String
-  stateName    String
-  cityName     String?
-  themeName    String?
-  authorName   String?
-  imageUrl     String?          @db.Text
-  imageCaption String?          @db.Text
-  status       SubmissionStatus @default(Pending)
-  adminNotes   String?          @db.Text
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
+  id            String           @id @default(uuid()) @db.Uuid
+  userId        String           @db.Uuid
+  user          UserProfile      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title         String
+  excerpt       String           @db.Text
+  content       String           @db.Text
+  titleHi       String?
+  excerptHi     String?          @db.Text
+  contentHi     String?          @db.Text
+  categoryName  String
+  stateName     String
+  cityName      String?
+  themeName     String?
+  authorName    String?
+  imageUrl      String?          @db.Text
+  imageCaption  String?          @db.Text
+  status        SubmissionStatus @default(Pending)
+  adminNotes    String?          @db.Text
+  heroName      String?
+  district      String?
+  language      String           @default("en")
+  email         String?
+  galleryUrls   String?          @db.Text
+  videoUrl      String?          @db.Text
+  externalLinks String?          @db.Text
+  phone         String?
+  tags          String?          @db.Text
+  seoTitle      String?
+  seoDescription String?         @db.Text
+  seoKeywords   String?          @db.Text
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
 
   @@index([userId])
   @@index([status])
@@ -444,6 +466,7 @@ model NewsletterSubscriber {
 
   @@index([email])
   @@index([verified])
+  @@index([status])
 }
 
 model ContactMessage {

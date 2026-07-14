@@ -3,10 +3,6 @@ import { prisma } from "@/lib/repositories/prisma.server";
 import { json } from "@/routes/api/-_utils";
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY!,
-});
-
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
@@ -147,13 +143,39 @@ use Gemini knowledge.
 
 `;
 
-          const result = await ai.models.generateContent({
-            model: "gemini-2.0-flash",
-            contents: prompt,
-          });
+          let replyText = "";
+          const hasApiKey = !!process.env.GEMINI_API_KEY;
+
+          if (hasApiKey) {
+            const ai = new GoogleGenAI({
+              apiKey: process.env.GEMINI_API_KEY!,
+            });
+            const result = await ai.models.generateContent({
+              model: "gemini-2.0-flash",
+              contents: prompt,
+            });
+            replyText = result.text || "";
+          } else {
+            // Fallback response using database search
+            if (stories.length > 0) {
+              const storyList = stories
+                .map(
+                  (s) =>
+                    `* [${isHindi && s.titleHi ? s.titleHi : s.title}](/stories/${s.slug}) (${s.state?.name ?? "India"})`
+                )
+                .join("\n");
+              replyText = isHindi
+                ? `नमस्ते! वर्तमान में मेरी मुख्य एआई सेवा (Gemini API) ऑफ़लाइन है, लेकिन मैंने आपकी खोज से संबंधित ये कहानियाँ डेटाबेस में खोजी हैं:\n\n${storyList}\n\nकृपया इन्हें पढ़ें और प्रेरणा लें!`
+                : `Hello! While my advanced AI generation services are currently offline, I found the following relevant stories in our database matching your inquiry:\n\n${storyList}\n\nFeel free to explore these stories to learn more!`;
+            } else {
+              replyText = isHindi
+                ? `नमस्ते! मेरी मुख्य एआई सेवा (Gemini API Key) वर्तमान में कॉन्फ़िगर नहीं है, और मुझे डेटाबेस में कोई कहानी नहीं मिली। कृपया राजस्थान, केरल, या स्वतंत्रता सेनानियों के बारे में अन्य प्रश्नों के साथ प्रयास करें!`
+                : `Hello! My advanced AI services are currently not configured. I couldn't find matching stories directly, but you can try asking about specific states like Kerala, Rajasthan, or search themes like sustainable farming!`;
+            }
+          }
 
           return json({
-            reply: result.text,
+            reply: replyText,
 
             stories: stories.map((story) => ({
               title: isHindi
@@ -177,7 +199,7 @@ use Gemini knowledge.
                   "Indian Culture",
                 ],
           });
-                        } catch (error: any) {
+        } catch (error: any) {
           console.error("Gemini Error:", error);
 
           if (error?.response) {

@@ -22,47 +22,103 @@ export const Route = createFileRoute("/api/user-stats/me")({
         }
 
         try {
-          const userStat = await prisma.userStat.findUnique({
-            where: { userId: user.id },
+          // Lazily create UserProfile if missing
+          let userProfile = await prisma.userProfile.findUnique({
+            where: { id: user.id },
           });
-
-          let badgeCount = 0;
-          try {
-            badgeCount = await (prisma as any).userBadge.count({
-              where: { userId: user.id },
+          if (!userProfile) {
+            userProfile = await prisma.userProfile.create({
+              data: {
+                id: user.id,
+                email: user.email ?? "",
+                name: user.user_metadata?.name || user.email?.split("@")[0] || "Contributor",
+                avatarUrl: user.user_metadata?.avatar_url || null,
+                bio: user.user_metadata?.bio || null,
+                website: user.user_metadata?.website || null,
+                twitter: user.user_metadata?.twitter || null,
+                instagram: user.user_metadata?.instagram || null,
+                linkedin: user.user_metadata?.linkedin || null,
+              },
             });
-          } catch {
-            badgeCount = 0;
           }
 
-          const userProfile = await prisma.userProfile
-            .findUnique({
-              where: { id: user.id },
-              select: { name: true, avatarUrl: true, level: true, totalXP: true },
-            })
-            .catch(() => null);
+          // Lazily create UserStat if missing
+          let userStat = await prisma.userStat.findUnique({
+            where: { userId: user.id },
+          });
+          if (!userStat) {
+            userStat = await prisma.userStat.create({
+              data: {
+                userId: user.id,
+                totalXP: userProfile.totalXP || 0,
+                level: userProfile.level || 1,
+              },
+            });
+          }
 
-          // Build response stats — use userStat if available, else return zeros
-          const stats = userStat
-            ? {
-                storiesRead: userStat.storiesRead,
-                storiesLiked: userStat.storiesLiked,
-                bookmarksCount: userStat.bookmarksCount,
-                readingStreak: userStat.readingStreak,
-                longestStreak: userStat.longestStreak,
-                totalXP: userStat.totalXP,
-                level: userStat.level,
-                weeklyXP: userStat.weeklyXP,
-                monthlyXP: userStat.monthlyXP,
-                totalReadingTime: userStat.totalReadingTime,
-              }
-            : null;
+          let badgeCount = 0;
+          let commentsCount = 0;
+          let submissionsCount = 0;
+          let bookmarksCount = 0;
+          let likesCount = 0;
+          let continueCount = 0;
+          let historyCount = 0;
 
-          return json({ stats, badgeCount, userProfile });
+          try {
+            const [
+              badgeC,
+              commentsC,
+              submissionsC,
+              bookmarksC,
+              likesC,
+              continueC,
+              historyC
+            ] = await Promise.all([
+              prisma.userBadge.count({ where: { userId: user.id } }).catch(() => 0),
+              prisma.comment.count({ where: { userId: user.id } }).catch(() => 0),
+              prisma.submittedStory.count({ where: { userId: user.id } }).catch(() => 0),
+              prisma.bookmark.count({ where: { userId: user.id } }).catch(() => 0),
+              prisma.storyLike.count({ where: { userId: user.id } }).catch(() => 0),
+              prisma.readingProgress.count({ where: { userId: user.id, completed: false, progressPercent: { gt: 0 } } }).catch(() => 0),
+              prisma.readingProgress.count({ where: { userId: user.id } }).catch(() => 0)
+            ]);
+
+            badgeCount = badgeC;
+            commentsCount = commentsC;
+            submissionsCount = submissionsC;
+            bookmarksCount = bookmarksC;
+            likesCount = likesC;
+            continueCount = continueC;
+            historyCount = historyC;
+          } catch (err) {
+            console.error("Error fetching sub counts in me.ts:", err);
+          }
+
+          return json({
+            stats: userStat,
+            badgeCount,
+            userProfile,
+            commentsCount,
+            submissionsCount,
+            bookmarksCount,
+            likesCount,
+            continueCount,
+            historyCount
+          });
         } catch (e: any) {
           console.error("[user-stats/me] error:", e);
           if (e?.code === "P2021" || e?.message?.includes("does not exist")) {
-            return json({ stats: null, badgeCount: 0, userProfile: null });
+            return json({
+              stats: null,
+              badgeCount: 0,
+              userProfile: null,
+              commentsCount: 0,
+              submissionsCount: 0,
+              bookmarksCount: 0,
+              likesCount: 0,
+              continueCount: 0,
+              historyCount: 0
+            });
           }
           return json({ error: "Server error" }, { status: 500 });
         }

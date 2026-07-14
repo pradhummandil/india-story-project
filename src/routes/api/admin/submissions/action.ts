@@ -19,14 +19,23 @@ export const Route = createFileRoute("/api/admin/submissions/action")({
 
         try {
           const body = await request.json();
-          const { submissionId, action, adminNotes } = body;
+          const {
+            submissionId,
+            action,
+            adminNotes,
+            featured = false,
+            heroOfTheDay = false,
+            homepageSlideshow = false,
+            slideshowOrder = 0
+          } = body;
 
           if (!submissionId || !action) {
             return json({ error: "submissionId and action are required" }, { status: 400 });
           }
 
-          if (action !== "Approve" && action !== "Reject") {
-            return json({ error: "Action must be Approve or Reject" }, { status: 400 });
+          const VALID_ACTIONS = ["UnderReview", "FactChecking", "Approved", "Published", "ChangesRequested", "Rejected"];
+          if (!VALID_ACTIONS.includes(action)) {
+            return json({ error: `Action must be one of: ${VALID_ACTIONS.join(", ")}` }, { status: 400 });
           }
 
           const submission = await prisma.submittedStory.findUnique({
@@ -44,13 +53,13 @@ export const Route = createFileRoute("/api/admin/submissions/action")({
           const updatedSubmission = await prisma.submittedStory.update({
             where: { id: submissionId },
             data: {
-              status: action === "Approve" ? "Approved" : "Rejected",
+              status: action as any,
               adminNotes: adminNotes || null,
             },
           });
 
-          // If approved, create the published Story record
-          if (action === "Approve") {
+          // If published, create the published Story record
+          if (action === "Published") {
             // 1. Find or create Category
             const catName = submission.categoryName || "Heritage";
             let category = await prisma.category.findFirst({
@@ -133,6 +142,10 @@ export const Route = createFileRoute("/api/admin/submissions/action")({
                 authorId: author.id,
                 readingTime: Math.max(1, Math.ceil(submission.content.split(/\s+/).length / 200)),
                 publishedAt: new Date(),
+                featured,
+                heroOfTheDay,
+                homepageSlideshow,
+                slideshowOrder,
               },
             });
 
@@ -149,7 +162,7 @@ export const Route = createFileRoute("/api/admin/submissions/action")({
               });
             }
 
-            // Award +50 XP for approval to the submitting contributor!
+            // Award +50 XP for publication to the submitting contributor!
             try {
               await prisma.userStat.upsert({
                 where: { userId: submission.userId },

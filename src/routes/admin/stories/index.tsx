@@ -66,6 +66,7 @@ export default function AdminStoriesPage() {
   // Filtering / Sorting / Pagination States
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [stateFilter, setStateFilter] = useState("all");
@@ -81,6 +82,15 @@ export default function AdminStoriesPage() {
   useEffect(() => {
     if (initialized && !user) void navigate({ to: "/login" });
   }, [user, initialized, navigate]);
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [query]);
 
   // Load Categories & States
   useEffect(() => {
@@ -104,7 +114,7 @@ export default function AdminStoriesPage() {
       page: String(page),
       pageSize: String(PAGE_SIZE),
       sortBy,
-      ...(query ? { query } : {}),
+      ...(debouncedQuery ? { query: debouncedQuery } : {}),
       ...(statusFilter !== "all" ? { status: statusFilter } : {}),
       ...(categoryFilter !== "all" ? { category: categoryFilter } : {}),
       ...(stateFilter !== "all" ? { region: stateFilter } : {}),
@@ -122,7 +132,7 @@ export default function AdminStoriesPage() {
 
   useEffect(() => {
     void loadStories();
-  }, [user, page, query, statusFilter, categoryFilter, stateFilter, sortBy]);
+  }, [user, page, debouncedQuery, statusFilter, categoryFilter, stateFilter, sortBy]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this story permanently?")) return;

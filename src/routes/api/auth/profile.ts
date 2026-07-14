@@ -23,9 +23,22 @@ export const Route = createFileRoute("/api/auth/profile")({
           }
 
           const email = user.email!;
+          
+          let body: any = {};
+          try {
+            body = await request.json();
+          } catch {
+            // ignore empty body
+          }
+
           const fullName =
-            user.user_metadata?.name || user.user_metadata?.full_name || email.split("@")[0];
-          const avatarUrl = user.user_metadata?.avatar_url || null;
+            body.name || user.user_metadata?.name || user.user_metadata?.full_name || email.split("@")[0];
+          const avatarUrl = body.avatarUrl || user.user_metadata?.avatar_url || null;
+          const bio = body.bio || user.user_metadata?.bio || null;
+          const website = body.website || user.user_metadata?.website || null;
+          const twitter = body.twitter || user.user_metadata?.twitter || null;
+          const instagram = body.instagram || user.user_metadata?.instagram || null;
+          const linkedin = body.linkedin || user.user_metadata?.linkedin || null;
 
           // Determine if we should set admin role
           let roleToAssign = "user";
@@ -52,7 +65,32 @@ export const Route = createFileRoute("/api/auth/profile")({
             },
           });
 
-          return json({ profile });
+          // Also upsert/update UserProfile
+          const userProfile = await prisma.userProfile.upsert({
+            where: { id: user.id },
+            update: {
+              name: fullName,
+              avatarUrl,
+              bio,
+              website,
+              twitter,
+              instagram,
+              linkedin,
+            },
+            create: {
+              id: user.id,
+              email,
+              name: fullName,
+              avatarUrl,
+              bio,
+              website,
+              twitter,
+              instagram,
+              linkedin,
+            },
+          });
+
+          return json({ profile, userProfile });
         } catch (e: any) {
           console.error("Profile endpoint error:", e);
           return json({ error: e.message || "Server Error" }, { status: 500 });

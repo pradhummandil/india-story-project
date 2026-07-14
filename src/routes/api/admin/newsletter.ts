@@ -67,6 +67,14 @@ export const Route = createFileRoute("/api/admin/newsletter")({
               orderBy: { createdAt: "desc" },
               skip: (page - 1) * pageSize,
               take: pageSize,
+              select: {
+                id: true,
+                email: true,
+                verified: true,
+                status: true,
+                language: true,
+                createdAt: true,
+              },
             }),
             prisma.newsletterSubscriber.count({ where }),
           ]);

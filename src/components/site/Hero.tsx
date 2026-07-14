@@ -10,6 +10,7 @@ import {
   ChevronDown,
   Pause,
   Play,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useStoriesData } from "@/lib/stories-data";
@@ -222,7 +223,7 @@ export function CinematicHero() {
           </p>
 
           {/* CTA */}
-          <div className="flex items-center gap-3 pt-2">
+          <div className="flex flex-wrap items-center gap-4 pt-2">
             <Button
               asChild
               size="lg"
@@ -233,12 +234,17 @@ export function CinematicHero() {
                 <ArrowRight className="size-4 ml-2" />
               </Link>
             </Button>
-            <Link
-              to="/stories"
-              className="text-xs text-white/60 font-sans uppercase tracking-widest hover:text-white transition-colors"
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="bg-white/10 hover:bg-white/20 border-white/20 text-white font-sans uppercase tracking-[0.18em] text-xs h-12 px-8 rounded-full hover:-translate-y-0.5 transition-transform duration-300 flex items-center gap-2"
             >
-              {lang === "en" ? "All Stories" : "सभी कहानियां"}
-            </Link>
+              <Link to="/share-story">
+                <Sparkles className="size-3.5 text-gold" />
+                {lang === "en" ? "Share Your Story" : "कहानी साझा करें"}
+              </Link>
+            </Button>
           </div>
         </motion.div>
       </AnimatePresence>

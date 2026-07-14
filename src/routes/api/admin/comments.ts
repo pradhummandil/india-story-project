@@ -13,22 +13,33 @@ export const Route = createFileRoute("/api/admin/comments")({
 
         const url = new URL(request.url);
         const filter = url.searchParams.get("filter") || "all";
+        const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10));
+        const pageSize = Math.min(
+          60,
+          Math.max(1, parseInt(url.searchParams.get("pageSize") ?? "20", 10)),
+        );
 
         try {
           if (filter === "flagged") {
-            // Fetch comment reports
-            const reports = await prisma.commentReport.findMany({
-              include: {
-                comment: {
-                  include: {
-                    user: { select: { name: true, email: true } },
-                    story: { select: { title: true, slug: true } },
+            const whereClause = {};
+            const [reports, total] = await Promise.all([
+              prisma.commentReport.findMany({
+                where: whereClause,
+                include: {
+                  comment: {
+                    include: {
+                      user: { select: { name: true, email: true } },
+                      story: { select: { title: true, slug: true } },
+                    },
                   },
+                  user: { select: { name: true, email: true } },
                 },
-                user: { select: { name: true, email: true } },
-              },
-              orderBy: { createdAt: "desc" },
-            });
+                orderBy: { createdAt: "desc" },
+                skip: (page - 1) * pageSize,
+                take: pageSize,
+              }),
+              prisma.commentReport.count({ where: whereClause }),
+            ]);
             return json({
               reports: reports.map((r) => ({
                 id: r.id,
@@ -41,6 +52,10 @@ export const Route = createFileRoute("/api/admin/comments")({
                 commentAuthor: r.comment?.user?.name || "Unknown",
                 storyTitle: r.comment?.story?.title || "",
               })),
+              total,
+              page,
+              pageSize,
+              pageCount: Math.ceil(total / pageSize),
             });
           }
 
@@ -50,15 +65,19 @@ export const Route = createFileRoute("/api/admin/comments")({
           if (filter === "approved") whereClause.status = "approved";
           if (filter === "rejected") whereClause.status = "rejected";
 
-          const comments = await prisma.comment.findMany({
-            where: whereClause,
-            include: {
-              user: { select: { name: true, email: true, avatarUrl: true } },
-              story: { select: { title: true, slug: true } },
-            },
-            orderBy: { createdAt: "desc" },
-            take: 100,
-          });
+          const [comments, total] = await Promise.all([
+            prisma.comment.findMany({
+              where: whereClause,
+              include: {
+                user: { select: { name: true, email: true, avatarUrl: true } },
+                story: { select: { title: true, slug: true } },
+              },
+              orderBy: { createdAt: "desc" },
+              skip: (page - 1) * pageSize,
+              take: pageSize,
+            }),
+            prisma.comment.count({ where: whereClause }),
+          ]);
 
           return json({
             comments: comments.map((c) => ({
@@ -72,6 +91,10 @@ export const Route = createFileRoute("/api/admin/comments")({
               storyTitle: c.story?.title || "",
               storySlug: c.story?.slug || "",
             })),
+            total,
+            page,
+            pageSize,
+            pageCount: Math.ceil(total / pageSize),
           });
         } catch (e: any) {
           return json({ error: e.message || "Failed to load admin comments" }, { status: 500 });

@@ -20,24 +20,39 @@ export default function AdminCommentsPage() {
   const [comments, setComments] = useState<any[]>([]);
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const PAGE_SIZE = 20;
 
   useEffect(() => {
     if (initialized && !user) void navigate({ to: "/login" });
   }, [user, initialized, navigate]);
 
+  // Reset page when activeTab changes
+  useEffect(() => {
+    setPage(1);
+  }, [activeTab]);
+
   const loadData = async () => {
     if (!session) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/comments?filter=${activeTab}`, {
+      const params = new URLSearchParams({
+        filter: activeTab,
+        page: String(page),
+        pageSize: String(PAGE_SIZE),
+      });
+      const res = await fetch(`/api/admin/comments?${params}`, {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       if (res.ok) {
         const data = await res.json();
         if (activeTab === "flagged") {
           setReports(data.reports || []);
+          setTotal(data.total ?? 0);
         } else {
           setComments(data.comments || []);
+          setTotal(data.total ?? 0);
         }
       }
     } catch (e) {
@@ -51,7 +66,7 @@ export default function AdminCommentsPage() {
     if (user) {
       void loadData();
     }
-  }, [user, activeTab]);
+  }, [user, activeTab, page]);
 
   const handleAction = async (commentId: string | null, action: string, reportId?: string) => {
     if (!session) return;
@@ -218,6 +233,34 @@ export default function AdminCommentsPage() {
                 </tbody>
               </table>
             )}
+          </div>
+        )}
+
+        {/* Pagination Footer */}
+        {!loading && total > PAGE_SIZE && (
+          <div className="flex items-center justify-between px-4 py-3 border border-white/10 bg-[#161616] rounded-sm font-sans text-xs">
+            <span className="text-white/30">
+              Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} of {total}
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="px-3 py-1 text-white/40 hover:text-white disabled:opacity-20 transition-colors"
+              >
+                Prev
+              </button>
+              <span className="text-white/40">
+                {page} / {Math.ceil(total / PAGE_SIZE)}
+              </span>
+              <button
+                onClick={() => setPage((p) => p + 1)}
+                disabled={page >= Math.ceil(total / PAGE_SIZE)}
+                className="px-3 py-1 text-white/40 hover:text-white disabled:opacity-20 transition-colors"
+              >
+                Next
+              </button>
+            </div>
           </div>
         )}
       </div>
