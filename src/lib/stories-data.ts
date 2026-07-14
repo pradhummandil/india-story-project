@@ -71,8 +71,11 @@ if (typeof window === "undefined") {
       normalizeStory(s),
     );
     const fallbackThemes = (fallbackJson.themes as string[]) || (fallbackJson.categories as string[]) || [];
-    initialThemes = fallbackThemes.length
-      ? ["All", ...fallbackThemes]
+    const normalized = Array.from(new Set(fallbackThemes))
+      .filter((t) => t && t !== "All" && t.toLowerCase() !== "general")
+      .sort((a, b) => a.localeCompare(b));
+    initialThemes = normalized.length
+      ? ["All", ...normalized]
       : initialThemes;
   } catch (e) {
     console.error("Failed to load initial server fallback stories:", e);

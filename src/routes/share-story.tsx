@@ -1194,7 +1194,7 @@ function ShareStoryPage() {
                                 />
                               </div>
                               {showThemeDropdown && (
-                                <div className="absolute z-50 w-full mt-1 bg-zinc-900 border border-border/80 rounded-xl shadow-xl max-h-48 overflow-y-auto">
+                                <div className="absolute z-50 w-full mt-1 bg-white border border-border/80 rounded-xl shadow-xl max-h-48 overflow-y-auto">
                                   {allThemes
                                     .filter(
                                       (t) =>
@@ -1520,7 +1520,7 @@ function ShareStoryPage() {
                               type="button"
                               onClick={() => void handleSubmit(null, true)}
                               variant="outline"
-                              className="w-full sm:w-auto h-13 border-border hover:border-gold/30 hover:bg-white/5 text-white uppercase tracking-[0.15em] text-xs font-bold rounded-xl flex items-center justify-center gap-2"
+                              className="w-full sm:w-auto h-13 border-border hover:border-gold/30 hover:bg-white/5 text-black uppercase tracking-[0.15em] text-xs font-bold rounded-xl flex items-center justify-center gap-2"
                               disabled={submitLoading || uploadingCover || uploadingGallery || uploadingVideo}
                             >
                               {submitLoading ? (
@@ -1535,7 +1535,7 @@ function ShareStoryPage() {
                               type="button"
                               onClick={() => setIsPreview(true)}
                               variant="outline"
-                              className="w-full sm:w-auto h-13 border-border hover:border-gold/30 hover:bg-white/5 text-white uppercase tracking-[0.15em] text-xs font-bold rounded-xl flex items-center justify-center gap-2"
+                              className="w-full sm:w-auto h-13 border-border hover:border-gold/30 hover:bg-white/5 text-black uppercase tracking-[0.15em] text-xs font-bold rounded-xl flex items-center justify-center gap-2"
                               disabled={submitLoading || uploadingCover || uploadingGallery || uploadingVideo}
                             >
                               <Sparkles className="size-4 text-gold" />

@@ -69,18 +69,25 @@ function mapStory(raw: Record<string, unknown>): Story {
 function normalizeThemes(payload: ThemePayload): readonly string[] {
   if (!Array.isArray(payload)) return [];
 
+  let list: string[] = [];
   if (payload.every((entry) => typeof entry === "string")) {
-    return payload as string[];
+    list = payload as string[];
+  } else {
+    list = payload
+      .map((entry) => {
+        if (typeof entry === "object" && entry && "name" in entry && typeof entry.name === "string") {
+          return entry.name;
+        }
+        return undefined;
+      })
+      .filter((entry): entry is string => Boolean(entry));
   }
 
-  return payload
-    .map((entry) => {
-      if (typeof entry === "object" && entry && "name" in entry && typeof entry.name === "string") {
-        return entry.name;
-      }
-      return undefined;
-    })
-    .filter((entry): entry is string => Boolean(entry));
+  const unique = Array.from(new Set(list))
+    .filter((t) => t && t !== "All" && t.toLowerCase() !== "general")
+    .sort((a, b) => a.localeCompare(b));
+
+  return unique;
 }
 
 async function fetchAllStories(): Promise<Story[]> {

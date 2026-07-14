@@ -3,6 +3,7 @@ import { prisma } from "@/lib/repositories/prisma.server";
 import { json } from "@/routes/api/-_utils";
 import { StoryStatus } from "@prisma/client";
 import { supabase } from "@/lib/supabase-client";
+import { extractCloudinaryPublicId, deleteFromCloudinary } from "@/lib/cloudinary.server";
 
 const storyIncludes: any = {
   state: { select: { id: true, name: true, slug: true } },
@@ -104,10 +105,20 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
           });
         }
 
-        const getFilenameFromUrl = (url: string) => {
-          if (!url || !url.includes("/storage/v1/object/public/media/")) return null;
-          const parts = url.split("/");
-          return parts[parts.length - 1];
+        const deleteOldImage = async (url: string) => {
+          if (!url) return;
+          const publicId = extractCloudinaryPublicId(url);
+          if (publicId) {
+            await deleteFromCloudinary(publicId).catch(console.error);
+            return;
+          }
+          if (url.includes("/storage/v1/object/public/media/")) {
+            const parts = url.split("/");
+            const oldFile = parts[parts.length - 1];
+            if (oldFile) {
+              await supabase.storage.from("media").remove([oldFile]).catch(console.error);
+            }
+          }
         };
 
         // Cover image updates
@@ -117,10 +128,7 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
           });
           if (existing) {
             if (existing.imageUrl !== body.coverImage) {
-              const oldFile = getFilenameFromUrl(existing.imageUrl);
-              if (oldFile) {
-                await supabase.storage.from("media").remove([oldFile]).catch(console.error);
-              }
+              await deleteOldImage(existing.imageUrl);
             }
             await prisma.storyImage.update({
               where: { id: existing.id },
@@ -141,10 +149,7 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
             where: { storyId: params.id, heroImage: true },
           });
           if (existing) {
-            const oldFile = getFilenameFromUrl(existing.imageUrl);
-            if (oldFile) {
-              await supabase.storage.from("media").remove([oldFile]).catch(console.error);
-            }
+            await deleteOldImage(existing.imageUrl);
             await prisma.storyImage.delete({ where: { id: existing.id } });
           }
         }
@@ -159,10 +164,7 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
           const newUrlsSet = new Set(body.additionalImages);
           for (const img of oldAdditional) {
             if (!newUrlsSet.has(img.imageUrl)) {
-              const oldFile = getFilenameFromUrl(img.imageUrl);
-              if (oldFile) {
-                await supabase.storage.from("media").remove([oldFile]).catch(console.error);
-              }
+              await deleteOldImage(img.imageUrl);
             }
           }
 

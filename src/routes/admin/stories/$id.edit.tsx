@@ -36,6 +36,7 @@ type StoryFull = {
   stateId: string;
   authorId: string;
   themeId: string;
+  themeIds?: string[];
   images: Array<{ id: string; imageUrl: string; caption?: string; heroImage: boolean }>;
 };
 type DropdownOption = { id: string; name: string; slug: string };
@@ -76,7 +77,10 @@ export default function EditStoryPage() {
     ])
       .then(([s, sts, auths, thms]) => {
         const fullStory = s as StoryFull;
-        setStory(fullStory);
+        setStory({
+          ...fullStory,
+          themeId: fullStory.themeIds?.[0] || "",
+        });
         setStates(sts.states ?? []);
         setAuthors(auths.authors ?? []);
         setThemes(thms.themes ?? []);
@@ -116,13 +120,16 @@ export default function EditStoryPage() {
         body: formData,
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        throw new Error("Upload failed");
+        throw new Error(data.error || `Server error ${res.status}`);
       }
 
-      const data = await res.json();
       if (data.files && data.files.length > 0) {
         setCoverImageUrl(data.files[0].url);
+      } else {
+        throw new Error("Upload succeeded but no URL was returned.");
       }
     } catch (err: any) {
       setError(err.message || "Failed to upload image.");
@@ -152,17 +159,21 @@ export default function EditStoryPage() {
         body: formData,
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        throw new Error("Upload failed");
+        throw new Error(data.error || `Server error ${res.status}`);
       }
 
-      const data = await res.json();
       if (data.files && data.files.length > 0) {
         const uploadedUrls = data.files.map((f: any) => f.url);
         setAdditionalImages((prev) => [...prev, ...uploadedUrls]);
       }
+      if (data.warnings && data.warnings.length > 0) {
+        setError(`Some files failed: ${data.warnings.join(" | ")}`);
+      }
     } catch (err: any) {
-      setError(err.message || "Failed to upload image.");
+      setError(err.message || "Failed to upload images.");
     } finally {
       setGalleryUploading(false);
     }
@@ -179,6 +190,7 @@ export default function EditStoryPage() {
       status: publish ? "Published" : story.status,
       coverImage: coverImageUrl, // Will be string URL or null (if deleted)
       additionalImages,
+      themeIds: story.themeId ? [story.themeId] : [],
     };
 
     const res = await fetch(`/api/admin/stories/${id}`, {

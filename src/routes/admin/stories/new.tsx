@@ -116,13 +116,17 @@ export default function NewStoryPage() {
         body: formData,
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        throw new Error("Upload failed");
+        // Surface the actual server/Cloudinary error
+        throw new Error(data.error || `Server error ${res.status}`);
       }
 
-      const data = await res.json();
       if (data.files && data.files.length > 0) {
         setImageUrl(data.files[0].url);
+      } else {
+        throw new Error("Upload succeeded but no URL was returned.");
       }
     } catch (err: any) {
       setError(err.message || "Failed to upload image.");
@@ -152,17 +156,21 @@ export default function NewStoryPage() {
         body: formData,
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        throw new Error("Upload failed");
+        throw new Error(data.error || `Server error ${res.status}`);
       }
 
-      const data = await res.json();
       if (data.files && data.files.length > 0) {
         const uploadedUrls = data.files.map((f: any) => f.url);
         setAdditionalImages((prev) => [...prev, ...uploadedUrls]);
       }
+      if (data.warnings && data.warnings.length > 0) {
+        setError(`Some files failed: ${data.warnings.join(" | ")}`);
+      }
     } catch (err: any) {
-      setError(err.message || "Failed to upload image.");
+      setError(err.message || "Failed to upload images.");
     } finally {
       setGalleryUploading(false);
     }
@@ -200,7 +208,7 @@ export default function NewStoryPage() {
       status: publish ? "Published" : "Draft",
       stateId,
       authorId,
-      themeId,
+      themeIds: themeId ? [themeId] : [],
       imageUrl: imageUrl || null,
       imageCaption: imageCaption || null,
       additionalImages,

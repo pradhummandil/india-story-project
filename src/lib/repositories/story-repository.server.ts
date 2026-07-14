@@ -192,6 +192,15 @@ export class StoryRepository {
     if (options.author) {
       where.author = { name: { equals: options.author, mode: "insensitive" } };
     }
+    if (options.tag) {
+      where.tags = {
+        some: {
+          tag: {
+            name: { equals: options.tag, mode: "insensitive" }
+          }
+        }
+      };
+    }
     if (options.query) {
       const q = options.query;
       where.OR = [

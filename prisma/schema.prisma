@@ -40,6 +40,9 @@ model Author {
   bio       String?  @db.Text
   avatar    String?  @db.Text
   stories   Story[]
+  videos    Video[]
+  webStories WebStory[]
+  follows   Follow[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   @@index([name])
@@ -76,6 +79,10 @@ model UserProfile {
   commentLikes     CommentLike[]
   commentReports   CommentReport[]
   submissions      SubmittedStory[]
+  follows          Follow[]          @relation("UserFollows")
+  collections      Collection[]
+  discussionTopics DiscussionTopic[]
+  discussionPosts  DiscussionPost[]
   @@index([role])
   @@index([totalXP])
   @@index([readingStreak])
@@ -93,6 +100,7 @@ model Theme {
   name      String
   slug      String       @unique
   stories   StoryTheme[]
+  videos    VideoTheme[]
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
   @@index([slug])
@@ -116,6 +124,7 @@ model State {
   latitude  Float?
   longitude Float?
   stories   Story[]
+  videos    Video[]
   cities    City[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -191,6 +200,8 @@ model Story {
   heroSlides      HeroSlide[]
   featuredIn      FeaturedStory[]
   comments        Comment[]
+  revisions       StoryRevision[]
+  collections     CollectionStory[]
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   @@index([slug])
@@ -482,4 +493,131 @@ model ContactMessage {
   @@index([email])
   @@index([status])
   @@index([createdAt])
+}
+
+model Video {
+  id          String       @id @default(uuid()) @db.Uuid
+  title       String
+  titleHi     String?
+  excerpt     String?      @db.Text
+  excerptHi   String?      @db.Text
+  slug        String       @unique
+  videoUrl    String       @db.Text
+  provider    String       @default("youtube")
+  duration    Int          @default(0)
+  viewCount   Int          @default(0)
+  thumbnail   String?      @db.Text
+  featured    Boolean      @default(false)
+  status      StoryStatus  @default(Draft)
+  authorId    String       @db.Uuid
+  author      Author       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  stateId     String       @db.Uuid
+  state       State        @relation(fields: [stateId], references: [id], onDelete: Cascade)
+  themes      VideoTheme[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model VideoTheme {
+  videoId   String   @db.Uuid
+  themeId   String   @db.Uuid
+  video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  theme     Theme    @relation(fields: [themeId], references: [id], onDelete: Cascade)
+  @@id([videoId, themeId])
+}
+
+model WebStory {
+  id          String         @id @default(uuid()) @db.Uuid
+  title       String
+  titleHi     String?
+  slug        String         @unique
+  coverImage  String         @db.Text
+  excerpt     String?        @db.Text
+  status      StoryStatus    @default(Draft)
+  viewCount   Int            @default(0)
+  authorId    String         @db.Uuid
+  author      Author         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  pages       WebStoryPage[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model WebStoryPage {
+  id         String   @id @default(uuid()) @db.Uuid
+  storyId    String   @db.Uuid
+  story      WebStory @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  imageUrl   String   @db.Text
+  heading    String?
+  headingHi  String?
+  text       String?  @db.Text
+  textHi     String?  @db.Text
+  sortOrder  Int      @default(0)
+  durationMs Int      @default(5000)
+}
+
+model Follow {
+  followerId String   @db.Uuid
+  follower   UserProfile @relation("UserFollows", fields: [followerId], references: [id], onDelete: Cascade)
+  authorId   String   @db.Uuid
+  author     Author   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  @@id([followerId, authorId])
+}
+
+model Collection {
+  id          String            @id @default(uuid()) @db.Uuid
+  name        String
+  userId      String            @db.Uuid
+  user        UserProfile       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stories     CollectionStory[]
+  createdAt   DateTime          @default(now())
+}
+
+model CollectionStory {
+  collectionId String @db.Uuid
+  storyId      String @db.Uuid
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  story        Story      @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  @@id([collectionId, storyId])
+}
+
+model StoryRevision {
+  id         String      @id @default(uuid()) @db.Uuid
+  storyId    String      @db.Uuid
+  story      Story       @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  title      String
+  excerpt    String      @db.Text
+  content    String      @db.Text
+  changedBy  String      @db.Uuid
+  version    Int
+  createdAt  DateTime    @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  action     String
+  details    String   @db.Text
+  createdAt  DateTime @default(now())
+}
+
+model DiscussionTopic {
+  id        String              @id @default(uuid()) @db.Uuid
+  title     String
+  content   String              @db.Text
+  userId    String              @db.Uuid
+  user      UserProfile         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  posts     DiscussionPost[]
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+}
+
+model DiscussionPost {
+  id        String              @id @default(uuid()) @db.Uuid
+  topicId   String              @db.Uuid
+  topic     DiscussionTopic     @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  userId    String              @db.Uuid
+  user      UserProfile         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String              @db.Text
+  createdAt DateTime            @default(now())
 }
