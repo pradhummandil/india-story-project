@@ -1,11 +1,19 @@
-# Phase 0.6 Blockers - Work Plan
+# TODO - Database timeout diagnosis & minimal fix
 
-- [x] Fix `RecommendedForYou.tsx`: replace remaining `MODES.map(...)` usage with the derived `modes` array.
-- [x] Fix `story-dna.ts`: remove hardcoded category lookup tables and derive StoryDNA generically/deterministically from actual story fields or hashing.
-- [x] Fix `HeroOfTheDay.tsx`: remove hardcoded timeline titles (Beginning/Turning point/Growth/Momentum) and derive titles from content or omit titles while keeping layout.
-- [x] Run `npm run build` and verify success.
-- [x] Report exactly what changed.
-- [x] Redesign full UI/UX into a premium digital storytelling platform matching National Geographic/Apple Editorial design guidelines.
-- [x] Add animated cinematic session-based loader drawing the golden India outline.
-- [x] Build stories archive with interactive filters, search, sort options, and CSS columns masonry grid.
-- [x] Create magazine-style story detail reading experience with sticky share controls and dynamic reading progress bar.
+- [x] Inspect current Prisma index coverage for the specific homepage queries used by:
+  - [x] GET /api/hero-slides (heroOfTheDay + homepageSlideshow, nested images ordered top-1)
+  - [ ] GET /api/hero-of-the-day
+  - [x] GET /api/themes (non-Prisma route to DB; reads themeRepository)
+  - [x] GET /api/stories (already uses timeouts; likely affected by same base story index patterns)
+- [x] Verify which query is timing out (confirmed via code: tight 1500ms race in /api/hero-slides wraps a Prisma query with nested image ordering).
+- [ ] Add ONLY the minimum missing indexes (no duplicates) required to make those queries use the right indexes.
+
+- [ ] Generate Prisma migration to add the minimum missing indexes.
+
+- [ ] Run Prisma migration (or ensure it will apply on Supabase).
+
+- [ ] Re-test the four homepage endpoints on Vercel to confirm timeouts are gone.
+- [ ] Confirm that Admin slideshow still works (should be unaffected logically).
+
+
+
