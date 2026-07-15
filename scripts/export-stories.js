@@ -1,207 +1,148 @@
 const fs = require("fs");
 const path = require("path");
 
-const SOURCE_BASE = "https://indiastoryproject.com";
-const LIST_URL = `${SOURCE_BASE}/latest-story/`;
+// Prisma exporter for stories-backup.json
+// IMPORTANT: no scraping, no fetch(), no cheerio.
 
-const OUTPUT_PATH = path.join(process.cwd(), "stories.json");
+const { PrismaClient } = require("@prisma/client");
 
-function normalizeText(s) {
-  return (s ?? "").replace(/\s+/g, " ").trim();
+const prisma = new PrismaClient();
+
+const OUTPUT_PATH = path.join(process.cwd(), "public/data/stories-backup.json");
+
+function formatReadTime(readingTime) {
+  if (readingTime == null) return "";
+  const n = Number(readingTime);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  return `${n} min read`;
 }
 
-function safeHtmlToText(html) {
-  return html
-    .replace(/<script[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style[\s\S]*?<\/style>/gi, " ")
-    .replace(/<br\s*\/?>(\s*)/gi, "\n")
-    .replace(/<\/p>/gi, "\n\n")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\n{3,}/g, "\n\n")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function toSlugFromUrl(url) {
-  try {
-    const u = new URL(url);
-    const parts = u.pathname.split("/").filter(Boolean);
-    return parts[parts.length - 1] ?? "";
-  } catch {
-    return "";
+function pickImage(storyImages) {
+  // storyImages is already ordered via include
+  // rule: first hero image; otherwise first image; otherwise empty string
+  if (!Array.isArray(storyImages) || storyImages.length === 0) {
+    return { image: "", imageAlt: "" };
   }
-}
 
-function extractStoryCardsFromListing(listingHtml) {
-  const links = Array.from(listingHtml.matchAll(/<a[^>]+href=["']([^"']+)["'][^>]*>/gi)).map(
-    (m) => m[1],
-  );
-
-  const storyUrls = links
-    .filter((href) => {
-      if (!href) return false;
-      if (href.startsWith("#")) return false;
-      if (href.startsWith("mailto:")) return false;
-      if (href.startsWith("tel:")) return false;
-
-      return (
-        /^\/(?!wp-|author|tag|category|search|page)([^/]+)\/?$/.test(href) ||
-        href.includes(SOURCE_BASE)
-      );
-    })
-    .map((href) => {
-      try {
-        return new URL(href, SOURCE_BASE).toString();
-      } catch {
-        return `${SOURCE_BASE}${href}`;
-      }
-    });
-
-  const seen = new Set();
-  const out = [];
-  for (const u of storyUrls) {
-    if (!seen.has(u)) {
-      seen.add(u);
-      out.push(u);
-    }
-  }
-  return out;
-}
-
-function extractMetaFromStoryHtml(slug, html) {
-  const title =
-    normalizeText((html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)?.[1] ?? "").replace(/<[^>]+>/g, " ")) ||
-    normalizeText(
-      html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i)?.[1],
-    );
-
-  const excerpt =
-    normalizeText(
-      html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i)?.[1],
-    ) ||
-    normalizeText(
-      html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i)?.[1],
-    ) ||
-    title;
-
-  const image =
-    html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)?.[1] ||
-    html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i)?.[1];
-
-  const imageAlt = html.match(/<img[^>]+alt=["']([^"']+)["'][^>]*>/i)?.[1];
-
-  const articleBlock = html.match(/<article[^>]*>([\s\S]*?)<\/article>/i)?.[1] ?? html;
-
-  let content = safeHtmlToText(articleBlock);
-  content = content.slice(0, 50000);
-
-  let category = "";
-  let region = "";
-  let readTime = "";
-
-  const jsonLdMatch = html.match(
-    /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i,
-  );
-
-  if (jsonLdMatch?.[1]) {
-    try {
-      const parsed = JSON.parse(jsonLdMatch[1]);
-      const obj = Array.isArray(parsed) ? parsed[0] : parsed;
-
-      category = normalizeText(obj?.articleSection);
-      region =
-        normalizeText(obj?.about?.name || obj?.address?.addressLocality || obj?.location?.name) ||
-        "";
-    } catch {
-      // ignore
-    }
-  }
+  const hero = storyImages.find((img) => img && img.heroImage);
+  const first = storyImages[0];
+  const chosen = hero || first;
 
   return {
-    id: slug,
-    slug,
-    title,
-    excerpt: excerpt || title,
-    category: category || "कहानी",
-    region: region || "India",
-    readTime: readTime || "",
-    image: image || "",
-    imageAlt: imageAlt || "",
-    url: slug,
-    content,
+    image: chosen?.imageUrl || "",
+    imageAlt: chosen?.caption || "",
   };
-}
-
-async function fetchWithTimeout(url, timeoutMs = 20000, headers = {}) {
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const res = await fetch(url, {
-      headers: { "user-agent": "Mozilla/5.0", ...headers },
-      signal: controller.signal,
-    });
-    return res;
-  } finally {
-    clearTimeout(id);
-  }
 }
 
 (async () => {
-  console.log("Fetching listing:", LIST_URL);
-  const listingRes = await fetchWithTimeout(LIST_URL, 15000);
-  if (!listingRes.ok) {
-    throw new Error(`Failed to fetch listing: ${listingRes.status}`);
+  try {
+    const stories = await prisma.story.findMany({
+      where: {
+        status: "Published",
+        deleted: false,
+      },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        titleHi: true,
+        excerpt: true,
+        excerptHi: true,
+        content: true,
+        contentHi: true,
+        publishedAt: true,
+        readingTime: true,
+        featured: true,
+        heroOfTheDay: true,
+        homepageSlideshow: true,
+        slideshowOrder: true,
+        author: {
+          select: { name: true },
+        },
+        state: {
+          select: { name: true },
+        },
+        themes: {
+          select: {
+            theme: {
+              select: { name: true },
+            },
+          },
+        },
+        images: {
+          // order so we can easily pick hero image first
+          orderBy: [{ heroImage: "desc" }, { sortOrder: "asc" }],
+          select: { imageUrl: true, caption: true, heroImage: true },
+          take: 5,
+        },
+      },
+    });
+
+    const themesAll = new Set();
+
+    const exportedStories = stories.map((s) => {
+      const themes = Array.isArray(s.themes)
+        ? s.themes.map((t) => t?.theme?.name).filter(Boolean)
+        : [];
+
+      for (const t of themes) themesAll.add(t);
+
+      const category = themes.length > 0 ? themes[0] : "कहानी";
+      const region = s.state?.name || "";
+      const author = s.author?.name || "";
+      const authorName = s.author?.name ?? "India Story Project";
+
+      const { image, imageAlt } = pickImage(s.images);
+
+      return {
+        id: s.id,
+        slug: s.slug,
+
+        title: s.title,
+        titleHi: s.titleHi,
+        excerpt: s.excerpt,
+        excerptHi: s.excerptHi,
+        content: s.content,
+        contentHi: s.contentHi,
+
+        image,
+        imageAlt,
+
+        category,
+        themes,
+
+        region,
+        author,
+        authorName,
+
+        publishDate: s.publishedAt?.toISOString() ?? "",
+        readTime: formatReadTime(s.readingTime),
+
+        featured: s.featured,
+        heroOfTheDay: s.heroOfTheDay,
+        homepageSlideshow: s.homepageSlideshow,
+        slideshowOrder: s.slideshowOrder,
+
+        url: s.slug,
+      };
+    });
+
+    // Sort to stable output
+    exportedStories.sort((a, b) => (a.slug || "").localeCompare(b.slug || ""));
+
+    const categories = ["All", ...Array.from(themesAll).sort((a, b) => a.localeCompare(b))];
+
+    const root = {
+      fetchedAt: new Date().toISOString().slice(0, 10) /* ISO_DATE */, // matches “ISO_DATE” requirement
+      categories,
+      stories: exportedStories,
+    };
+
+    // NOTE: front-end expects categories and stories; fallback code reads story fields.
+    fs.writeFileSync(OUTPUT_PATH, JSON.stringify(root, null, 2), "utf8");
+    console.log(`Exported ${exportedStories.length} stories to ${OUTPUT_PATH}`);
+  } finally {
+    await prisma.$disconnect();
   }
-  const listingHtml = await listingRes.text();
-
-  const storyUrls = extractStoryCardsFromListing(listingHtml);
-  console.log("Found story pages:", storyUrls.length);
-
-  const concurrency = 4;
-  let idx = 0;
-
-  const stories = [];
-
-  async function worker() {
-    while (idx < storyUrls.length) {
-      const current = storyUrls[idx++];
-      const slug = toSlugFromUrl(current);
-      if (!slug) continue;
-
-      try {
-        const detailRes = await fetchWithTimeout(current, 20000);
-        if (!detailRes.ok) continue;
-        const detailHtml = await detailRes.text();
-
-        const story = extractMetaFromStoryHtml(slug, detailHtml);
-
-        if (story.title && story.content && story.content.length > 100) {
-          stories.push(story);
-          console.log("OK:", slug);
-        } else {
-          console.log("SKIP (empty):", slug);
-        }
-      } catch (e) {
-        console.log("ERR:", slug, e?.message || e);
-      }
-    }
-  }
-
-  const workers = Array.from({ length: Math.min(concurrency, storyUrls.length) }, () => worker());
-
-  await Promise.all(workers);
-
-  stories.sort((a, b) => a.slug.localeCompare(b.slug));
-
-  const categorySet = new Set(stories.map((s) => s.category).filter(Boolean));
-  const categories = ["All", ...Array.from(categorySet).sort((a, b) => a.localeCompare(b))];
-
-  const output = {
-    fetchedAt: new Date().toISOString(),
-    categories,
-    stories,
-  };
-
-  fs.writeFileSync(OUTPUT_PATH, JSON.stringify(output, null, 2), "utf8");
-  console.log("Wrote:", OUTPUT_PATH, "stories:", stories.length);
 })();
+
