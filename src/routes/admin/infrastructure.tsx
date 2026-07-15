@@ -18,9 +18,7 @@ import {
   Globe,
 } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { flagService } from "@/lib/infrastructure/flags";
-import { queueService } from "@/lib/infrastructure/queue";
-import { prisma } from "@/lib/repositories/prisma.server";
+import { useAuthStore } from "@/lib/auth-store";
 
 export const Route = createFileRoute("/admin/infrastructure")({
   head: () => ({
@@ -52,6 +50,7 @@ const MOCK_AUDIT_LOGS = [
 ];
 
 export default function AdminInfrastructurePage() {
+  const { session } = useAuthStore();
   const [dbAuditLogs, setDbAuditLogs] = useState<any[]>([]);
   const [flags, setFlags] = useState({
     maintenanceMode: false,
@@ -68,21 +67,26 @@ export default function AdminInfrastructurePage() {
   // Fetch flags and audit logs
   useEffect(() => {
     const loadSystemData = async () => {
+      if (!session) return;
       try {
-        const mMode = await flagService.isEnabled("maintenanceMode");
-        const bAudio = await flagService.isEnabled("betaAudioEnabled");
-        const satellite = await flagService.isEnabled("interactiveMapSatellite");
-        const premium = await flagService.isEnabled("premiumStoryRestriction");
+        const headers = { Authorization: `Bearer ${session.access_token}` };
 
-        setFlags({
-          maintenanceMode: mMode,
-          betaAudioEnabled: bAudio,
-          interactiveMapSatellite: satellite,
-          premiumStoryRestriction: premium,
-        });
+        // Fetch flags
+        const flagsRes = await fetch("/api/admin/infrastructure/flags", { headers });
+        if (flagsRes.ok) {
+          const flagData = await flagsRes.json();
+          setFlags(flagData);
+        }
+
+        // Fetch queue
+        const queueRes = await fetch("/api/admin/infrastructure/queue", { headers });
+        if (queueRes.ok) {
+          const queueData = await queueRes.json();
+          setQueue(queueData);
+        }
 
         // Query real database audit logs
-        const response = await fetch("/api/admin/infrastructure/audit-logs");
+        const response = await fetch("/api/admin/infrastructure/audit-logs", { headers });
         if (response.ok) {
           const logs = await response.json();
           setDbAuditLogs(logs);
@@ -94,24 +98,57 @@ export default function AdminInfrastructurePage() {
       }
     };
 
-    loadSystemData();
-    setQueue(queueService.listQueue());
-  }, []);
+    if (session) {
+      loadSystemData();
+    }
+  }, [session]);
 
   const handleToggleFlag = async (name: keyof typeof flags) => {
+    if (!session) return;
     const currentVal = flags[name];
     const newVal = !currentVal;
 
     // Update local state
     setFlags({ ...flags, [name]: newVal });
 
-    // Persist to Database SiteSettings
-    await flagService.setFlag(name, newVal);
+    try {
+      await fetch("/api/admin/infrastructure/flags", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ name, value: newVal }),
+      });
+    } catch (err) {
+      console.error("Failed to toggle flag:", err);
+    }
   };
 
-  const handleDispatchJob = (jobName: string) => {
-    queueService.dispatch(jobName, { triggeredBy: "SuperAdmin" });
-    setQueue(queueService.listQueue());
+  const handleDispatchJob = async (jobName: string) => {
+    if (!session) return;
+    try {
+      const res = await fetch("/api/admin/infrastructure/queue", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ name: jobName }),
+      });
+      if (res.ok) {
+        // Reload queue
+        const queueRes = await fetch("/api/admin/infrastructure/queue", {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        if (queueRes.ok) {
+          const queueData = await queueRes.json();
+          setQueue(queueData);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to dispatch job:", err);
+    }
   };
 
   const handleRunBackup = () => {

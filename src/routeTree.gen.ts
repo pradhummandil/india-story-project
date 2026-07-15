@@ -163,6 +163,8 @@ import { Route as ApiAdminNewsroomDashboardRouteImport } from './routes/api/admi
 import { Route as ApiAdminNewsroomCommentsRouteImport } from './routes/api/admin/newsroom/comments'
 import { Route as ApiAdminNewsroomBulkRouteImport } from './routes/api/admin/newsroom/bulk'
 import { Route as ApiAdminNewsroomAiHelperRouteImport } from './routes/api/admin/newsroom/ai-helper'
+import { Route as ApiAdminInfrastructureQueueRouteImport } from './routes/api/admin/infrastructure/queue'
+import { Route as ApiAdminInfrastructureFlagsRouteImport } from './routes/api/admin/infrastructure/flags'
 import { Route as ApiAdminInfrastructureAuditLogsRouteImport } from './routes/api/admin/infrastructure/audit-logs'
 import { Route as ApiAdminCommunityModerateRouteImport } from './routes/api/admin/community/moderate'
 import { Route as ApiAdminAuthorsIdRouteImport } from './routes/api/admin/authors.$id'
@@ -951,6 +953,18 @@ const ApiAdminNewsroomAiHelperRoute =
     path: '/api/admin/newsroom/ai-helper',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiAdminInfrastructureQueueRoute =
+  ApiAdminInfrastructureQueueRouteImport.update({
+    id: '/api/admin/infrastructure/queue',
+    path: '/api/admin/infrastructure/queue',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminInfrastructureFlagsRoute =
+  ApiAdminInfrastructureFlagsRouteImport.update({
+    id: '/api/admin/infrastructure/flags',
+    path: '/api/admin/infrastructure/flags',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiAdminInfrastructureAuditLogsRoute =
   ApiAdminInfrastructureAuditLogsRouteImport.update({
     id: '/api/admin/infrastructure/audit-logs',
@@ -1138,6 +1152,8 @@ export interface FileRoutesByFullPath {
   '/api/admin/authors/$id': typeof ApiAdminAuthorsIdRoute
   '/api/admin/community/moderate': typeof ApiAdminCommunityModerateRoute
   '/api/admin/infrastructure/audit-logs': typeof ApiAdminInfrastructureAuditLogsRoute
+  '/api/admin/infrastructure/flags': typeof ApiAdminInfrastructureFlagsRoute
+  '/api/admin/infrastructure/queue': typeof ApiAdminInfrastructureQueueRoute
   '/api/admin/newsroom/ai-helper': typeof ApiAdminNewsroomAiHelperRoute
   '/api/admin/newsroom/bulk': typeof ApiAdminNewsroomBulkRoute
   '/api/admin/newsroom/comments': typeof ApiAdminNewsroomCommentsRoute
@@ -1299,6 +1315,8 @@ export interface FileRoutesByTo {
   '/api/admin/authors/$id': typeof ApiAdminAuthorsIdRoute
   '/api/admin/community/moderate': typeof ApiAdminCommunityModerateRoute
   '/api/admin/infrastructure/audit-logs': typeof ApiAdminInfrastructureAuditLogsRoute
+  '/api/admin/infrastructure/flags': typeof ApiAdminInfrastructureFlagsRoute
+  '/api/admin/infrastructure/queue': typeof ApiAdminInfrastructureQueueRoute
   '/api/admin/newsroom/ai-helper': typeof ApiAdminNewsroomAiHelperRoute
   '/api/admin/newsroom/bulk': typeof ApiAdminNewsroomBulkRoute
   '/api/admin/newsroom/comments': typeof ApiAdminNewsroomCommentsRoute
@@ -1464,6 +1482,8 @@ export interface FileRoutesById {
   '/api/admin/authors/$id': typeof ApiAdminAuthorsIdRoute
   '/api/admin/community/moderate': typeof ApiAdminCommunityModerateRoute
   '/api/admin/infrastructure/audit-logs': typeof ApiAdminInfrastructureAuditLogsRoute
+  '/api/admin/infrastructure/flags': typeof ApiAdminInfrastructureFlagsRoute
+  '/api/admin/infrastructure/queue': typeof ApiAdminInfrastructureQueueRoute
   '/api/admin/newsroom/ai-helper': typeof ApiAdminNewsroomAiHelperRoute
   '/api/admin/newsroom/bulk': typeof ApiAdminNewsroomBulkRoute
   '/api/admin/newsroom/comments': typeof ApiAdminNewsroomCommentsRoute
@@ -1630,6 +1650,8 @@ export interface FileRouteTypes {
     | '/api/admin/authors/$id'
     | '/api/admin/community/moderate'
     | '/api/admin/infrastructure/audit-logs'
+    | '/api/admin/infrastructure/flags'
+    | '/api/admin/infrastructure/queue'
     | '/api/admin/newsroom/ai-helper'
     | '/api/admin/newsroom/bulk'
     | '/api/admin/newsroom/comments'
@@ -1791,6 +1813,8 @@ export interface FileRouteTypes {
     | '/api/admin/authors/$id'
     | '/api/admin/community/moderate'
     | '/api/admin/infrastructure/audit-logs'
+    | '/api/admin/infrastructure/flags'
+    | '/api/admin/infrastructure/queue'
     | '/api/admin/newsroom/ai-helper'
     | '/api/admin/newsroom/bulk'
     | '/api/admin/newsroom/comments'
@@ -1955,6 +1979,8 @@ export interface FileRouteTypes {
     | '/api/admin/authors/$id'
     | '/api/admin/community/moderate'
     | '/api/admin/infrastructure/audit-logs'
+    | '/api/admin/infrastructure/flags'
+    | '/api/admin/infrastructure/queue'
     | '/api/admin/newsroom/ai-helper'
     | '/api/admin/newsroom/bulk'
     | '/api/admin/newsroom/comments'
@@ -2066,6 +2092,8 @@ export interface RootRouteChildren {
   ApiPodcastEpisodesRoute: typeof ApiPodcastEpisodesRoute
   ApiAdminCommunityModerateRoute: typeof ApiAdminCommunityModerateRoute
   ApiAdminInfrastructureAuditLogsRoute: typeof ApiAdminInfrastructureAuditLogsRoute
+  ApiAdminInfrastructureFlagsRoute: typeof ApiAdminInfrastructureFlagsRoute
+  ApiAdminInfrastructureQueueRoute: typeof ApiAdminInfrastructureQueueRoute
   ApiAdminNewsroomAiHelperRoute: typeof ApiAdminNewsroomAiHelperRoute
   ApiAdminNewsroomBulkRoute: typeof ApiAdminNewsroomBulkRoute
   ApiAdminNewsroomCommentsRoute: typeof ApiAdminNewsroomCommentsRoute
@@ -3155,6 +3183,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminNewsroomAiHelperRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/infrastructure/queue': {
+      id: '/api/admin/infrastructure/queue'
+      path: '/api/admin/infrastructure/queue'
+      fullPath: '/api/admin/infrastructure/queue'
+      preLoaderRoute: typeof ApiAdminInfrastructureQueueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/infrastructure/flags': {
+      id: '/api/admin/infrastructure/flags'
+      path: '/api/admin/infrastructure/flags'
+      fullPath: '/api/admin/infrastructure/flags'
+      preLoaderRoute: typeof ApiAdminInfrastructureFlagsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin/infrastructure/audit-logs': {
       id: '/api/admin/infrastructure/audit-logs'
       path: '/api/admin/infrastructure/audit-logs'
@@ -3683,6 +3725,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPodcastEpisodesRoute: ApiPodcastEpisodesRoute,
   ApiAdminCommunityModerateRoute: ApiAdminCommunityModerateRoute,
   ApiAdminInfrastructureAuditLogsRoute: ApiAdminInfrastructureAuditLogsRoute,
+  ApiAdminInfrastructureFlagsRoute: ApiAdminInfrastructureFlagsRoute,
+  ApiAdminInfrastructureQueueRoute: ApiAdminInfrastructureQueueRoute,
   ApiAdminNewsroomAiHelperRoute: ApiAdminNewsroomAiHelperRoute,
   ApiAdminNewsroomBulkRoute: ApiAdminNewsroomBulkRoute,
   ApiAdminNewsroomCommentsRoute: ApiAdminNewsroomCommentsRoute,
