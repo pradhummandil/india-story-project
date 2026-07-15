@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { themeService } from "@/lib/services/theme-service.server";
-import { json } from "@/routes/api/-_utils";
+import { json, fetchStoriesBackup } from "@/routes/api/-_utils";
 
 // Server-side in-memory cache
 const cache = {
@@ -25,7 +25,7 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs = 1500): Promise<T>
 export const Route = createFileRoute("/api/themes")({
   server: {
     handlers: {
-      GET: async () => {
+      GET: async ({ request }) => {
         const now = Date.now();
         if (cache.themes && now < cache.expiry) {
           return json(cache.themes);
@@ -42,10 +42,7 @@ export const Route = createFileRoute("/api/themes")({
         } catch (error: any) {
           console.warn("[themes API] Timeout or error - using fallback:", error.message);
           try {
-            const fs = await import("node:fs");
-            const path = await import("node:path");
-            const backupPath = path.resolve(process.cwd(), "stories-backup.json");
-            const fallbackJson = JSON.parse(fs.readFileSync(backupPath, "utf8"));
+            const fallbackJson = await fetchStoriesBackup(request);
             const themesList = fallbackJson.themes || fallbackJson.categories || [
               "Heritage", "Innovation", "Sustainability", "Science", "Culture", "Environment", "Festival", "Food"
             ];

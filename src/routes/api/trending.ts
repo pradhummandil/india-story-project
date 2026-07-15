@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { json } from "@/routes/api/-_utils";
+import { json, fetchStoriesBackup } from "@/routes/api/-_utils";
 import { prisma } from "@/lib/repositories/prisma.server";
 import { toStoryCardCompatible } from "@/lib/repositories/story-repository.server";
 
@@ -26,7 +26,7 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs = 1500): Promise<T>
 export const Route = createFileRoute("/api/trending")({
   server: {
     handlers: {
-      GET: async () => {
+      GET: async ({ request }) => {
         const now = Date.now();
         if (cache.stories && now < cache.expiry) {
           return json({ stories: cache.stories });
@@ -58,10 +58,7 @@ export const Route = createFileRoute("/api/trending")({
         } catch (error: any) {
           console.warn("[trending] GET error or timeout - using JSON fallback:", error.message);
           try {
-            const fs = await import("node:fs");
-            const path = await import("node:path");
-            const backupPath = path.resolve(process.cwd(), "stories-backup.json");
-            const fallbackJson = JSON.parse(fs.readFileSync(backupPath, "utf8"));
+            const fallbackJson = await fetchStoriesBackup(request);
             const fallbackStories = fallbackJson.stories || [];
 
             // Sort by views descending

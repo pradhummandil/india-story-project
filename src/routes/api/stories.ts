@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { storyService } from "@/lib/services/story-service.server";
+import { fetchStoriesBackup } from "@/routes/api/-_utils";
 
 // Server-side query cache
 const storiesCache = new Map<string, { data: any; expiry: number }>();
@@ -78,10 +79,7 @@ export const Route = createFileRoute("/api/stories")({
         // Fallback to stories-backup.json if database has no records or timed out
         if (!payload || payload.total === 0) {
           try {
-            const fs = await import("node:fs");
-            const path = await import("node:path");
-            const backupPath = path.resolve(process.cwd(), "stories-backup.json");
-            const fallbackJson = JSON.parse(fs.readFileSync(backupPath, "utf8"));
+            const fallbackJson = await fetchStoriesBackup(request);
             let fallbackStories = fallbackJson.stories || [];
 
             // Apply filters manually to the fallback stories

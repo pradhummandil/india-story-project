@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { json } from "@/routes/api/-_utils";
+import { json, fetchStoriesBackup } from "@/routes/api/-_utils";
 import { storyRepository } from "@/lib/repositories/story-repository.server";
 
 // Server-side in-memory cache
@@ -25,7 +25,7 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs = 1500): Promise<T>
 export const Route = createFileRoute("/api/hero-of-the-day")({
   server: {
     handlers: {
-      GET: async () => {
+      GET: async ({ request }) => {
         const now = Date.now();
         if (cache.story && now < cache.expiry) {
           return json({ story: cache.story });
@@ -42,10 +42,7 @@ export const Route = createFileRoute("/api/hero-of-the-day")({
         } catch (error: any) {
           console.warn("[hero-of-the-day] GET error or timeout - using JSON fallback:", error.message);
           try {
-            const fs = await import("node:fs");
-            const path = await import("node:path");
-            const backupPath = path.resolve(process.cwd(), "stories-backup.json");
-            const fallbackJson = JSON.parse(fs.readFileSync(backupPath, "utf8"));
+            const fallbackJson = await fetchStoriesBackup(request);
             const fallbackStories = fallbackJson.stories || [];
             const heroStory = fallbackStories.find((s: any) => s.heroOfTheDay) || fallbackStories[0] || null;
 

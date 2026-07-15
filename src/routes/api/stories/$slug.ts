@@ -1,13 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { storyService } from "@/lib/services/story-service.server";
-import { invalidQueryResponse, json } from "@/routes/api/-_utils";
+import { invalidQueryResponse, json, fetchStoriesBackup } from "@/routes/api/-_utils";
 import { prisma } from "@/lib/repositories/prisma.server";
 
 export const Route = createFileRoute("/api/stories/$slug")({
   server: {
     handlers: {
-      GET: async ({ params }) => {
+      GET: async ({ params, request }) => {
         const slug = params.slug?.trim();
         if (!slug) {
           return invalidQueryResponse("A story slug is required");
@@ -16,10 +16,7 @@ export const Route = createFileRoute("/api/stories/$slug")({
         let story = await storyService.getStoryBySlug(slug);
         if (!story) {
           try {
-            const fs = await import("node:fs");
-            const path = await import("node:path");
-            const backupPath = path.resolve(process.cwd(), "stories-backup.json");
-            const fallbackJson = JSON.parse(fs.readFileSync(backupPath, "utf8"));
+            const fallbackJson = await fetchStoriesBackup(request);
             const fallbackStory = fallbackJson.stories.find((s: any) => s.slug === slug) as any;
             if (fallbackStory) {
               story = {

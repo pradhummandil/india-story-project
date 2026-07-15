@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { json } from "@/routes/api/-_utils";
+import { json, fetchStoriesBackup } from "@/routes/api/-_utils";
 import { prisma } from "@/lib/repositories/prisma.server";
 
 const FALLBACK_IMAGE =
@@ -28,7 +28,7 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs = 1500): Promise<T>
 export const Route = createFileRoute("/api/hero-slides")({
   server: {
     handlers: {
-      GET: async () => {
+      GET: async ({ request }) => {
         const now = Date.now();
         if (cache.slides && now < cache.expiry) {
           return json({ slides: cache.slides });
@@ -136,10 +136,7 @@ export const Route = createFileRoute("/api/hero-slides")({
         } catch (error: any) {
           console.warn("[hero-slides] GET error or timeout - using JSON fallback:", error.message);
           try {
-            const fs = await import("node:fs");
-            const path = await import("node:path");
-            const backupPath = path.resolve(process.cwd(), "stories-backup.json");
-            const fallbackJson = JSON.parse(fs.readFileSync(backupPath, "utf8"));
+            const fallbackJson = await fetchStoriesBackup(request);
             const fallbackStories = (fallbackJson.stories || [])
               .filter((s: any) => s.homepageSlideshow || s.heroOfTheDay || s.featured)
               .slice(0, 5);

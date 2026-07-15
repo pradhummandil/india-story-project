@@ -132,27 +132,7 @@ let initialThemes: string[] = [
   "Environment",
 ];
 
-if (typeof window === "undefined") {
-  try {
-    const fs = await import("node:fs");
-    const path = await import("node:path");
-    const backupPath = path.resolve(process.cwd(), "stories-backup.json");
-    if (fs.existsSync(backupPath)) {
-      const fallbackJson = JSON.parse(fs.readFileSync(backupPath, "utf8"));
-      initialStories = (fallbackJson.stories || []).map((s: Record<string, unknown>) =>
-        normalizeStory(s),
-      );
-      const fallbackThemes =
-        (fallbackJson.themes as string[]) || (fallbackJson.categories as string[]) || [];
-      const normalized = Array.from(new Set(fallbackThemes))
-        .filter((t) => t && t !== "All" && t.toLowerCase() !== "general")
-        .sort((a, b) => a.localeCompare(b));
-      initialThemes = normalized.length ? ["All", ...normalized] : initialThemes;
-    }
-  } catch (e) {
-    console.error("Failed to load initial server fallback stories:", e);
-  }
-} else if (
+if (
   typeof window !== "undefined" &&
   (
     window as unknown as Record<

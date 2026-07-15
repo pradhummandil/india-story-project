@@ -127,3 +127,19 @@ export function getClientIp(request: Request): string {
   }
   return "127.0.0.1";
 }
+
+let cachedStoriesBackup: any = null;
+
+export async function fetchStoriesBackup(request: Request): Promise<any> {
+  if (cachedStoriesBackup) return cachedStoriesBackup;
+  const origin = new URL(request.url).origin;
+  const url = `${origin}/data/stories-backup.json`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch backup stories: ${res.status}`);
+  }
+  const data = await res.json();
+  cachedStoriesBackup = data;
+  return data;
+}
+
