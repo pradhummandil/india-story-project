@@ -105,7 +105,7 @@ export const Route = createFileRoute("/api/hero-slides")({
                 take: 5,
                 select: slideSelect,
               }),
-              1500
+              5000
             );
             activeStories.push(...fallbackStories);
           }
@@ -134,38 +134,43 @@ export const Route = createFileRoute("/api/hero-slides")({
           cache.expiry = now + CACHE_TTL;
 
           return json({ slides });
-        } catch (error: any) {
-          console.warn("[hero-slides] GET error or timeout - using JSON fallback:", error.message);
-          try {
-            const fallbackJson = await fetchStoriesBackup(request);
-            const fallbackStories = (fallbackJson.stories || [])
-              .filter((s: any) => s.homepageSlideshow || s.heroOfTheDay || s.featured)
-              .slice(0, 5);
+        } } catch (error: any) {
+  console.error("FULL HERO SLIDES ERROR");
+  console.error(error);
+  console.error(error.stack);
 
-            const slides = fallbackStories.map((s: any) => {
-              const themes = Array.isArray(s.themes) ? s.themes : [s.category || s.theme].filter(Boolean);
-              return {
-                id: s.id,
-                storyId: s.id,
-                slug: s.slug,
-                title: s.title,
-                excerpt: s.excerpt,
-                titleHi: s.titleHi ?? null,
-                excerptHi: s.excerptHi ?? null,
-                themes,
-                state: s.region ?? "India",
-                author: s.authorName ?? "India Story Project",
-                readingTime: s.readTime ?? "4 min read",
-                image: s.image || FALLBACK_IMAGE,
-                caption: null,
-              };
-            });
+  try {
+    const fallbackJson = await fetchStoriesBackup(request);
 
-            return json({ slides });
-          } catch (e) {
-            return json({ slides: [] });
-          }
-        }
+    const fallbackStories = (fallbackJson.stories || [])
+      .filter((s: any) => s.homepageSlideshow || s.heroOfTheDay || s.featured)
+      .slice(0, 5);
+
+    const slides = fallbackStories.map((s: any) => ({
+      id: s.id,
+      storyId: s.id,
+      slug: s.slug,
+      title: s.title,
+      excerpt: s.excerpt,
+      titleHi: s.titleHi ?? null,
+      excerptHi: s.excerptHi ?? null,
+      themes: Array.isArray(s.themes)
+        ? s.themes
+        : [s.category || s.theme].filter(Boolean),
+      state: s.region ?? "India",
+      author: s.authorName ?? "India Story Project",
+      readingTime: s.readTime ?? "4 min read",
+      image: s.image || FALLBACK_IMAGE,
+      caption: null,
+    }));
+
+    return json({ slides });
+
+  } catch (e) {
+    console.error("Fallback JSON failed", e);
+    return json({ slides: [] });
+  }
+}
       },
     },
   },
