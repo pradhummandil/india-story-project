@@ -45,15 +45,26 @@ export const Route = createFileRoute("/api/admin/slideshow")({
             return json({ error: "storyIds must be an array" }, { status: 400 });
           }
 
-          // Update slideshowOrder sequentially
-          await prisma.$transaction(
+          /// Step 1: Clear all previous slideshow stories
+await prisma.story.updateMany({
+  data: {
+    homepageSlideshow: false,
+    slideshowOrder: null,
+  },
+});
+
+// Step 2: Mark only the selected stories as slideshow
+           await prisma.$transaction(
             storyIds.map((id, index) =>
               prisma.story.update({
                 where: { id },
-                data: { slideshowOrder: index },
+                data: {
+                  homepageSlideshow: true,
+                  slideshowOrder: index,
+                },
               }),
-            ),
-          );
+   ),
+ );
 
           return json({ success: true });
         } catch (error: any) {
