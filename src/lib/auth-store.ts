@@ -41,9 +41,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       return;
     }
 
-    const isInitialLoad = !useAuthStore.getState().initialized;
-    const hasNoUser = !useAuthStore.getState().user;
-    const shouldShowLoading = isInitialLoad || hasNoUser;
+    const currentState = useAuthStore.getState();
+    const isInitialLoad = !currentState.initialized;
+    const shouldShowLoading = isInitialLoad && !currentState.profile;
 
     if (shouldShowLoading) {
       set({ session, user: session.user, loading: true });

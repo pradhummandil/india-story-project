@@ -1,6 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { storyService } from "@/lib/services/story-service.server";
 
+// Server-side query cache
+const storiesCache = new Map<string, { data: any; expiry: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
+
 function json(data: unknown, init?: ResponseInit) {
   return new Response(JSON.stringify(data), {
     ...init,
@@ -16,10 +20,30 @@ function readPositiveInt(value: string | null, fallback: number) {
   return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
 }
 
+// Helper to run promises with a timeout
+async function withTimeout<T>(promise: Promise<T>, timeoutMs = 1500): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout>;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error("Database query timed out"));
+    }, timeoutMs);
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    clearTimeout(timeoutId);
+  });
+}
+
 export const Route = createFileRoute("/api/stories")({
   server: {
     handlers: {
       GET: async ({ request }) => {
+        const cacheKey = request.url;
+        const now = Date.now();
+        const cached = storiesCache.get(cacheKey);
+        if (cached && now < cached.expiry) {
+          return json(cached.data);
+        }
+
         const url = new URL(request.url);
         const query = url.searchParams.get("query") ?? undefined;
         const theme =
@@ -31,19 +55,28 @@ export const Route = createFileRoute("/api/stories")({
         const page = readPositiveInt(url.searchParams.get("page"), 1);
         const pageSize = readPositiveInt(url.searchParams.get("pageSize"), 12);
 
-        let payload = await storyService.getPublishedStories({
-          query,
-          theme,
-          region,
-          author,
-          tag,
-          sortBy,
-          page,
-          pageSize,
-        });
+        let payload: any = null;
 
-        // Fallback to stories-backup.json if database has no records
-        if (payload.total === 0) {
+        try {
+          payload = await withTimeout(
+            storyService.getPublishedStories({
+              query,
+              theme,
+              region,
+              author,
+              tag,
+              sortBy,
+              page,
+              pageSize,
+            }),
+            1500
+          );
+        } catch (error: any) {
+          console.warn("[stories API] Database query timeout or failure - falling back to JSON:", error.message);
+        }
+
+        // Fallback to stories-backup.json if database has no records or timed out
+        if (!payload || payload.total === 0) {
           try {
             const fs = await import("node:fs");
             const path = await import("node:path");
@@ -89,7 +122,13 @@ export const Route = createFileRoute("/api/stories")({
             };
           } catch (e) {
             console.error("Failed to load fallback stories from JSON:", e);
+            payload = { stories: [], total: 0, page, pageSize, pageCount: 0 };
           }
+        }
+
+        // Cache successful response
+        if (payload) {
+          storiesCache.set(cacheKey, { data: payload, expiry: now + CACHE_TTL });
         }
 
         return json(payload);

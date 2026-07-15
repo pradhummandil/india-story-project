@@ -508,20 +508,14 @@ function ProfilePage() {
     }
   }, [activeTab, user, session, refetchData]);
 
-  // Sync on focus & Cross-tab BroadcastChannel updates
+  // Sync on Cross-tab BroadcastChannel updates
   useEffect(() => {
-    const handleFocus = () => {
-      refetchData();
-    };
-    window.addEventListener("focus", handleFocus);
-
     const channel = new BroadcastChannel("isp-profile-updates");
     channel.onmessage = () => {
       refetchData();
     };
 
     return () => {
-      window.removeEventListener("focus", handleFocus);
       channel.close();
     };
   }, [refetchData]);

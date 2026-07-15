@@ -178,7 +178,7 @@ export const categories: string[] = themes;
 
 const listeners = new Set<() => void>();
 let loadPromise: Promise<void> | null = null;
-let hasLoadedRemote = false;
+let hasLoadedRemote = initialStories.length > 0;
 let error: string | null = null;
 
 let cachedSnapshot: StoriesDataState | null = null;

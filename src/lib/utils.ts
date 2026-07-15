@@ -37,5 +37,8 @@ export function getOptimizedImageUrl(url: string | undefined | null, width = 600
     const cleanUrl = url.split("?")[0];
     return `${cleanUrl}?w=${width}&auto=format&fit=crop&q=80`;
   }
+  if (url.includes("res.cloudinary.com")) {
+    return url.replace("/upload/", `/upload/q_auto,f_auto,w_${width}/`);
+  }
   return url;
 }
