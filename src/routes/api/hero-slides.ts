@@ -58,33 +58,34 @@ export const Route = createFileRoute("/api/hero-slides")({
           };
 
           // Fetch Hero of the Day with 1500ms timeout
-          const heroStory = await withTimeout(
-            prisma.story.findFirst({
-              where: {
-                heroOfTheDay: true,
-                status: "Published",
-                deleted: false,
-              },
-              select: slideSelect,
-            }),
-            1500
-          );
+          const [heroStory, slideshowStories] = await Promise.all([
+            withTimeout(
+              prisma.story.findFirst({
+                 where: {
+               heroOfTheDay: true,
+                  status: "Published",
+                  deleted: false,
+      },
+           select: slideSelect,
+    }),
+  1500
+  ),
 
-          // Fetch stories marked for slideshow with 1500ms timeout
-          const slideshowStories = await withTimeout(
-            prisma.story.findMany({
-              where: {
-                homepageSlideshow: true,
-                status: "Published",
-                deleted: false,
-                heroOfTheDay: false,
-              },
-              orderBy: { slideshowOrder: "asc" },
-              select: slideSelect,
-            }),
-            1500
-          );
-
+            withTimeout(
+              prisma.story.findMany({
+               where: {
+               homepageSlideshow: true,
+               status: "Published",
+                  deleted: false,
+      },
+              orderBy: {
+                   slideshowOrder: "asc",
+                },
+               select: slideSelect,
+              }),
+           1500
+  ),
+]);
           const activeStories = [];
           if (heroStory) {
             activeStories.push(heroStory);
