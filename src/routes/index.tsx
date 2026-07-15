@@ -130,16 +130,35 @@ const CATEGORY_MEDIAS = [
 function Home() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [dataLoading, setDataLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
-  const { stories: dbStories } = useStoriesData();
+  const { stories: dbStories, loading: storeLoading, error: storeError } = useStoriesData();
   const lang = useI18nStore((s) => s.lang);
   const commonText = getCommonText(lang);
 
-  const [featuredStoryRaw, setFeaturedStoryRaw] = useState<Story | null>(null);
-  const [gridStoriesRaw, setGridStoriesRaw] = useState<Story[]>([]);
-  const [latestStoriesRaw, setLatestStoriesRaw] = useState<Story[]>([]);
-  const [trendingStoriesRaw, setTrendingStoriesRaw] = useState<Story[]>([]);
+  const featuredStoryRaw = useMemo(() => {
+    return dbStories.find((s) => s.featured) || dbStories[0] || null;
+  }, [dbStories]);
+
+  const gridStoriesRaw = useMemo(() => {
+    return dbStories.slice(0, 6);
+  }, [dbStories]);
+
+  const latestStoriesRaw = useMemo(() => {
+    return [...dbStories]
+      .sort(
+        (a, b) =>
+          new Date(b.publishedAt || b.createdAt || 0).getTime() -
+          new Date(a.publishedAt || a.createdAt || 0).getTime(),
+      )
+      .slice(0, 4);
+  }, [dbStories]);
+
+  const trendingStoriesRaw = useMemo(() => {
+    return [...dbStories].sort((a, b) => b.viewCount - a.viewCount).slice(0, 6);
+  }, [dbStories]);
+
+  const dataLoading = dbStories.length === 0 && storeLoading;
+  const hasError = !!storeError && dbStories.length === 0;
+
   const handleSubscribe = async () => {
     if (!email.trim()) {
       alert("Please enter your email.");
@@ -175,80 +194,6 @@ function Home() {
       setLoading(false);
     }
   };
-
-  const fetchHomeData = useCallback(async () => {
-    try {
-      setHasError(false);
-      setDataLoading(true);
-      const [featuredRes, gridRes, latestRes, trendingRes] = await Promise.all([
-        fetch("/api/featured").catch((err) => {
-          console.error(err);
-          return null;
-        }),
-        fetch("/api/stories?pageSize=6").catch((err) => {
-          console.error(err);
-          return null;
-        }),
-        fetch("/api/latest-stories").catch((err) => {
-          console.error(err);
-          return null;
-        }),
-        fetch("/api/trending").catch((err) => {
-          console.error(err);
-          return null;
-        }),
-      ]);
-
-      let successCount = 0;
-      if (featuredRes && featuredRes.ok) {
-        const data = await featuredRes.json();
-        setFeaturedStoryRaw(data.stories && data.stories.length > 0 ? data.stories[0] : null);
-        successCount++;
-      } else {
-        setFeaturedStoryRaw(null);
-      }
-
-      if (gridRes && gridRes.ok) {
-        const data = await gridRes.json();
-        setGridStoriesRaw(data.stories ?? []);
-        successCount++;
-      }
-
-      if (latestRes && latestRes.ok) {
-        const data = await latestRes.json();
-        setLatestStoriesRaw(data.stories ?? []);
-        successCount++;
-      }
-
-      if (trendingRes && trendingRes.ok) {
-        const data = await trendingRes.json();
-        setTrendingStoriesRaw(data.stories ?? []);
-        successCount++;
-      }
-
-      if (successCount === 0) {
-        setHasError(true);
-      }
-    } catch (e) {
-      console.error("Error loading home page data in parallel:", e);
-      setHasError(true);
-    } finally {
-      setDataLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchHomeData();
-
-    const channel = new BroadcastChannel("isp-stories-updates");
-    channel.onmessage = () => {
-      fetchHomeData();
-    };
-
-    return () => {
-      channel.close();
-    };
-  }, [fetchHomeData]);
 
   const featuredStory = useMemo(() => {
     return featuredStoryRaw ? translateStory(featuredStoryRaw, lang) : null;

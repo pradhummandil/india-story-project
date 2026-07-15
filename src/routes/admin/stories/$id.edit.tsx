@@ -360,6 +360,30 @@ export default function EditStoryPage() {
                 />
               </Field>
             </div>
+            <div className="bg-[#161616] border border-white/10 rounded-sm p-6 space-y-5">
+              <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-white/40">
+                SEO Metadata
+              </h3>
+              <Field label="SEO Title">
+                <Input
+                  value={story.seoTitle ?? ""}
+                  onChange={(e) => setStory((s) => s && { ...s, seoTitle: e.target.value })}
+                  placeholder="Leave empty to use main title…"
+                  className={inputCls}
+                  id="edit-seo-title"
+                />
+              </Field>
+              <Field label="SEO Description">
+                <textarea
+                  value={story.seoDescription ?? ""}
+                  onChange={(e) => setStory((s) => s && { ...s, seoDescription: e.target.value })}
+                  placeholder="Leave empty to use main excerpt…"
+                  rows={3}
+                  className={textareaCls}
+                  id="edit-seo-desc"
+                />
+              </Field>
+            </div>
           </div>
           <div className="space-y-6">
             <div className="bg-[#161616] border border-white/10 rounded-sm p-5 space-y-4">

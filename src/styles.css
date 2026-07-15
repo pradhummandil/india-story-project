@@ -65,8 +65,7 @@
 }
 
 @layer base {
-  :root,
-  .dark {
+  :root {
     --radius: 0.25rem;
 
     /* Warm Paper background + Dark Charcoal text */
@@ -102,6 +101,48 @@
     --border: #e5dccb;
     --input: #faf8f5;
     --ring: #8b0000;
+
+    --gold: #c8a96a;
+    --gold-foreground: #0a0a0a;
+    --saffron: #8b0000;
+  }
+
+  .dark {
+    --radius: 0.25rem;
+
+    /* Dark Charcoal background + Warm Paper text */
+    --background: #0a0a0a;
+    --foreground: #f8f4ec;
+
+    /* Cards are deep charcoal */
+    --card: #141414;
+    --card-foreground: #f8f4ec;
+
+    --popover: #141414;
+    --popover-foreground: #f8f4ec;
+
+    /* Deep Red primary */
+    --primary: #8b0000;
+    --primary-foreground: #f8f4ec;
+
+    /* White secondary */
+    --secondary: #f8f4ec;
+    --secondary-foreground: #0a0a0a;
+
+    --muted: #1f1f1f;
+    --muted-foreground: #a0a0a0;
+
+    /* Antique Gold accent */
+    --accent: #c8a96a;
+    --accent-foreground: #0a0a0a;
+
+    --destructive: #8b0000;
+    --destructive-foreground: #f8f4ec;
+
+    /* Subtle grey borders */
+    --border: rgba(255, 255, 255, 0.08);
+    --input: #141414;
+    --ring: #c8a96a;
 
     --gold: #c8a96a;
     --gold-foreground: #0a0a0a;

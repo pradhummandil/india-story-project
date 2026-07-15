@@ -74,7 +74,9 @@ function StoriesList() {
   const { categories: liveCategories } = useStoriesData();
   const categories = liveCategories as readonly string[];
   const states = useMemo(() => {
-    return Array.from(new Set(dbStories.map((s) => s.region).filter(Boolean))).sort();
+    return Array.from(new Set(dbStories.map((s) => s.region).filter(Boolean)))
+      .filter((s) => s.toLowerCase() !== "india" && s.toLowerCase() !== "all")
+      .sort();
   }, [dbStories]);
 
   const authorsList = useMemo(() => {
@@ -147,22 +149,33 @@ function StoriesList() {
       filtered = filtered.filter((s) => s.tags && s.tags.includes(activeTag));
     }
 
-    // Map to translated versions
-    let result = filtered.map((s) => translateStory(s, lang));
-
     // Search Query Filter
     if (q) {
-      result = result.filter((s) => {
-        const themeStr = Array.isArray((s as any).themes) ? (s as any).themes.join(" ") : "";
+      filtered = filtered.filter((s) => {
+        const themeStr = Array.isArray(s.themes) ? s.themes.join(" ") : "";
+        const tagsStr = Array.isArray(s.tags) ? s.tags.join(" ") : "";
+        const districtStr = (s as any).district || "";
+        const keywordsStr = s.seoKeywords || "";
+
         return (
           s.title.toLowerCase().includes(q) ||
+          (s.titleHi?.toLowerCase().includes(q) ?? false) ||
           s.excerpt.toLowerCase().includes(q) ||
+          (s.excerptHi?.toLowerCase().includes(q) ?? false) ||
+          (s.content?.toLowerCase().includes(q) ?? false) ||
+          (s.contentHi?.toLowerCase().includes(q) ?? false) ||
           themeStr.toLowerCase().includes(q) ||
           s.region.toLowerCase().includes(q) ||
-          (s.content?.toLowerCase().includes(q) ?? false)
+          (s.authorName?.toLowerCase().includes(q) ?? false) ||
+          tagsStr.toLowerCase().includes(q) ||
+          districtStr.toLowerCase().includes(q) ||
+          keywordsStr.toLowerCase().includes(q)
         );
       });
     }
+
+    // Map to translated versions
+    let result = filtered.map((s) => translateStory(s, lang));
 
     // Sort Options
     if (sortBy === "alpha") {

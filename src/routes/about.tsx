@@ -136,7 +136,7 @@ function About() {
     <SiteLayout>
       <div className="bg-background text-foreground min-h-screen">
         {/* ─── Hero Banner ─── */}
-        <section className="relative overflow-hidden pt-32 pb-24 md:pt-44 md:pb-32 border-b border-border/40 bg-black">
+        <section className="relative overflow-hidden pt-32 pb-24 md:pt-44 md:pb-32 border-b border-border/40 bg-card">
           <div className="absolute inset-0 bg-hero opacity-20 pointer-events-none" />
           <div className="absolute -top-60 left-1/3 size-[700px] rounded-full bg-gold/6 blur-[140px] pointer-events-none" />
           <div className="absolute -bottom-60 right-1/3 size-[600px] rounded-full bg-saffron/6 blur-[140px] pointer-events-none" />

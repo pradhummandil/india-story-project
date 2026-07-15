@@ -141,7 +141,7 @@ function RootShell({ children }: { children: ReactNode }) {
   const serialized = JSON.stringify(initialData).replace(/</g, "\\u003c");
 
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <head>
         <HeadContent />
         <link rel="manifest" href="/manifest.json" />
