@@ -535,6 +535,7 @@ function ProfilePage() {
   const xpToNextLevel = (stats?.level ?? 1) * 500;
   const xpProgress = stats ? Math.min(100, ((stats.totalXP % 500) / 500) * 100) : 0;
 
+  const role = profile?.role?.toLowerCase();
   const earnedBadges = BADGE_DEFINITIONS.filter((b) => {
     if (!stats) return false;
     const val = (stats[b.field as keyof UserStats] as number) ?? 0;
@@ -712,23 +713,32 @@ function ProfilePage() {
               )}
             </div>
 
-            {/* Actions */}
             <div className="flex items-center gap-2">
-              {(user.app_metadata?.role === "Admin" ||
-                user.app_metadata?.role === "SuperAdmin" ||
-                (stats as any)?.role === "admin" ||
-                (stats as any)?.role === "superadmin" ||
-                (stats as any)?.role === "editor" ||
-                (profile?.role &&
-                  (profile.role.toLowerCase() === "admin" ||
-                    profile.role.toLowerCase() === "superadmin" ||
-                    profile.role.toLowerCase() === "editor"))) && (
+              {(role === "admin" || role === "superadmin") && (
                 <Link
                   to="/admin"
-                  className="flex items-center gap-1.5 border border-primary/30 bg-primary/8 px-3 py-2 text-xs font-sans font-semibold text-primary hover:bg-primary/15 transition-colors rounded-full animate-pulse"
+                  className="flex items-center gap-1.5 border border-primary/30 bg-primary/8 px-3 py-2 text-xs font-sans font-semibold text-primary hover:bg-primary/15 transition-colors rounded-full animate-pulse cursor-pointer"
                 >
                   <Shield className="size-3.5" />
-                  Admin Dashboard
+                  Admin CMS
+                </Link>
+              )}
+              {role === "editor" && (
+                <Link
+                  to="/editor"
+                  className="flex items-center gap-1.5 border border-primary/30 bg-primary/8 px-3 py-2 text-xs font-sans font-semibold text-primary hover:bg-primary/15 transition-colors rounded-full animate-pulse cursor-pointer"
+                >
+                  <Shield className="size-3.5" />
+                  Editor Workspace
+                </Link>
+              )}
+              {role === "author" && (
+                <Link
+                  to="/dashboard"
+                  className="flex items-center gap-1.5 border border-primary/30 bg-primary/8 px-3 py-2 text-xs font-sans font-semibold text-primary hover:bg-primary/15 transition-colors rounded-full animate-pulse cursor-pointer"
+                >
+                  <Shield className="size-3.5" />
+                  Author Dashboard
                 </Link>
               )}
               <Button

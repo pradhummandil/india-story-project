@@ -5,6 +5,7 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { useAuthStore } from "@/lib/auth-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Forbidden403 } from "@/components/site/Forbidden403";
 
 export const Route = createFileRoute("/admin/settings/")({
   head: () => ({ meta: [{ title: "Settings — Admin" }] }),
@@ -15,7 +16,7 @@ type Setting = { key: string; value: string; label?: string };
 
 export default function AdminSettingsPage() {
   const navigate = useNavigate();
-  const { user, initialized } = useAuthStore();
+  const { user, profile, initialized } = useAuthStore();
   const [settings, setSettings] = useState<Setting[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -46,6 +47,12 @@ export default function AdminSettingsPage() {
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };
+
+  const role = profile?.role?.toLowerCase() || user?.app_metadata?.role?.toLowerCase();
+
+  if (role !== "superadmin") {
+    return <Forbidden403 />;
+  }
 
   return (
     <AdminLayout title="Settings" subtitle="Site configuration">

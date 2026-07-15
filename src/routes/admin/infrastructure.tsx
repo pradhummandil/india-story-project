@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { useAuthStore } from "@/lib/auth-store";
+import { Forbidden403 } from "@/components/site/Forbidden403";
 
 export const Route = createFileRoute("/admin/infrastructure")({
   head: () => ({
@@ -50,7 +51,9 @@ const MOCK_AUDIT_LOGS = [
 ];
 
 export default function AdminInfrastructurePage() {
-  const { session } = useAuthStore();
+  const { session, user, profile } = useAuthStore();
+  const role = profile?.role?.toLowerCase() || user?.app_metadata?.role?.toLowerCase();
+
   const [dbAuditLogs, setDbAuditLogs] = useState<any[]>([]);
   const [flags, setFlags] = useState({
     maintenanceMode: false,
@@ -158,6 +161,10 @@ export default function AdminInfrastructurePage() {
       alert("Database backup finalized! Export file IndiaStory_Backup_Active.sql created.");
     }, 2000);
   };
+
+  if (role !== "superadmin") {
+    return <Forbidden403 />;
+  }
 
   return (
     <AdminLayout

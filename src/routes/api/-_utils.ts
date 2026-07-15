@@ -42,7 +42,7 @@ export async function verifyUserRole(request: Request, allowedRoles: string[]) {
 }
 
 export async function verifyAdmin(request: Request) {
-  return verifyUserRole(request, ["admin"]);
+  return verifyUserRole(request, ["admin", "superadmin"]);
 }
 
 export async function authenticate(request: Request) {
