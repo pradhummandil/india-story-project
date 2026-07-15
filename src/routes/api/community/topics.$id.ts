@@ -42,10 +42,12 @@ export const Route = createFileRoute("/api/community/topics/$id")({
           if (!topic) return json({ error: "Topic not found" }, { status: 404 });
 
           // Increment view count (fire and forget)
-          db.discussionTopic.update({
-            where: { id },
-            data: { viewCount: { increment: 1 } },
-          }).catch(() => {});
+          db.discussionTopic
+            .update({
+              where: { id },
+              data: { viewCount: { increment: 1 } },
+            })
+            .catch(() => {});
 
           // Group reactions by emoji for each post
           const topicWithGroupedReactions = {

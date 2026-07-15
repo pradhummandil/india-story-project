@@ -143,48 +143,60 @@ function Home() {
   const handleSubscribe = async () => {
     if (!email.trim()) {
       alert("Please enter your email.");
-       return;
-        }
+      return;
+    }
 
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const response = await fetch("/api/newsletter/subscribe", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email,
-        language: lang,
-      }),
-    });
+      const response = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          language: lang,
+        }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
       if (response.ok) {
-            alert(data.message || "Verification email sent!");
-      setEmail("");
-    } else {
-      alert(data.error || "Subscription failed.");
+        alert(data.message || "Verification email sent!");
+        setEmail("");
+      } else {
+        alert(data.error || "Subscription failed.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Server Error");
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error(error);
-    alert("Server Error");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const fetchHomeData = useCallback(async () => {
     try {
       setHasError(false);
       setDataLoading(true);
       const [featuredRes, gridRes, latestRes, trendingRes] = await Promise.all([
-        fetch("/api/featured").catch((err) => { console.error(err); return null; }),
-        fetch("/api/stories?pageSize=6").catch((err) => { console.error(err); return null; }),
-        fetch("/api/latest-stories").catch((err) => { console.error(err); return null; }),
-        fetch("/api/trending").catch((err) => { console.error(err); return null; }),
+        fetch("/api/featured").catch((err) => {
+          console.error(err);
+          return null;
+        }),
+        fetch("/api/stories?pageSize=6").catch((err) => {
+          console.error(err);
+          return null;
+        }),
+        fetch("/api/latest-stories").catch((err) => {
+          console.error(err);
+          return null;
+        }),
+        fetch("/api/trending").catch((err) => {
+          console.error(err);
+          return null;
+        }),
       ]);
 
       let successCount = 0;
@@ -258,15 +270,15 @@ function Home() {
   const categoryMediasWithImages = useMemo(() => {
     return CATEGORY_MEDIAS.map((cat) => {
       // Find first story with a matching theme
-      const matchingStory = dbStories.find(
-        (s) => {
-          const storyThemes = Array.isArray(s.themes) ? s.themes : [];
-          return storyThemes.some((t) =>
+      const matchingStory = dbStories.find((s) => {
+        const storyThemes = Array.isArray(s.themes) ? s.themes : [];
+        return storyThemes.some(
+          (t) =>
             t.toLowerCase() === cat.id.toLowerCase() ||
-            (cat.id === "Festival" && (t.toLowerCase() === "festivals" || t.toLowerCase() === "त्योहार"))
-          );
-        }
-      );
+            (cat.id === "Festival" &&
+              (t.toLowerCase() === "festivals" || t.toLowerCase() === "त्योहार")),
+        );
+      });
       const firstStoryImage = matchingStory?.image;
       return {
         ...cat,
@@ -286,7 +298,9 @@ function Home() {
             {lang === "en" ? "Unable to Load Stories" : "कहानियां लोड करने में असमर्थ"}
           </p>
           <h2 className="font-display text-3xl font-bold">
-            {lang === "en" ? "Connection Offline or Server Error" : "कनेक्शन ऑफ़लाइन या सर्वर त्रुटि"}
+            {lang === "en"
+              ? "Connection Offline or Server Error"
+              : "कनेक्शन ऑफ़लाइन या सर्वर त्रुटि"}
           </h2>
           <p className="text-sm text-muted-foreground max-w-md mx-auto">
             {lang === "en"
@@ -294,7 +308,10 @@ function Home() {
               : "हमें नवीनतम सामग्री प्राप्त करने में समस्या आई। कृपया अपना इंटरनेट कनेक्शन जांचें और पुनः प्रयास करें।"}
           </p>
           <div className="pt-4">
-            <Button onClick={() => void fetchHomeData()} className="bg-primary hover:bg-primary/95 text-white font-sans uppercase tracking-widest text-xs h-11 px-6 rounded-none shadow-sm">
+            <Button
+              onClick={() => void fetchHomeData()}
+              className="bg-primary hover:bg-primary/95 text-white font-sans uppercase tracking-widest text-xs h-11 px-6 rounded-none shadow-sm"
+            >
               {lang === "en" ? "Retry Connection" : "पुनः प्रयास करें"}
             </Button>
           </div>
@@ -397,9 +414,10 @@ function Home() {
                   <div className="w-full lg:w-2/5 flex flex-col justify-center space-y-4">
                     <div className="flex items-center gap-3 text-[10px] tracking-[0.25em] uppercase font-bold text-gold font-sans">
                       <span className="bg-primary/5 px-2.5 py-0.5 border border-primary/15">
-                        {(Array.isArray((featuredStory as any).themes) && (featuredStory as any).themes.length > 0
-                            ? (featuredStory as any).themes[0]
-                            : "")}
+                        {Array.isArray((featuredStory as any).themes) &&
+                        (featuredStory as any).themes.length > 0
+                          ? (featuredStory as any).themes[0]
+                          : ""}
                       </span>
                       <span>•</span>
                       <span>{featuredStory.region}</span>
@@ -495,7 +513,11 @@ function Home() {
                       <div className="flex flex-col justify-between py-1">
                         <div className="space-y-2">
                           <div className="flex items-center justify-between text-[9px] tracking-[0.2em] uppercase font-bold text-gold font-sans">
-                            <span>{Array.isArray((s as any).themes) && (s as any).themes.length > 0 ? (s as any).themes[0] : ""}</span>
+                            <span>
+                              {Array.isArray((s as any).themes) && (s as any).themes.length > 0
+                                ? (s as any).themes[0]
+                                : ""}
+                            </span>
                             <span className="text-muted-foreground">{s.region}</span>
                           </div>
                           <h4 className="font-display text-xl font-bold leading-tight hover:text-primary transition-colors">
@@ -609,11 +631,7 @@ function Home() {
                   disabled={loading}
                   className="w-full sm:w-auto bg-primary hover:bg-primary/95 text-primary-foreground font-sans uppercase tracking-widest text-xs h-12 px-6 rounded-none btn-premium shrink-0"
                 >
-                  {loading
-                    ? "Subscribing..."
-                    : lang === "en"
-                      ? "Subscribe"
-                      : "सदस्यता लें"}
+                  {loading ? "Subscribing..." : lang === "en" ? "Subscribe" : "सदस्यता लें"}
                 </Button>
               </div>
             </div>

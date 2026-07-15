@@ -35,9 +35,12 @@ export default function RankingsPage() {
       {/* ── Rankings Header ── */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/5 pb-5">
         <div>
-          <h1 className="font-display text-2xl font-bold text-white">Contributor Leaderboards & XP</h1>
+          <h1 className="font-display text-2xl font-bold text-white">
+            Contributor Leaderboards & XP
+          </h1>
           <p className="text-xs text-white/40 font-sans mt-1">
-            Track reading streaks, editorial posts, writing achievements, and forum participation XP.
+            Track reading streaks, editorial posts, writing achievements, and forum participation
+            XP.
           </p>
         </div>
       </div>
@@ -93,7 +96,11 @@ export default function RankingsPage() {
                       {podium[1].name || podium[1].user?.name}
                     </p>
                     <p className="text-[9px] text-white/30 font-mono font-bold">
-                      {podium[1].totalXP ?? podium[1].weeklyXP ?? podium[1].monthlyXP ?? podium[1].viewCount ?? 0}
+                      {podium[1].totalXP ??
+                        podium[1].weeklyXP ??
+                        podium[1].monthlyXP ??
+                        podium[1].viewCount ??
+                        0}
                     </p>
                   </div>
                 </div>
@@ -113,7 +120,11 @@ export default function RankingsPage() {
                       {podium[0].name || podium[0].user?.name}
                     </p>
                     <p className="text-[10px] text-primary font-mono font-bold">
-                      {podium[0].totalXP ?? podium[0].weeklyXP ?? podium[0].monthlyXP ?? podium[0].viewCount ?? 0}
+                      {podium[0].totalXP ??
+                        podium[0].weeklyXP ??
+                        podium[0].monthlyXP ??
+                        podium[0].viewCount ??
+                        0}
                     </p>
                   </div>
                 </div>
@@ -133,7 +144,11 @@ export default function RankingsPage() {
                       {podium[2].name || podium[2].user?.name}
                     </p>
                     <p className="text-[9px] text-white/30 font-mono font-bold">
-                      {podium[2].totalXP ?? podium[2].weeklyXP ?? podium[2].monthlyXP ?? podium[2].viewCount ?? 0}
+                      {podium[2].totalXP ??
+                        podium[2].weeklyXP ??
+                        podium[2].monthlyXP ??
+                        podium[2].viewCount ??
+                        0}
                     </p>
                   </div>
                 </div>
@@ -166,9 +181,7 @@ export default function RankingsPage() {
                         isCurrentUser ? "bg-primary/5 border-y border-primary/20" : ""
                       }`}
                     >
-                      <div className="col-span-2 font-mono font-bold text-white/40">
-                        #{rank}
-                      </div>
+                      <div className="col-span-2 font-mono font-bold text-white/40">#{rank}</div>
                       <div className="col-span-6 flex items-center gap-2">
                         <div className="size-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[9px] font-bold text-white/50">
                           {name[0]}

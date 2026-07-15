@@ -49,13 +49,13 @@ export default function AdminNewsletterPage() {
       setErrorMsg(null);
       const res = await fetch(
         `/api/admin/newsletter?status=${statusFilter}&query=${encodeURIComponent(
-          searchQuery
+          searchQuery,
         )}&page=${page}&pageSize=15`,
         {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
           },
-        }
+        },
       );
       if (!res.ok) throw new Error("Failed to fetch subscribers");
       const data = await res.json();
@@ -89,7 +89,8 @@ export default function AdminNewsletterPage() {
 
   const handleDelete = async (id: string, email: string) => {
     if (!session) return;
-    if (!window.confirm(`Are you sure you want to permanently delete subscriber: ${email}?`)) return;
+    if (!window.confirm(`Are you sure you want to permanently delete subscriber: ${email}?`))
+      return;
 
     try {
       setErrorMsg(null);
@@ -115,21 +116,21 @@ export default function AdminNewsletterPage() {
       setErrorMsg(null);
       const res = await fetch(
         `/api/admin/newsletter?status=${statusFilter}&query=${encodeURIComponent(
-          searchQuery
+          searchQuery,
         )}&export=true`,
         {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
           },
-        }
+        },
       );
       if (!res.ok) throw new Error("Export failed");
-      
+
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `newsletter_subscribers_${statusFilter}_${new Date().toISOString().slice(0,10)}.csv`;
+      a.download = `newsletter_subscribers_${statusFilter}_${new Date().toISOString().slice(0, 10)}.csv`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -143,7 +144,10 @@ export default function AdminNewsletterPage() {
   };
 
   return (
-    <AdminLayout title="Newsletter Subscribers" subtitle="Monitor and manage all mailing list subscriptions.">
+    <AdminLayout
+      title="Newsletter Subscribers"
+      subtitle="Monitor and manage all mailing list subscriptions."
+    >
       <div className="space-y-6 max-w-6xl">
         {/* Alerts */}
         <AnimatePresence>
@@ -271,17 +275,20 @@ export default function AdminNewsletterPage() {
                         )}
                       </td>
                       <td className="p-4">
-                        <span className={`px-2 py-0.5 rounded text-[9px] uppercase tracking-wider font-bold ${
-                          sub.status === "active"
-                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                            : "bg-red-500/10 text-red-400 border border-red-500/20"
-                        }`}>
+                        <span
+                          className={`px-2 py-0.5 rounded text-[9px] uppercase tracking-wider font-bold ${
+                            sub.status === "active"
+                              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                              : "bg-red-500/10 text-red-400 border border-red-500/20"
+                          }`}
+                        >
                           {sub.status}
                         </span>
                       </td>
                       <td className="p-4 font-semibold uppercase text-white/60">{sub.language}</td>
                       <td className="p-4 font-mono text-white/40">
-                        {new Date(sub.createdAt).toLocaleDateString()} {new Date(sub.createdAt).toLocaleTimeString()}
+                        {new Date(sub.createdAt).toLocaleDateString()}{" "}
+                        {new Date(sub.createdAt).toLocaleTimeString()}
                       </td>
                       <td className="p-4 text-right">
                         <button

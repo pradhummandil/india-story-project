@@ -88,9 +88,24 @@ const contactCards = [
 ];
 
 const socialLinks = [
-  { icon: Twitter, label: "Twitter / X", handle: "@indiastoryproject", href: "https://twitter.com" },
-  { icon: Instagram, label: "Instagram", handle: "@indiastoryproject", href: "https://instagram.com" },
-  { icon: Linkedin, label: "LinkedIn", handle: "India Story Project", href: "https://linkedin.com" },
+  {
+    icon: Twitter,
+    label: "Twitter / X",
+    handle: "@indiastoryproject",
+    href: "https://twitter.com",
+  },
+  {
+    icon: Instagram,
+    label: "Instagram",
+    handle: "@indiastoryproject",
+    href: "https://instagram.com",
+  },
+  {
+    icon: Linkedin,
+    label: "LinkedIn",
+    handle: "India Story Project",
+    href: "https://linkedin.com",
+  },
   { icon: Github, label: "GitHub", handle: "indiastoryproject", href: "https://github.com" },
 ];
 
@@ -134,9 +149,12 @@ function FloatingInput({
             : "top-5 text-sm text-muted-foreground"
         }`}
       >
-        {label}{required && " *"}
+        {label}
+        {required && " *"}
       </label>
-      <div className={`absolute bottom-0 left-0 h-0.5 bg-gold transition-all duration-300 ${focused ? "w-full" : "w-0"}`} />
+      <div
+        className={`absolute bottom-0 left-0 h-0.5 bg-gold transition-all duration-300 ${focused ? "w-full" : "w-0"}`}
+      />
     </div>
   );
 }
@@ -178,9 +196,12 @@ function FloatingTextarea({
             : "top-6 text-sm text-muted-foreground"
         }`}
       >
-        {label}{required && " *"}
+        {label}
+        {required && " *"}
       </label>
-      <div className={`absolute bottom-0 left-0 h-0.5 bg-gold transition-all duration-300 ${focused ? "w-full" : "w-0"}`} />
+      <div
+        className={`absolute bottom-0 left-0 h-0.5 bg-gold transition-all duration-300 ${focused ? "w-full" : "w-0"}`}
+      />
     </div>
   );
 }
@@ -224,10 +245,13 @@ function Contact() {
           <div className="absolute inset-0 bg-hero opacity-20 pointer-events-none" />
           <div className="absolute -top-60 left-1/3 size-[600px] rounded-full bg-gold/6 blur-[130px] pointer-events-none" />
           <div className="absolute -bottom-60 right-1/3 size-[500px] rounded-full bg-saffron/6 blur-[130px] pointer-events-none" />
-          <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{
-            backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
-            backgroundSize: "48px 48px",
-          }} />
+          <div
+            className="absolute inset-0 opacity-[0.02] pointer-events-none"
+            style={{
+              backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
+              backgroundSize: "48px 48px",
+            }}
+          />
 
           <div className="container mx-auto px-6 relative max-w-4xl text-center">
             <motion.div
@@ -257,7 +281,8 @@ function Contact() {
               transition={{ duration: 0.85, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
               className="mt-7 text-base md:text-lg text-muted-foreground leading-relaxed font-sans max-w-2xl mx-auto"
             >
-              Have a story to pitch? A partnership idea? A technical question? We read every message and route it to the right team within 24–48 hours.
+              Have a story to pitch? A partnership idea? A technical question? We read every message
+              and route it to the right team within 24–48 hours.
             </motion.p>
 
             <motion.div
@@ -284,7 +309,9 @@ function Contact() {
         <section className="py-20 border-b border-border/40">
           <div className="container mx-auto px-6 max-w-6xl">
             <div className="text-center mb-12">
-              <span className="text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-gold">Departments</span>
+              <span className="text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-gold">
+                Departments
+              </span>
               <h2 className="font-display text-2xl md:text-3xl font-bold mt-3">
                 Who Should You Reach?
               </h2>
@@ -301,11 +328,17 @@ function Contact() {
                   className={`bg-gradient-to-b ${card.color} border border-white/5 rounded-2xl p-6 flex flex-col justify-between hover:border-white/12 hover-lift group transition-all duration-300`}
                 >
                   <div className="space-y-4">
-                    <div className={`size-10 rounded-xl ${card.accentBg} flex items-center justify-center border ${card.accent}`}>
+                    <div
+                      className={`size-10 rounded-xl ${card.accentBg} flex items-center justify-center border ${card.accent}`}
+                    >
                       <card.icon className="size-4" />
                     </div>
-                    <h3 className="font-display font-bold text-sm text-foreground leading-snug">{card.title}</h3>
-                    <p className="text-[11px] text-muted-foreground leading-relaxed font-sans">{card.desc}</p>
+                    <h3 className="font-display font-bold text-sm text-foreground leading-snug">
+                      {card.title}
+                    </h3>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed font-sans">
+                      {card.desc}
+                    </p>
                   </div>
                   <a
                     href={`mailto:${card.email}`}
@@ -327,7 +360,9 @@ function Contact() {
               {/* ─── Form (3/5) ─── */}
               <div className="lg:col-span-3">
                 <div className="mb-8">
-                  <span className="text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-gold">Send a Message</span>
+                  <span className="text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-gold">
+                    Send a Message
+                  </span>
                   <h2 className="font-display text-2xl md:text-3xl font-bold mt-2">Write to Us</h2>
                 </div>
 
@@ -349,7 +384,13 @@ function Contact() {
                         Thank you for reaching out. We'll get back to you within 24–48 hours.
                       </p>
                       <button
-                        onClick={() => { setSent(false); setName(""); setEmail(""); setSubject(""); setMessage(""); }}
+                        onClick={() => {
+                          setSent(false);
+                          setName("");
+                          setEmail("");
+                          setSubject("");
+                          setMessage("");
+                        }}
                         className="text-xs uppercase tracking-widest font-bold font-sans text-gold hover:text-gold/70 transition-colors"
                       >
                         Send Another Message
@@ -432,7 +473,9 @@ function Contact() {
               {/* ─── Info + Social (2/5) ─── */}
               <div className="lg:col-span-2 space-y-6">
                 <div>
-                  <span className="text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-gold">Contact Details</span>
+                  <span className="text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-gold">
+                    Contact Details
+                  </span>
                   <h2 className="font-display text-2xl font-bold mt-2 mb-6">Reach Us Directly</h2>
                 </div>
 
@@ -457,7 +500,10 @@ function Contact() {
                       href: "tel:+918045678901",
                     },
                   ].map((item, i) => (
-                    <div key={i} className="glass rounded-xl p-5 border border-white/5 flex items-start gap-4 hover:border-gold/15 transition-colors group">
+                    <div
+                      key={i}
+                      className="glass rounded-xl p-5 border border-white/5 flex items-start gap-4 hover:border-gold/15 transition-colors group"
+                    >
                       <div className="size-9 rounded-lg bg-gold/8 border border-gold/15 flex items-center justify-center text-gold shrink-0 group-hover:bg-gold/15 transition-colors">
                         <item.icon className="size-4" />
                       </div>
@@ -466,7 +512,10 @@ function Contact() {
                           {item.label}
                         </div>
                         {item.href ? (
-                          <a href={item.href} className="text-sm font-sans text-foreground hover:text-gold transition-colors truncate block">
+                          <a
+                            href={item.href}
+                            className="text-sm font-sans text-foreground hover:text-gold transition-colors truncate block"
+                          >
                             {item.value}
                           </a>
                         ) : (
@@ -542,7 +591,8 @@ function Contact() {
                 Have a Story to Tell?
               </h2>
               <p className="text-muted-foreground font-sans text-sm max-w-md mx-auto mb-8 leading-relaxed">
-                Skip the contact form — go straight to our story submission portal and share your story with India.
+                Skip the contact form — go straight to our story submission portal and share your
+                story with India.
               </p>
               <a
                 href="/share-story"

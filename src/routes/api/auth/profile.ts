@@ -33,7 +33,10 @@ export const Route = createFileRoute("/api/auth/profile")({
           }
 
           const fullName =
-            body.name || user.user_metadata?.name || user.user_metadata?.full_name || email.split("@")[0];
+            body.name ||
+            user.user_metadata?.name ||
+            user.user_metadata?.full_name ||
+            email.split("@")[0];
           const avatarUrl = body.avatarUrl || user.user_metadata?.avatar_url || null;
           const bio = body.bio || user.user_metadata?.bio || null;
           const website = body.website || user.user_metadata?.website || null;

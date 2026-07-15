@@ -38,7 +38,7 @@ const MAX_PAGE_SIZE = 60;
 
 function recommendationScore(base: StoryCardCompatible, candidate: StoryCardCompatible) {
   let score = 0;
-  const sharedThemes = candidate.themes.filter(t => base.themes.includes(t));
+  const sharedThemes = candidate.themes.filter((t) => base.themes.includes(t));
   score += sharedThemes.length * 2;
   if (candidate.region === base.region) score += 2;
   return score;
@@ -53,7 +53,10 @@ export class StoryService {
 
   async getPublishedStories(options: StoryListOptions = {}): Promise<PaginatedStories> {
     const page = options.page && options.page > 0 ? options.page : DEFAULT_PAGE;
-    const pageSize = options.pageSize && options.pageSize > 0 ? Math.min(options.pageSize, MAX_PAGE_SIZE) : DEFAULT_PAGE_SIZE;
+    const pageSize =
+      options.pageSize && options.pageSize > 0
+        ? Math.min(options.pageSize, MAX_PAGE_SIZE)
+        : DEFAULT_PAGE_SIZE;
 
     const { stories, total } = await this.stories.findPublishedPaginated({
       query: options.query,

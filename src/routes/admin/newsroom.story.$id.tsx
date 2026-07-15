@@ -115,7 +115,7 @@ function StoryWorkflowWorkspacePage() {
       setScheduledAt(
         wfData.story.scheduledAt
           ? new Date(wfData.story.scheduledAt).toISOString().slice(0, 16)
-          : ""
+          : "",
       );
 
       // 2. Load revisions
@@ -234,7 +234,12 @@ function StoryWorkflowWorkspacePage() {
   // Restore previous version
   const handleRestoreVersion = async (revisionId: string) => {
     if (!session) return;
-    if (!confirm("Are you sure you want to restore the story to this older version? The current version will be archived as a new revision.")) return;
+    if (
+      !confirm(
+        "Are you sure you want to restore the story to this older version? The current version will be archived as a new revision.",
+      )
+    )
+      return;
 
     try {
       const res = await fetch(`/api/admin/newsroom/revisions/restore`, {
@@ -309,8 +314,7 @@ function StoryWorkflowWorkspacePage() {
     );
   }
 
-  const isLockedByOther =
-    !!(workflow?.lockedBy && workflow.lockedBy !== user?.id);
+  const isLockedByOther = !!(workflow?.lockedBy && workflow.lockedBy !== user?.id);
 
   return (
     <AdminLayout>
@@ -353,7 +357,8 @@ function StoryWorkflowWorkspacePage() {
             <div>
               <p className="font-bold">Another editor is currently editing this story.</p>
               <p className="mt-1 opacity-80">
-                To prevent overwrites and coordinate edits safely, options to alter statuses and assignments are temporarily disabled.
+                To prevent overwrites and coordinate edits safely, options to alter statuses and
+                assignments are temporarily disabled.
               </p>
             </div>
           </div>
@@ -366,7 +371,9 @@ function StoryWorkflowWorkspacePage() {
             <div className="bg-[#141414] border border-white/5 p-6 rounded space-y-6">
               <div className="flex items-center gap-2 border-b border-white/5 pb-3">
                 <FileText className="size-4 text-gold" />
-                <h3 className="text-sm font-bold text-white font-sans uppercase tracking-widest">Story Parameters</h3>
+                <h3 className="text-sm font-bold text-white font-sans uppercase tracking-widest">
+                  Story Parameters
+                </h3>
               </div>
 
               {/* Form elements */}
@@ -388,7 +395,9 @@ function StoryWorkflowWorkspacePage() {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-white/60 mb-1">Scheduled Publish Time (Auto-Publish)</label>
+                  <label className="block font-bold text-white/60 mb-1">
+                    Scheduled Publish Time (Auto-Publish)
+                  </label>
                   <input
                     type="datetime-local"
                     value={scheduledAt}
@@ -418,7 +427,9 @@ function StoryWorkflowWorkspacePage() {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-white/60 mb-1">Fact Checker Assignment</label>
+                  <label className="block font-bold text-white/60 mb-1">
+                    Fact Checker Assignment
+                  </label>
                   <select
                     value={factCheckerId}
                     onChange={(e) => setFactCheckerId(e.target.value)}
@@ -435,7 +446,9 @@ function StoryWorkflowWorkspacePage() {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-white/60 mb-1">Legal Review Assignment</label>
+                  <label className="block font-bold text-white/60 mb-1">
+                    Legal Review Assignment
+                  </label>
                   <select
                     value={legalReviewerId}
                     onChange={(e) => setLegalReviewerId(e.target.value)}
@@ -453,7 +466,9 @@ function StoryWorkflowWorkspacePage() {
               </div>
 
               <div className="font-sans text-xs">
-                <label className="block font-bold text-white/60 mb-1">Editorial Notes (Internal Guidelines)</label>
+                <label className="block font-bold text-white/60 mb-1">
+                  Editorial Notes (Internal Guidelines)
+                </label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
@@ -471,7 +486,8 @@ function StoryWorkflowWorkspacePage() {
                     disabled={saving}
                     className="bg-primary hover:bg-primary/95 text-white font-sans text-xs uppercase tracking-widest font-bold px-6 py-2 flex items-center gap-2"
                   >
-                    <Save className="size-4" /> {saving ? "Saving Workflow..." : "Update Workflow State"}
+                    <Save className="size-4" />{" "}
+                    {saving ? "Saving Workflow..." : "Update Workflow State"}
                   </Button>
                 </div>
               )}
@@ -484,7 +500,9 @@ function StoryWorkflowWorkspacePage() {
             <div className="bg-[#141414] border border-white/5 p-6 rounded space-y-4">
               <div className="flex items-center gap-2 border-b border-white/5 pb-3">
                 <History className="size-4 text-gold" />
-                <h3 className="text-sm font-bold text-white font-sans uppercase tracking-widest">Version History & Revisions</h3>
+                <h3 className="text-sm font-bold text-white font-sans uppercase tracking-widest">
+                  Version History & Revisions
+                </h3>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -535,8 +553,12 @@ function StoryWorkflowWorkspacePage() {
                           <p className="font-bold text-white/30 uppercase tracking-wider text-[10px]">
                             v{selectedRevision.version} content
                           </p>
-                          <p className="font-bold text-white/80 line-clamp-2">{selectedRevision.title}</p>
-                          <p className="text-white/60 italic line-clamp-3">{selectedRevision.excerpt}</p>
+                          <p className="font-bold text-white/80 line-clamp-2">
+                            {selectedRevision.title}
+                          </p>
+                          <p className="text-white/60 italic line-clamp-3">
+                            {selectedRevision.excerpt}
+                          </p>
                           <p className="text-white/50 line-clamp-6 leading-relaxed whitespace-pre-wrap">
                             {selectedRevision.content}
                           </p>
@@ -570,12 +592,16 @@ function StoryWorkflowWorkspacePage() {
             <div className="bg-[#141414] border border-white/5 p-6 rounded space-y-4">
               <div className="flex items-center gap-2 border-b border-white/5 pb-3">
                 <Sparkles className="size-4 text-gold" />
-                <h3 className="text-sm font-bold text-white font-sans uppercase tracking-widest">AI Editorial Assistant</h3>
+                <h3 className="text-sm font-bold text-white font-sans uppercase tracking-widest">
+                  AI Editorial Assistant
+                </h3>
               </div>
 
               <div className="space-y-3 font-sans text-xs">
                 <div>
-                  <label className="block font-bold text-white/60 mb-1">Select AI Helper Tool</label>
+                  <label className="block font-bold text-white/60 mb-1">
+                    Select AI Helper Tool
+                  </label>
                   <select
                     value={aiTask}
                     onChange={(e) => setAiTask(e.target.value)}
@@ -611,7 +637,9 @@ function StoryWorkflowWorkspacePage() {
                 {/* Response outputs display */}
                 {aiOutput && (
                   <div className="bg-[#1e1e1e]/90 border border-white/5 p-3 rounded space-y-2 mt-2">
-                    <p className="font-bold text-[10px] text-gold uppercase tracking-wider">AI Output</p>
+                    <p className="font-bold text-[10px] text-gold uppercase tracking-wider">
+                      AI Output
+                    </p>
                     <p className="text-white/80 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto pr-1">
                       {aiOutput}
                     </p>
@@ -620,36 +648,59 @@ function StoryWorkflowWorkspacePage() {
 
                 {aiScores && (
                   <div className="bg-[#1e1e1e]/90 border border-white/5 p-3 rounded space-y-3 mt-2">
-                    <p className="font-bold text-[10px] text-gold uppercase tracking-wider">Editorial Diagnostics</p>
+                    <p className="font-bold text-[10px] text-gold uppercase tracking-wider">
+                      Editorial Diagnostics
+                    </p>
                     <div className="grid grid-cols-3 gap-2 text-center">
                       <div className="bg-white/5 p-1 rounded">
                         <span className="block text-[8px] text-white/40">Headline</span>
-                        <span className="font-bold text-white font-sans text-sm">{aiScores.headlineScore}/100</span>
+                        <span className="font-bold text-white font-sans text-sm">
+                          {aiScores.headlineScore}/100
+                        </span>
                       </div>
                       <div className="bg-white/5 p-1 rounded">
                         <span className="block text-[8px] text-white/40">SEO</span>
-                        <span className="font-bold text-white font-sans text-sm">{aiScores.seoScore}/100</span>
+                        <span className="font-bold text-white font-sans text-sm">
+                          {aiScores.seoScore}/100
+                        </span>
                       </div>
                       <div className="bg-white/5 p-1 rounded">
                         <span className="block text-[8px] text-white/40">Readability</span>
-                        <span className="font-bold text-white font-sans text-sm">{aiScores.readabilityScore}/100</span>
+                        <span className="font-bold text-white font-sans text-sm">
+                          {aiScores.readabilityScore}/100
+                        </span>
                       </div>
                     </div>
                     <div className="text-[10px] space-y-1 text-white/70">
-                      <p><strong>Title:</strong> {aiScores.headlineFeedback}</p>
-                      <p><strong>SEO:</strong> {aiScores.seoFeedback}</p>
-                      <p><strong>Readability:</strong> {aiScores.readabilityFeedback}</p>
+                      <p>
+                        <strong>Title:</strong> {aiScores.headlineFeedback}
+                      </p>
+                      <p>
+                        <strong>SEO:</strong> {aiScores.seoFeedback}
+                      </p>
+                      <p>
+                        <strong>Readability:</strong> {aiScores.readabilityFeedback}
+                      </p>
                     </div>
                   </div>
                 )}
 
                 {aiLinguistics && (
                   <div className="bg-[#1e1e1e]/90 border border-white/5 p-3 rounded space-y-2 mt-2">
-                    <p className="font-bold text-[10px] text-gold uppercase tracking-wider">Linguistic Analysis</p>
+                    <p className="font-bold text-[10px] text-gold uppercase tracking-wider">
+                      Linguistic Analysis
+                    </p>
                     <div className="text-[10px] space-y-1 text-white/70">
-                      <p><strong>Tone:</strong> {aiLinguistics.toneSummary}</p>
-                      <p><strong>Bias Check:</strong> {aiLinguistics.biasRating}</p>
-                      <p><strong>Profanity:</strong> {aiLinguistics.profanityFlag ? "⚠️ Flagged" : "✅ Clean"}</p>
+                      <p>
+                        <strong>Tone:</strong> {aiLinguistics.toneSummary}
+                      </p>
+                      <p>
+                        <strong>Bias Check:</strong> {aiLinguistics.biasRating}
+                      </p>
+                      <p>
+                        <strong>Profanity:</strong>{" "}
+                        {aiLinguistics.profanityFlag ? "⚠️ Flagged" : "✅ Clean"}
+                      </p>
                       <p className="mt-1 pt-1 border-t border-white/5">{aiLinguistics.feedback}</p>
                     </div>
                   </div>
@@ -660,7 +711,9 @@ function StoryWorkflowWorkspacePage() {
             <div className="bg-[#141414] border border-white/5 p-6 rounded space-y-4 flex flex-col max-h-[460px]">
               <div className="flex items-center gap-2 border-b border-white/5 pb-3">
                 <MessageSquare className="size-4 text-gold" />
-                <h3 className="text-sm font-bold text-white font-sans uppercase tracking-widest">Internal Newsroom Chat</h3>
+                <h3 className="text-sm font-bold text-white font-sans uppercase tracking-widest">
+                  Internal Newsroom Chat
+                </h3>
               </div>
 
               {/* Chat messages viewport */}
@@ -671,7 +724,10 @@ function StoryWorkflowWorkspacePage() {
                       <div className="flex items-center justify-between mb-1 font-bold">
                         <span className="text-gold">{c.authorName}</span>
                         <span className="text-[9px] text-white/40">
-                          {new Date(c.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          {new Date(c.createdAt).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </span>
                       </div>
                       <p className="text-white/80 leading-relaxed">{c.text}</p>
@@ -707,7 +763,9 @@ function StoryWorkflowWorkspacePage() {
             <div className="bg-[#141414] border border-white/5 p-6 rounded space-y-4 max-h-[380px] overflow-y-auto">
               <div className="flex items-center gap-2 border-b border-white/5 pb-3">
                 <Clock className="size-4 text-gold" />
-                <h3 className="text-sm font-bold text-white font-sans uppercase tracking-widest">Publishing Timeline</h3>
+                <h3 className="text-sm font-bold text-white font-sans uppercase tracking-widest">
+                  Publishing Timeline
+                </h3>
               </div>
 
               <div className="space-y-4 font-sans text-xs relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[1px] before:bg-white/10 pr-1">
@@ -716,16 +774,20 @@ function StoryWorkflowWorkspacePage() {
                     <div key={event.id} className="flex gap-3 items-start relative pl-6">
                       <div className="size-2 rounded-full bg-gold/75 absolute left-2 top-1.5" />
                       <div className="flex-1">
-                        <p className="font-bold text-white/85 uppercase tracking-wider text-[9px]">{event.action.replace(/_/g, " ")}</p>
+                        <p className="font-bold text-white/85 uppercase tracking-wider text-[9px]">
+                          {event.action.replace(/_/g, " ")}
+                        </p>
                         {event.action === "STORY_STATUS_CHANGE" && (
                           <p className="text-[10px] text-white/60 mt-0.5">
-                            Status updated: <span className="text-gold font-bold">{event.meta?.from}</span> &rarr;{" "}
+                            Status updated:{" "}
+                            <span className="text-gold font-bold">{event.meta?.from}</span> &rarr;{" "}
                             <span className="text-emerald-400 font-bold">{event.meta?.to}</span>
                           </p>
                         )}
                         {event.action === "ROLLBACK_STORY" && (
                           <p className="text-[10px] text-white/60 mt-0.5">
-                            Restored to version v{event.meta?.toVersion} (Bumps story to v{event.meta?.restoredVersion})
+                            Restored to version v{event.meta?.toVersion} (Bumps story to v
+                            {event.meta?.restoredVersion})
                           </p>
                         )}
                         <span className="text-[9px] text-white/40 block mt-1">

@@ -11,10 +11,7 @@ export const Route = createFileRoute("/api/chat")({
           const { message, lang } = await request.json();
 
           if (!message?.trim()) {
-            return json(
-              { error: "Message is required" },
-              { status: 400 }
-            );
+            return json({ error: "Message is required" }, { status: 400 });
           }
 
           const isHindi = lang === "hi";
@@ -93,10 +90,15 @@ export const Route = createFileRoute("/api/chat")({
 Title: ${story.title}
 Hindi Title: ${story.titleHi ?? ""}
 State: ${story.state?.name ?? ""}
-Themes: ${story.themes?.map((t: any) => t.theme?.name).filter(Boolean).join(", ") ?? ""}
+Themes: ${
+                story.themes
+                  ?.map((t: any) => t.theme?.name)
+                  .filter(Boolean)
+                  .join(", ") ?? ""
+              }
 Excerpt: ${story.excerpt}
 Slug: ${story.slug}
-`
+`,
             )
             .join("\n---------------------\n");
 
@@ -169,7 +171,7 @@ use Gemini knowledge.
               const storyList = stories
                 .map(
                   (s) =>
-                    `* [${isHindi && s.titleHi ? s.titleHi : s.title}](/stories/${s.slug}) (${s.state?.name ?? "India"})`
+                    `* [${isHindi && s.titleHi ? s.titleHi : s.title}](/stories/${s.slug}) (${s.state?.name ?? "India"})`,
                 )
                 .join("\n");
               replyText = isHindi
@@ -186,36 +188,21 @@ use Gemini knowledge.
             reply: replyText,
 
             stories: stories.map((story) => ({
-              title: isHindi
-                ? story.titleHi || story.title
-                : story.title,
+              title: isHindi ? story.titleHi || story.title : story.title,
               slug: story.slug,
               state: story.state?.name,
             })),
 
             suggestions: isHindi
-              ? [
-                  "राजस्थान",
-                  "केरल",
-                  "स्वतंत्रता सेनानी",
-                  "भारत की संस्कृति",
-                ]
-              : [
-                  "Rajasthan",
-                  "Kerala",
-                  "Freedom Fighters",
-                  "Indian Culture",
-                ],
+              ? ["राजस्थान", "केरल", "स्वतंत्रता सेनानी", "भारत की संस्कृति"]
+              : ["Rajasthan", "Kerala", "Freedom Fighters", "Indian Culture"],
           });
         } catch (error: any) {
           console.error("Gemini Error:", error);
 
           if (error?.response) {
             try {
-              console.error(
-                "Gemini Response:",
-                await error.response.text()
-              );
+              console.error("Gemini Response:", await error.response.text());
             } catch (_) {}
           }
 
@@ -227,7 +214,7 @@ use Gemini knowledge.
               error: error?.message,
               status: error?.status,
             },
-            { status: 500 }
+            { status: 500 },
           );
         }
       },

@@ -87,8 +87,12 @@ export const Route = createFileRoute("/api/themes/$slug")({
           // 4. Latest Stories
           const latestStories = [...stories]
             .sort((a, b) => {
-              const d1 = a.publishedAt ? new Date(a.publishedAt).getTime() : new Date(a.createdAt).getTime();
-              const d2 = b.publishedAt ? new Date(b.publishedAt).getTime() : new Date(b.createdAt).getTime();
+              const d1 = a.publishedAt
+                ? new Date(a.publishedAt).getTime()
+                : new Date(a.createdAt).getTime();
+              const d2 = b.publishedAt
+                ? new Date(b.publishedAt).getTime()
+                : new Date(b.createdAt).getTime();
               return d2 - d1;
             })
             .slice(0, 6);

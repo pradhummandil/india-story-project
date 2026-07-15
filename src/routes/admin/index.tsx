@@ -82,7 +82,9 @@ function MetricCard({
       className="bg-[#161616]/90 border border-white/5 p-5 rounded hover:border-white/15 transition-all relative overflow-hidden group"
     >
       <div className="flex items-center justify-between mb-3">
-        <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-white/40">{label}</span>
+        <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-white/40">
+          {label}
+        </span>
         <div className="size-8 rounded bg-primary/10 border border-primary/20 flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
           <Icon className="size-4" />
         </div>
@@ -90,7 +92,9 @@ function MetricCard({
       <div className="flex items-baseline gap-2">
         <h4 className="font-display text-2xl font-bold text-white tracking-tight">{value}</h4>
         {delta && (
-          <span className={`text-[10px] font-sans font-semibold flex items-center gap-0.5 ${isNegative ? "text-red-400" : "text-emerald-400"}`}>
+          <span
+            className={`text-[10px] font-sans font-semibold flex items-center gap-0.5 ${isNegative ? "text-red-400" : "text-emerald-400"}`}
+          >
             {isNegative ? <TrendingDown className="size-3" /> : <TrendingUp className="size-3" />}
             {delta}
           </span>
@@ -172,14 +176,19 @@ export default function AdminDashboard() {
         {/* Dashboard Title Banner */}
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
           <div>
-            <h1 className="font-display text-2xl font-bold text-white tracking-wide">CMS Analytics Hub</h1>
-            <p className="text-xs font-sans text-white/50 uppercase tracking-widest mt-1">Real-time metrics, curation tools, and moderation status</p>
+            <h1 className="font-display text-2xl font-bold text-white tracking-wide">
+              CMS Analytics Hub
+            </h1>
+            <p className="text-xs font-sans text-white/50 uppercase tracking-widest mt-1">
+              Real-time metrics, curation tools, and moderation status
+            </p>
           </div>
           {hasNotifications && stats && (
             <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded px-3 py-1.5 text-xs text-white">
               <Bell className="size-3.5 text-primary animate-bounce" />
               <span className="font-sans font-semibold">
-                {stats.notifications.pendingSubmissions + stats.notifications.flaggedCommentsCount} review items need attention
+                {stats.notifications.pendingSubmissions + stats.notifications.flaggedCommentsCount}{" "}
+                review items need attention
               </span>
             </div>
           )}
@@ -198,10 +207,19 @@ export default function AdminDashboard() {
           ) : (
             <>
               <MetricCard label="Total Stories" value={stats.totalStories} icon={BookOpen} />
-              <MetricCard label="Published" value={stats.published} icon={CheckCircle} delta="Live" />
+              <MetricCard
+                label="Published"
+                value={stats.published}
+                icon={CheckCircle}
+                delta="Live"
+              />
               <MetricCard label="Drafts" value={stats.draft} icon={FileText} />
               <MetricCard label="Hidden" value={stats.hidden} icon={Eye} />
-              <MetricCard label="Pending Approval" value={stats.pendingSubmissions} icon={ShieldAlert} />
+              <MetricCard
+                label="Pending Approval"
+                value={stats.pendingSubmissions}
+                icon={ShieldAlert}
+              />
             </>
           )}
         </div>
@@ -221,10 +239,22 @@ export default function AdminDashboard() {
             <>
               <MetricCard label="Total Users" value={stats.totalUsers} icon={Users} />
               <MetricCard label="Daily Active" value={stats.dailyReaders} icon={TrendingUp} />
-              <MetricCard label="Total Views" value={stats.totalViews.toLocaleString()} icon={Eye} />
+              <MetricCard
+                label="Total Views"
+                value={stats.totalViews.toLocaleString()}
+                icon={Eye}
+              />
               <MetricCard label="Likes" value={stats.totalLikes.toLocaleString()} icon={Zap} />
-              <MetricCard label="Comments" value={stats.totalComments.toLocaleString()} icon={MessageSquare} />
-              <MetricCard label="Reading Time" value={formatTime(stats.totalReadingTime)} icon={Clock} />
+              <MetricCard
+                label="Comments"
+                value={stats.totalComments.toLocaleString()}
+                icon={MessageSquare}
+              />
+              <MetricCard
+                label="Reading Time"
+                value={formatTime(stats.totalReadingTime)}
+                icon={Clock}
+              />
             </>
           )}
         </div>
@@ -247,8 +277,21 @@ export default function AdminDashboard() {
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                     <XAxis dataKey="month" tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }} />
                     <YAxis tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }} />
-                    <Tooltip contentStyle={{ background: "#111", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 4, color: "white" }} />
-                    <Line type="monotone" dataKey="count" stroke="#8B0000" strokeWidth={3} dot={{ fill: "#C8A96A" }} />
+                    <Tooltip
+                      contentStyle={{
+                        background: "#111",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        borderRadius: 4,
+                        color: "white",
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="count"
+                      stroke="#8B0000"
+                      strokeWidth={3}
+                      dot={{ fill: "#C8A96A" }}
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               )}
@@ -264,15 +307,21 @@ export default function AdminDashboard() {
               {statsLoading || !stats ? (
                 <SkeletonList />
               ) : stats.trendingStates.length === 0 ? (
-                <p className="text-xs text-white/30 font-sans italic py-4">No stories views tracked yet.</p>
+                <p className="text-xs text-white/30 font-sans italic py-4">
+                  No stories views tracked yet.
+                </p>
               ) : (
                 stats.trendingStates.map((state, i) => (
                   <div key={state.name} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-primary font-bold w-4">#{i + 1}</span>
-                      <span className="text-xs text-white/80 font-sans font-semibold">{state.name}</span>
+                      <span className="text-xs text-white/80 font-sans font-semibold">
+                        {state.name}
+                      </span>
                     </div>
-                    <span className="text-xs text-white/40 font-mono">{state.viewCount.toLocaleString()} views</span>
+                    <span className="text-xs text-white/40 font-mono">
+                      {state.viewCount.toLocaleString()} views
+                    </span>
                   </div>
                 ))
               )}
@@ -292,8 +341,12 @@ export default function AdminDashboard() {
               ) : (
                 stats.topStories.map((story) => (
                   <div key={story.slug} className="flex items-center justify-between gap-3">
-                    <span className="text-xs font-sans text-white/80 font-semibold truncate max-w-[200px]">{story.title}</span>
-                    <span className="text-xs text-gold font-bold font-mono whitespace-nowrap">{story.viewCount.toLocaleString()} views</span>
+                    <span className="text-xs font-sans text-white/80 font-semibold truncate max-w-[200px]">
+                      {story.title}
+                    </span>
+                    <span className="text-xs text-gold font-bold font-mono whitespace-nowrap">
+                      {story.viewCount.toLocaleString()} views
+                    </span>
                   </div>
                 ))
               )}
@@ -313,9 +366,13 @@ export default function AdminDashboard() {
                   <div key={author.name} className="flex items-center justify-between">
                     <div>
                       <p className="text-xs text-white/80 font-sans font-semibold">{author.name}</p>
-                      <p className="text-[10px] text-white/40">{author.storiesCount} stories written</p>
+                      <p className="text-[10px] text-white/40">
+                        {author.storiesCount} stories written
+                      </p>
                     </div>
-                    <span className="text-xs text-white/50 font-mono font-semibold">{author.viewCount.toLocaleString()} views</span>
+                    <span className="text-xs text-white/50 font-mono font-semibold">
+                      {author.viewCount.toLocaleString()} views
+                    </span>
                   </div>
                 ))
               )}
@@ -337,7 +394,9 @@ export default function AdminDashboard() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between p-3 rounded bg-white/5 border border-white/5">
                     <div>
-                      <p className="text-xs text-white/80 font-sans font-semibold">Pending Submissions</p>
+                      <p className="text-xs text-white/80 font-sans font-semibold">
+                        Pending Submissions
+                      </p>
                       <p className="text-[10px] text-white/40">Contributions awaiting validation</p>
                     </div>
                     <span className="size-6 rounded-full bg-primary/20 flex items-center justify-center text-xs text-primary font-bold">
@@ -346,7 +405,9 @@ export default function AdminDashboard() {
                   </div>
                   <div className="flex items-center justify-between p-3 rounded bg-white/5 border border-white/5">
                     <div>
-                      <p className="text-xs text-white/80 font-sans font-semibold">Flagged Comments</p>
+                      <p className="text-xs text-white/80 font-sans font-semibold">
+                        Flagged Comments
+                      </p>
                       <p className="text-[10px] text-white/40">Reports submitted by readers</p>
                     </div>
                     <span className="size-6 rounded-full bg-yellow-500/20 flex items-center justify-center text-xs text-yellow-400 font-bold">
@@ -381,13 +442,17 @@ export default function AdminDashboard() {
                 ))}
               </div>
             ) : stats.activities.length === 0 ? (
-              <p className="text-xs text-white/30 font-sans italic py-4">No activities logged yet.</p>
+              <p className="text-xs text-white/30 font-sans italic py-4">
+                No activities logged yet.
+              </p>
             ) : (
               stats.activities.map((act, i) => (
                 <div key={i} className="py-3 flex items-start justify-between gap-4">
                   <div>
                     <p className="text-xs text-white/80 font-sans leading-relaxed">{act.title}</p>
-                    <p className="text-[9px] text-white/40 mt-0.5">{new Date(act.time).toLocaleString("en-IN")}</p>
+                    <p className="text-[9px] text-white/40 mt-0.5">
+                      {new Date(act.time).toLocaleString("en-IN")}
+                    </p>
                   </div>
                   <span className="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-white/5 border border-white/5 text-white/50">
                     {act.meta}

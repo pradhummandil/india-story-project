@@ -2,7 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 import { json, authenticate } from "@/routes/api/-_utils";
 import { uploadToCloudinary, isCloudinaryConfigured } from "@/lib/cloudinary.server";
 
-const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/avif", "image/gif"];
+const ALLOWED_TYPES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+  "image/avif",
+  "image/gif",
+];
 const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 
 export const Route = createFileRoute("/api/admin/media")({
@@ -27,14 +34,14 @@ export const Route = createFileRoute("/api/admin/media")({
               warning:
                 "Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET in your .env file.",
             },
-            { status: 200 }
+            { status: 200 },
           );
         }
 
         try {
           const url = new URL(request.url);
           const nextCursor = url.searchParams.get("nextCursor") || undefined;
-          
+
           let cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/resources/image?prefix=india_story_project/&type=upload&max_results=100`;
           if (nextCursor) {
             cloudinaryUrl += `&next_cursor=${encodeURIComponent(nextCursor)}`;
@@ -43,8 +50,8 @@ export const Route = createFileRoute("/api/admin/media")({
           const authHeader = "Basic " + Buffer.from(`${apiKey}:${apiSecret}`).toString("base64");
           const res = await fetch(cloudinaryUrl, {
             headers: {
-              Authorization: authHeader
-            }
+              Authorization: authHeader,
+            },
           });
 
           if (!res.ok) {
@@ -62,10 +69,13 @@ export const Route = createFileRoute("/api/admin/media")({
 
           return json({
             files,
-            nextCursor: data.next_cursor || null
+            nextCursor: data.next_cursor || null,
           });
         } catch (e: any) {
-          return json({ error: e.message || "Failed to fetch media from Cloudinary" }, { status: 500 });
+          return json(
+            { error: e.message || "Failed to fetch media from Cloudinary" },
+            { status: 500 },
+          );
         }
       },
 
@@ -83,7 +93,7 @@ export const Route = createFileRoute("/api/admin/media")({
               error:
                 "Cloudinary is not configured on this server. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET in your .env file.",
             },
-            { status: 503 }
+            { status: 503 },
           );
         }
 
@@ -96,7 +106,10 @@ export const Route = createFileRoute("/api/admin/media")({
 
         const uploadedFiles = formData.getAll("files") as File[];
         if (!uploadedFiles || uploadedFiles.length === 0) {
-          return json({ error: "No files provided. Attach files under the 'files' field." }, { status: 400 });
+          return json(
+            { error: "No files provided. Attach files under the 'files' field." },
+            { status: 400 },
+          );
         }
 
         const results: Array<{ name: string; url: string; size: number; created_at: string }> = [];
@@ -106,7 +119,7 @@ export const Route = createFileRoute("/api/admin/media")({
           // Validate type
           if (!ALLOWED_TYPES.includes(file.type)) {
             errors.push(
-              `"${file.name}" has unsupported type "${file.type}". Allowed: ${ALLOWED_TYPES.join(", ")}.`
+              `"${file.name}" has unsupported type "${file.type}". Allowed: ${ALLOWED_TYPES.join(", ")}.`,
             );
             continue;
           }
@@ -114,7 +127,7 @@ export const Route = createFileRoute("/api/admin/media")({
           // Validate size
           if (file.size > MAX_SIZE_BYTES) {
             errors.push(
-              `"${file.name}" is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Max is 10 MB.`
+              `"${file.name}" is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Max is 10 MB.`,
             );
             continue;
           }
@@ -160,10 +173,7 @@ export const Route = createFileRoute("/api/admin/media")({
         const url = new URL(request.url);
         const publicId = url.searchParams.get("publicId") || url.searchParams.get("name");
         if (!publicId) {
-          return json(
-            { error: "publicId or name query param is required" },
-            { status: 400 }
-          );
+          return json({ error: "publicId or name query param is required" }, { status: 400 });
         }
 
         const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim();
@@ -186,10 +196,10 @@ export const Route = createFileRoute("/api/admin/media")({
           form.append("timestamp", timestamp);
           form.append("signature", signature);
 
-          const res = await fetch(
-            `https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`,
-            { method: "POST", body: form }
-          );
+          const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`, {
+            method: "POST",
+            body: form,
+          });
 
           if (!res.ok) {
             const err = await res.text();

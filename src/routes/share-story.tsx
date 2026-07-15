@@ -53,13 +53,42 @@ export const Route = createFileRoute("/share-story")({
 });
 
 const STATES = [
-  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
-  "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka",
-  "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram",
-  "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu",
-  "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal",
-  "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu",
-  "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry",
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chhattisgarh",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal",
+  "Andaman and Nicobar Islands",
+  "Chandigarh",
+  "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi",
+  "Jammu and Kashmir",
+  "Ladakh",
+  "Lakshadweep",
+  "Puducherry",
 ];
 
 const whyShareReasons = [
@@ -184,9 +213,7 @@ function FaqItem({ q, a }: { q: string; a: string }) {
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
-            <p className="pb-5 text-sm text-muted-foreground font-sans leading-relaxed">
-              {a}
-            </p>
+            <p className="pb-5 text-sm text-muted-foreground font-sans leading-relaxed">{a}</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -209,9 +236,7 @@ function ShareStoryPage() {
   const [story, setStory] = useState("");
   const [summary, setSummary] = useState("");
   const [selectedThemes, setSelectedThemes] = useState<string[]>(["Heritage"]);
-  const [allThemes, setAllThemes] = useState<string[]>(
-    defaultThemes.filter((t) => t !== "All")
-  );
+  const [allThemes, setAllThemes] = useState<string[]>(defaultThemes.filter((t) => t !== "All"));
   const [themeSearch, setThemeSearch] = useState("");
   const [showThemeDropdown, setShowThemeDropdown] = useState(false);
   const themeDropdownRef = useRef<HTMLDivElement>(null);
@@ -220,7 +245,7 @@ function ShareStoryPage() {
     fetch("/api/themes")
       .then((res) => res.json())
       .then((data) => {
-        const list = Array.isArray(data) ? data : (data.themes || []);
+        const list = Array.isArray(data) ? data : data.themes || [];
         if (list.length > 0) {
           setAllThemes(list.map((t: any) => t.name));
         }
@@ -284,10 +309,7 @@ function ShareStoryPage() {
     if (user) {
       setContactEmail(user.email ?? "");
       setAuthorName(
-        profile?.fullName ||
-          user.user_metadata?.name ||
-          user.email?.split("@")[0] ||
-          ""
+        profile?.fullName || user.user_metadata?.name || user.email?.split("@")[0] || "",
       );
     }
   }, [user, profile]);
@@ -325,26 +347,28 @@ function ShareStoryPage() {
     const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/avif"];
     const fileExtension = file.name.split(".").pop()?.toLowerCase();
     const validExtensions = ["jpg", "jpeg", "png", "webp", "avif"];
-    
+
     if (!validTypes.includes(file.type) && !validExtensions.includes(fileExtension || "")) {
       return `Invalid file type for "${file.name}". Allowed types are: JPG, JPEG, PNG, WEBP, AVIF.`;
     }
-    
+
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
       return `File "${file.name}" exceeds the maximum size limit of 10MB (actual: ${(file.size / (1024 * 1024)).toFixed(2)}MB).`;
     }
-    
+
     return null;
   };
 
   const uploadFile = async (file: File): Promise<string> => {
     if (!session) throw new Error("No session found. Please sign in.");
-    
+
     const formData = new FormData();
     formData.append("files", file);
 
-    console.log(`[Upload Client] Requesting upload for file: ${file.name}, type: ${file.type}, size: ${file.size} bytes`);
+    console.log(
+      `[Upload Client] Requesting upload for file: ${file.name}, type: ${file.type}, size: ${file.size} bytes`,
+    );
 
     const res = await fetch("/api/admin/media", {
       method: "POST",
@@ -383,7 +407,10 @@ function ShareStoryPage() {
         if (attempts >= 2) {
           throw err;
         }
-        console.warn(`[Upload Client] Attempt 1 failed for ${file.name}. Retrying once. Error:`, err);
+        console.warn(
+          `[Upload Client] Attempt 1 failed for ${file.name}. Retrying once. Error:`,
+          err,
+        );
       }
     }
     throw new Error("Upload failed after retry");
@@ -392,17 +419,17 @@ function ShareStoryPage() {
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     const validationError = validateImageFile(file);
     if (validationError) {
       alert(validationError);
       return;
     }
-    
+
     setUploadingCover(true);
     setCoverUploadError(null);
     setCoverUploadSuccess(false);
-    
+
     try {
       console.log(`[Upload Cover] Uploading: ${file.name}`);
       const url = await uploadFileWithRetry(file);
@@ -418,12 +445,10 @@ function ShareStoryPage() {
     }
   };
 
-  const handleGalleryUpload = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-    
+
     const fileList = Array.from(files);
     for (const file of fileList) {
       const validationError = validateImageFile(file);
@@ -432,16 +457,16 @@ function ShareStoryPage() {
         return;
       }
     }
-    
+
     setUploadingGallery(true);
     setGalleryUploadError(null);
     setGalleryUploadSuccess(false);
-    
+
     try {
       console.log(`[Upload Gallery] Uploading ${fileList.length} files in parallel`);
       const uploadPromises = fileList.map((file) => uploadFileWithRetry(file));
       const urls = await Promise.all(uploadPromises);
-      
+
       setGalleryImages((prev) => [...prev, ...urls]);
       setGalleryUploadSuccess(true);
       console.log(`[Upload Gallery] Successfully uploaded:`, urls);
@@ -457,17 +482,17 @@ function ShareStoryPage() {
   const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     const maxSize = 20 * 1024 * 1024; // 20MB for video
     if (file.size > maxSize) {
       alert("Video file size cannot exceed 20MB.");
       return;
     }
-    
+
     setUploadingVideo(true);
     setVideoUploadError(null);
     setVideoUploadSuccess(false);
-    
+
     try {
       console.log(`[Upload Video] Uploading: ${file.name}`);
       const url = await uploadFileWithRetry(file);
@@ -582,9 +607,7 @@ function ShareStoryPage() {
         <div className="min-h-[70vh] flex items-center justify-center">
           <div className="text-center space-y-4">
             <Loader2 className="size-8 animate-spin text-gold mx-auto" />
-            <p className="text-muted-foreground font-sans text-sm">
-              Loading…
-            </p>
+            <p className="text-muted-foreground font-sans text-sm">Loading…</p>
           </div>
         </div>
       </SiteLayout>
@@ -604,10 +627,13 @@ function ShareStoryPage() {
           </div>
 
           {/* Decorative pattern */}
-          <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{
-            backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
-            backgroundSize: "40px 40px",
-          }} />
+          <div
+            className="absolute inset-0 opacity-[0.03] pointer-events-none"
+            style={{
+              backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
+              backgroundSize: "40px 40px",
+            }}
+          />
 
           <div className="container mx-auto px-6 relative text-center max-w-4xl">
             <motion.div
@@ -637,8 +663,9 @@ function ShareStoryPage() {
               transition={{ duration: 0.8, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
               className="mt-7 text-base md:text-lg text-muted-foreground leading-relaxed font-sans max-w-2xl mx-auto"
             >
-              Across every corner of India, unsung heroes, creative pioneers, and grassroots innovators are shaping tomorrow.
-              Be part of documenting modern India's transformation — one authentic voice at a time.
+              Across every corner of India, unsung heroes, creative pioneers, and grassroots
+              innovators are shaping tomorrow. Be part of documenting modern India's transformation
+              — one authentic voice at a time.
             </motion.p>
 
             <motion.div
@@ -676,8 +703,12 @@ function ShareStoryPage() {
                 { value: "5M+", label: "Readers Reached" },
               ].map((stat, i) => (
                 <div key={i} className="text-center">
-                  <div className="font-display text-2xl font-bold text-gradient-gold">{stat.value}</div>
-                  <div className="text-[10px] uppercase tracking-wider font-sans font-bold mt-0.5">{stat.label}</div>
+                  <div className="font-display text-2xl font-bold text-gradient-gold">
+                    {stat.value}
+                  </div>
+                  <div className="text-[10px] uppercase tracking-wider font-sans font-bold mt-0.5">
+                    {stat.label}
+                  </div>
                 </div>
               ))}
             </motion.div>
@@ -688,12 +719,15 @@ function ShareStoryPage() {
         <section className="py-24 border-b border-border/40">
           <div className="container mx-auto px-6 max-w-6xl">
             <div className="text-center mb-16">
-              <span className="text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-gold">Why Contribute</span>
+              <span className="text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-gold">
+                Why Contribute
+              </span>
               <h2 className="font-display text-3xl md:text-5xl font-bold mt-3 leading-tight">
                 Why Share Your Story?
               </h2>
               <p className="mt-4 text-muted-foreground font-sans max-w-xl mx-auto text-sm leading-relaxed">
-                Every voice matters. Every story creates ripples. Here's why contributors choose the India Story Project.
+                Every voice matters. Every story creates ripples. Here's why contributors choose the
+                India Story Project.
               </p>
             </div>
 
@@ -710,8 +744,12 @@ function ShareStoryPage() {
                   <div className="size-12 rounded-xl bg-gold/8 border border-gold/15 flex items-center justify-center text-gold mb-5 group-hover:bg-gold/15 transition-colors duration-300">
                     <reason.icon className="size-5" />
                   </div>
-                  <h3 className="font-display font-bold text-base text-foreground mb-2">{reason.title}</h3>
-                  <p className="text-xs text-muted-foreground font-sans leading-relaxed">{reason.desc}</p>
+                  <h3 className="font-display font-bold text-base text-foreground mb-2">
+                    {reason.title}
+                  </h3>
+                  <p className="text-xs text-muted-foreground font-sans leading-relaxed">
+                    {reason.desc}
+                  </p>
                 </motion.div>
               ))}
             </div>
@@ -722,12 +760,13 @@ function ShareStoryPage() {
         <section id="how-it-works" className="py-24 bg-card/10 border-b border-border/40">
           <div className="container mx-auto px-6 max-w-6xl">
             <div className="text-center mb-16">
-              <span className="text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-gold">Editorial Process</span>
-              <h2 className="font-display text-3xl md:text-5xl font-bold mt-3">
-                How It Works
-              </h2>
+              <span className="text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-gold">
+                Editorial Process
+              </span>
+              <h2 className="font-display text-3xl md:text-5xl font-bold mt-3">How It Works</h2>
               <p className="mt-4 text-muted-foreground font-sans max-w-xl mx-auto text-sm leading-relaxed">
-                Every story goes through our rigorous 5-stage editorial review to ensure quality, accuracy, and impact.
+                Every story goes through our rigorous 5-stage editorial review to ensure quality,
+                accuracy, and impact.
               </p>
             </div>
 
@@ -746,11 +785,15 @@ function ShareStoryPage() {
                     {step.num}
                   </span>
 
-                  <div className={`size-10 rounded-lg bg-white/5 flex items-center justify-center mb-4 ${step.accent}`}>
+                  <div
+                    className={`size-10 rounded-lg bg-white/5 flex items-center justify-center mb-4 ${step.accent}`}
+                  >
                     <step.icon className="size-5" />
                   </div>
                   <h4 className="font-sans font-bold text-sm text-foreground mb-2">{step.name}</h4>
-                  <p className="text-[11px] text-muted-foreground font-sans leading-relaxed">{step.desc}</p>
+                  <p className="text-[11px] text-muted-foreground font-sans leading-relaxed">
+                    {step.desc}
+                  </p>
                 </motion.div>
               ))}
             </div>
@@ -762,12 +805,15 @@ function ShareStoryPage() {
           <div className="container mx-auto px-6 max-w-4xl">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
-                <span className="text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-gold">Standards</span>
+                <span className="text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-gold">
+                  Standards
+                </span>
                 <h2 className="font-display text-3xl md:text-4xl font-bold mt-3 mb-5 leading-tight">
                   Submission Guidelines
                 </h2>
                 <p className="text-muted-foreground font-sans text-sm leading-relaxed mb-8">
-                  We maintain high editorial standards to ensure every story we publish is accurate, impactful, and honors the subject.
+                  We maintain high editorial standards to ensure every story we publish is accurate,
+                  impactful, and honors the subject.
                 </p>
                 <ul className="space-y-3">
                   {guidelines.map((g, i) => (
@@ -798,15 +844,25 @@ function ShareStoryPage() {
                   {[
                     { icon: Award, label: "+20 XP Points", desc: "For every accepted submission" },
                     { icon: Star, label: "Contributor Badge", desc: "Displayed on your profile" },
-                    { icon: BookOpen, label: "Author Byline", desc: "Credit on every published story" },
-                    { icon: Users, label: "Community Access", desc: "Join our inner circle of storytellers" },
+                    {
+                      icon: BookOpen,
+                      label: "Author Byline",
+                      desc: "Credit on every published story",
+                    },
+                    {
+                      icon: Users,
+                      label: "Community Access",
+                      desc: "Join our inner circle of storytellers",
+                    },
                   ].map((b, i) => (
                     <div key={i} className="flex items-start gap-4">
                       <div className="size-9 rounded-lg bg-gold/8 border border-gold/15 flex items-center justify-center text-gold shrink-0">
                         <b.icon className="size-4" />
                       </div>
                       <div>
-                        <div className="text-sm font-sans font-semibold text-foreground">{b.label}</div>
+                        <div className="text-sm font-sans font-semibold text-foreground">
+                          {b.label}
+                        </div>
                         <div className="text-xs text-muted-foreground font-sans">{b.desc}</div>
                       </div>
                     </div>
@@ -821,10 +877,10 @@ function ShareStoryPage() {
         <section id="submission-form" className="py-20 border-b border-border/40">
           <div className="container mx-auto px-6 max-w-3xl">
             <div className="text-center mb-12">
-              <span className="text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-gold">Submit Your Work</span>
-              <h2 className="font-display text-3xl md:text-4xl font-bold mt-3">
-                Tell Your Story
-              </h2>
+              <span className="text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-gold">
+                Submit Your Work
+              </span>
+              <h2 className="font-display text-3xl md:text-4xl font-bold mt-3">Tell Your Story</h2>
               <p className="mt-4 text-muted-foreground font-sans max-w-lg mx-auto text-sm leading-relaxed">
                 {user
                   ? `Welcome, ${profile?.fullName || user.email?.split("@")[0] || "Contributor"}. Fill in the details below.`
@@ -891,7 +947,10 @@ function ShareStoryPage() {
 
                         <form onSubmit={handleEmailLogin} className="space-y-4">
                           <div className="space-y-1.5">
-                            <Label htmlFor="email" className="text-xs uppercase tracking-wider text-muted-foreground font-sans">
+                            <Label
+                              htmlFor="email"
+                              className="text-xs uppercase tracking-wider text-muted-foreground font-sans"
+                            >
                               Email Address
                             </Label>
                             <Input
@@ -904,7 +963,10 @@ function ShareStoryPage() {
                             />
                           </div>
                           <div className="space-y-1.5">
-                            <Label htmlFor="password" className="text-xs uppercase tracking-wider text-muted-foreground font-sans">
+                            <Label
+                              htmlFor="password"
+                              className="text-xs uppercase tracking-wider text-muted-foreground font-sans"
+                            >
                               Password
                             </Label>
                             <Input
@@ -921,16 +983,17 @@ function ShareStoryPage() {
                             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-11 font-sans text-xs uppercase tracking-widest font-bold rounded-xl"
                             disabled={loginLoading}
                           >
-                            {loginLoading ? (
-                              <Loader2 className="size-4 animate-spin mr-2" />
-                            ) : null}
+                            {loginLoading ? <Loader2 className="size-4 animate-spin mr-2" /> : null}
                             Sign In
                           </Button>
                         </form>
 
                         <p className="text-center text-xs text-muted-foreground font-sans">
                           Don't have an account?{" "}
-                          <Link to="/login" className="text-primary hover:text-primary/80 underline underline-offset-2">
+                          <Link
+                            to="/login"
+                            className="text-primary hover:text-primary/80 underline underline-offset-2"
+                          >
                             Create one
                           </Link>
                         </p>
@@ -961,7 +1024,8 @@ function ShareStoryPage() {
                         Story Submitted!
                       </h3>
                       <p className="text-muted-foreground font-sans max-w-sm mx-auto text-sm leading-relaxed mb-2">
-                        Namaste! Your story has entered our editorial queue. Our team will review it within 5–7 working days.
+                        Namaste! Your story has entered our editorial queue. Our team will review it
+                        within 5–7 working days.
                       </p>
                       <div className="inline-flex items-center gap-2 mt-2 mb-8 px-4 py-2 rounded-full bg-gold/10 border border-gold/20 text-gold font-sans text-xs font-bold uppercase tracking-wider">
                         <Star className="size-3" />
@@ -1035,7 +1099,9 @@ function ShareStoryPage() {
                           <div className="flex items-center justify-between border-b border-white/10 pb-4">
                             <div className="flex items-center gap-2">
                               <Sparkles className="size-4.5 text-gold" />
-                              <h3 className="font-display text-xl font-bold text-white">Story Preview</h3>
+                              <h3 className="font-display text-xl font-bold text-white">
+                                Story Preview
+                              </h3>
                             </div>
                             <Button
                               type="button"
@@ -1050,19 +1116,29 @@ function ShareStoryPage() {
                           <div className="space-y-6 max-w-2xl mx-auto py-4">
                             {coverImage && (
                               <div className="aspect-[16/9] w-full overflow-hidden rounded-xl border border-white/10">
-                                <img src={coverImage} className="w-full h-full object-cover" alt="Cover Preview" />
+                                <img
+                                  src={coverImage}
+                                  className="w-full h-full object-cover"
+                                  alt="Cover Preview"
+                                />
                               </div>
                             )}
 
                             <div className="space-y-3">
                               <div className="flex flex-wrap items-center gap-2 text-[10px] tracking-[0.25em] uppercase font-bold text-gold font-sans">
                                 {selectedThemes.map((t, idx) => (
-                                  <span key={idx} className="bg-primary/10 border border-primary/20 px-2 py-0.5 rounded">
+                                  <span
+                                    key={idx}
+                                    className="bg-primary/10 border border-primary/20 px-2 py-0.5 rounded"
+                                  >
                                     {t}
                                   </span>
                                 ))}
                                 <span>•</span>
-                                <span>{stateName}{district ? `, ${district}` : ""}</span>
+                                <span>
+                                  {stateName}
+                                  {district ? `, ${district}` : ""}
+                                </span>
                                 <span>•</span>
                                 <span>{language === "hi" ? "हिन्दी" : "English"}</span>
                               </div>
@@ -1071,7 +1147,8 @@ function ShareStoryPage() {
                               </h1>
                               {heroName && (
                                 <p className="text-xs font-sans text-white/50 italic">
-                                  Subject: <span className="text-gold font-bold not-italic">{heroName}</span>
+                                  Subject:{" "}
+                                  <span className="text-gold font-bold not-italic">{heroName}</span>
                                 </p>
                               )}
                               <p className="text-xs font-sans text-white/45">
@@ -1091,8 +1168,15 @@ function ShareStoryPage() {
 
                             {videoUrl && (
                               <div className="pt-4 border-t border-white/5">
-                                <p className="text-xs text-white/40 uppercase tracking-widest font-sans font-bold mb-2">Video Attachment</p>
-                                <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-gold underline hover:text-white transition-colors break-all">
+                                <p className="text-xs text-white/40 uppercase tracking-widest font-sans font-bold mb-2">
+                                  Video Attachment
+                                </p>
+                                <a
+                                  href={videoUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-gold underline hover:text-white transition-colors break-all"
+                                >
                                   {videoUrl}
                                 </a>
                               </div>
@@ -1100,10 +1184,18 @@ function ShareStoryPage() {
 
                             {externalLinks && (
                               <div className="pt-4 border-t border-white/5">
-                                <p className="text-xs text-white/40 uppercase tracking-widest font-sans font-bold mb-2">References & Links</p>
+                                <p className="text-xs text-white/40 uppercase tracking-widest font-sans font-bold mb-2">
+                                  References & Links
+                                </p>
                                 <div className="flex flex-wrap gap-2">
                                   {externalLinks.split(",").map((link, idx) => (
-                                    <a key={idx} href={link.trim()} target="_blank" rel="noopener noreferrer" className="text-[10px] bg-white/5 border border-white/10 px-2 py-1 rounded hover:bg-gold/10 hover:text-gold transition-colors">
+                                    <a
+                                      key={idx}
+                                      href={link.trim()}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-[10px] bg-white/5 border border-white/10 px-2 py-1 rounded hover:bg-gold/10 hover:text-gold transition-colors"
+                                    >
                                       {link.trim()}
                                     </a>
                                   ))}
@@ -1136,7 +1228,10 @@ function ShareStoryPage() {
                           {/* Title & Hero Name */}
                           <div className="grid sm:grid-cols-2 gap-5">
                             <div className="space-y-2">
-                              <Label htmlFor="title" className="text-xs uppercase tracking-wider text-muted-foreground font-sans">
+                              <Label
+                                htmlFor="title"
+                                className="text-xs uppercase tracking-wider text-muted-foreground font-sans"
+                              >
                                 Story Title *
                               </Label>
                               <Input
@@ -1149,7 +1244,10 @@ function ShareStoryPage() {
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="heroName" className="text-xs uppercase tracking-wider text-muted-foreground font-sans">
+                              <Label
+                                htmlFor="heroName"
+                                className="text-xs uppercase tracking-wider text-muted-foreground font-sans"
+                              >
                                 Hero / Subject Name
                               </Label>
                               <Input
@@ -1170,7 +1268,10 @@ function ShareStoryPage() {
                               </Label>
                               <div className="w-full bg-background border border-border/60 rounded-xl p-2 font-sans text-sm focus-within:border-gold/40 transition-colors flex flex-wrap gap-1.5 min-h-[44px] items-center">
                                 {selectedThemes.map((t) => (
-                                  <span key={t} className="bg-primary/10 border border-primary/20 text-gold px-2 py-0.5 rounded-lg text-xs flex items-center gap-1 font-sans">
+                                  <span
+                                    key={t}
+                                    className="bg-primary/10 border border-primary/20 text-gold px-2 py-0.5 rounded-lg text-xs flex items-center gap-1 font-sans"
+                                  >
                                     {t}
                                     <button
                                       type="button"
@@ -1183,7 +1284,11 @@ function ShareStoryPage() {
                                 ))}
                                 <input
                                   type="text"
-                                  placeholder={selectedThemes.length === 0 ? "Select themes..." : "Add theme..."}
+                                  placeholder={
+                                    selectedThemes.length === 0
+                                      ? "Select themes..."
+                                      : "Add theme..."
+                                  }
                                   value={themeSearch}
                                   onChange={(e) => {
                                     setThemeSearch(e.target.value);
@@ -1199,7 +1304,7 @@ function ShareStoryPage() {
                                     .filter(
                                       (t) =>
                                         t.toLowerCase().includes(themeSearch.toLowerCase()) &&
-                                        !selectedThemes.includes(t)
+                                        !selectedThemes.includes(t),
                                     )
                                     .map((t) => (
                                       <button
@@ -1218,7 +1323,10 @@ function ShareStoryPage() {
                               )}
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="stateName" className="text-xs uppercase tracking-wider text-muted-foreground font-sans">
+                              <Label
+                                htmlFor="stateName"
+                                className="text-xs uppercase tracking-wider text-muted-foreground font-sans"
+                              >
                                 State *
                               </Label>
                               <select
@@ -1228,12 +1336,17 @@ function ShareStoryPage() {
                                 className="w-full bg-background border border-border/60 text-foreground h-11 px-3 rounded-xl font-sans text-sm outline-none focus:border-gold/40 transition-colors"
                               >
                                 {STATES.map((s) => (
-                                  <option key={s} value={s}>{s}</option>
+                                  <option key={s} value={s}>
+                                    {s}
+                                  </option>
                                 ))}
                               </select>
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="district" className="text-xs uppercase tracking-wider text-muted-foreground font-sans">
+                              <Label
+                                htmlFor="district"
+                                className="text-xs uppercase tracking-wider text-muted-foreground font-sans"
+                              >
                                 District / City *
                               </Label>
                               <Input
@@ -1250,7 +1363,10 @@ function ShareStoryPage() {
                           {/* Language + Author + Email */}
                           <div className="grid sm:grid-cols-3 gap-5">
                             <div className="space-y-2">
-                              <Label htmlFor="language" className="text-xs uppercase tracking-wider text-muted-foreground font-sans">
+                              <Label
+                                htmlFor="language"
+                                className="text-xs uppercase tracking-wider text-muted-foreground font-sans"
+                              >
                                 Language *
                               </Label>
                               <select
@@ -1264,7 +1380,10 @@ function ShareStoryPage() {
                               </select>
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="authorName" className="text-xs uppercase tracking-wider text-muted-foreground font-sans">
+                              <Label
+                                htmlFor="authorName"
+                                className="text-xs uppercase tracking-wider text-muted-foreground font-sans"
+                              >
                                 Your Name
                               </Label>
                               <Input
@@ -1276,7 +1395,10 @@ function ShareStoryPage() {
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="contactEmail" className="text-xs uppercase tracking-wider text-muted-foreground font-sans">
+                              <Label
+                                htmlFor="contactEmail"
+                                className="text-xs uppercase tracking-wider text-muted-foreground font-sans"
+                              >
                                 Contact Email *
                               </Label>
                               <Input
@@ -1294,7 +1416,10 @@ function ShareStoryPage() {
                           {/* Phone & Tags */}
                           <div className="grid sm:grid-cols-2 gap-5">
                             <div className="space-y-2">
-                              <Label htmlFor="phone" className="text-xs uppercase tracking-wider text-muted-foreground font-sans">
+                              <Label
+                                htmlFor="phone"
+                                className="text-xs uppercase tracking-wider text-muted-foreground font-sans"
+                              >
                                 Contact Phone (Optional)
                               </Label>
                               <Input
@@ -1307,8 +1432,14 @@ function ShareStoryPage() {
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="tags" className="text-xs uppercase tracking-wider text-muted-foreground font-sans">
-                                Tags / Keywords <span className="normal-case text-muted-foreground/60">(comma-separated)</span>
+                              <Label
+                                htmlFor="tags"
+                                className="text-xs uppercase tracking-wider text-muted-foreground font-sans"
+                              >
+                                Tags / Keywords{" "}
+                                <span className="normal-case text-muted-foreground/60">
+                                  (comma-separated)
+                                </span>
                               </Label>
                               <Input
                                 id="tags"
@@ -1328,12 +1459,17 @@ function ShareStoryPage() {
                               className="w-full flex items-center justify-between text-left text-xs uppercase tracking-wider text-muted-foreground font-sans font-bold hover:text-white transition-colors"
                             >
                               <span>SEO Metadata Settings (Optional)</span>
-                              <span className="text-[10px] text-gold">{showSEO ? "Hide [-]" : "Show [+]"}</span>
+                              <span className="text-[10px] text-gold">
+                                {showSEO ? "Hide [-]" : "Show [+]"}
+                              </span>
                             </button>
                             {showSEO && (
                               <div className="space-y-4 mt-4 pt-4 border-t border-border/20">
                                 <div className="space-y-2">
-                                  <Label htmlFor="seoTitle" className="text-xs uppercase tracking-wider text-muted-foreground font-sans">
+                                  <Label
+                                    htmlFor="seoTitle"
+                                    className="text-xs uppercase tracking-wider text-muted-foreground font-sans"
+                                  >
                                     SEO Title
                                   </Label>
                                   <Input
@@ -1345,7 +1481,10 @@ function ShareStoryPage() {
                                   />
                                 </div>
                                 <div className="space-y-2">
-                                  <Label htmlFor="seoDescription" className="text-xs uppercase tracking-wider text-muted-foreground font-sans">
+                                  <Label
+                                    htmlFor="seoDescription"
+                                    className="text-xs uppercase tracking-wider text-muted-foreground font-sans"
+                                  >
                                     SEO Description
                                   </Label>
                                   <Textarea
@@ -1358,7 +1497,10 @@ function ShareStoryPage() {
                                   />
                                 </div>
                                 <div className="space-y-2">
-                                  <Label htmlFor="seoKeywords" className="text-xs uppercase tracking-wider text-muted-foreground font-sans">
+                                  <Label
+                                    htmlFor="seoKeywords"
+                                    className="text-xs uppercase tracking-wider text-muted-foreground font-sans"
+                                  >
                                     SEO Keywords
                                   </Label>
                                   <Input
@@ -1375,8 +1517,14 @@ function ShareStoryPage() {
 
                           {/* Summary */}
                           <div className="space-y-2">
-                            <Label htmlFor="summary" className="text-xs uppercase tracking-wider text-muted-foreground font-sans">
-                              Story Summary * <span className="normal-case text-muted-foreground/60">(1–2 sentence excerpt shown in previews)</span>
+                            <Label
+                              htmlFor="summary"
+                              className="text-xs uppercase tracking-wider text-muted-foreground font-sans"
+                            >
+                              Story Summary *{" "}
+                              <span className="normal-case text-muted-foreground/60">
+                                (1–2 sentence excerpt shown in previews)
+                              </span>
                             </Label>
                             <Textarea
                               id="summary"
@@ -1391,8 +1539,14 @@ function ShareStoryPage() {
 
                           {/* Full Story */}
                           <div className="space-y-2">
-                            <Label htmlFor="story" className="text-xs uppercase tracking-wider text-muted-foreground font-sans">
-                              Full Story * <span className="normal-case text-muted-foreground/60">(Markdown supported)</span>
+                            <Label
+                              htmlFor="story"
+                              className="text-xs uppercase tracking-wider text-muted-foreground font-sans"
+                            >
+                              Full Story *{" "}
+                              <span className="normal-case text-muted-foreground/60">
+                                (Markdown supported)
+                              </span>
                             </Label>
                             <Textarea
                               id="story"
@@ -1408,15 +1562,26 @@ function ShareStoryPage() {
                           {/* Image Upload Block */}
                           <div className="grid sm:grid-cols-2 gap-6 pt-4 border-t border-white/5">
                             <div className="space-y-2">
-                              <Label className="text-xs uppercase tracking-wider text-muted-foreground font-sans block">Cover Image</Label>
+                              <Label className="text-xs uppercase tracking-wider text-muted-foreground font-sans block">
+                                Cover Image
+                              </Label>
                               <div className="border border-dashed border-border/60 hover:border-gold/30 rounded-xl transition-colors overflow-hidden min-h-[140px] flex flex-col items-center justify-center">
                                 {coverImage ? (
                                   <div className="relative group w-full aspect-[16/10] overflow-hidden rounded border border-white/10">
-                                    <img src={coverImage} alt="Cover Preview" className="w-full h-full object-cover" />
+                                    <img
+                                      src={coverImage}
+                                      alt="Cover Preview"
+                                      className="w-full h-full object-cover"
+                                    />
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                                       <label className="cursor-pointer text-[10px] uppercase font-bold tracking-wider text-gold hover:text-white transition-colors">
                                         Change Image
-                                        <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
+                                        <input
+                                          type="file"
+                                          accept="image/*"
+                                          className="hidden"
+                                          onChange={handleCoverUpload}
+                                        />
                                       </label>
                                     </div>
                                   </div>
@@ -1429,13 +1594,22 @@ function ShareStoryPage() {
                                   <label className="cursor-pointer flex flex-col items-center text-muted-foreground text-xs font-sans hover:text-white transition-colors">
                                     <UploadCloud className="size-7 mb-2 text-muted-foreground/30" />
                                     Upload Cover Image
-                                    <span className="text-[10px] text-white/20 mt-1">Direct upload to Cloudinary</span>
-                                    <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
+                                    <span className="text-[10px] text-white/20 mt-1">
+                                      Direct upload to Cloudinary
+                                    </span>
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      className="hidden"
+                                      onChange={handleCoverUpload}
+                                    />
                                   </label>
                                 )}
                               </div>
                               {coverUploadError && (
-                                <p className="text-[10px] text-red-500 font-sans mt-1 font-semibold">{coverUploadError}</p>
+                                <p className="text-[10px] text-red-500 font-sans mt-1 font-semibold">
+                                  {coverUploadError}
+                                </p>
                               )}
                               {coverImage && coverUploadSuccess && (
                                 <p className="text-[10px] text-emerald-400 font-sans mt-1 flex items-center gap-1">
@@ -1446,7 +1620,9 @@ function ShareStoryPage() {
                             </div>
 
                             <div className="space-y-2">
-                              <Label className="text-xs uppercase tracking-wider text-muted-foreground font-sans block">Gallery Images (Optional)</Label>
+                              <Label className="text-xs uppercase tracking-wider text-muted-foreground font-sans block">
+                                Gallery Images (Optional)
+                              </Label>
                               <div className="border border-dashed border-border/60 hover:border-gold/30 rounded-xl transition-colors min-h-[140px] flex flex-col items-center justify-center">
                                 {uploadingGallery ? (
                                   <div className="flex flex-col items-center text-white/40 text-xs font-sans">
@@ -1457,23 +1633,38 @@ function ShareStoryPage() {
                                   <label className="cursor-pointer flex flex-col items-center text-muted-foreground text-xs font-sans hover:text-white transition-colors w-full">
                                     <ImageIcon className="size-7 mb-2 text-muted-foreground/30" />
                                     Upload Multiple Images
-                                    <span className="text-[10px] text-white/20 mt-1">Direct upload to Cloudinary</span>
-                                    <input type="file" accept="image/*" multiple className="hidden" onChange={handleGalleryUpload} />
+                                    <span className="text-[10px] text-white/20 mt-1">
+                                      Direct upload to Cloudinary
+                                    </span>
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      multiple
+                                      className="hidden"
+                                      onChange={handleGalleryUpload}
+                                    />
                                   </label>
                                 )}
                                 {galleryImages.length > 0 && (
                                   <div className="flex flex-wrap gap-2 mt-4 justify-center">
                                     {galleryImages.map((img, i) => (
-                                      <div key={i} className="size-10 rounded overflow-hidden border border-white/10">
+                                      <div
+                                        key={i}
+                                        className="size-10 rounded overflow-hidden border border-white/10"
+                                      >
                                         <img src={img} className="size-full object-cover" />
                                       </div>
                                     ))}
-                                    <span className="text-[9px] uppercase font-bold tracking-wider text-gold self-center ml-2">{galleryImages.length} files</span>
+                                    <span className="text-[9px] uppercase font-bold tracking-wider text-gold self-center ml-2">
+                                      {galleryImages.length} files
+                                    </span>
                                   </div>
                                 )}
                               </div>
                               {galleryUploadError && (
-                                <p className="text-[10px] text-red-500 font-sans mt-1 font-semibold">{galleryUploadError}</p>
+                                <p className="text-[10px] text-red-500 font-sans mt-1 font-semibold">
+                                  {galleryUploadError}
+                                </p>
                               )}
                               {galleryImages.length > 0 && galleryUploadSuccess && (
                                 <p className="text-[10px] text-emerald-400 font-sans mt-1 flex items-center gap-1">
@@ -1487,7 +1678,12 @@ function ShareStoryPage() {
                           {/* Video & External Links */}
                           <div className="grid sm:grid-cols-2 gap-6 pt-4 border-t border-white/5">
                             <div className="space-y-2">
-                              <Label htmlFor="video" className="text-xs uppercase tracking-wider text-muted-foreground font-sans block">Video (Optional URL or File)</Label>
+                              <Label
+                                htmlFor="video"
+                                className="text-xs uppercase tracking-wider text-muted-foreground font-sans block"
+                              >
+                                Video (Optional URL or File)
+                              </Label>
                               <div className="flex gap-2">
                                 <Input
                                   id="video"
@@ -1497,19 +1693,33 @@ function ShareStoryPage() {
                                   className="bg-transparent border-border/60 focus-visible:border-gold/40 focus-visible:ring-gold/20 h-10 rounded-xl font-sans text-xs"
                                 />
                                 <label className="h-10 bg-white/5 hover:bg-white/10 border border-white/10 px-4 rounded-xl flex items-center justify-center cursor-pointer font-sans text-xs text-white shrink-0">
-                                  {uploadingVideo ? <Loader2 className="size-4 animate-spin text-gold" /> : <Video className="size-4" />}
-                                  <input type="file" accept="video/*" className="hidden" onChange={handleVideoUpload} />
+                                  {uploadingVideo ? (
+                                    <Loader2 className="size-4 animate-spin text-gold" />
+                                  ) : (
+                                    <Video className="size-4" />
+                                  )}
+                                  <input
+                                    type="file"
+                                    accept="video/*"
+                                    className="hidden"
+                                    onChange={handleVideoUpload}
+                                  />
                                 </label>
                               </div>
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="externalLinks" className="text-xs uppercase tracking-wider text-muted-foreground font-sans">External Links / References</Label>
+                              <Label
+                                htmlFor="externalLinks"
+                                className="text-xs uppercase tracking-wider text-muted-foreground font-sans"
+                              >
+                                External Links / References
+                              </Label>
                               <Input
-                                  id="externalLinks"
-                                  value={externalLinks}
-                                  onChange={(e) => setExternalLinks(e.target.value)}
-                                  placeholder="Links separated by comma"
-                                  className="bg-transparent border-border/60 focus-visible:border-gold/40 focus-visible:ring-gold/20 h-10 rounded-xl font-sans text-xs"
+                                id="externalLinks"
+                                value={externalLinks}
+                                onChange={(e) => setExternalLinks(e.target.value)}
+                                placeholder="Links separated by comma"
+                                className="bg-transparent border-border/60 focus-visible:border-gold/40 focus-visible:ring-gold/20 h-10 rounded-xl font-sans text-xs"
                               />
                             </div>
                           </div>
@@ -1521,7 +1731,12 @@ function ShareStoryPage() {
                               onClick={() => void handleSubmit(null, true)}
                               variant="outline"
                               className="w-full sm:w-auto h-13 border-border hover:border-gold/30 hover:bg-white/5 text-black uppercase tracking-[0.15em] text-xs font-bold rounded-xl flex items-center justify-center gap-2"
-                              disabled={submitLoading || uploadingCover || uploadingGallery || uploadingVideo}
+                              disabled={
+                                submitLoading ||
+                                uploadingCover ||
+                                uploadingGallery ||
+                                uploadingVideo
+                              }
                             >
                               {submitLoading ? (
                                 <Loader2 className="size-4 animate-spin text-gold" />
@@ -1536,7 +1751,12 @@ function ShareStoryPage() {
                               onClick={() => setIsPreview(true)}
                               variant="outline"
                               className="w-full sm:w-auto h-13 border-border hover:border-gold/30 hover:bg-white/5 text-black uppercase tracking-[0.15em] text-xs font-bold rounded-xl flex items-center justify-center gap-2"
-                              disabled={submitLoading || uploadingCover || uploadingGallery || uploadingVideo}
+                              disabled={
+                                submitLoading ||
+                                uploadingCover ||
+                                uploadingGallery ||
+                                uploadingVideo
+                              }
                             >
                               <Sparkles className="size-4 text-gold" />
                               Preview Story
@@ -1545,7 +1765,12 @@ function ShareStoryPage() {
                             <Button
                               type="submit"
                               className="flex-1 h-13 bg-primary hover:bg-primary/95 text-primary-foreground uppercase tracking-[0.15em] text-xs font-bold rounded-xl shadow-glow btn-premium flex items-center justify-center gap-2"
-                              disabled={submitLoading || uploadingCover || uploadingGallery || uploadingVideo}
+                              disabled={
+                                submitLoading ||
+                                uploadingCover ||
+                                uploadingGallery ||
+                                uploadingVideo
+                              }
                             >
                               {submitLoading ? (
                                 <>
@@ -1563,7 +1788,8 @@ function ShareStoryPage() {
                         </form>
                       )}
                       <p className="text-center text-xs text-muted-foreground font-sans mt-3">
-                        By submitting, you agree to our editorial guidelines and confirm this content is original.
+                        By submitting, you agree to our editorial guidelines and confirm this
+                        content is original.
                       </p>
                     </div>
                   </div>
@@ -1577,10 +1803,10 @@ function ShareStoryPage() {
         <section className="py-20 bg-card/10 border-b border-border/40">
           <div className="container mx-auto px-6 max-w-3xl">
             <div className="text-center mb-12">
-              <span className="text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-gold">Questions</span>
-              <h2 className="font-display text-3xl md:text-4xl font-bold mt-3">
-                Frequently Asked
-              </h2>
+              <span className="text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-gold">
+                Questions
+              </span>
+              <h2 className="font-display text-3xl md:text-4xl font-bold mt-3">Frequently Asked</h2>
             </div>
             <div className="glass rounded-2xl border border-white/8 px-8 py-2">
               {faqs.map((faq, i) => (
@@ -1606,7 +1832,8 @@ function ShareStoryPage() {
                 <span className="text-gradient-gold italic">Yours Does Too.</span>
               </h2>
               <p className="text-muted-foreground font-sans text-base max-w-xl mx-auto mb-8 leading-relaxed">
-                Don't let the stories of real India go untold. Join hundreds of contributors who are building the most authentic digital archive of Bharat.
+                Don't let the stories of real India go untold. Join hundreds of contributors who are
+                building the most authentic digital archive of Bharat.
               </p>
               <a
                 href="#submission-form"

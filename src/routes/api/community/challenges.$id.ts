@@ -73,7 +73,10 @@ export const Route = createFileRoute("/api/community/challenges/$id")({
         } catch (e: any) {
           // Handle unique constraint violation
           if (e?.code === "P2002") {
-            return json({ error: "You have already submitted an entry for this challenge" }, { status: 409 });
+            return json(
+              { error: "You have already submitted an entry for this challenge" },
+              { status: 409 },
+            );
           }
           console.error("[community/challenges/$id] POST error:", e);
           return json({ error: "Internal server error" }, { status: 500 });

@@ -35,20 +35,29 @@ export default function AdminLeaderboardPage() {
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="font-display text-2xl font-bold text-white tracking-wide">Reader Standings</h1>
-          <p className="text-xs font-sans text-white/50 uppercase tracking-widest mt-1">View user XP points, achievements, and reading stats</p>
+          <h1 className="font-display text-2xl font-bold text-white tracking-wide">
+            Reader Standings
+          </h1>
+          <p className="text-xs font-sans text-white/50 uppercase tracking-widest mt-1">
+            View user XP points, achievements, and reading stats
+          </p>
         </div>
 
         {loading ? (
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-16 bg-[#161616] animate-pulse rounded border border-white/5" />
+              <div
+                key={i}
+                className="h-16 bg-[#161616] animate-pulse rounded border border-white/5"
+              />
             ))}
           </div>
         ) : (
           <div className="bg-[#161616] border border-white/10 rounded overflow-hidden">
             {leaderboard.length === 0 ? (
-              <div className="p-8 text-center text-sm font-sans text-white/40">No leaderboard logs recorded yet.</div>
+              <div className="p-8 text-center text-sm font-sans text-white/40">
+                No leaderboard logs recorded yet.
+              </div>
             ) : (
               <table className="w-full text-left font-sans text-xs border-collapse">
                 <thead>
@@ -78,13 +87,19 @@ export default function AdminLeaderboardPage() {
                       <td className="p-4 font-medium">
                         <div className="flex items-center gap-2">
                           {u.avatarUrl ? (
-                            <img src={u.avatarUrl} className="size-6 rounded-full object-cover" alt="" />
+                            <img
+                              src={u.avatarUrl}
+                              className="size-6 rounded-full object-cover"
+                              alt=""
+                            />
                           ) : (
                             <div className="size-6 rounded-full bg-primary/20 flex items-center justify-center font-bold text-[10px] text-primary">
                               <User className="size-3" />
                             </div>
                           )}
-                          <span className="font-semibold text-white">{u.name || "Anonymous Reader"}</span>
+                          <span className="font-semibold text-white">
+                            {u.name || "Anonymous Reader"}
+                          </span>
                         </div>
                       </td>
                       <td className="p-4 font-semibold">
@@ -97,8 +112,12 @@ export default function AdminLeaderboardPage() {
                           <Flame className="size-3.5 text-orange-500" /> {u.readingStreak} days
                         </span>
                       </td>
-                      <td className="p-4 text-white/50 font-semibold font-mono">{u.storiesRead} stories</td>
-                      <td className="p-4 text-right font-bold text-gold font-mono text-sm">+{u.totalXP} XP</td>
+                      <td className="p-4 text-white/50 font-semibold font-mono">
+                        {u.storiesRead} stories
+                      </td>
+                      <td className="p-4 text-right font-bold text-gold font-mono text-sm">
+                        +{u.totalXP} XP
+                      </td>
                     </tr>
                   ))}
                 </tbody>

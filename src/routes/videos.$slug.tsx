@@ -81,7 +81,9 @@ function VideoDetailPage() {
       <SiteLayout>
         <div className="min-h-[70vh] flex flex-col items-center justify-center bg-background text-center px-6">
           <h1 className="font-display text-4xl font-bold mb-4">Video Not Found</h1>
-          <p className="text-muted-foreground mb-8">The video dispatch you're looking for doesn't exist.</p>
+          <p className="text-muted-foreground mb-8">
+            The video dispatch you're looking for doesn't exist.
+          </p>
           <Link
             to="/videos"
             className="flex items-center gap-2 text-gold hover:text-saffron font-semibold font-sans transition-colors uppercase tracking-widest text-xs"
@@ -157,38 +159,62 @@ function VideoDetailPage() {
               <div className="space-y-4">
                 <div className="flex flex-wrap items-center gap-3 text-[10px] tracking-widest font-bold uppercase text-gold font-sans">
                   {video.themes.map((t) => (
-                    <span key={t} className="bg-primary/10 border border-primary/20 px-2 py-0.5">{t}</span>
+                    <span key={t} className="bg-primary/10 border border-primary/20 px-2 py-0.5">
+                      {t}
+                    </span>
                   ))}
-                  <span className="flex items-center gap-1"><MapPin className="size-3 text-gold/80" /> {video.region}</span>
+                  <span className="flex items-center gap-1">
+                    <MapPin className="size-3 text-gold/80" /> {video.region}
+                  </span>
                 </div>
                 <h1 className="font-display text-3xl md:text-5xl font-bold leading-tight">
                   {video.title}
                 </h1>
                 <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground font-sans border-y border-border/30 py-3.5 mt-2">
-                  <span className="flex items-center gap-1.5"><Eye className="size-4" /> {video.viewCount} views</span>
-                  <span className="flex items-center gap-1.5"><Clock className="size-4" /> {formatDuration(video.duration)} duration</span>
-                  <span className="flex items-center gap-1.5"><Calendar className="size-4" /> {new Date(video.createdAt).toLocaleDateString()}</span>
+                  <span className="flex items-center gap-1.5">
+                    <Eye className="size-4" /> {video.viewCount} views
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Clock className="size-4" /> {formatDuration(video.duration)} duration
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Calendar className="size-4" /> {new Date(video.createdAt).toLocaleDateString()}
+                  </span>
                 </div>
               </div>
 
               {/* Excerpt Description */}
               <div className="bg-card/30 border border-border/30 p-6 space-y-4">
                 <p className="text-sm md:text-base leading-relaxed text-muted-foreground/90 font-sans font-medium whitespace-pre-line">
-                  {video.excerpt || "No further descriptive info has been populated for this dispatch."}
+                  {video.excerpt ||
+                    "No further descriptive info has been populated for this dispatch."}
                 </p>
               </div>
 
               {/* Author Info */}
               <div className="border border-border/70 bg-card p-6 flex items-start gap-4 hover:border-gold/30 transition-colors">
                 {video.authorAvatar ? (
-                  <img src={video.authorAvatar} alt={video.authorName} className="size-12 rounded-full object-cover border border-white/10 shrink-0" />
+                  <img
+                    src={video.authorAvatar}
+                    alt={video.authorName}
+                    className="size-12 rounded-full object-cover border border-white/10 shrink-0"
+                  />
                 ) : (
-                  <div className="size-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-sm font-bold text-gold uppercase shrink-0">{video.authorName[0]}</div>
+                  <div className="size-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-sm font-bold text-gold uppercase shrink-0">
+                    {video.authorName[0]}
+                  </div>
                 )}
                 <div>
-                  <p className="text-xs uppercase tracking-widest text-gold font-sans font-bold">Producer / Reporter</p>
-                  <p className="text-sm font-bold text-white font-sans mt-0.5">{video.authorName}</p>
-                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{video.authorBio || "Dedicated contributor documenting visual dispatches for the India Story Project."}</p>
+                  <p className="text-xs uppercase tracking-widest text-gold font-sans font-bold">
+                    Producer / Reporter
+                  </p>
+                  <p className="text-sm font-bold text-white font-sans mt-0.5">
+                    {video.authorName}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                    {video.authorBio ||
+                      "Dedicated contributor documenting visual dispatches for the India Story Project."}
+                  </p>
                 </div>
               </div>
             </div>
@@ -201,9 +227,16 @@ function VideoDetailPage() {
               {recommended.length > 0 ? (
                 <div className="space-y-6">
                   {recommended.map((r) => (
-                    <div key={r.id} className="border border-border/60 bg-card/60 p-4 hover:border-gold/40 transition-colors group flex gap-3">
+                    <div
+                      key={r.id}
+                      className="border border-border/60 bg-card/60 p-4 hover:border-gold/40 transition-colors group flex gap-3"
+                    >
                       <div className="w-28 aspect-video relative overflow-hidden bg-black shrink-0">
-                        <img src={r.thumbnail} alt={r.title} className="absolute inset-0 w-full h-full object-cover" />
+                        <img
+                          src={r.thumbnail}
+                          alt={r.title}
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
                         <span className="absolute bottom-1 right-1 bg-black/80 px-1 py-0.2 text-[8px] font-mono text-white">
                           {formatDuration(r.duration)}
                         </span>
@@ -223,7 +256,9 @@ function VideoDetailPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground font-sans italic">No similar video recommendations found.</p>
+                <p className="text-xs text-muted-foreground font-sans italic">
+                  No similar video recommendations found.
+                </p>
               )}
             </div>
           </div>

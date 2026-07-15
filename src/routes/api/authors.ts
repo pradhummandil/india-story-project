@@ -13,7 +13,9 @@ export const Route = createFileRoute("/api/authors")({
         if (authHeader && authHeader.startsWith("Bearer ")) {
           const token = authHeader.substring(7);
           try {
-            const { data: { user } } = await supabase.auth.getUser(token);
+            const {
+              data: { user },
+            } = await supabase.auth.getUser(token);
             if (user) currentUserId = user.id;
           } catch {}
         }

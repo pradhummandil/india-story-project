@@ -15,7 +15,10 @@ export const Route = createFileRoute("/api/videos")({
         const region = url.searchParams.get("region") || undefined;
         const sortBy = url.searchParams.get("sortBy") || "newest";
         const page = Math.max(1, parseInt(url.searchParams.get("page") || "1", 10));
-        const pageSize = Math.min(60, Math.max(1, parseInt(url.searchParams.get("pageSize") || "12", 10)));
+        const pageSize = Math.min(
+          60,
+          Math.max(1, parseInt(url.searchParams.get("pageSize") || "12", 10)),
+        );
 
         try {
           const where: any = {

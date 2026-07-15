@@ -13,7 +13,10 @@ export const Route = createFileRoute("/api/community/topics")({
           const categoryId = url.searchParams.get("categoryId") ?? undefined;
           const sort = url.searchParams.get("sort") ?? "latest";
           const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10));
-          const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get("limit") ?? "20", 10)));
+          const limit = Math.min(
+            50,
+            Math.max(1, parseInt(url.searchParams.get("limit") ?? "20", 10)),
+          );
           const q = url.searchParams.get("q")?.trim();
 
           const where: any = { isSpam: false };
@@ -70,11 +73,24 @@ export const Route = createFileRoute("/api/community/topics")({
           const body = await request.json();
           const { title, content, categoryId } = body ?? {};
 
-          if (!title || typeof title !== "string" || title.trim().length < 3 || title.trim().length > 200) {
+          if (
+            !title ||
+            typeof title !== "string" ||
+            title.trim().length < 3 ||
+            title.trim().length > 200
+          ) {
             return json({ error: "Title must be between 3 and 200 characters" }, { status: 400 });
           }
-          if (!content || typeof content !== "string" || content.trim().length < 10 || content.trim().length > 10000) {
-            return json({ error: "Content must be between 10 and 10000 characters" }, { status: 400 });
+          if (
+            !content ||
+            typeof content !== "string" ||
+            content.trim().length < 10 ||
+            content.trim().length > 10000
+          ) {
+            return json(
+              { error: "Content must be between 10 and 10000 characters" },
+              { status: 400 },
+            );
           }
 
           const topic = await db.discussionTopic.create({

@@ -23,7 +23,9 @@ export const Route = createFileRoute("/api/auth/export-history")({
               likes: { include: { story: { select: { title: true, slug: true } } } },
               readingProgress: { include: { story: { select: { title: true, slug: true } } } },
               submissions: true,
-              collections: { include: { stories: { include: { story: { select: { title: true } } } } } },
+              collections: {
+                include: { stories: { include: { story: { select: { title: true } } } } },
+              },
             },
           });
 

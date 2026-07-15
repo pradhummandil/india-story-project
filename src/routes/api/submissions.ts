@@ -1,5 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { json, authenticate, checkRateLimit, getClientIp, sanitizeInput } from "@/routes/api/-_utils";
+import {
+  json,
+  authenticate,
+  checkRateLimit,
+  getClientIp,
+  sanitizeInput,
+} from "@/routes/api/-_utils";
 import { prisma } from "@/lib/repositories/prisma.server";
 
 export const Route = createFileRoute("/api/submissions")({
@@ -29,7 +35,10 @@ export const Route = createFileRoute("/api/submissions")({
         const ip = getClientIp(request);
         const { allowed } = checkRateLimit(ip, 5, 60 * 1000); // 5 submissions per minute limit
         if (!allowed) {
-          return json({ error: "Too many submissions. Please wait a minute before trying again." }, { status: 429 });
+          return json(
+            { error: "Too many submissions. Please wait a minute before trying again." },
+            { status: 429 },
+          );
         }
 
         try {
@@ -68,7 +77,13 @@ export const Route = createFileRoute("/api/submissions")({
           }
 
           if (status !== "Draft" && (!excerpt || !content || !themes || !stateName)) {
-            return json({ error: "Excerpt, Content, Themes, and State are required for non-draft submissions." }, { status: 400 });
+            return json(
+              {
+                error:
+                  "Excerpt, Content, Themes, and State are required for non-draft submissions.",
+              },
+              { status: 400 },
+            );
           }
 
           // Create UserProfile record if missing
@@ -95,7 +110,9 @@ export const Route = createFileRoute("/api/submissions")({
             stateName: stateName?.trim() || "Delhi",
             cityName: cityName?.trim() || null,
             themes: themes?.trim() || null,
-            authorName: authorName ? sanitizeInput(authorName) : userProfile.name || "Anonymous Contributor",
+            authorName: authorName
+              ? sanitizeInput(authorName)
+              : userProfile.name || "Anonymous Contributor",
             imageUrl: imageUrl?.trim() || null,
             imageCaption: imageCaption ? sanitizeInput(imageCaption) : null,
             status: status || "Pending",
@@ -146,7 +163,9 @@ export const Route = createFileRoute("/api/submissions")({
                   totalXP: { increment: 20 },
                 },
               });
-            } catch {/* ignore stats updates */}
+            } catch {
+              /* ignore stats updates */
+            }
           }
 
           return json({ success: true, submission });

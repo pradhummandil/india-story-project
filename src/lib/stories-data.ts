@@ -70,21 +70,30 @@ if (typeof window === "undefined") {
     initialStories = (fallbackJson.stories || []).map((s: Record<string, unknown>) =>
       normalizeStory(s),
     );
-    const fallbackThemes = (fallbackJson.themes as string[]) || (fallbackJson.categories as string[]) || [];
+    const fallbackThemes =
+      (fallbackJson.themes as string[]) || (fallbackJson.categories as string[]) || [];
     const normalized = Array.from(new Set(fallbackThemes))
       .filter((t) => t && t !== "All" && t.toLowerCase() !== "general")
       .sort((a, b) => a.localeCompare(b));
-    initialThemes = normalized.length
-      ? ["All", ...normalized]
-      : initialThemes;
+    initialThemes = normalized.length ? ["All", ...normalized] : initialThemes;
   } catch (e) {
     console.error("Failed to load initial server fallback stories:", e);
   }
 } else if (
   typeof window !== "undefined" &&
-  (window as unknown as Record<string, { stories: Story[]; themes: string[]; categories?: string[] }>).__STORIES_DATA__
+  (
+    window as unknown as Record<
+      string,
+      { stories: Story[]; themes: string[]; categories?: string[] }
+    >
+  ).__STORIES_DATA__
 ) {
-  const windowData = (window as unknown as Record<string, { stories: Story[]; themes: string[]; categories?: string[] }>).__STORIES_DATA__;
+  const windowData = (
+    window as unknown as Record<
+      string,
+      { stories: Story[]; themes: string[]; categories?: string[] }
+    >
+  ).__STORIES_DATA__;
   initialStories = windowData.stories;
   initialThemes = windowData.themes || windowData.categories || [];
 }

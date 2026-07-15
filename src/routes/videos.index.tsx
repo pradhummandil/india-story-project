@@ -1,6 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, useMemo } from "react";
-import { Search, Compass, Clock, Eye, Play, Sparkles, User, MapPin, RefreshCw, Filter } from "lucide-react";
+import {
+  Search,
+  Compass,
+  Clock,
+  Eye,
+  Play,
+  Sparkles,
+  User,
+  MapPin,
+  RefreshCw,
+  Filter,
+} from "lucide-react";
 import { SiteLayout } from "@/components/site/Layout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,7 +20,11 @@ export const Route = createFileRoute("/videos/")({
   head: () => ({
     meta: [
       { title: "Videos — India Story Project" },
-      { name: "description", content: "Watch inspiring video stories, profiles, and documentaries celebrating changemakers across India." },
+      {
+        name: "description",
+        content:
+          "Watch inspiring video stories, profiles, and documentaries celebrating changemakers across India.",
+      },
     ],
   }),
   component: VideosPage,
@@ -103,7 +118,8 @@ function VideosPage() {
               Inspiring Stories, <span className="text-primary italic">In Motion.</span>
             </h1>
             <p className="mt-4 text-muted-foreground text-sm md:text-base leading-relaxed font-sans font-medium">
-              A premium visual archive of documentaries, ground dispatches, and profiles celebrating change and culture.
+              A premium visual archive of documentaries, ground dispatches, and profiles celebrating
+              change and culture.
             </p>
           </div>
         </div>
@@ -134,8 +150,12 @@ function VideosPage() {
               <div className="flex-1 flex flex-col justify-between py-2">
                 <div className="space-y-4">
                   <div className="flex items-center gap-3 text-[10px] tracking-widest font-bold uppercase text-gold font-sans">
-                    <span className="bg-primary/10 border border-primary/20 px-2 py-0.5">Featured Video</span>
-                    <span className="flex items-center gap-1"><MapPin className="size-3 text-gold/80" /> {featuredVideo.region}</span>
+                    <span className="bg-primary/10 border border-primary/20 px-2 py-0.5">
+                      Featured Video
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <MapPin className="size-3 text-gold/80" /> {featuredVideo.region}
+                    </span>
                   </div>
                   <h2 className="font-display text-3xl md:text-4xl font-bold leading-tight hover:text-primary transition-colors">
                     <Link to="/videos/$slug" params={{ slug: featuredVideo.slug }}>
@@ -147,8 +167,12 @@ function VideosPage() {
                   </p>
                 </div>
                 <div className="mt-6 pt-4 border-t border-border/40 flex items-center justify-between text-xs font-bold tracking-widest uppercase text-muted-foreground font-sans">
-                  <span className="flex items-center gap-1.5"><User className="size-3.5 text-gold/80" /> {featuredVideo.authorName}</span>
-                  <span className="flex items-center gap-1.5"><Eye className="size-3.5" /> {featuredVideo.viewCount} views</span>
+                  <span className="flex items-center gap-1.5">
+                    <User className="size-3.5 text-gold/80" /> {featuredVideo.authorName}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Eye className="size-3.5" /> {featuredVideo.viewCount} views
+                  </span>
                 </div>
               </div>
             </div>
@@ -178,9 +202,13 @@ function VideosPage() {
                 className="w-full h-12 pl-11 pr-8 bg-background border border-border rounded-none focus:outline-none focus:border-primary text-xs font-semibold uppercase tracking-wider text-muted-foreground font-sans cursor-pointer appearance-none"
               >
                 <option value="All">All Themes</option>
-                {themes.filter((t) => t !== "All").map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
+                {themes
+                  .filter((t) => t !== "All")
+                  .map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
               </select>
             </div>
 
@@ -193,9 +221,13 @@ function VideosPage() {
                 className="w-full h-12 pl-11 pr-8 bg-background border border-border rounded-none focus:outline-none focus:border-primary text-xs font-semibold uppercase tracking-wider text-muted-foreground font-sans cursor-pointer appearance-none"
               >
                 <option value="All">All States</option>
-                {states.filter((s) => s !== "All").map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
+                {states
+                  .filter((s) => s !== "All")
+                  .map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
               </select>
             </div>
 
@@ -220,7 +252,10 @@ function VideosPage() {
           {loading && videos.length === 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="aspect-video bg-white/5 rounded-none border border-border/30 animate-pulse" />
+                <div
+                  key={i}
+                  className="aspect-video bg-white/5 rounded-none border border-border/30 animate-pulse"
+                />
               ))}
             </div>
           ) : videos.length === 0 ? (
@@ -270,7 +305,9 @@ function VideosPage() {
                     </div>
                     <div className="mt-4 pt-3 border-t border-border/30 flex items-center justify-between text-[10px] text-muted-foreground font-sans font-medium">
                       <span>{video.authorName}</span>
-                      <span className="flex items-center gap-1"><Eye className="size-3" /> {video.viewCount} views</span>
+                      <span className="flex items-center gap-1">
+                        <Eye className="size-3" /> {video.viewCount} views
+                      </span>
                     </div>
                   </div>
                 </div>

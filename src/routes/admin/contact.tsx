@@ -1,7 +1,18 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Search, Trash2, Check, Inbox, MessageSquare, Reply, Globe, ShieldAlert, Archive } from "lucide-react";
+import {
+  Mail,
+  Search,
+  Trash2,
+  Check,
+  Inbox,
+  MessageSquare,
+  Reply,
+  Globe,
+  ShieldAlert,
+  Archive,
+} from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { useAuthStore } from "@/lib/auth-store";
 import { Button } from "@/components/ui/button";
@@ -59,13 +70,13 @@ export default function AdminContactInboxPage() {
       setErrorMsg(null);
       const res = await fetch(
         `/api/admin/contact?status=${statusFilter}&query=${encodeURIComponent(
-          searchQuery
+          searchQuery,
         )}&page=${page}&pageSize=10`,
         {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
           },
-        }
+        },
       );
       if (!res.ok) throw new Error("Failed to fetch messages");
       const data = await res.json();
@@ -113,9 +124,7 @@ export default function AdminContactInboxPage() {
         });
         if (res.ok) {
           // Update local status
-          setMessages((prev) =>
-            prev.map((m) => (m.id === msg.id ? { ...m, status: "read" } : m))
-          );
+          setMessages((prev) => prev.map((m) => (m.id === msg.id ? { ...m, status: "read" } : m)));
         }
       } catch (err) {
         console.error("Failed to mark message as read:", err);
@@ -136,7 +145,7 @@ export default function AdminContactInboxPage() {
         body: JSON.stringify({ id, status: newStatus }),
       });
       if (!res.ok) throw new Error("Failed to update status");
-      
+
       setSuccessMsg(`Message status updated to ${newStatus}`);
       setTimeout(() => setSuccessMsg(null), 3000);
       fetchMessages();
@@ -194,7 +203,14 @@ export default function AdminContactInboxPage() {
       const data = await res.json();
       setSuccessMsg("Reply email sent to sender successfully!");
       setTimeout(() => setSuccessMsg(null), 3000);
-      setSelectedMessage(data.message || { ...selectedMessage, replyContent: replyText.trim(), repliedAt: new Date().toISOString(), status: "read" });
+      setSelectedMessage(
+        data.message || {
+          ...selectedMessage,
+          replyContent: replyText.trim(),
+          repliedAt: new Date().toISOString(),
+          status: "read",
+        },
+      );
       setReplyText("");
       fetchMessages();
     } catch (err: any) {
@@ -205,7 +221,10 @@ export default function AdminContactInboxPage() {
   };
 
   return (
-    <AdminLayout title="Inbox" subtitle="Manage and reply to message submissions from the contact page.">
+    <AdminLayout
+      title="Inbox"
+      subtitle="Manage and reply to message submissions from the contact page."
+    >
       <div className="h-[calc(100vh-12rem)] flex gap-6 overflow-hidden">
         {/* Left List Pane */}
         <div className="w-1/2 flex flex-col bg-[#161616] border border-white/10 rounded-sm overflow-hidden">
@@ -335,8 +354,12 @@ export default function AdminContactInboxPage() {
                   </h3>
                   <div className="text-xs text-white/50 flex flex-wrap gap-x-3 gap-y-1">
                     <span>
-                      From: <span className="text-white/80 font-medium">{selectedMessage.name}</span> (
-                      <a href={`mailto:${selectedMessage.email}`} className="text-primary hover:underline">
+                      From:{" "}
+                      <span className="text-white/80 font-medium">{selectedMessage.name}</span> (
+                      <a
+                        href={`mailto:${selectedMessage.email}`}
+                        className="text-primary hover:underline"
+                      >
                         {selectedMessage.email}
                       </a>
                       )
@@ -411,7 +434,10 @@ export default function AdminContactInboxPage() {
                   </div>
                 ) : (
                   /* Reply Form */
-                  <form onSubmit={handleSendReply} className="space-y-4 border-t border-white/5 pt-4">
+                  <form
+                    onSubmit={handleSendReply}
+                    className="space-y-4 border-t border-white/5 pt-4"
+                  >
                     <div className="space-y-2">
                       <label
                         htmlFor="reply-text"

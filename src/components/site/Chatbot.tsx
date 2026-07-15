@@ -36,13 +36,21 @@ function TypewriterText({ text, speed = 8 }: { text: string; speed?: number }) {
           const tokens = para.split(/(\*\*.*?\*\*|\[.*?\]\(.*?\))/g);
           content = tokens.map((tok, tIdx) => {
             if (tok.startsWith("**") && tok.endsWith("**")) {
-              return <strong key={tIdx} className="text-gold font-bold">{tok.slice(2, -2)}</strong>;
+              return (
+                <strong key={tIdx} className="text-gold font-bold">
+                  {tok.slice(2, -2)}
+                </strong>
+              );
             }
             if (tok.startsWith("[") && tok.includes("](")) {
               const label = tok.slice(1, tok.indexOf("]("));
               const url = tok.slice(tok.indexOf("](") + 2, -1);
               return (
-                <a key={tIdx} href={url} className="text-gold underline hover:text-primary transition-colors font-bold inline-flex items-center gap-0.5">
+                <a
+                  key={tIdx}
+                  href={url}
+                  className="text-gold underline hover:text-primary transition-colors font-bold inline-flex items-center gap-0.5"
+                >
                   {label}
                 </a>
               );
@@ -226,10 +234,7 @@ export function Chatbot() {
             </div>
 
             {/* Message Pane */}
-            <div
-              className="flex-1 overflow-y-auto p-4 space-y-4"
-              onClick={handleLinkClick}
-            >
+            <div className="flex-1 overflow-y-auto p-4 space-y-4" onClick={handleLinkClick}>
               {messages.map((m) => {
                 const isBot = m.sender === "bot";
                 return (
@@ -260,13 +265,21 @@ export function Chatbot() {
                               const tokens = para.split(/(\*\*.*?\*\*|\[.*?\]\(.*?\))/g);
                               content = tokens.map((tok, tIdx) => {
                                 if (tok.startsWith("**") && tok.endsWith("**")) {
-                                  return <strong key={tIdx} className="text-gold font-bold">{tok.slice(2, -2)}</strong>;
+                                  return (
+                                    <strong key={tIdx} className="text-gold font-bold">
+                                      {tok.slice(2, -2)}
+                                    </strong>
+                                  );
                                 }
                                 if (tok.startsWith("[") && tok.includes("](")) {
                                   const label = tok.slice(1, tok.indexOf("]("));
                                   const url = tok.slice(tok.indexOf("](") + 2, -1);
                                   return (
-                                    <a key={tIdx} href={url} className="text-gold underline hover:text-primary transition-colors font-bold inline-flex items-center gap-0.5">
+                                    <a
+                                      key={tIdx}
+                                      href={url}
+                                      className="text-gold underline hover:text-primary transition-colors font-bold inline-flex items-center gap-0.5"
+                                    >
                                       {label}
                                     </a>
                                   );

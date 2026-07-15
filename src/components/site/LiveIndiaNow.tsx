@@ -104,7 +104,7 @@ export function LiveIndiaNow() {
     const all = stories;
     const regions = new Set(all.map((s) => s.region).filter(Boolean));
     const themesSet = new Set(
-      all.flatMap((s) => Array.isArray(s.themes) ? s.themes : []).filter(Boolean)
+      all.flatMap((s) => (Array.isArray(s.themes) ? s.themes : [])).filter(Boolean),
     );
     return {
       stories: all.length,

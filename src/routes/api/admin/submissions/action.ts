@@ -26,7 +26,7 @@ export const Route = createFileRoute("/api/admin/submissions/action")({
             featured = false,
             heroOfTheDay = false,
             homepageSlideshow = false,
-            slideshowOrder = 0
+            slideshowOrder = 0,
           } = body;
 
           if (!submissionId || !action) {
@@ -38,9 +38,18 @@ export const Route = createFileRoute("/api/admin/submissions/action")({
             finalAction = "Published";
           }
 
-          const VALID_ACTIONS = ["UnderReview", "FactChecking", "Published", "ChangesRequested", "Rejected"];
+          const VALID_ACTIONS = [
+            "UnderReview",
+            "FactChecking",
+            "Published",
+            "ChangesRequested",
+            "Rejected",
+          ];
           if (!VALID_ACTIONS.includes(finalAction)) {
-            return json({ error: `Action must be one of: ${VALID_ACTIONS.join(", ")}` }, { status: 400 });
+            return json(
+              { error: `Action must be one of: ${VALID_ACTIONS.join(", ")}` },
+              { status: 400 },
+            );
           }
 
           const submission = await prisma.submittedStory.findUnique({
@@ -116,7 +125,7 @@ export const Route = createFileRoute("/api/admin/submissions/action")({
             }
 
             // 4. Generate unique slug
-            let baseSlug = slugify(submission.title);
+            const baseSlug = slugify(submission.title);
             let finalSlug = baseSlug;
             let count = 1;
             while (await prisma.story.findUnique({ where: { slug: finalSlug } })) {

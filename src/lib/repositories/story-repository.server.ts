@@ -61,8 +61,8 @@ const storyCardSelect = {
   },
   themes: {
     select: {
-      theme: { select: { id: true, name: true, slug: true } }
-    }
+      theme: { select: { id: true, name: true, slug: true } },
+    },
   },
   images: {
     orderBy: { sortOrder: "asc" as any },
@@ -196,9 +196,9 @@ export class StoryRepository {
       where.tags = {
         some: {
           tag: {
-            name: { equals: options.tag, mode: "insensitive" }
-          }
-        }
+            name: { equals: options.tag, mode: "insensitive" },
+          },
+        },
       };
     }
     if (options.query) {

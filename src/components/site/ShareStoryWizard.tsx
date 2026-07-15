@@ -36,9 +36,7 @@ export function ShareStoryWizard() {
   const [done, setDone] = useState(false);
 
   const toggleTheme = (t: string) => {
-    setSelectedThemes((prev) =>
-      prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]
-    );
+    setSelectedThemes((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]));
   };
 
   const canNext =
@@ -68,7 +66,8 @@ export function ShareStoryWizard() {
           content: body,
           themes: selectedThemes.join(", "),
           stateName: region,
-          imageUrl: media > 0 ? "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800" : null,
+          imageUrl:
+            media > 0 ? "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800" : null,
         }),
       });
       if (res.ok) {
@@ -174,7 +173,9 @@ export function ShareStoryWizard() {
                 exit={{ opacity: 0, y: -12 }}
               >
                 <h3 className="font-display text-2xl mb-1">Choose your themes</h3>
-                <p className="text-sm text-muted-foreground mb-5">What kind of story is this? Pick one or more.</p>
+                <p className="text-sm text-muted-foreground mb-5">
+                  What kind of story is this? Pick one or more.
+                </p>
                 <div className="flex flex-wrap gap-2">
                   {themes
                     .filter((c) => c !== "All")

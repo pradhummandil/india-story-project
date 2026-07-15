@@ -1,6 +1,18 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, FormEvent } from "react";
-import { MessageSquare, Lock, Eye, Send, ShieldAlert, Flag, Trash2, Heart, Lightbulb, Flame, AlertCircle } from "lucide-react";
+import {
+  MessageSquare,
+  Lock,
+  Eye,
+  Send,
+  ShieldAlert,
+  Flag,
+  Trash2,
+  Heart,
+  Lightbulb,
+  Flame,
+  AlertCircle,
+} from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 
 export const Route = createFileRoute("/community/topics/$id")({
@@ -173,7 +185,9 @@ export default function TopicDetailPage() {
     return (
       <div className="text-center py-12 space-y-4">
         <AlertCircle className="size-8 text-primary mx-auto" />
-        <p className="text-white/40 text-xs font-sans">Discussion topic not found or was deleted.</p>
+        <p className="text-white/40 text-xs font-sans">
+          Discussion topic not found or was deleted.
+        </p>
         <Link to="/community/forums" className="text-primary hover:underline text-xs">
           Back to Forums
         </Link>
@@ -192,7 +206,9 @@ export default function TopicDetailPage() {
   }, {});
 
   const isTopicAuthorOrAdmin =
-    user && (user.id === topic.userId || ["SuperAdmin", "Admin", "Editor"].includes(user.app_metadata?.role || ""));
+    user &&
+    (user.id === topic.userId ||
+      ["SuperAdmin", "Admin", "Editor"].includes(user.app_metadata?.role || ""));
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
@@ -267,10 +283,15 @@ export default function TopicDetailPage() {
               }, {});
 
               const isPostAuthorOrAdmin =
-                user && (user.id === post.userId || ["SuperAdmin", "Admin", "Editor"].includes(user.app_metadata?.role || ""));
+                user &&
+                (user.id === post.userId ||
+                  ["SuperAdmin", "Admin", "Editor"].includes(user.app_metadata?.role || ""));
 
               return (
-                <div key={post.id} className="bg-[#121212] border border-white/5 p-5 space-y-4 rounded-sm">
+                <div
+                  key={post.id}
+                  className="bg-[#121212] border border-white/5 p-5 space-y-4 rounded-sm"
+                >
                   {/* User info bar */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -333,7 +354,9 @@ export default function TopicDetailPage() {
                             }`}
                           >
                             <span>{emoji}</span>
-                            {count > 0 && <span className="font-mono text-white/70 font-bold">{count}</span>}
+                            {count > 0 && (
+                              <span className="font-mono text-white/70 font-bold">{count}</span>
+                            )}
                           </button>
                         );
                       })}
@@ -358,9 +381,16 @@ export default function TopicDetailPage() {
                     <div className="space-y-3 pl-6 border-l border-white/5 mt-3">
                       {children.map((child: any) => {
                         const isChildAuthorOrAdmin =
-                          user && (user.id === child.userId || ["SuperAdmin", "Admin", "Editor"].includes(user.app_metadata?.role || ""));
+                          user &&
+                          (user.id === child.userId ||
+                            ["SuperAdmin", "Admin", "Editor"].includes(
+                              user.app_metadata?.role || "",
+                            ));
                         return (
-                          <div key={child.id} className="bg-white/3 border border-white/5 p-4 space-y-2 rounded-sm">
+                          <div
+                            key={child.id}
+                            className="bg-white/3 border border-white/5 p-4 space-y-2 rounded-sm"
+                          >
                             <div className="flex justify-between items-center text-[9px] font-sans text-white/30">
                               <span className="font-bold text-white/50">{child.user?.name}</span>
                               <div className="flex items-center gap-2">
@@ -391,7 +421,10 @@ export default function TopicDetailPage() {
                         <span className="text-[9px] font-sans font-bold uppercase tracking-widest text-red-400">
                           Report Inappropriate Content
                         </span>
-                        <button onClick={() => setReportingPostId(null)} className="text-xs text-white/40">
+                        <button
+                          onClick={() => setReportingPostId(null)}
+                          className="text-xs text-white/40"
+                        >
                           ✕
                         </button>
                       </div>
@@ -427,9 +460,7 @@ export default function TopicDetailPage() {
       {user && !topic.isLocked ? (
         <form onSubmit={handlePostReply} className="space-y-3">
           <div className="flex justify-between items-center text-[10px] font-sans uppercase tracking-widest text-white/30">
-            <span>
-              {replyParentId ? "Replying to user thread" : "Leave a reply"}
-            </span>
+            <span>{replyParentId ? "Replying to user thread" : "Leave a reply"}</span>
             {replyParentId && (
               <button
                 type="button"

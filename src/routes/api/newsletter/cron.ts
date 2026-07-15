@@ -10,7 +10,7 @@ export const Route = createFileRoute("/api/newsletter/cron")({
         try {
           const authHeader = request.headers.get("Authorization");
           const expectedSecret = process.env.CRON_SECRET || "india-story-hub-cron-secret-2026";
-          
+
           if (authHeader !== `Bearer ${expectedSecret}`) {
             return json({ error: "Unauthorized cron trigger" }, { status: 401 });
           }
@@ -38,7 +38,10 @@ export const Route = createFileRoute("/api/newsletter/cron")({
           });
 
           if (newStories.length === 0) {
-            return json({ success: true, message: "No new stories published in the last 24 hours. Skipping email dispatch." });
+            return json({
+              success: true,
+              message: "No new stories published in the last 24 hours. Skipping email dispatch.",
+            });
           }
 
           // Fetch all verified active newsletter subscribers
@@ -53,7 +56,7 @@ export const Route = createFileRoute("/api/newsletter/cron")({
             return json({ success: true, message: "No active subscribers found." });
           }
 
-          const storiesForEmail = newStories.map(s => ({
+          const storiesForEmail = newStories.map((s) => ({
             title: s.title,
             excerpt: s.excerpt,
             slug: s.slug,

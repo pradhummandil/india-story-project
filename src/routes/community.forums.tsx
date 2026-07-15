@@ -1,6 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { MessageSquare, Pin, Lock, Eye, Plus, MessageCircle, RefreshCw, Search } from "lucide-react";
+import {
+  MessageSquare,
+  Pin,
+  Lock,
+  Eye,
+  Plus,
+  MessageCircle,
+  RefreshCw,
+  Search,
+} from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 
 export const Route = createFileRoute("/community/forums")({
@@ -105,7 +114,9 @@ export default function ForumsPage() {
       {/* ── Forum Header ── */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/5 pb-5">
         <div>
-          <h1 className="font-display text-2xl font-bold text-white">Community Discussion Forums</h1>
+          <h1 className="font-display text-2xl font-bold text-white">
+            Community Discussion Forums
+          </h1>
           <p className="text-xs text-white/40 font-sans mt-1">
             Browse through categories, engage in Q&A, and collaborate on stories.
           </p>
@@ -184,9 +195,7 @@ export default function ForumsPage() {
                 setPage(1);
               }}
               className={`px-3 py-1.5 text-[9px] font-sans font-bold uppercase tracking-widest transition-colors ${
-                sort === s.id
-                  ? "bg-white/8 text-white"
-                  : "text-white/40 hover:text-white/70"
+                sort === s.id ? "bg-white/8 text-white" : "text-white/40 hover:text-white/70"
               }`}
             >
               {s.label}
@@ -244,7 +253,9 @@ export default function ForumsPage() {
                 )}
                 <div className="min-w-0 space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    {t.isPinned && <Pin className="size-3 text-primary fill-primary flex-shrink-0" />}
+                    {t.isPinned && (
+                      <Pin className="size-3 text-primary fill-primary flex-shrink-0" />
+                    )}
                     {t.isLocked && <Lock className="size-3 text-white/30 flex-shrink-0" />}
                     <Link
                       to={`/community/topics/${t.id}` as any}

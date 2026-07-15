@@ -21,7 +21,7 @@ export const Route = createFileRoute("/api/community/posts/$id/react")({
           if (!emoji || !ALLOWED_EMOJIS.includes(emoji)) {
             return json(
               { error: `Invalid emoji. Allowed: ${ALLOWED_EMOJIS.join(" ")}` },
-              { status: 400 }
+              { status: 400 },
             );
           }
 

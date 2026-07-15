@@ -43,7 +43,16 @@ export const Route = createFileRoute("/admin/analytics/")({
 });
 
 // ─── Color palette for charts ────────────────────────────────────────────────
-const CHART_COLORS = ["#C8A96A", "#8B0000", "#6AB4C8", "#C86A6A", "#8BC86A", "#C8A06A", "#6A8BC8", "#C86AB4"];
+const CHART_COLORS = [
+  "#C8A96A",
+  "#8B0000",
+  "#6AB4C8",
+  "#C86A6A",
+  "#8BC86A",
+  "#C8A06A",
+  "#6A8BC8",
+  "#C86AB4",
+];
 const TRAFFIC_COLORS: Record<string, string> = {
   google: "#4285F4",
   facebook: "#1877F2",
@@ -86,8 +95,13 @@ function MetricCard({
   return (
     <div className="bg-[#141414] border border-white/8 p-5 space-y-3 relative overflow-hidden group hover:border-white/15 transition-colors">
       <div className="flex items-center justify-between">
-        <p className="text-[10px] font-sans font-bold uppercase tracking-widest text-white/40">{label}</p>
-        <Icon className="size-4 text-white/20 group-hover:text-white/40 transition-colors" style={{ color }} />
+        <p className="text-[10px] font-sans font-bold uppercase tracking-widest text-white/40">
+          {label}
+        </p>
+        <Icon
+          className="size-4 text-white/20 group-hover:text-white/40 transition-colors"
+          style={{ color }}
+        />
       </div>
       {loading ? (
         <div className="h-8 w-24 bg-white/5 rounded animate-pulse" />
@@ -97,17 +111,28 @@ function MetricCard({
         </p>
       )}
       {sub && <p className="text-[10px] text-white/30 font-sans">{sub}</p>}
-      <div className="absolute bottom-0 left-0 right-0 h-0.5" style={{ backgroundColor: color, opacity: 0.3 }} />
+      <div
+        className="absolute bottom-0 left-0 right-0 h-0.5"
+        style={{ backgroundColor: color, opacity: 0.3 }}
+      />
     </div>
   );
 }
 
 // ─── Section Header ──────────────────────────────────────────────────────────
-function SectionHeader({ title, icon: Icon }: { title: string; icon: React.ComponentType<{ className?: string }> }) {
+function SectionHeader({
+  title,
+  icon: Icon,
+}: {
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+}) {
   return (
     <div className="flex items-center gap-2 mb-5">
       <Icon className="size-4 text-gold" />
-      <h2 className="text-xs font-sans font-bold uppercase tracking-widest text-white/60">{title}</h2>
+      <h2 className="text-xs font-sans font-bold uppercase tracking-widest text-white/60">
+        {title}
+      </h2>
     </div>
   );
 }
@@ -171,7 +196,10 @@ export default function EnterpriseAnalyticsPage() {
   const activities = data?.activities ?? [];
 
   return (
-    <AdminLayout title="Enterprise Analytics" subtitle="Real-time intelligence platform for editorial decisions">
+    <AdminLayout
+      title="Enterprise Analytics"
+      subtitle="Real-time intelligence platform for editorial decisions"
+    >
       {/* ── Controls Row ── */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-2">
@@ -213,25 +241,94 @@ export default function EnterpriseAnalyticsPage() {
 
       {/* ── Tier 1: Hero Metrics Row ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-8">
-        <MetricCard label="Total Views" value={data?.totalViews ?? 0} icon={Eye} color="#C8A96A" loading={loading} sub="All time story views" />
-        <MetricCard label="Unique Visitors" value={hasPV ? pv.uniqueVisitors : "—"} icon={Users} color="#6AB4C8" loading={loading} sub={period} />
-        <MetricCard label="Returning Readers" value={hasPV ? pv.returningReaders : "—"} icon={RefreshCw} color="#8BC86A" loading={loading} sub="Same session origin" />
-        <MetricCard label="Live Visitors" value={liveCount} icon={Wifi} color="#C86A6A" loading={false} sub="Active last 5 min" />
-        <MetricCard label="Completion Rate" value={hasPV ? `${pv.completionRate}%` : "—"} icon={TrendingUp} color="#C8A06A" loading={loading} sub="95%+ scroll depth" />
-        <MetricCard label="Avg Session" value={hasPV ? `${Math.round(pv.avgSession / 60)}m ${pv.avgSession % 60}s` : "—"} icon={Clock} color="#6A8BC8" loading={loading} sub="Time on page" />
+        <MetricCard
+          label="Total Views"
+          value={data?.totalViews ?? 0}
+          icon={Eye}
+          color="#C8A96A"
+          loading={loading}
+          sub="All time story views"
+        />
+        <MetricCard
+          label="Unique Visitors"
+          value={hasPV ? pv.uniqueVisitors : "—"}
+          icon={Users}
+          color="#6AB4C8"
+          loading={loading}
+          sub={period}
+        />
+        <MetricCard
+          label="Returning Readers"
+          value={hasPV ? pv.returningReaders : "—"}
+          icon={RefreshCw}
+          color="#8BC86A"
+          loading={loading}
+          sub="Same session origin"
+        />
+        <MetricCard
+          label="Live Visitors"
+          value={liveCount}
+          icon={Wifi}
+          color="#C86A6A"
+          loading={false}
+          sub="Active last 5 min"
+        />
+        <MetricCard
+          label="Completion Rate"
+          value={hasPV ? `${pv.completionRate}%` : "—"}
+          icon={TrendingUp}
+          color="#C8A06A"
+          loading={loading}
+          sub="95%+ scroll depth"
+        />
+        <MetricCard
+          label="Avg Session"
+          value={hasPV ? `${Math.round(pv.avgSession / 60)}m ${pv.avgSession % 60}s` : "—"}
+          icon={Clock}
+          color="#6A8BC8"
+          loading={loading}
+          sub="Time on page"
+        />
       </div>
 
       {/* ── Tier 2: Secondary Metrics ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
-        <MetricCard label="Published Stories" value={data?.published ?? 0} icon={BookOpen} color="#C8A96A" loading={loading} />
-        <MetricCard label="Registered Readers" value={data?.totalUsers ?? 0} icon={Users} color="#6AB4C8" loading={loading} />
-        <MetricCard label="Active Today" value={data?.dailyReaders ?? 0} icon={Activity} color="#8BC86A" loading={loading} />
-        <MetricCard label="Avg Scroll Depth" value={hasPV ? `${pv.avgScrollDepth}%` : "—"} icon={BarChart2} color="#C86A6A" loading={loading} />
+        <MetricCard
+          label="Published Stories"
+          value={data?.published ?? 0}
+          icon={BookOpen}
+          color="#C8A96A"
+          loading={loading}
+        />
+        <MetricCard
+          label="Registered Readers"
+          value={data?.totalUsers ?? 0}
+          icon={Users}
+          color="#6AB4C8"
+          loading={loading}
+        />
+        <MetricCard
+          label="Active Today"
+          value={data?.dailyReaders ?? 0}
+          icon={Activity}
+          color="#8BC86A"
+          loading={loading}
+        />
+        <MetricCard
+          label="Avg Scroll Depth"
+          value={hasPV ? `${pv.avgScrollDepth}%` : "—"}
+          icon={BarChart2}
+          color="#C86A6A"
+          loading={loading}
+        />
       </div>
 
       {/* ── Time Series Chart ── */}
       <div className="bg-[#141414] border border-white/8 p-6 mb-6">
-        <SectionHeader title={`Traffic Trends (${PERIODS.find((p) => p.id === period)?.label})`} icon={TrendingUp} />
+        <SectionHeader
+          title={`Traffic Trends (${PERIODS.find((p) => p.id === period)?.label})`}
+          icon={TrendingUp}
+        />
         {timeSeries.length > 0 ? (
           <ResponsiveContainer width="100%" height={260}>
             <AreaChart data={timeSeries} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
@@ -246,19 +343,52 @@ export default function EnterpriseAnalyticsPage() {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="name" tick={{ fill: "rgba(255,255,255,0.25)", fontSize: 10 }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
-              <YAxis tick={{ fill: "rgba(255,255,255,0.25)", fontSize: 10 }} axisLine={false} tickLine={false} />
+              <XAxis
+                dataKey="name"
+                tick={{ fill: "rgba(255,255,255,0.25)", fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+                interval="preserveStartEnd"
+              />
+              <YAxis
+                tick={{ fill: "rgba(255,255,255,0.25)", fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+              />
               <Tooltip
-                contentStyle={{ background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.1)", color: "white", fontSize: 11 }}
+                contentStyle={{
+                  background: "#1a1a1a",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  color: "white",
+                  fontSize: 11,
+                }}
                 labelStyle={{ color: "#C8A96A", fontWeight: "bold" }}
               />
               <Legend wrapperStyle={{ color: "rgba(255,255,255,0.4)", fontSize: 10 }} />
-              <Area type="monotone" dataKey="views" name="Page Views" stroke="#C8A96A" strokeWidth={2} fill="url(#gradViews)" dot={false} />
-              <Area type="monotone" dataKey="visitors" name="Unique Visitors" stroke="#6AB4C8" strokeWidth={2} fill="url(#gradVisitors)" dot={false} />
+              <Area
+                type="monotone"
+                dataKey="views"
+                name="Page Views"
+                stroke="#C8A96A"
+                strokeWidth={2}
+                fill="url(#gradViews)"
+                dot={false}
+              />
+              <Area
+                type="monotone"
+                dataKey="visitors"
+                name="Unique Visitors"
+                stroke="#6AB4C8"
+                strokeWidth={2}
+                fill="url(#gradVisitors)"
+                dot={false}
+              />
             </AreaChart>
           </ResponsiveContainer>
         ) : (
-          <div className="h-60 flex items-center justify-center text-white/20 text-xs">No time-series data available</div>
+          <div className="h-60 flex items-center justify-center text-white/20 text-xs">
+            No time-series data available
+          </div>
         )}
       </div>
 
@@ -276,11 +406,16 @@ export default function EnterpriseAnalyticsPage() {
                 return (
                   <div key={s.source}>
                     <div className="flex justify-between text-[10px] font-sans mb-1">
-                      <span className="text-white/60 uppercase tracking-wider font-bold">{s.source}</span>
+                      <span className="text-white/60 uppercase tracking-wider font-bold">
+                        {s.source}
+                      </span>
                       <span className="text-white/40 tabular-nums">{s.count.toLocaleString()}</span>
                     </div>
                     <div className="h-1 bg-white/8 rounded-full overflow-hidden">
-                      <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: color }} />
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{ width: `${pct}%`, backgroundColor: color }}
+                      />
                     </div>
                   </div>
                 );
@@ -325,7 +460,12 @@ export default function EnterpriseAnalyticsPage() {
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={{ background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.1)", color: "white", fontSize: 11 }}
+                  contentStyle={{
+                    background: "#1a1a1a",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    color: "white",
+                    fontSize: 11,
+                  }}
                 />
                 <Legend wrapperStyle={{ color: "rgba(255,255,255,0.4)", fontSize: 10 }} />
               </PieChart>
@@ -334,7 +474,10 @@ export default function EnterpriseAnalyticsPage() {
             <div className="h-44 flex flex-col items-center justify-center gap-3 text-white/20">
               <Monitor className="size-8" />
               <div className="text-center space-y-1">
-                {[{ icon: Monitor, label: "Desktop" }, { icon: Smartphone, label: "Mobile" }].map(({ icon: I, label }) => (
+                {[
+                  { icon: Monitor, label: "Desktop" },
+                  { icon: Smartphone, label: "Mobile" },
+                ].map(({ icon: I, label }) => (
                   <div key={label} className="flex items-center gap-2 text-[10px]">
                     <I className="size-3" />
                     <span className="uppercase tracking-wider">{label}</span>
@@ -361,7 +504,10 @@ export default function EnterpriseAnalyticsPage() {
                       <span className="text-white/40 tabular-nums">{c.count.toLocaleString()}</span>
                     </div>
                     <div className="h-1 bg-white/8 rounded-full overflow-hidden">
-                      <div className="h-full rounded-full bg-gold/60" style={{ width: `${pct}%` }} />
+                      <div
+                        className="h-full rounded-full bg-gold/60"
+                        style={{ width: `${pct}%` }}
+                      />
                     </div>
                   </div>
                 );
@@ -384,9 +530,14 @@ export default function EnterpriseAnalyticsPage() {
           {hasPV && pv.states?.length > 0 ? (
             <div className="grid grid-cols-2 gap-2">
               {pv.states.slice(0, 10).map((s: any, i: number) => (
-                <div key={i} className="flex justify-between items-center text-[10px] font-sans py-1 border-b border-white/5">
+                <div
+                  key={i}
+                  className="flex justify-between items-center text-[10px] font-sans py-1 border-b border-white/5"
+                >
                   <span className="text-white/60">{s.name || "Unknown"}</span>
-                  <span className="text-white/40 tabular-nums font-mono">{s.count.toLocaleString()}</span>
+                  <span className="text-white/40 tabular-nums font-mono">
+                    {s.count.toLocaleString()}
+                  </span>
                 </div>
               ))}
             </div>
@@ -395,13 +546,20 @@ export default function EnterpriseAnalyticsPage() {
               {/* Show states by story coverage */}
               <div className="grid grid-cols-2 gap-2">
                 {trendingStates.slice(0, 10).map((s: any, i: number) => (
-                  <div key={i} className="flex justify-between items-center text-[10px] font-sans py-1 border-b border-white/5">
+                  <div
+                    key={i}
+                    className="flex justify-between items-center text-[10px] font-sans py-1 border-b border-white/5"
+                  >
                     <span className="text-white/60">{s.name}</span>
-                    <span className="text-white/40 tabular-nums">{s.viewCount.toLocaleString()}</span>
+                    <span className="text-white/40 tabular-nums">
+                      {s.viewCount.toLocaleString()}
+                    </span>
                   </div>
                 ))}
               </div>
-              <p className="text-[9px] text-white/20 mt-2">*Story coverage views (reader geo pending)</p>
+              <p className="text-[9px] text-white/20 mt-2">
+                *Story coverage views (reader geo pending)
+              </p>
             </div>
           )}
         </div>
@@ -420,14 +578,23 @@ export default function EnterpriseAnalyticsPage() {
                 const pct = Math.round((s.viewCount / max) * 100);
                 return (
                   <div key={s.slug || i} className="flex items-center gap-2">
-                    <span className="text-[9px] font-mono text-white/20 w-4 flex-shrink-0">{i + 1}</span>
+                    <span className="text-[9px] font-mono text-white/20 w-4 flex-shrink-0">
+                      {i + 1}
+                    </span>
                     <div className="flex-1 min-w-0">
                       <div className="h-1.5 bg-white/8 rounded-full overflow-hidden">
-                        <div className="h-full bg-primary/70 rounded-full" style={{ width: `${pct}%` }} />
+                        <div
+                          className="h-full bg-primary/70 rounded-full"
+                          style={{ width: `${pct}%` }}
+                        />
                       </div>
                     </div>
-                    <span className="text-[9px] text-white/40 font-sans truncate max-w-[120px]">{s.title}</span>
-                    <span className="text-[9px] text-white/25 font-mono flex-shrink-0">{(s.viewCount || 0).toLocaleString()}</span>
+                    <span className="text-[9px] text-white/40 font-sans truncate max-w-[120px]">
+                      {s.title}
+                    </span>
+                    <span className="text-[9px] text-white/25 font-mono flex-shrink-0">
+                      {(s.viewCount || 0).toLocaleString()}
+                    </span>
                   </div>
                 );
               })
@@ -445,17 +612,43 @@ export default function EnterpriseAnalyticsPage() {
           <SectionHeader title="Top Themes" icon={Flame} />
           {hasPV && topThemes.length > 0 ? (
             <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={topThemes.slice(0, 7)} layout="vertical" margin={{ left: 0, right: 20 }}>
-                <XAxis type="number" tick={{ fill: "rgba(255,255,255,0.25)", fontSize: 9 }} axisLine={false} tickLine={false} />
-                <YAxis dataKey="name" type="category" tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 9 }} axisLine={false} tickLine={false} width={60} />
-                <Tooltip contentStyle={{ background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.1)", color: "white", fontSize: 10 }} />
+              <BarChart
+                data={topThemes.slice(0, 7)}
+                layout="vertical"
+                margin={{ left: 0, right: 20 }}
+              >
+                <XAxis
+                  type="number"
+                  tick={{ fill: "rgba(255,255,255,0.25)", fontSize: 9 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 9 }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={60}
+                />
+                <Tooltip
+                  contentStyle={{
+                    background: "#1a1a1a",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    color: "white",
+                    fontSize: 10,
+                  }}
+                />
                 <Bar dataKey="viewCount" name="Views" fill="#C8A96A" radius={[0, 3, 3, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
             <div className="space-y-2">
               {topThemes.slice(0, 7).map((t: any, i: number) => (
-                <div key={i} className="flex justify-between text-[10px] font-sans py-1 border-b border-white/5">
+                <div
+                  key={i}
+                  className="flex justify-between text-[10px] font-sans py-1 border-b border-white/5"
+                >
                   <span className="text-white/60">{t.name}</span>
                   <span className="text-white/40">{(t.viewCount || 0).toLocaleString()} views</span>
                 </div>
@@ -472,7 +665,11 @@ export default function EnterpriseAnalyticsPage() {
               <div key={a.id || i} className="flex items-center gap-3">
                 <span className="text-[9px] font-mono text-white/20 w-4">{i + 1}</span>
                 {a.avatar ? (
-                  <img src={a.avatar} alt={a.name} className="size-7 rounded-full object-cover flex-shrink-0" />
+                  <img
+                    src={a.avatar}
+                    alt={a.name}
+                    className="size-7 rounded-full object-cover flex-shrink-0"
+                  />
                 ) : (
                   <div className="size-7 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 text-[9px] text-white font-bold">
                     {a.name?.[0]}
@@ -482,7 +679,9 @@ export default function EnterpriseAnalyticsPage() {
                   <p className="text-[10px] text-white/70 font-sans font-bold truncate">{a.name}</p>
                   <p className="text-[9px] text-white/30 font-sans">{a.storiesCount} stories</p>
                 </div>
-                <span className="text-[9px] text-white/30 font-mono tabular-nums">{(a.viewCount || 0).toLocaleString()}</span>
+                <span className="text-[9px] text-white/30 font-mono tabular-nums">
+                  {(a.viewCount || 0).toLocaleString()}
+                </span>
               </div>
             ))}
           </div>
@@ -494,10 +693,15 @@ export default function EnterpriseAnalyticsPage() {
           <div className="space-y-2.5">
             {topVideos.length > 0 ? (
               topVideos.slice(0, 6).map((v: any, i: number) => (
-                <div key={v.id || i} className="flex justify-between items-center text-[10px] font-sans py-1 border-b border-white/5">
+                <div
+                  key={v.id || i}
+                  className="flex justify-between items-center text-[10px] font-sans py-1 border-b border-white/5"
+                >
                   <span className="text-[9px] font-mono text-white/20 mr-2">{i + 1}</span>
                   <span className="text-white/60 flex-1 truncate">{v.title}</span>
-                  <span className="text-white/30 tabular-nums ml-2">{(v.viewCount || 0).toLocaleString()}</span>
+                  <span className="text-white/30 tabular-nums ml-2">
+                    {(v.viewCount || 0).toLocaleString()}
+                  </span>
                 </div>
               ))
             ) : (
@@ -515,7 +719,10 @@ export default function EnterpriseAnalyticsPage() {
             <SectionHeader title="Browser Distribution" icon={Search} />
             <div className="grid grid-cols-2 gap-3">
               {pv.browsers?.slice(0, 6).map((b: any, i: number) => (
-                <div key={i} className="flex justify-between items-center text-[10px] font-sans py-1 border-b border-white/5">
+                <div
+                  key={i}
+                  className="flex justify-between items-center text-[10px] font-sans py-1 border-b border-white/5"
+                >
                   <span className="text-white/60 font-bold capitalize">{b.name}</span>
                   <span className="text-white/40 tabular-nums">{b.count.toLocaleString()}</span>
                 </div>
@@ -530,12 +737,27 @@ export default function EnterpriseAnalyticsPage() {
               {[
                 { label: "Completion Rate", value: `${pv.completionRate}%`, color: "#8BC86A" },
                 { label: "Avg Scroll Depth", value: `${pv.avgScrollDepth}%`, color: "#C8A96A" },
-                { label: "Avg Session", value: `${Math.round(pv.avgSession / 60)}m ${pv.avgSession % 60}s`, color: "#6AB4C8" },
-                { label: "Returning Rate", value: pv.uniqueVisitors > 0 ? `${Math.round((pv.returningReaders / pv.uniqueVisitors) * 100)}%` : "0%", color: "#C86A6A" },
+                {
+                  label: "Avg Session",
+                  value: `${Math.round(pv.avgSession / 60)}m ${pv.avgSession % 60}s`,
+                  color: "#6AB4C8",
+                },
+                {
+                  label: "Returning Rate",
+                  value:
+                    pv.uniqueVisitors > 0
+                      ? `${Math.round((pv.returningReaders / pv.uniqueVisitors) * 100)}%`
+                      : "0%",
+                  color: "#C86A6A",
+                },
               ].map((m) => (
                 <div key={m.label} className="bg-white/5 p-3 space-y-1">
-                  <p className="text-[9px] font-sans uppercase tracking-widest text-white/30">{m.label}</p>
-                  <p className="font-display text-xl font-bold" style={{ color: m.color }}>{m.value}</p>
+                  <p className="text-[9px] font-sans uppercase tracking-widest text-white/30">
+                    {m.label}
+                  </p>
+                  <p className="font-display text-xl font-bold" style={{ color: m.color }}>
+                    {m.value}
+                  </p>
                 </div>
               ))}
             </div>
@@ -548,7 +770,9 @@ export default function EnterpriseAnalyticsPage() {
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-2">
             <Activity className="size-4 text-gold" />
-            <h2 className="text-xs font-sans font-bold uppercase tracking-widest text-white/60">Activity Feed</h2>
+            <h2 className="text-xs font-sans font-bold uppercase tracking-widest text-white/60">
+              Activity Feed
+            </h2>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -573,12 +797,20 @@ export default function EnterpriseAnalyticsPage() {
                   <div className="flex-1 min-w-0">
                     <p className="text-[10px] text-white/60 font-sans leading-relaxed">{a.title}</p>
                     <p className="text-[9px] text-white/25 font-sans mt-0.5">
-                      {new Date(a.time).toLocaleString("en-IN", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" })}
+                      {new Date(a.time).toLocaleString("en-IN", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        day: "numeric",
+                        month: "short",
+                      })}
                     </p>
                   </div>
                   <span
                     className="text-[8px] font-sans font-bold uppercase tracking-wider px-1.5 py-0.5 flex-shrink-0"
-                    style={{ color: typeColors[a.type] || "#C8A96A", backgroundColor: `${typeColors[a.type] || "#C8A96A"}15` }}
+                    style={{
+                      color: typeColors[a.type] || "#C8A96A",
+                      backgroundColor: `${typeColors[a.type] || "#C8A96A"}15`,
+                    }}
                   >
                     {a.meta}
                   </span>

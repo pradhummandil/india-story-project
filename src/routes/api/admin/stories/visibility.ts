@@ -21,7 +21,10 @@ export const Route = createFileRoute("/api/admin/stories/visibility")({
           // Validate status
           const validStatuses = Object.keys(StoryStatus);
           if (!validStatuses.includes(status)) {
-            return json({ error: `Invalid status. Must be one of: ${validStatuses.join(", ")}` }, { status: 400 });
+            return json(
+              { error: `Invalid status. Must be one of: ${validStatuses.join(", ")}` },
+              { status: 400 },
+            );
           }
 
           const story = await prisma.story.update({

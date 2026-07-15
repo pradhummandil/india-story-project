@@ -1,6 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, BookOpen, Compass, ChevronRight, User, TrendingUp, Sparkles, Mail, Rss, Clock } from "lucide-react";
+import {
+  ArrowLeft,
+  BookOpen,
+  Compass,
+  ChevronRight,
+  User,
+  TrendingUp,
+  Sparkles,
+  Mail,
+  Rss,
+  Clock,
+} from "lucide-react";
 import { SiteLayout } from "@/components/site/Layout";
 import { StoryCard } from "@/components/site/StoryCard";
 import { Button } from "@/components/ui/button";
@@ -99,7 +110,15 @@ function ThemePortalPage() {
     );
   }
 
-  const { theme, heroStory, trendingStories, latestStories, editorsPicks, popularAuthors, relatedThemes } = data;
+  const {
+    theme,
+    heroStory,
+    trendingStories,
+    latestStories,
+    editorsPicks,
+    popularAuthors,
+    relatedThemes,
+  } = data;
 
   return (
     <SiteLayout>
@@ -120,7 +139,8 @@ function ThemePortalPage() {
               {theme.name}
             </h1>
             <p className="mt-4 text-muted-foreground text-sm md:text-base max-w-2xl leading-relaxed font-sans font-medium">
-              Curated articles, interviews, and deep-dives exploring the essence of {theme.name.toLowerCase()} across India.
+              Curated articles, interviews, and deep-dives exploring the essence of{" "}
+              {theme.name.toLowerCase()} across India.
             </p>
           </div>
         </div>
@@ -155,7 +175,11 @@ function ThemePortalPage() {
                   </p>
                 </div>
                 <div className="mt-6 pt-4 border-t border-border/40 flex items-center justify-between text-xs font-bold tracking-widest uppercase text-primary font-sans">
-                  <Link to="/stories/$slug" params={{ slug: heroStory.slug }} className="hover:text-gold transition-colors">
+                  <Link
+                    to="/stories/$slug"
+                    params={{ slug: heroStory.slug }}
+                    className="hover:text-gold transition-colors"
+                  >
                     Read Full Story
                   </Link>
                   <span className="text-muted-foreground/60 font-normal flex items-center gap-1">
@@ -187,12 +211,16 @@ function ThemePortalPage() {
                         {story.title}
                       </Link>
                     </h4>
-                    <span className="text-[10px] text-muted-foreground font-sans mt-1.5 inline-block">{story.readingTime}</span>
+                    <span className="text-[10px] text-muted-foreground font-sans mt-1.5 inline-block">
+                      {story.readingTime}
+                    </span>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-muted-foreground font-sans italic">No trending records found.</p>
+              <p className="text-xs text-muted-foreground font-sans italic">
+                No trending records found.
+              </p>
             )}
           </div>
         </div>
@@ -210,7 +238,9 @@ function ThemePortalPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-muted-foreground font-sans italic">No editor selections yet.</p>
+              <p className="text-xs text-muted-foreground font-sans italic">
+                No editor selections yet.
+              </p>
             )}
           </div>
 
@@ -232,7 +262,9 @@ function ThemePortalPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-muted-foreground font-sans italic">No related themes found.</p>
+              <p className="text-xs text-muted-foreground font-sans italic">
+                No related themes found.
+              </p>
             )}
 
             {/* Popular Authors in this Theme */}
@@ -245,13 +277,21 @@ function ThemePortalPage() {
                   {popularAuthors.map((author) => (
                     <div key={author.name} className="flex items-center gap-3">
                       {author.avatar ? (
-                        <img src={author.avatar} alt={author.name} className="size-10 rounded-full object-cover border border-white/10" />
+                        <img
+                          src={author.avatar}
+                          alt={author.name}
+                          className="size-10 rounded-full object-cover border border-white/10"
+                        />
                       ) : (
-                        <div className="size-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold text-gold uppercase">{author.name[0]}</div>
+                        <div className="size-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold text-gold uppercase">
+                          {author.name[0]}
+                        </div>
                       )}
                       <div>
                         <p className="text-xs font-bold text-white font-sans">{author.name}</p>
-                        <p className="text-[10px] text-muted-foreground line-clamp-1">{author.bio || "India Story Contributor"}</p>
+                        <p className="text-[10px] text-muted-foreground line-clamp-1">
+                          {author.bio || "India Story Contributor"}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -285,11 +325,17 @@ function ThemePortalPage() {
         <div className="container mx-auto px-6">
           <div className="border border-border/80 bg-card/45 p-8 md:p-12 text-center max-w-4xl mx-auto shadow-elegant">
             <Mail className="size-8 text-gold mx-auto mb-4" />
-            <h3 className="font-display text-2xl md:text-3xl font-bold mb-2">Subscribe to our {theme.name} newsletter</h3>
+            <h3 className="font-display text-2xl md:text-3xl font-bold mb-2">
+              Subscribe to our {theme.name} newsletter
+            </h3>
             <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
-              Get the best articles and updates about {theme.name.toLowerCase()} delivered directly to your inbox weekly.
+              Get the best articles and updates about {theme.name.toLowerCase()} delivered directly
+              to your inbox weekly.
             </p>
-            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
+            <form
+              onSubmit={handleSubscribe}
+              className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto"
+            >
               <Input
                 type="email"
                 required
@@ -306,7 +352,9 @@ function ThemePortalPage() {
                 {subscribing ? "Subscribing..." : "Join Digest"}
               </Button>
             </form>
-            {subscribeMsg && <p className="mt-4 text-xs text-gold font-sans font-medium">{subscribeMsg}</p>}
+            {subscribeMsg && (
+              <p className="mt-4 text-xs text-gold font-sans font-medium">{subscribeMsg}</p>
+            )}
           </div>
         </div>
       </div>

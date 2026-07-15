@@ -42,7 +42,11 @@ function buildPeriodBuckets(period: string): { name: string; start: Date; end: D
       const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
       const start = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0);
       const end = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59);
-      buckets.push({ name: d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric" }), start, end });
+      buckets.push({
+        name: d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric" }),
+        start,
+        end,
+      });
     }
   } else if (period === "monthly") {
     // Last 30 days
@@ -50,7 +54,11 @@ function buildPeriodBuckets(period: string): { name: string; start: Date; end: D
       const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
       const start = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0);
       const end = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59);
-      buckets.push({ name: `${d.getDate()} ${d.toLocaleString("en-IN", { month: "short" })}`, start, end });
+      buckets.push({
+        name: `${d.getDate()} ${d.toLocaleString("en-IN", { month: "short" })}`,
+        start,
+        end,
+      });
     }
   } else {
     // Yearly: last 12 months
@@ -58,7 +66,11 @@ function buildPeriodBuckets(period: string): { name: string; start: Date; end: D
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const start = new Date(d.getFullYear(), d.getMonth(), 1, 0, 0, 0);
       const end = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
-      buckets.push({ name: d.toLocaleString("en-IN", { month: "short", year: "2-digit" }), start, end });
+      buckets.push({
+        name: d.toLocaleString("en-IN", { month: "short", year: "2-digit" }),
+        start,
+        end,
+      });
     }
   }
   return buckets;
@@ -92,7 +104,9 @@ export const Route = createFileRoute("/api/admin/analytics")({
             // 6: total registered users
             prisma.userProfile.count(),
             // 7: active today
-            prisma.userProfile.count({ where: { lastActiveAt: { gte: new Date(Date.now() - 86400000) } } }),
+            prisma.userProfile.count({
+              where: { lastActiveAt: { gte: new Date(Date.now() - 86400000) } },
+            }),
             // 8: total likes
             prisma.storyLike.count(),
             // 9: total comments
@@ -114,7 +128,12 @@ export const Route = createFileRoute("/api/admin/analytics")({
             // 15: top authors
             prisma.author.findMany({
               take: 10,
-              select: { id: true, name: true, avatar: true, stories: { select: { viewCount: true } } },
+              select: {
+                id: true,
+                name: true,
+                avatar: true,
+                stories: { select: { viewCount: true } },
+              },
             }),
             // 16: trending states
             prisma.state.findMany({
@@ -132,7 +151,8 @@ export const Route = createFileRoute("/api/admin/analytics")({
               take: 5,
               orderBy: { createdAt: "desc" },
               select: {
-                content: true, createdAt: true,
+                content: true,
+                createdAt: true,
                 user: { select: { name: true } },
                 story: { select: { title: true } },
               },
@@ -148,31 +168,43 @@ export const Route = createFileRoute("/api/admin/analytics")({
               },
             }),
             // 20: recent submissions
-            prisma.submittedStory.findMany({
-              take: 5,
-              orderBy: { createdAt: "desc" },
-              select: { title: true, createdAt: true, user: { select: { name: true } } },
-            }).catch(() => []),
+            prisma.submittedStory
+              .findMany({
+                take: 5,
+                orderBy: { createdAt: "desc" },
+                select: { title: true, createdAt: true, user: { select: { name: true } } },
+              })
+              .catch(() => []),
             // 21: flagged comments count
             prisma.commentReport.count().catch(() => 0),
             // 22: aggregate story views
-            prisma.story.aggregate({ _sum: { viewCount: true } }).catch(() => ({ _sum: { viewCount: 0 } })),
+            prisma.story
+              .aggregate({ _sum: { viewCount: true } })
+              .catch(() => ({ _sum: { viewCount: 0 } })),
             // 23: aggregate reading time
-            prisma.userProfile.aggregate({ _sum: { totalReadingTime: true } }).catch(() => ({ _sum: { totalReadingTime: 0 } })),
+            prisma.userProfile
+              .aggregate({ _sum: { totalReadingTime: true } })
+              .catch(() => ({ _sum: { totalReadingTime: 0 } })),
             // 24: top videos
-            prisma.video.findMany({
-              take: 5,
-              orderBy: { viewCount: "desc" },
-              select: { id: true, title: true, slug: true, viewCount: true },
-            }).catch(() => []),
+            prisma.video
+              .findMany({
+                take: 5,
+                orderBy: { viewCount: "desc" },
+                select: { id: true, title: true, slug: true, viewCount: true },
+              })
+              .catch(() => []),
             // 25: theme analytics
-            db.theme.findMany({
-              take: 10,
-              select: {
-                id: true, name: true, slug: true,
-                stories: { select: { viewCount: true } },
-              },
-            }).catch(() => []),
+            db.theme
+              .findMany({
+                take: 10,
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                  stories: { select: { viewCount: true } },
+                },
+              })
+              .catch(() => []),
           ]);
 
           // ─── PageView analytics (gracefully degrade if table not migrated) ──
@@ -198,11 +230,13 @@ export const Route = createFileRoute("/api/admin/analytics")({
               // Total page views in period
               db.pageView.count({ where: pvRange }),
               // Unique visitors (distinct sessionIds)
-              db.pageView.findMany({
-                where: pvRange,
-                select: { sessionId: true },
-                distinct: ["sessionId"],
-              }).then((r: any[]) => r.length),
+              db.pageView
+                .findMany({
+                  where: pvRange,
+                  select: { sessionId: true },
+                  distinct: ["sessionId"],
+                })
+                .then((r: any[]) => r.length),
               // Returning readers
               db.pageView.count({ where: { ...pvRange, isReturn: true } }),
               // Traffic source breakdown
@@ -267,9 +301,8 @@ export const Route = createFileRoute("/api/admin/analytics")({
               }),
             ]);
 
-            const completionRate = totalPageViews > 0
-              ? Math.round((completionCount / totalPageViews) * 100)
-              : 0;
+            const completionRate =
+              totalPageViews > 0 ? Math.round((completionCount / totalPageViews) * 100) : 0;
 
             const avgSession = Math.round(avgReadingTime._avg?.readingTime ?? 0);
             const avgScroll = Math.round(avgScrollDepth._avg?.scrollDepth ?? 0);
@@ -320,14 +353,18 @@ export const Route = createFileRoute("/api/admin/analytics")({
               buckets.map((b) =>
                 Promise.all([
                   db.pageView.count({ where: { createdAt: { gte: b.start, lte: b.end } } }),
-                  db.pageView.findMany({
-                    where: { createdAt: { gte: b.start, lte: b.end } },
-                    select: { sessionId: true },
-                    distinct: ["sessionId"],
-                  }).then((r: any[]) => r.length),
-                  prisma.story.count({ where: { createdAt: { gte: b.start, lte: b.end }, status: "Published" } }),
-                ])
-              )
+                  db.pageView
+                    .findMany({
+                      where: { createdAt: { gte: b.start, lte: b.end } },
+                      select: { sessionId: true },
+                      distinct: ["sessionId"],
+                    })
+                    .then((r: any[]) => r.length),
+                  prisma.story.count({
+                    where: { createdAt: { gte: b.start, lte: b.end }, status: "Published" },
+                  }),
+                ]),
+              ),
             );
 
             timeSeries = buckets.map((b, i) => {

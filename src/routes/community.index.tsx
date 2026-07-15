@@ -1,6 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { MessageSquare, Users, Trophy, Award, Flame, Pin, ChevronRight, Volume2 } from "lucide-react";
+import {
+  MessageSquare,
+  Users,
+  Trophy,
+  Award,
+  Flame,
+  Pin,
+  ChevronRight,
+  Volume2,
+} from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 
 export const Route = createFileRoute("/community/")({
@@ -21,10 +30,25 @@ export default function CommunityIndexPage() {
   }, []);
 
   const stats = [
-    { label: "Discussions", value: data?.stats?.totalTopics ?? 0, icon: MessageSquare, color: "#C8A96A" },
-    { label: "Community Posts", value: data?.stats?.totalPosts ?? 0, icon: Flame, color: "#C86A6A" },
+    {
+      label: "Discussions",
+      value: data?.stats?.totalTopics ?? 0,
+      icon: MessageSquare,
+      color: "#C8A96A",
+    },
+    {
+      label: "Community Posts",
+      value: data?.stats?.totalPosts ?? 0,
+      icon: Flame,
+      color: "#C86A6A",
+    },
     { label: "Active Groups", value: data?.stats?.totalGroups ?? 0, icon: Users, color: "#6AB4C8" },
-    { label: "Story Challenges", value: data?.stats?.totalChallenges ?? 0, icon: Trophy, color: "#8BC86A" },
+    {
+      label: "Story Challenges",
+      value: data?.stats?.totalChallenges ?? 0,
+      icon: Trophy,
+      color: "#8BC86A",
+    },
   ];
 
   return (
@@ -39,7 +63,9 @@ export default function CommunityIndexPage() {
             Documenting Every Local Hero & State
           </h1>
           <p className="text-white/50 font-sans text-sm leading-relaxed">
-            Welcome to the India Story Project editorial hub. Join writers, researchers, and local historians across all states to share knowledge, publish profiles, and run writing challenges.
+            Welcome to the India Story Project editorial hub. Join writers, researchers, and local
+            historians across all states to share knowledge, publish profiles, and run writing
+            challenges.
           </p>
           <div className="flex flex-wrap justify-center md:justify-start gap-3 pt-2">
             <Link
@@ -67,7 +93,10 @@ export default function CommunityIndexPage() {
               { rank: 2, name: "Aarav Sharma", xp: "980 XP", label: "🥈 Silver Tier" },
               { rank: 3, name: "Diya Patel", xp: "850 XP", label: "🥉 Bronze Tier" },
             ].map((leader) => (
-              <div key={leader.rank} className="flex justify-between items-center text-xs py-1.5 border-b border-white/5">
+              <div
+                key={leader.rank}
+                className="flex justify-between items-center text-xs py-1.5 border-b border-white/5"
+              >
                 <span className="text-white/60 font-sans font-bold">{leader.name}</span>
                 <span className="text-[9px] text-white/40">{leader.xp}</span>
               </div>
@@ -87,7 +116,10 @@ export default function CommunityIndexPage() {
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
-            <div key={stat.label} className="bg-[#121212] border border-white/5 p-5 flex items-center gap-4 hover:border-white/10 transition-colors">
+            <div
+              key={stat.label}
+              className="bg-[#121212] border border-white/5 p-5 flex items-center gap-4 hover:border-white/10 transition-colors"
+            >
               <div className="p-3 bg-white/5 rounded-sm" style={{ color: stat.color }}>
                 <Icon className="size-5" />
               </div>
@@ -163,7 +195,8 @@ export default function CommunityIndexPage() {
                         </span>
                       </div>
                       <p className="text-[10px] text-white/40 font-sans">
-                        Started by {t.user?.name || "Member"} • Category: {t.category?.name || "General"}
+                        Started by {t.user?.name || "Member"} • Category:{" "}
+                        {t.category?.name || "General"}
                       </p>
                     </div>
                     <div className="text-right text-[10px] text-white/30 font-sans flex-shrink-0">
@@ -192,7 +225,9 @@ export default function CommunityIndexPage() {
                 <div key={i} className="h-24 bg-white/5 rounded-sm animate-pulse" />
               ))
             ) : data?.trending?.length === 0 ? (
-              <p className="text-white/20 text-xs font-sans py-4 col-span-2">No trending topics yet.</p>
+              <p className="text-white/20 text-xs font-sans py-4 col-span-2">
+                No trending topics yet.
+              </p>
             ) : (
               data?.trending?.map((t: any) => (
                 <Link
@@ -221,7 +256,9 @@ export default function CommunityIndexPage() {
                   </div>
                   <div className="flex justify-between items-center pt-2 border-t border-white/5 text-[9px] text-white/30 font-sans">
                     <span>By {t.user?.name || "Reader"}</span>
-                    <span>{t.replyCount} replies • {t.viewCount} views</span>
+                    <span>
+                      {t.replyCount} replies • {t.viewCount} views
+                    </span>
                   </div>
                 </Link>
               ))
@@ -240,7 +277,8 @@ export default function CommunityIndexPage() {
               </h3>
             </div>
             <p className="text-xs text-white/45 leading-relaxed font-sans">
-              Connect with fellow storytellers, historians, and editors grouped by Indian states or historical themes.
+              Connect with fellow storytellers, historians, and editors grouped by Indian states or
+              historical themes.
             </p>
             <Link
               to="/community/groups"
@@ -259,7 +297,8 @@ export default function CommunityIndexPage() {
               </h3>
             </div>
             <p className="text-xs text-white/45 leading-relaxed font-sans">
-              Compete in weekly themed writing challenges to win rare profile badges, XP, and cash grants.
+              Compete in weekly themed writing challenges to win rare profile badges, XP, and cash
+              grants.
             </p>
             <Link
               to="/community/challenges"

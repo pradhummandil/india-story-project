@@ -28,6 +28,8 @@ import {
   Award,
   HelpCircle,
   Bookmark,
+  Headphones,
+  Dna,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -38,10 +40,12 @@ import { useI18nStore, translateStory, getCommonText } from "@/lib/i18n";
 import { stories, useStoriesData } from "@/lib/stories-data";
 import { getStoryAuthor, getOptimizedImageUrl } from "@/lib/utils";
 import { useAuthStore } from "@/lib/auth-store";
+import { useAudioStore } from "@/lib/audio-store";
 
 // Local Dictionary fallback dictionary
 const LOCAL_DICTIONARY: Record<string, string> = {
-  gandhi: "Mahatma Gandhi (1869–1948), leader of India's nonviolent independence movement against British rule.",
+  gandhi:
+    "Mahatma Gandhi (1869–1948), leader of India's nonviolent independence movement against British rule.",
   satyagraha: "A policy of passive political resistance, advocated by Mahatma Gandhi.",
   swadeshi: "A movement to promote self-sufficiency and boycott foreign goods in India.",
   khadi: "Hand-spun and hand-woven cotton cloth, representing Indian self-reliance.",
@@ -112,9 +116,10 @@ export function StoryDetail({ story }: { story: Story }) {
   const [streakToast, setStreakToast] = useState(false);
 
   const rawAuthor = story.authorName || getStoryAuthor(story.slug);
-  const authorName = (!rawAuthor || rawAuthor.toLowerCase().includes("unknown") || rawAuthor.trim() === "")
-    ? "Pradhum Mandil"
-    : rawAuthor;
+  const authorName =
+    !rawAuthor || rawAuthor.toLowerCase().includes("unknown") || rawAuthor.trim() === ""
+      ? "Pradhum Mandil"
+      : rawAuthor;
   const dateStr = lang === "en" ? "India Dispatch" : "भारतीय प्रेषण";
 
   const loadComments = useCallback(async () => {
@@ -142,7 +147,9 @@ export function StoryDetail({ story }: { story: Story }) {
           setLikeCount(data.count ?? 0);
           setIsLiked(data.liked ?? false);
         }
-      } catch {/* ignore */}
+      } catch {
+        /* ignore */
+      }
 
       if (session) {
         // Load bookmark state
@@ -153,9 +160,13 @@ export function StoryDetail({ story }: { story: Story }) {
           if (bkRes.ok) {
             const data = await bkRes.json();
             const bookmarks: any[] = data.bookmarks ?? [];
-            setIsBookmarked(bookmarks.some((b: any) => b.storyId === story.id || b.story?.slug === story.slug));
+            setIsBookmarked(
+              bookmarks.some((b: any) => b.storyId === story.id || b.story?.slug === story.slug),
+            );
           }
-        } catch {/* ignore */}
+        } catch {
+          /* ignore */
+        }
 
         // Load reading progress and scroll position
         try {
@@ -169,7 +180,9 @@ export function StoryDetail({ story }: { story: Story }) {
               setShowResumeBanner(true);
             }
           }
-        } catch {/* ignore */}
+        } catch {
+          /* ignore */
+        }
       }
       setEngagementLoaded(true);
     };
@@ -215,7 +228,7 @@ export function StoryDetail({ story }: { story: Story }) {
     async (percent: number, scrollYPos: number) => {
       if (!session || !story.id) return;
       const milestone = Math.floor(percent / 10) * 10;
-      
+
       const now = Date.now();
       const timeDelta = Math.floor((now - lastActiveTime.current) / 1000);
       lastActiveTime.current = now;
@@ -244,7 +257,9 @@ export function StoryDetail({ story }: { story: Story }) {
           }),
         });
         new BroadcastChannel("isp-profile-updates").postMessage("update");
-      } catch {/* ignore */}
+      } catch {
+        /* ignore */
+      }
     },
     [session, story.id],
   );
@@ -430,18 +445,30 @@ export function StoryDetail({ story }: { story: Story }) {
     const renderableContent = c.content.replace(/^\[Paragraph #\d+\]\s*/, "");
 
     return (
-      <div key={c.id} className="mt-4 border-l-2 border-border/40 pl-4 py-1" style={{ marginLeft: depth > 0 ? `${Math.min(depth * 8, 32)}px` : "0px" }}>
+      <div
+        key={c.id}
+        className="mt-4 border-l-2 border-border/40 pl-4 py-1"
+        style={{ marginLeft: depth > 0 ? `${Math.min(depth * 8, 32)}px` : "0px" }}
+      >
         <div className="flex items-center gap-2">
           {c.authorAvatar ? (
-            <img src={c.authorAvatar} alt={c.authorName} className="size-6 rounded-full object-cover" />
+            <img
+              src={c.authorAvatar}
+              alt={c.authorName}
+              className="size-6 rounded-full object-cover"
+            />
           ) : (
             <div className="size-6 rounded-full bg-primary/10 flex items-center justify-center">
               <User className="size-3 text-primary" />
             </div>
           )}
           <span className="text-xs font-sans font-bold text-foreground">{c.authorName}</span>
-          <span className="text-[10px] text-muted-foreground font-sans">{new Date(c.createdAt).toLocaleDateString()}</span>
-          {c.edited && <span className="text-[9px] text-muted-foreground italic font-sans">(edited)</span>}
+          <span className="text-[10px] text-muted-foreground font-sans">
+            {new Date(c.createdAt).toLocaleDateString()}
+          </span>
+          {c.edited && (
+            <span className="text-[9px] text-muted-foreground italic font-sans">(edited)</span>
+          )}
         </div>
 
         {isEditing ? (
@@ -452,31 +479,71 @@ export function StoryDetail({ story }: { story: Story }) {
               className="flex-1 min-h-[50px] border border-border bg-background rounded-lg px-2 py-1 text-xs font-sans text-foreground"
             />
             <div className="flex flex-col gap-1">
-              <Button size="sm" onClick={() => handleEditComment(c.id)}>Save</Button>
-              <Button size="sm" variant="outline" onClick={() => { setActiveEditId(null); setEditText(""); }}>Cancel</Button>
+              <Button size="sm" onClick={() => handleEditComment(c.id)}>
+                Save
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setActiveEditId(null);
+                  setEditText("");
+                }}
+              >
+                Cancel
+              </Button>
             </div>
           </div>
         ) : (
-          <p className="text-sm font-sans text-foreground mt-1.5 leading-relaxed">{renderableContent}</p>
+          <p className="text-sm font-sans text-foreground mt-1.5 leading-relaxed">
+            {renderableContent}
+          </p>
         )}
 
         <div className="flex items-center gap-3 mt-2 text-[10px] font-sans text-muted-foreground">
-          <button onClick={() => handleLikeComment(c.id)} className="flex items-center gap-1 hover:text-foreground">
+          <button
+            onClick={() => handleLikeComment(c.id)}
+            className="flex items-center gap-1 hover:text-foreground"
+          >
             <Heart className="size-3 text-gold" /> {c.likeCount || 0}
           </button>
           {session && (
-            <button onClick={() => { setActiveReplyId(isReplying ? null : c.id); setReplyText(""); }} className="hover:text-foreground">
+            <button
+              onClick={() => {
+                setActiveReplyId(isReplying ? null : c.id);
+                setReplyText("");
+              }}
+              className="hover:text-foreground"
+            >
               Reply
             </button>
           )}
           {isOwner && !isEditing && (
             <>
-              <button onClick={() => { setActiveEditId(c.id); setEditText(renderableContent); }} className="hover:text-foreground">Edit</button>
-              <button onClick={() => handleDeleteComment(c.id)} className="hover:text-destructive text-destructive/80">Delete</button>
+              <button
+                onClick={() => {
+                  setActiveEditId(c.id);
+                  setEditText(renderableContent);
+                }}
+                className="hover:text-foreground"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => handleDeleteComment(c.id)}
+                className="hover:text-destructive text-destructive/80"
+              >
+                Delete
+              </button>
             </>
           )}
           {session && !isOwner && (
-            <button onClick={() => handleReportComment(c.id)} className="hover:text-destructive text-destructive/80 font-semibold">Report</button>
+            <button
+              onClick={() => handleReportComment(c.id)}
+              className="hover:text-destructive text-destructive/80 font-semibold"
+            >
+              Report
+            </button>
           )}
         </div>
 
@@ -489,7 +556,9 @@ export function StoryDetail({ story }: { story: Story }) {
               onChange={(e) => setReplyText(e.target.value)}
               className="flex-1 h-8 px-3 rounded-lg border border-border bg-background text-xs font-sans text-foreground focus:outline-none"
             />
-            <Button type="submit" size="sm">Reply</Button>
+            <Button type="submit" size="sm">
+              Reply
+            </Button>
           </form>
         )}
 
@@ -522,7 +591,9 @@ export function StoryDetail({ story }: { story: Story }) {
 
   // Related Stories (same themes, up to 3)
   const related = activeStories
-    .filter((s) => s.slug !== story.slug && s.themes?.some((t: string) => story.themes?.includes(t)))
+    .filter(
+      (s) => s.slug !== story.slug && s.themes?.some((t: string) => story.themes?.includes(t)),
+    )
     .slice(0, 3)
     .map((s) => translateStory(s, lang));
 
@@ -572,7 +643,10 @@ export function StoryDetail({ story }: { story: Story }) {
   // Generate Table of Contents
   const toc = paragraphs
     .map((p, idx) => {
-      if (p.length < 50 && (p.startsWith("Chapter") || p.startsWith("भाग") || p.includes(":") || p.length < 35)) {
+      if (
+        p.length < 50 &&
+        (p.startsWith("Chapter") || p.startsWith("भाग") || p.includes(":") || p.length < 35)
+      ) {
         return { index: idx, title: p };
       }
       if (idx % 4 === 0) {
@@ -632,7 +706,7 @@ export function StoryDetail({ story }: { story: Story }) {
   const handleExplainText = () => {
     if (!selectedText) return;
     setAiExplanation(
-      `AI context analysis: The selection "${selectedText.slice(0, 50)}..." emphasizes cultural or historic themes, connecting traditional Indian self-reliance to contemporary community impact initiatives.`
+      `AI context analysis: The selection "${selectedText.slice(0, 50)}..." emphasizes cultural or historic themes, connecting traditional Indian self-reliance to contemporary community impact initiatives.`,
     );
   };
 
@@ -640,7 +714,9 @@ export function StoryDetail({ story }: { story: Story }) {
     if (!selectedText) return;
     setTranslating(true);
     setTimeout(() => {
-      setTranslatedText(`[Hindi Translation]: "${selectedText.slice(0, 60)}..." का अनुवाद: यह खंड इस कथा में भारत की जीवंत विरासत और मानवीय संकल्प का सार प्रस्तुत करता है।`);
+      setTranslatedText(
+        `[Hindi Translation]: "${selectedText.slice(0, 60)}..." का अनुवाद: यह खंड इस कथा में भारत की जीवंत विरासत और मानवीय संकल्प का सार प्रस्तुत करता है।`,
+      );
       setTranslating(false);
     }, 450);
   };
@@ -721,9 +797,15 @@ export function StoryDetail({ story }: { story: Story }) {
       {/* Fullscreen Zen mode controls */}
       {isZen && (
         <div className="fixed top-6 right-6 z-[99] flex items-center gap-3 bg-black/80 backdrop-blur border border-white/10 rounded-full px-4 py-2 shadow-lg">
-          <span className="text-[10px] text-white/50 uppercase tracking-widest font-sans font-bold">Zen Mode</span>
+          <span className="text-[10px] text-white/50 uppercase tracking-widest font-sans font-bold">
+            Zen Mode
+          </span>
           <span className="text-white/20">|</span>
-          <button onClick={() => setIsZen(false)} className="text-white hover:text-gold transition-colors" title="Exit Zen Mode">
+          <button
+            onClick={() => setIsZen(false)}
+            className="text-white hover:text-gold transition-colors"
+            title="Exit Zen Mode"
+          >
             <Minimize2 className="size-4" />
           </button>
         </div>
@@ -763,7 +845,10 @@ export function StoryDetail({ story }: { story: Story }) {
             <div className="max-w-5xl mx-auto px-6">
               <div className="flex flex-wrap gap-1.5 mb-4">
                 {(localizedStory.themes || []).map((t, idx) => (
-                  <span key={idx} className="inline-block text-xs uppercase tracking-[0.2em] font-bold text-gold border border-gold/40 bg-black/45 px-3 py-1 font-sans">
+                  <span
+                    key={idx}
+                    className="inline-block text-xs uppercase tracking-[0.2em] font-bold text-gold border border-gold/40 bg-black/45 px-3 py-1 font-sans"
+                  >
                     {t}
                   </span>
                 ))}
@@ -829,25 +914,96 @@ export function StoryDetail({ story }: { story: Story }) {
 
             {/* Font settings */}
             <div className="flex items-center gap-1 border border-border/50 rounded-full px-2 py-1 bg-black/25 font-sans">
-              <button onClick={() => setFontSize("sm")} className={`px-1.5 rounded text-[10px] ${fontSize === "sm" ? "bg-primary text-white" : ""}`}>A</button>
-              <button onClick={() => setFontSize("md")} className={`px-1.5 rounded text-xs ${fontSize === "md" ? "bg-primary text-white" : ""}`}>A</button>
-              <button onClick={() => setFontSize("lg")} className={`px-1.5 rounded text-sm ${fontSize === "lg" ? "bg-primary text-white" : ""}`}>A</button>
+              <button
+                onClick={() => setFontSize("sm")}
+                className={`px-1.5 rounded text-[10px] ${fontSize === "sm" ? "bg-primary text-white" : ""}`}
+              >
+                A
+              </button>
+              <button
+                onClick={() => setFontSize("md")}
+                className={`px-1.5 rounded text-xs ${fontSize === "md" ? "bg-primary text-white" : ""}`}
+              >
+                A
+              </button>
+              <button
+                onClick={() => setFontSize("lg")}
+                className={`px-1.5 rounded text-sm ${fontSize === "lg" ? "bg-primary text-white" : ""}`}
+              >
+                A
+              </button>
             </div>
 
             {/* Themes */}
             <div className="flex items-center gap-1 border border-border/50 rounded-full px-2 py-1 bg-black/25">
-              <button onClick={() => setReadTheme("light")} className={`size-3.5 rounded-full bg-white border ${readTheme === "light" ? "border-primary" : "border-transparent"}`} title="Light Theme" />
-              <button onClick={() => setReadTheme("sepia")} className={`size-3.5 rounded-full bg-[#f8f1e5] border ${readTheme === "sepia" ? "border-primary" : "border-transparent"}`} title="Sepia Theme" />
-              <button onClick={() => setReadTheme("dark")} className={`size-3.5 rounded-full bg-zinc-950 border ${readTheme === "dark" ? "border-primary" : "border-transparent"}`} title="Dark Theme" />
+              <button
+                onClick={() => setReadTheme("light")}
+                className={`size-3.5 rounded-full bg-white border ${readTheme === "light" ? "border-primary" : "border-transparent"}`}
+                title="Light Theme"
+              />
+              <button
+                onClick={() => setReadTheme("sepia")}
+                className={`size-3.5 rounded-full bg-[#f8f1e5] border ${readTheme === "sepia" ? "border-primary" : "border-transparent"}`}
+                title="Sepia Theme"
+              />
+              <button
+                onClick={() => setReadTheme("dark")}
+                className={`size-3.5 rounded-full bg-zinc-950 border ${readTheme === "dark" ? "border-primary" : "border-transparent"}`}
+                title="Dark Theme"
+              />
             </div>
 
             {/* Like */}
-            <button onClick={handleToggleLike} disabled={!session} className={`flex items-center gap-1.5 border rounded-full px-3 py-1 bg-black/20 ${isLiked ? "text-red-400 border-red-500/40" : ""}`}>
+            <button
+              onClick={handleToggleLike}
+              disabled={!session}
+              className={`flex items-center gap-1.5 border rounded-full px-3 py-1 bg-black/20 ${isLiked ? "text-red-400 border-red-500/40" : ""}`}
+            >
               <Heart className="size-3" /> {likeCount}
             </button>
 
+            {/* Listen */}
+            <button
+              onClick={() => {
+                const episode = {
+                  id: story.id || story.slug,
+                  slug: story.slug,
+                  title: story.title,
+                  titleHi: story.titleHi,
+                  excerpt: story.excerpt,
+                  excerptHi: story.excerptHi,
+                  audioUrl: `/api/stories/${story.slug}/audio`,
+                  duration: (parseInt(story.readTime || "5") || 5) * 60,
+                  authorName: story.authorName || "India Story Project",
+                  imageUrl: story.image || "/logo.png",
+                };
+                useAudioStore.getState().playEpisode(episode, lang);
+                useAudioStore.getState().setPlayerOpen(true);
+              }}
+              className="flex items-center gap-1.5 border rounded-full px-3 py-1 bg-black/20 text-gold border-gold/30 hover:bg-gold/10 transition-colors"
+              title="Listen to this Story"
+            >
+              <Headphones className="size-3" />
+              <span>Listen</span>
+            </button>
+
+            {/* DNA Explorer */}
+            <Link
+              to="/stories/$slug/interactive"
+              params={{ slug: story.slug }}
+              className="flex items-center gap-1.5 border rounded-full px-3 py-1 bg-black/20 text-gold border-gold/30 hover:bg-gold/10 transition-colors"
+              title="Interactive Story DNA Console"
+            >
+              <Dna className="size-3" />
+              <span>DNA Profile</span>
+            </Link>
+
             {/* Save */}
-            <button onClick={handleToggleBookmark} disabled={!session} className={`flex items-center gap-1.5 border rounded-full px-3 py-1 bg-black/20 ${isBookmarked ? "text-gold border-gold/40" : ""}`}>
+            <button
+              onClick={handleToggleBookmark}
+              disabled={!session}
+              className={`flex items-center gap-1.5 border rounded-full px-3 py-1 bg-black/20 ${isBookmarked ? "text-gold border-gold/40" : ""}`}
+            >
               <BookMarked className="size-3" /> {isBookmarked ? "Saved" : "Save"}
             </button>
           </div>
@@ -905,18 +1061,24 @@ export function StoryDetail({ story }: { story: Story }) {
                     {/* Paragraph sidebar controls */}
                     <div className="absolute -left-10 top-1 flex flex-col gap-2 opacity-0 group-hover/para:opacity-100 transition-opacity">
                       <button
-                        onClick={() => setHighlightedParagraphs((prev) => ({ ...prev, [idx]: !prev[idx] }))}
+                        onClick={() =>
+                          setHighlightedParagraphs((prev) => ({ ...prev, [idx]: !prev[idx] }))
+                        }
                         className={`p-1 rounded bg-black/40 hover:bg-black/60 text-white/50 hover:text-yellow-400 transition-colors`}
                         title="Highlight Paragraph"
                       >
                         <Award className="size-3.5" />
                       </button>
                       <button
-                        onClick={() => setBookmarkedParagraphs((prev) => ({ ...prev, [idx]: !prev[idx] }))}
+                        onClick={() =>
+                          setBookmarkedParagraphs((prev) => ({ ...prev, [idx]: !prev[idx] }))
+                        }
                         className={`p-1 rounded bg-black/40 hover:bg-black/60 text-white/50 hover:text-gold transition-colors`}
                         title="Bookmark Paragraph"
                       >
-                        <Bookmark className={`size-3.5 ${isBookmarkedPara ? "fill-gold text-gold" : ""}`} />
+                        <Bookmark
+                          className={`size-3.5 ${isBookmarkedPara ? "fill-gold text-gold" : ""}`}
+                        />
                       </button>
                       {session && (
                         <button
@@ -925,27 +1087,37 @@ export function StoryDetail({ story }: { story: Story }) {
                           title="Inline Comments"
                         >
                           <MessageSquare className="size-3.5" />
-                          {paraComments.length > 0 && <span className="text-[8px] font-bold">{paraComments.length}</span>}
+                          {paraComments.length > 0 && (
+                            <span className="text-[8px] font-bold">{paraComments.length}</span>
+                          )}
                         </button>
                       )}
                     </div>
 
                     {/* Paragraph text */}
                     <div className="flex-1 space-y-3">
-                      <p className={`whitespace-pre-wrap transition-all rounded px-2 ${
-                        isHighlighted ? "bg-yellow-500/10 border-l-2 border-yellow-500/60" : ""
-                      } ${idx === 0 ? "first-letter:text-6xl first-letter:font-display first-letter:font-bold first-letter:float-left first-letter:mr-3 first-letter:text-primary first-letter:leading-[0.8] first-letter:mt-1.5" : ""}`}>
+                      <p
+                        className={`whitespace-pre-wrap transition-all rounded px-2 ${
+                          isHighlighted ? "bg-yellow-500/10 border-l-2 border-yellow-500/60" : ""
+                        } ${idx === 0 ? "first-letter:text-6xl first-letter:font-display first-letter:font-bold first-letter:float-left first-letter:mr-3 first-letter:text-primary first-letter:leading-[0.8] first-letter:mt-1.5" : ""}`}
+                      >
                         {p}
                       </p>
 
                       {/* Inline paragraph comments form & list */}
                       {inlineCommentIdx === idx && (
                         <div className="mt-3 bg-black/20 border border-white/5 rounded-lg p-4 space-y-3">
-                          <h5 className="text-xs uppercase font-bold text-white/50 tracking-wider">Paragraph Commentary</h5>
+                          <h5 className="text-xs uppercase font-bold text-white/50 tracking-wider">
+                            Paragraph Commentary
+                          </h5>
                           <div className="space-y-2">
                             {paraComments.map((c) => (
-                              <div key={c.id} className="text-xs font-sans text-white/80 border-b border-white/5 pb-2">
-                                <span className="font-bold text-gold">{c.authorName}</span>: {c.content.replace(/^\[Paragraph #\d+\]\s*/, "")}
+                              <div
+                                key={c.id}
+                                className="text-xs font-sans text-white/80 border-b border-white/5 pb-2"
+                              >
+                                <span className="font-bold text-gold">{c.authorName}</span>:{" "}
+                                {c.content.replace(/^\[Paragraph #\d+\]\s*/, "")}
                               </div>
                             ))}
                           </div>
@@ -962,7 +1134,9 @@ export function StoryDetail({ story }: { story: Story }) {
                               placeholder="Add a comment to this paragraph..."
                               className="flex-1 h-8 bg-black/40 border border-white/10 rounded px-2 text-xs text-white focus:outline-none"
                             />
-                            <Button type="submit" size="sm" className="h-8 text-xs">Comment</Button>
+                            <Button type="submit" size="sm" className="h-8 text-xs">
+                              Comment
+                            </Button>
                           </form>
                         </div>
                       )}
@@ -976,16 +1150,25 @@ export function StoryDetail({ story }: { story: Story }) {
             {!isZen && (
               <div className="mt-16 pt-12 border-t border-border/50 flex items-start gap-6">
                 {story.authorAvatar ? (
-                  <img src={story.authorAvatar} alt={story.authorName || authorName} className="size-16 rounded-full object-cover border shrink-0" />
+                  <img
+                    src={story.authorAvatar}
+                    alt={story.authorName || authorName}
+                    className="size-16 rounded-full object-cover border shrink-0"
+                  />
                 ) : (
                   <div className="size-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
                     <User className="size-8 text-primary/60" />
                   </div>
                 )}
                 <div className="space-y-2">
-                  <h4 className="font-display text-xl font-bold">{story.authorName || authorName}</h4>
+                  <h4 className="font-display text-xl font-bold">
+                    {story.authorName || authorName}
+                  </h4>
                   <p className="text-sm text-muted-foreground leading-relaxed font-sans">
-                    {story.authorBio || (lang === "en" ? "India Story Project Staff Writer." : "इंडिया स्टोरी प्रोजेक्ट स्टाफ लेखक।")}
+                    {story.authorBio ||
+                      (lang === "en"
+                        ? "India Story Project Staff Writer."
+                        : "इंडिया स्टोरी प्रोजेक्ट स्टाफ लेखक।")}
                   </p>
                 </div>
               </div>
@@ -1000,16 +1183,32 @@ export function StoryDetail({ story }: { story: Story }) {
           className="fixed z-[99] bg-[#111] border border-white/10 rounded shadow-xl flex items-center gap-1.5 p-1.5 text-xs text-white"
           style={{ top: `${selectionCoords.y - 50}px`, left: `${selectionCoords.x - 70}px` }}
         >
-          <button onClick={handleCopyQuote} className="p-1.5 hover:bg-white/10 rounded text-white" title="Copy Quote">
+          <button
+            onClick={handleCopyQuote}
+            className="p-1.5 hover:bg-white/10 rounded text-white"
+            title="Copy Quote"
+          >
             <Copy className="size-3.5" />
           </button>
-          <button onClick={() => handleShareQuote("twitter")} className="p-1.5 hover:bg-white/10 rounded text-white" title="Share on Twitter">
+          <button
+            onClick={() => handleShareQuote("twitter")}
+            className="p-1.5 hover:bg-white/10 rounded text-white"
+            title="Share on Twitter"
+          >
             <Twitter className="size-3.5" />
           </button>
-          <button onClick={handleExplainText} className="p-1.5 hover:bg-white/10 rounded text-white" title="Explain selection">
+          <button
+            onClick={handleExplainText}
+            className="p-1.5 hover:bg-white/10 rounded text-white"
+            title="Explain selection"
+          >
             <HelpCircle className="size-3.5" />
           </button>
-          <button onClick={handleTranslateText} className="p-1.5 hover:bg-white/10 rounded text-white/80" title="Translate text">
+          <button
+            onClick={handleTranslateText}
+            className="p-1.5 hover:bg-white/10 rounded text-white/80"
+            title="Translate text"
+          >
             <Languages className="size-3.5" />
           </button>
         </div>
@@ -1059,8 +1258,17 @@ export function StoryDetail({ story }: { story: Story }) {
 
             {selectedText && !dictionaryDef && !aiExplanation && !translatedText && (
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" className="text-[10px] border-white/10" onClick={handleExplainText}>Explain Selection</Button>
-                <Button size="sm" className="text-[10px]" onClick={handleTranslateText}>Translate Segment</Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-[10px] border-white/10"
+                  onClick={handleExplainText}
+                >
+                  Explain Selection
+                </Button>
+                <Button size="sm" className="text-[10px]" onClick={handleTranslateText}>
+                  Translate Segment
+                </Button>
               </div>
             )}
           </div>
@@ -1070,8 +1278,10 @@ export function StoryDetail({ story }: { story: Story }) {
       {/* Comments Thread list under article */}
       {!isZen && (
         <div className="max-w-5xl mx-auto px-6 py-16 border-t border-border/50">
-          <h3 className="font-display text-2xl font-bold text-foreground mb-6">Discussion ({comments.length} Comments)</h3>
-          
+          <h3 className="font-display text-2xl font-bold text-foreground mb-6">
+            Discussion ({comments.length} Comments)
+          </h3>
+
           {session ? (
             <form onSubmit={(e) => handleAddComment(e)} className="mb-8 space-y-3">
               <textarea
@@ -1081,25 +1291,38 @@ export function StoryDetail({ story }: { story: Story }) {
                 className="w-full min-h-[100px] border border-border bg-card rounded-xl px-4 py-3 text-sm font-sans text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
               <div className="flex justify-end">
-                <Button type="submit" size="sm" className="bg-primary text-white px-5 rounded-full uppercase tracking-wider text-xs">
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="bg-primary text-white px-5 rounded-full uppercase tracking-wider text-xs"
+                >
                   Post Comment
                 </Button>
               </div>
             </form>
           ) : (
             <div className="bg-card/40 border border-border/30 rounded-xl p-6 text-center mb-8">
-              <p className="text-sm font-sans text-muted-foreground mb-3">Please sign in to join the discussion.</p>
-              <Link to="/login" className="inline-flex h-9 px-5 items-center justify-center bg-primary text-white text-xs uppercase tracking-widest font-sans font-semibold rounded-full">
+              <p className="text-sm font-sans text-muted-foreground mb-3">
+                Please sign in to join the discussion.
+              </p>
+              <Link
+                to="/login"
+                className="inline-flex h-9 px-5 items-center justify-center bg-primary text-white text-xs uppercase tracking-widest font-sans font-semibold rounded-full"
+              >
                 Sign In to Comment
               </Link>
             </div>
           )}
 
           <div className="divide-y divide-border/20">
-            {comments.filter(c => !c.content.startsWith("[Paragraph #")).length === 0 ? (
-              <p className="text-sm text-muted-foreground font-sans italic py-4">No thread comments yet. Be the first to share your thoughts!</p>
+            {comments.filter((c) => !c.content.startsWith("[Paragraph #")).length === 0 ? (
+              <p className="text-sm text-muted-foreground font-sans italic py-4">
+                No thread comments yet. Be the first to share your thoughts!
+              </p>
             ) : (
-              comments.filter(c => !c.content.startsWith("[Paragraph #")).map((c) => renderComment(c))
+              comments
+                .filter((c) => !c.content.startsWith("[Paragraph #"))
+                .map((c) => renderComment(c))
             )}
           </div>
         </div>
@@ -1165,10 +1388,25 @@ export function StoryDetail({ story }: { story: Story }) {
       {/* Floating Resume reading banner */}
       {showResumeBanner && !isZen && (
         <div className="fixed bottom-6 right-6 z-50 max-w-sm bg-card border border-gold/40 p-4 rounded-xl shadow-elegant animate-bounce flex flex-col gap-2">
-          <p className="text-xs font-sans text-foreground">You were reading this story. Resume from where you left off?</p>
+          <p className="text-xs font-sans text-foreground">
+            You were reading this story. Resume from where you left off?
+          </p>
           <div className="flex gap-2">
-            <Button size="sm" onClick={handleResumeReading} className="bg-primary text-white text-xs">Resume</Button>
-            <Button size="sm" variant="outline" onClick={() => setShowResumeBanner(false)} className="text-xs">Dismiss</Button>
+            <Button
+              size="sm"
+              onClick={handleResumeReading}
+              className="bg-primary text-white text-xs"
+            >
+              Resume
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowResumeBanner(false)}
+              className="text-xs"
+            >
+              Dismiss
+            </Button>
           </div>
         </div>
       )}
@@ -1187,7 +1425,9 @@ export function StoryDetail({ story }: { story: Story }) {
             </div>
             <div>
               <h5 className="text-xs font-bold text-white font-sans">Reading Streak!</h5>
-              <p className="text-[10px] text-white/50 font-sans">You earned +10 XP for active reading streak milestones</p>
+              <p className="text-[10px] text-white/50 font-sans">
+                You earned +10 XP for active reading streak milestones
+              </p>
             </div>
           </motion.div>
         )}

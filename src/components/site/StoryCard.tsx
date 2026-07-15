@@ -36,7 +36,13 @@ export interface Story {
   seoKeywords?: string | null;
 }
 
-export const StoryCard = React.memo(function StoryCard({ story, index = 0 }: { story: Story; index?: number }) {
+export const StoryCard = React.memo(function StoryCard({
+  story,
+  index = 0,
+}: {
+  story: Story;
+  index?: number;
+}) {
   const { trackView } = useJourney();
   const hoverStart = useRef<number | null>(null);
 
@@ -87,16 +93,28 @@ export const StoryCard = React.memo(function StoryCard({ story, index = 0 }: { s
           <div className="flex items-center justify-between text-[10px] tracking-[0.2em] uppercase font-bold text-gold mb-4 font-sans gap-2">
             <div className="flex flex-wrap gap-1">
               {(localizedStory.themes || [])
-                .filter((t) => t.toLowerCase() !== "general" || (localizedStory.themes || []).length === 1)
+                .filter(
+                  (t) =>
+                    t.toLowerCase() !== "general" || (localizedStory.themes || []).length === 1,
+                )
                 .slice(0, 2)
                 .map((t, idx) => (
-                  <span key={idx} className="bg-primary/5 px-2 py-0.5 border border-primary/10 text-[9px]">
+                  <span
+                    key={idx}
+                    className="bg-primary/5 px-2 py-0.5 border border-primary/10 text-[9px]"
+                  >
                     {t}
                   </span>
                 ))}
-              {(localizedStory.themes || []).filter((t) => t.toLowerCase() !== "general" || (localizedStory.themes || []).length === 1).length > 2 && (
+              {(localizedStory.themes || []).filter(
+                (t) => t.toLowerCase() !== "general" || (localizedStory.themes || []).length === 1,
+              ).length > 2 && (
                 <span className="bg-primary/5 px-1.5 py-0.5 border border-primary/10 text-[9px] text-muted-foreground/80">
-                  +{(localizedStory.themes || []).filter((t) => t.toLowerCase() !== "general" || (localizedStory.themes || []).length === 1).length - 2}
+                  +
+                  {(localizedStory.themes || []).filter(
+                    (t) =>
+                      t.toLowerCase() !== "general" || (localizedStory.themes || []).length === 1,
+                  ).length - 2}
                 </span>
               )}
             </div>

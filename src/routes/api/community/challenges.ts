@@ -21,7 +21,10 @@ export const Route = createFileRoute("/api/community/challenges")({
           const url = new URL(request.url);
           const status = url.searchParams.get("status") ?? "active";
           const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10));
-          const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get("limit") ?? "20", 10)));
+          const limit = Math.min(
+            50,
+            Math.max(1, parseInt(url.searchParams.get("limit") ?? "20", 10)),
+          );
 
           const now = new Date();
           let where: any;
@@ -73,9 +76,11 @@ export const Route = createFileRoute("/api/community/challenges")({
           const { title, description, rules, theme, prize, startAt, endAt } = body ?? {};
 
           if (!title?.trim()) return json({ error: "title is required" }, { status: 400 });
-          if (!description?.trim()) return json({ error: "description is required" }, { status: 400 });
+          if (!description?.trim())
+            return json({ error: "description is required" }, { status: 400 });
           if (!rules?.trim()) return json({ error: "rules is required" }, { status: 400 });
-          if (!startAt || !endAt) return json({ error: "startAt and endAt are required" }, { status: 400 });
+          if (!startAt || !endAt)
+            return json({ error: "startAt and endAt are required" }, { status: 400 });
 
           const slug = generateSlug(title.trim());
 

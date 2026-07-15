@@ -1,6 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
-import { ArrowLeft, Play, Pause, ChevronLeft, ChevronRight, Share2, Bookmark, Check } from "lucide-react";
+import {
+  ArrowLeft,
+  Play,
+  Pause,
+  ChevronLeft,
+  ChevronRight,
+  Share2,
+  Bookmark,
+  Check,
+} from "lucide-react";
 
 export const Route = createFileRoute("/web-stories/$slug")({
   component: WebStoryPlayerPage,
@@ -209,7 +218,11 @@ function WebStoryPlayerPage() {
               onClick={handleShare}
               className="p-2 rounded-full bg-black/30 hover:bg-black/50 border border-white/5 transition-colors"
             >
-              {copied ? <Check className="size-4 text-emerald-400" /> : <Share2 className="size-4" />}
+              {copied ? (
+                <Check className="size-4 text-emerald-400" />
+              ) : (
+                <Share2 className="size-4" />
+              )}
             </button>
           </div>
         </div>

@@ -77,9 +77,10 @@ function hashCode(str: string): number {
 }
 
 export function deriveDNA(story: Story): StoryDNA {
-  const category = (Array.isArray(story.themes) && story.themes.length > 0
-    ? story.themes[0]
-    : (story as any).category) || "All";
+  const category =
+    (Array.isArray(story.themes) && story.themes.length > 0
+      ? story.themes[0]
+      : (story as any).category) || "All";
   const hashVal = hashCode(category);
 
   const impactType = IMPACT_OPTIONS[hashVal % IMPACT_OPTIONS.length];

@@ -60,7 +60,9 @@ function NewsroomConsolePage() {
   const { user, session, initialized } = useAuthStore();
   const [data, setData] = useState<NewsroomData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"pending" | "factcheck" | "seo" | "scheduled" | "drafts" | "top">("pending");
+  const [activeTab, setActiveTab] = useState<
+    "pending" | "factcheck" | "seo" | "scheduled" | "drafts" | "top"
+  >("pending");
 
   // Calendar State
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -212,29 +214,48 @@ function NewsroomConsolePage() {
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="font-display text-2xl font-bold text-white tracking-wide">Enterprise Editorial Newsroom</h1>
+          <h1 className="font-display text-2xl font-bold text-white tracking-wide">
+            Enterprise Editorial Newsroom
+          </h1>
           <p className="text-xs font-sans text-white/50 uppercase tracking-widest mt-1">
-            Manage scheduled publication, revision history comparisons, workflow logs, locks, and bulk tasks
+            Manage scheduled publication, revision history comparisons, workflow logs, locks, and
+            bulk tasks
           </p>
         </div>
 
         {/* Dashboard Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-[#141414] border border-white/5 p-4 rounded flex flex-col justify-between">
-            <span className="text-[10px] font-sans font-bold uppercase tracking-widest text-amber-500">Pending Review</span>
-            <h2 className="font-display text-3xl font-bold text-white mt-2">{data?.pendingReview.length ?? 0}</h2>
+            <span className="text-[10px] font-sans font-bold uppercase tracking-widest text-amber-500">
+              Pending Review
+            </span>
+            <h2 className="font-display text-3xl font-bold text-white mt-2">
+              {data?.pendingReview.length ?? 0}
+            </h2>
           </div>
           <div className="bg-[#141414] border border-white/5 p-4 rounded flex flex-col justify-between">
-            <span className="text-[10px] font-sans font-bold uppercase tracking-widest text-indigo-400">Needs Fact Check</span>
-            <h2 className="font-display text-3xl font-bold text-white mt-2">{data?.needsFactCheck.length ?? 0}</h2>
+            <span className="text-[10px] font-sans font-bold uppercase tracking-widest text-indigo-400">
+              Needs Fact Check
+            </span>
+            <h2 className="font-display text-3xl font-bold text-white mt-2">
+              {data?.needsFactCheck.length ?? 0}
+            </h2>
           </div>
           <div className="bg-[#141414] border border-white/5 p-4 rounded flex flex-col justify-between">
-            <span className="text-[10px] font-sans font-bold uppercase tracking-widest text-teal-400">Needs SEO</span>
-            <h2 className="font-display text-3xl font-bold text-white mt-2">{data?.needsSEO.length ?? 0}</h2>
+            <span className="text-[10px] font-sans font-bold uppercase tracking-widest text-teal-400">
+              Needs SEO
+            </span>
+            <h2 className="font-display text-3xl font-bold text-white mt-2">
+              {data?.needsSEO.length ?? 0}
+            </h2>
           </div>
           <div className="bg-[#141414] border border-white/5 p-4 rounded flex flex-col justify-between">
-            <span className="text-[10px] font-sans font-bold uppercase tracking-widest text-emerald-400">Scheduled Later</span>
-            <h2 className="font-display text-3xl font-bold text-white mt-2">{data?.scheduled.length ?? 0}</h2>
+            <span className="text-[10px] font-sans font-bold uppercase tracking-widest text-emerald-400">
+              Scheduled Later
+            </span>
+            <h2 className="font-display text-3xl font-bold text-white mt-2">
+              {data?.scheduled.length ?? 0}
+            </h2>
           </div>
         </div>
 
@@ -243,16 +264,24 @@ function NewsroomConsolePage() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <CalendarIcon className="size-4 text-gold" />
-              <h3 className="text-sm font-bold text-white font-sans uppercase tracking-widest">Editorial Calendar</h3>
+              <h3 className="text-sm font-bold text-white font-sans uppercase tracking-widest">
+                Editorial Calendar
+              </h3>
             </div>
             <div className="flex items-center gap-3">
-              <button onClick={prevMonth} className="p-1 text-white/50 hover:text-white transition-colors">
+              <button
+                onClick={prevMonth}
+                className="p-1 text-white/50 hover:text-white transition-colors"
+              >
                 <ChevronLeft className="size-4" />
               </button>
               <span className="text-xs font-bold text-white font-sans uppercase tracking-widest">
                 {currentDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
               </span>
-              <button onClick={nextMonth} className="p-1 text-white/50 hover:text-white transition-colors">
+              <button
+                onClick={nextMonth}
+                className="p-1 text-white/50 hover:text-white transition-colors"
+              >
                 <ChevronRight className="size-4" />
               </button>
             </div>
@@ -273,14 +302,20 @@ function NewsroomConsolePage() {
               if (!day) return <div key={`empty-${idx}`} className="bg-transparent h-16" />;
 
               const formattedDate = day.toDateString();
-              const scheduledStories = data?.scheduled.filter((s) => {
-                if (!s.scheduledAt) return false;
-                return new Date(s.scheduledAt).toDateString() === formattedDate;
-              }) || [];
+              const scheduledStories =
+                data?.scheduled.filter((s) => {
+                  if (!s.scheduledAt) return false;
+                  return new Date(s.scheduledAt).toDateString() === formattedDate;
+                }) || [];
 
               return (
-                <div key={formattedDate} className="bg-[#1a1a1a]/85 border border-white/5 h-16 p-1 text-left relative group">
-                  <span className="text-[10px] font-sans font-bold text-white/55">{day.getDate()}</span>
+                <div
+                  key={formattedDate}
+                  className="bg-[#1a1a1a]/85 border border-white/5 h-16 p-1 text-left relative group"
+                >
+                  <span className="text-[10px] font-sans font-bold text-white/55">
+                    {day.getDate()}
+                  </span>
                   <div className="space-y-1 mt-1 overflow-y-auto max-h-10">
                     {scheduledStories.map((story) => (
                       <Link
@@ -351,7 +386,9 @@ function NewsroomConsolePage() {
                     <th className="p-3 w-8">
                       <input
                         type="checkbox"
-                        checked={activeStories.length > 0 && selectedIds.length === activeStories.length}
+                        checked={
+                          activeStories.length > 0 && selectedIds.length === activeStories.length
+                        }
                         onChange={(e) => {
                           if (e.target.checked) {
                             setSelectedIds(activeStories.map((s) => s.id));
@@ -372,7 +409,10 @@ function NewsroomConsolePage() {
                 <tbody>
                   {activeStories.length > 0 ? (
                     activeStories.map((story) => (
-                      <tr key={story.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <tr
+                        key={story.id}
+                        className="border-b border-white/5 hover:bg-white/5 transition-colors"
+                      >
                         <td className="p-3">
                           <input
                             type="checkbox"
@@ -380,15 +420,21 @@ function NewsroomConsolePage() {
                             onChange={() => toggleSelect(story.id)}
                           />
                         </td>
-                        <td className="p-3 font-semibold text-white truncate max-w-xs">{story.title}</td>
+                        <td className="p-3 font-semibold text-white truncate max-w-xs">
+                          {story.title}
+                        </td>
                         <td className="p-3 text-white/60">{story.authorName}</td>
                         <td className="p-3 text-white/60">{story.region}</td>
                         <td className="p-3">
-                          <span className={`px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider font-bold ${story.status === "Published" ? "bg-emerald-950/60 text-emerald-400 border border-emerald-500/20" : "bg-amber-950/60 text-amber-400 border border-amber-500/20"}`}>
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider font-bold ${story.status === "Published" ? "bg-emerald-950/60 text-emerald-400 border border-emerald-500/20" : "bg-amber-950/60 text-amber-400 border border-amber-500/20"}`}
+                          >
                             {story.status}
                           </span>
                         </td>
-                        <td className="p-3 text-right font-sans font-bold text-white">{story.viewCount}</td>
+                        <td className="p-3 text-right font-sans font-bold text-white">
+                          {story.viewCount}
+                        </td>
                         <td className="p-3 text-right">
                           <Link
                             to="/admin/newsroom/story/$id"
@@ -416,10 +462,13 @@ function NewsroomConsolePage() {
           <div className="bg-[#141414] border border-white/5 p-6 rounded space-y-4 h-fit">
             <div className="flex items-center gap-2">
               <Sliders className="size-4 text-gold" />
-              <h3 className="text-sm font-bold text-white font-sans uppercase tracking-widest">Bulk Editorial Actions</h3>
+              <h3 className="text-sm font-bold text-white font-sans uppercase tracking-widest">
+                Bulk Editorial Actions
+              </h3>
             </div>
             <p className="text-xs text-white/55 font-sans leading-relaxed">
-              Select multiple stories from the table lists on the left, select a batch utility, and apply change.
+              Select multiple stories from the table lists on the left, select a batch utility, and
+              apply change.
             </p>
 
             <div className="space-y-3 font-sans text-xs">

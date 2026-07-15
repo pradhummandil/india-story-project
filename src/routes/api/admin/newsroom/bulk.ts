@@ -25,7 +25,10 @@ export const Route = createFileRoute("/api/admin/newsroom/bulk")({
 
         const { storyIds, action, payload } = body;
         if (!Array.isArray(storyIds) || storyIds.length === 0 || !action) {
-          return json({ error: "storyIds (array) and action are required fields." }, { status: 400 });
+          return json(
+            { error: "storyIds (array) and action are required fields." },
+            { status: 400 },
+          );
         }
 
         try {

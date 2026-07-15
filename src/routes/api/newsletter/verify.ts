@@ -32,8 +32,8 @@ export const Route = createFileRoute("/api/newsletter/verify")({
           });
 
           // Send welcome email asynchronously
-          void sendWelcomeEmail(subscriber.email, subscriber.email.split("@")[0]).catch(err =>
-            console.error("[Newsletter Verify API] Welcome email send error:", err)
+          void sendWelcomeEmail(subscriber.email, subscriber.email.split("@")[0]).catch((err) =>
+            console.error("[Newsletter Verify API] Welcome email send error:", err),
           );
 
           // Redirect to community page or verified success parameter page

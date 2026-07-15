@@ -42,7 +42,9 @@ export const Route = createFileRoute("/api/reading-progress")({
                   slug: (p as any).story?.slug || "",
                   title: (p as any).story?.title || "",
                   excerpt: (p as any).story?.excerpt || "",
-                  themes: ((p as any).story?.themes || []).map((st: any) => st.theme?.name).filter(Boolean),
+                  themes: ((p as any).story?.themes || [])
+                    .map((st: any) => st.theme?.name)
+                    .filter(Boolean),
                   image: (p as any).story?.images?.[0]?.imageUrl || null,
                 },
               })),
@@ -90,10 +92,7 @@ export const Route = createFileRoute("/api/reading-progress")({
           };
 
           if (!storyId || progressPercent === undefined) {
-            return json(
-              { error: "storyId and progressPercent are required" },
-              { status: 400 }
-            );
+            return json({ error: "storyId and progressPercent are required" }, { status: 400 });
           }
 
           // Create UserProfile record if missing

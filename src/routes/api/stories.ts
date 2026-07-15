@@ -22,7 +22,8 @@ export const Route = createFileRoute("/api/stories")({
       GET: async ({ request }) => {
         const url = new URL(request.url);
         const query = url.searchParams.get("query") ?? undefined;
-        const theme = url.searchParams.get("theme") || url.searchParams.get("category") || undefined;
+        const theme =
+          url.searchParams.get("theme") || url.searchParams.get("category") || undefined;
         const region = url.searchParams.get("region") ?? undefined;
         const author = url.searchParams.get("author") ?? undefined;
         const tag = url.searchParams.get("tag") ?? undefined;
@@ -52,7 +53,9 @@ export const Route = createFileRoute("/api/stories")({
               const filterThemes = theme.split(/[ ,+]+/).filter(Boolean);
               fallbackStories = fallbackStories.filter((s: any) => {
                 const sThemes = Array.isArray(s.themes) ? s.themes : [s.category || s.theme];
-                return sThemes.some((t: string) => filterThemes.some((ft: string) => t?.toLowerCase() === ft.toLowerCase()));
+                return sThemes.some((t: string) =>
+                  filterThemes.some((ft: string) => t?.toLowerCase() === ft.toLowerCase()),
+                );
               });
             }
             if (region) {

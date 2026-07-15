@@ -1,12 +1,27 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Sparkles, Mail, Rss, ArrowLeft, HeartHandshake, ShieldCheck, Compass, Briefcase, Star, MapPin } from "lucide-react";
+import {
+  Sparkles,
+  Mail,
+  Rss,
+  ArrowLeft,
+  HeartHandshake,
+  ShieldCheck,
+  Compass,
+  Briefcase,
+  Star,
+  MapPin,
+} from "lucide-react";
 import { SiteLayout } from "@/components/site/Layout";
 
 export const Route = createFileRoute("/careers")({
   head: () => ({
     meta: [
       { title: "Careers — India Story Project" },
-      { name: "description", content: "Join our team of journalists, developers, designers, and editors exploring India's stories." },
+      {
+        name: "description",
+        content:
+          "Join our team of journalists, developers, designers, and editors exploring India's stories.",
+      },
     ],
   }),
   component: CareersPage,
@@ -47,7 +62,8 @@ function CareersPage() {
               Work with <span className="text-primary italic">Purpose.</span>
             </h1>
             <p className="mt-4 text-muted-foreground text-sm md:text-base leading-relaxed font-sans font-medium">
-              We are building a new paradigm for slow journalism in India. Join our collective of storytellers, developers, and editors.
+              We are building a new paradigm for slow journalism in India. Join our collective of
+              storytellers, developers, and editors.
             </p>
           </div>
         </div>
@@ -63,11 +79,15 @@ function CareersPage() {
                 <div className="space-y-1">
                   <h3 className="font-display text-lg font-bold text-white">{op.title}</h3>
                   <div className="flex items-center gap-3 text-[10px] text-muted-foreground uppercase font-bold tracking-wider font-sans">
-                    <span className="flex items-center gap-1"><MapPin className="size-3 text-gold/85" /> {op.location}</span>
+                    <span className="flex items-center gap-1">
+                      <MapPin className="size-3 text-gold/85" /> {op.location}
+                    </span>
                     <span>•</span>
                     <span>{op.type}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground/90 font-sans leading-relaxed pt-2 max-w-2xl">{op.desc}</p>
+                  <p className="text-xs text-muted-foreground/90 font-sans leading-relaxed pt-2 max-w-2xl">
+                    {op.desc}
+                  </p>
                 </div>
                 <Link
                   to="/contact"

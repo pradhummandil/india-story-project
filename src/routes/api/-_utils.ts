@@ -98,7 +98,11 @@ export function sanitizeInput(text: string): string {
 // Simple in-memory IP rate limiter
 const ipRequestCounts = new Map<string, { count: number; resetAt: number }>();
 
-export function checkRateLimit(ip: string, limit = 60, windowMs = 60 * 1000): { allowed: boolean; remaining: number; resetAt: number } {
+export function checkRateLimit(
+  ip: string,
+  limit = 60,
+  windowMs = 60 * 1000,
+): { allowed: boolean; remaining: number; resetAt: number } {
   const now = Date.now();
   const record = ipRequestCounts.get(ip);
 

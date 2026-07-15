@@ -1,12 +1,27 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Sparkles, Mail, Rss, ArrowLeft, HeartHandshake, ShieldCheck, Compass, FileText, Download, Star } from "lucide-react";
+import {
+  Sparkles,
+  Mail,
+  Rss,
+  ArrowLeft,
+  HeartHandshake,
+  ShieldCheck,
+  Compass,
+  FileText,
+  Download,
+  Star,
+} from "lucide-react";
 import { SiteLayout } from "@/components/site/Layout";
 
 export const Route = createFileRoute("/media-kit")({
   head: () => ({
     meta: [
       { title: "Media Kit — India Story Project" },
-      { name: "description", content: "Download the India Story Project brand assets, logos, and media kit. Learn about our readership demographics." },
+      {
+        name: "description",
+        content:
+          "Download the India Story Project brand assets, logos, and media kit. Learn about our readership demographics.",
+      },
     ],
   }),
   component: MediaKitPage,
@@ -38,7 +53,8 @@ function MediaKitPage() {
               <div>
                 <h3 className="font-display text-lg font-bold">Brand Guidelines &amp; Logos</h3>
                 <p className="text-xs text-muted-foreground font-sans leading-relaxed mt-2">
-                  Contains vertical and horizontal logo files in SVG and high-resolution PNG formats, along with our typography specs and hex color palettes.
+                  Contains vertical and horizontal logo files in SVG and high-resolution PNG
+                  formats, along with our typography specs and hex color palettes.
                 </p>
               </div>
               <button className="h-9 px-4 bg-primary text-white font-sans text-xs uppercase tracking-widest font-bold flex items-center gap-2 hover:bg-primary/90">
@@ -50,7 +66,8 @@ function MediaKitPage() {
               <div>
                 <h3 className="font-display text-lg font-bold">ISP Demographics Sheet (PDF)</h3>
                 <p className="text-xs text-muted-foreground font-sans leading-relaxed mt-2">
-                  Up-to-date document showing our geographical coverage, readership statistics, average reading session durations, and user interests analysis.
+                  Up-to-date document showing our geographical coverage, readership statistics,
+                  average reading session durations, and user interests analysis.
                 </p>
               </div>
               <button className="h-9 px-4 bg-primary text-white font-sans text-xs uppercase tracking-widest font-bold flex items-center gap-2 hover:bg-primary/90">

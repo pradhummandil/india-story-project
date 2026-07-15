@@ -13,7 +13,9 @@ interface SendEmailParams {
 
 export async function sendEmail({ to, subject, html }: SendEmailParams): Promise<boolean> {
   if (!RESEND_API_KEY) {
-    console.warn("[Email Service] RESEND_API_KEY not configured. Skipping email sending. Logged content:");
+    console.warn(
+      "[Email Service] RESEND_API_KEY not configured. Skipping email sending. Logged content:",
+    );
     console.log(`To: ${to}\nSubject: ${subject}\nContent length: ${html.length} chars`);
     return false;
   }
@@ -176,12 +178,16 @@ export async function sendWelcomeEmail(toEmail: string, name: string): Promise<b
     <div class="button-container">
       <a href="${APP_URL}/explore" class="button">Explore Portal</a>
     </div>
-    `
+    `,
   );
   return sendEmail({ to: toEmail, subject, html });
 }
 
-export async function sendVerificationEmail(toEmail: string, token: string, language = "en"): Promise<boolean> {
+export async function sendVerificationEmail(
+  toEmail: string,
+  token: string,
+  language = "en",
+): Promise<boolean> {
   const isHi = language === "hi";
   const subject = isHi ? "अपना ईमेल सत्यापित करें" : "Verify Your Email";
   const link = `${APP_URL}/api/newsletter/verify?token=${token}`;
@@ -205,7 +211,7 @@ export async function sendVerificationEmail(toEmail: string, token: string, lang
       </div>
       <p>If the button doesn't work, copy and paste the following URL into your browser:</p>
       <p style="word-break: break-all; font-size: 12px; color: #888888;">${link}</p>
-      `
+      `,
   );
   return sendEmail({ to: toEmail, subject, html });
 }
@@ -224,12 +230,15 @@ export async function sendPasswordResetEmail(toEmail: string, token: string): Pr
     </div>
     <p>If you did not request a password reset, you can safely ignore this email.</p>
     <p style="word-break: break-all; font-size: 12px; color: #888888;">${link}</p>
-    `
+    `,
   );
   return sendEmail({ to: toEmail, subject, html });
 }
 
-export async function sendStoryPublishedEmail(toEmail: string, storyTitle: string): Promise<boolean> {
+export async function sendStoryPublishedEmail(
+  toEmail: string,
+  storyTitle: string,
+): Promise<boolean> {
   const subject = "Your Story is Live!";
   const html = wrapHtmlTemplate(
     subject,
@@ -240,12 +249,15 @@ export async function sendStoryPublishedEmail(toEmail: string, storyTitle: strin
     <div class="button-container">
       <a href="${APP_URL}/explore" class="button">View Portal</a>
     </div>
-    `
+    `,
   );
   return sendEmail({ to: toEmail, subject, html });
 }
 
-export async function sendStoryApprovedEmail(toEmail: string, storyTitle: string): Promise<boolean> {
+export async function sendStoryApprovedEmail(
+  toEmail: string,
+  storyTitle: string,
+): Promise<boolean> {
   const subject = "Your Story Submission Approved";
   const html = wrapHtmlTemplate(
     subject,
@@ -253,7 +265,7 @@ export async function sendStoryApprovedEmail(toEmail: string, storyTitle: string
     <h1> Namaste,</h1>
     <p>Good news! Your story submission <strong>"${storyTitle}"</strong> has been approved by our editorial panel.</p>
     <p>We will schedule its publication shortly. Thank you for contributing to documenting India's stories.</p>
-    `
+    `,
   );
   return sendEmail({ to: toEmail, subject, html });
 }
@@ -302,7 +314,7 @@ export async function sendContactMessageEmail(data: {
       <strong>Message:</strong><br/>
       ${data.message.replace(/\n/g, "<br/>")}
     </div>
-    `
+    `,
   );
   return sendEmail({ to: SUPPORT_EMAIL, subject: mailSubject, html });
 }
@@ -310,7 +322,7 @@ export async function sendContactMessageEmail(data: {
 export async function sendNewsletterEmail(
   toEmail: string,
   stories: Array<{ title: string; excerpt: string; slug: string; image?: string }>,
-  language = "en"
+  language = "en",
 ): Promise<boolean> {
   const isHi = language === "hi";
   const subject = isHi ? "आज की मुख्य कहानियाँ" : "Today's Highlights — India Story Project";
@@ -337,7 +349,7 @@ export async function sendNewsletterEmail(
     <div style="margin-top: 20px; text-align: center; font-size: 12px; color: #555555;">
       <a href="${APP_URL}/newsletter/unsubscribe?email=${encodeURIComponent(toEmail)}" style="color: #666666; text-decoration: underline;">Unsubscribe</a>
     </div>
-    `
+    `,
   );
 
   return sendEmail({ to: toEmail, subject, html });

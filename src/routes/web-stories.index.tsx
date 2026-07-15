@@ -8,7 +8,11 @@ export const Route = createFileRoute("/web-stories/")({
   head: () => ({
     meta: [
       { title: "Web Stories — India Story Project" },
-      { name: "description", content: "Swipe through visual-first web stories celebrating culture, innovations, and local heroes in India." },
+      {
+        name: "description",
+        content:
+          "Swipe through visual-first web stories celebrating culture, innovations, and local heroes in India.",
+      },
     ],
   }),
   component: WebStoriesListPage,
@@ -52,7 +56,8 @@ function WebStoriesListPage() {
               Visual dispatches, <span className="text-primary italic">at a tap.</span>
             </h1>
             <p className="mt-4 text-muted-foreground text-sm md:text-base leading-relaxed font-sans font-medium">
-              Explore bite-sized, visual-first narratives and Google Web Stories celebrating the unsung heroes across India.
+              Explore bite-sized, visual-first narratives and Google Web Stories celebrating the
+              unsung heroes across India.
             </p>
           </div>
         </div>

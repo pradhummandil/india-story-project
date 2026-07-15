@@ -16,7 +16,10 @@ export const Route = createFileRoute("/api/contact")({
           }
 
           // Extract request metadata
-          const ipAddress = request.headers.get("x-forwarded-for") || request.headers.get("cf-connecting-ip") || null;
+          const ipAddress =
+            request.headers.get("x-forwarded-for") ||
+            request.headers.get("cf-connecting-ip") ||
+            null;
           const userAgent = request.headers.get("user-agent") || null;
           const country = request.headers.get("cf-ipcountry") || null;
 
@@ -43,7 +46,7 @@ export const Route = createFileRoute("/api/contact")({
             ipAddress: ipAddress ?? undefined,
             userAgent: userAgent ?? undefined,
             country: country ?? undefined,
-          }).catch(err => console.error("[Contact API] Failed to send email alert:", err));
+          }).catch((err) => console.error("[Contact API] Failed to send email alert:", err));
 
           return json({ success: true, messageId: contact.id });
         } catch (error: any) {

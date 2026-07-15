@@ -199,7 +199,11 @@ export default function AdminStoriesPage() {
 
   const handleBulkAction = async (action: "publish" | "draft" | "archive" | "delete") => {
     if (selectedIds.length === 0 || !session) return;
-    if (action === "delete" && !confirm(`Delete all ${selectedIds.length} selected stories permanently?`)) return;
+    if (
+      action === "delete" &&
+      !confirm(`Delete all ${selectedIds.length} selected stories permanently?`)
+    )
+      return;
 
     try {
       const res = await fetch("/api/admin/stories/bulk", {
@@ -244,7 +248,9 @@ export default function AdminStoriesPage() {
 
             {/* Sorting */}
             <div className="flex items-center gap-2 w-full md:w-auto">
-              <span className="text-[10px] uppercase font-bold text-white/30 whitespace-nowrap font-sans">Sort By</span>
+              <span className="text-[10px] uppercase font-bold text-white/30 whitespace-nowrap font-sans">
+                Sort By
+              </span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
@@ -271,7 +277,9 @@ export default function AdminStoriesPage() {
           <div className="flex flex-wrap gap-4 items-center pt-2 border-t border-white/5 text-xs text-white/60">
             {/* Statuses */}
             <div className="flex items-center gap-1">
-              <span className="text-[9px] uppercase font-bold text-white/35 mr-1 font-sans">Status</span>
+              <span className="text-[9px] uppercase font-bold text-white/35 mr-1 font-sans">
+                Status
+              </span>
               {["all", "Published", "Draft", "Archived"].map((s) => (
                 <button
                   key={s}
@@ -280,7 +288,9 @@ export default function AdminStoriesPage() {
                     setPage(1);
                   }}
                   className={`px-2.5 py-1 text-[10px] font-sans font-semibold uppercase tracking-wider rounded-sm transition-colors ${
-                    statusFilter === s ? "bg-primary text-white" : "text-white/40 hover:text-white hover:bg-white/5"
+                    statusFilter === s
+                      ? "bg-primary text-white"
+                      : "text-white/40 hover:text-white hover:bg-white/5"
                   }`}
                 >
                   {s === "all" ? "All" : s}
@@ -390,22 +400,30 @@ export default function AdminStoriesPage() {
                         </td>
                         <td className="p-4 font-medium max-w-xs truncate">
                           <div className="flex items-center gap-2">
-                            {story.featured && <Star className="size-3.5 text-gold fill-gold shrink-0" />}
+                            {story.featured && (
+                              <Star className="size-3.5 text-gold fill-gold shrink-0" />
+                            )}
                             <span className="text-white hover:text-primary transition-colors text-sm">
                               {story.title}
                             </span>
                           </div>
                         </td>
                         <td className="p-4 text-white/40">
-                          {Array.isArray(story.themes) ? story.themes.join(", ") : (story as any).category ?? "—"}
+                          {Array.isArray(story.themes)
+                            ? story.themes.join(", ")
+                            : ((story as any).category ?? "—")}
                         </td>
                         <td className="p-4 text-white/40">{story.region}</td>
                         <td className="p-4">
                           <StatusBadge status={story.status} />
                         </td>
-                        <td className="p-4 font-mono text-white/50">{story.viewCount.toLocaleString()}</td>
+                        <td className="p-4 font-mono text-white/50">
+                          {story.viewCount.toLocaleString()}
+                        </td>
                         <td className="p-4 text-white/30 whitespace-nowrap">
-                          {story.publishedAt ? new Date(story.publishedAt).toLocaleDateString("en-IN") : "—"}
+                          {story.publishedAt
+                            ? new Date(story.publishedAt).toLocaleDateString("en-IN")
+                            : "—"}
                         </td>
                         <td className="p-4 text-right space-x-2 whitespace-nowrap">
                           <a
@@ -423,7 +441,9 @@ export default function AdminStoriesPage() {
                             title="Duplicate Story Draft"
                             disabled={duplicatingId === story.id}
                           >
-                            <Copy className={`size-3.5 ${duplicatingId === story.id ? "animate-spin" : ""}`} />
+                            <Copy
+                              className={`size-3.5 ${duplicatingId === story.id ? "animate-spin" : ""}`}
+                            />
                           </button>
                           <Link
                             to="/admin/stories/$id/edit"
@@ -490,20 +510,44 @@ export default function AdminStoriesPage() {
               <span className="font-bold text-gold">{selectedIds.length} stories selected</span>
               <span className="text-white/20">|</span>
               <div className="flex gap-2">
-                <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-xs rounded-full h-8 px-4" onClick={() => handleBulkAction("publish")}>
+                <Button
+                  size="sm"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-xs rounded-full h-8 px-4"
+                  onClick={() => handleBulkAction("publish")}
+                >
                   Publish
                 </Button>
-                <Button size="sm" variant="outline" className="border-white/10 text-xs text-white/80 rounded-full h-8 px-4" onClick={() => handleBulkAction("draft")}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-white/10 text-xs text-white/80 rounded-full h-8 px-4"
+                  onClick={() => handleBulkAction("draft")}
+                >
                   Draft
                 </Button>
-                <Button size="sm" variant="outline" className="border-white/10 text-xs text-white/80 rounded-full h-8 px-4" onClick={() => handleBulkAction("archive")}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-white/10 text-xs text-white/80 rounded-full h-8 px-4"
+                  onClick={() => handleBulkAction("archive")}
+                >
                   Archive
                 </Button>
-                <Button size="sm" variant="destructive" className="text-xs rounded-full h-8 px-4" onClick={() => handleBulkAction("delete")}>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  className="text-xs rounded-full h-8 px-4"
+                  onClick={() => handleBulkAction("delete")}
+                >
                   Delete
                 </Button>
               </div>
-              <button onClick={() => setSelectedIds([])} className="text-white/40 hover:text-white ml-2 text-sm">&times;</button>
+              <button
+                onClick={() => setSelectedIds([])}
+                className="text-white/40 hover:text-white ml-2 text-sm"
+              >
+                &times;
+              </button>
             </motion.div>
           )}
         </AnimatePresence>

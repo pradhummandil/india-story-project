@@ -397,8 +397,11 @@ export function ExploreIndia3D() {
   const categories = useMemo(() => {
     const set = new Set<string>();
     for (const s of stories) {
-      const storyThemes: string[] = Array.isArray((s as any).themes) ? (s as any).themes :
-        (typeof (s as any).category === "string" && (s as any).category ? [(s as any).category] : []);
+      const storyThemes: string[] = Array.isArray((s as any).themes)
+        ? (s as any).themes
+        : typeof (s as any).category === "string" && (s as any).category
+          ? [(s as any).category]
+          : [];
       storyThemes.forEach((t) => set.add(t));
     }
     return Array.from(set).sort((a, b) => a.localeCompare(b));
@@ -421,8 +424,11 @@ export function ExploreIndia3D() {
       const list = byRegion.get(region)!;
       const themesSet = new Set<string>();
       list.forEach((s: any) => {
-        const storyThemes: string[] = Array.isArray(s.themes) ? s.themes :
-          (typeof s.category === "string" && s.category ? [s.category] : []);
+        const storyThemes: string[] = Array.isArray(s.themes)
+          ? s.themes
+          : typeof s.category === "string" && s.category
+            ? [s.category]
+            : [];
         storyThemes.forEach((t) => themesSet.add(t));
       });
       const regionCategories = Array.from(themesSet);
@@ -432,7 +438,10 @@ export function ExploreIndia3D() {
       const coords = storyCoords(region, `${region}|${idx}`);
 
       // Derive a non-placeholder "hero" label from real story fields.
-      const heroLabel = (Array.isArray((featured as any).themes) && (featured as any).themes[0]) || featured.region || region;
+      const heroLabel =
+        (Array.isArray((featured as any).themes) && (featured as any).themes[0]) ||
+        featured.region ||
+        region;
 
       return {
         id: region,

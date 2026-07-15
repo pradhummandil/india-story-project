@@ -9,7 +9,7 @@ export async function uploadToCloudinary(
   fileBuffer: Buffer,
   fileName: string,
   contentType: string,
-  folder = "india_story_project"
+  folder = "india_story_project",
 ): Promise<string> {
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim();
   const apiKey = process.env.CLOUDINARY_API_KEY?.trim();
@@ -17,15 +17,11 @@ export async function uploadToCloudinary(
   const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET?.trim();
 
   if (!cloudName) {
-    throw new Error(
-      "CLOUDINARY_CLOUD_NAME is not set. Add it to your .env file."
-    );
+    throw new Error("CLOUDINARY_CLOUD_NAME is not set. Add it to your .env file.");
   }
 
   if (!apiSecret && !uploadPreset) {
-    throw new Error(
-      "Either CLOUDINARY_API_SECRET or CLOUDINARY_UPLOAD_PRESET must be set."
-    );
+    throw new Error("Either CLOUDINARY_API_SECRET or CLOUDINARY_UPLOAD_PRESET must be set.");
   }
 
   const formData = new FormData();
@@ -37,10 +33,7 @@ export async function uploadToCloudinary(
     // Signed upload — more secure, required for production
     const timestamp = Math.round(Date.now() / 1000).toString();
     const signatureInput = `folder=${folder}&timestamp=${timestamp}${apiSecret}`;
-    const signature = crypto
-      .createHash("sha1")
-      .update(signatureInput)
-      .digest("hex");
+    const signature = crypto.createHash("sha1").update(signatureInput).digest("hex");
 
     formData.append("api_key", apiKey);
     formData.append("timestamp", timestamp);
@@ -50,10 +43,10 @@ export async function uploadToCloudinary(
     formData.append("upload_preset", uploadPreset);
   }
 
-  const response = await fetch(
-    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-    { method: "POST", body: formData }
-  );
+  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+    method: "POST",
+    body: formData,
+  });
 
   if (!response.ok) {
     let detail = "";
@@ -68,9 +61,7 @@ export async function uploadToCloudinary(
 
   const data = await response.json();
   if (!data.secure_url) {
-    throw new Error(
-      `Cloudinary returned no secure_url. Response: ${JSON.stringify(data)}`
-    );
+    throw new Error(`Cloudinary returned no secure_url. Response: ${JSON.stringify(data)}`);
   }
 
   return data.secure_url as string;
@@ -119,10 +110,10 @@ export async function deleteFromCloudinary(publicId: string): Promise<boolean> {
     form.append("timestamp", timestamp);
     form.append("signature", signature);
 
-    const res = await fetch(
-      `https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`,
-      { method: "POST", body: form }
-    );
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`, {
+      method: "POST",
+      body: form,
+    });
 
     if (!res.ok) {
       const err = await res.text();

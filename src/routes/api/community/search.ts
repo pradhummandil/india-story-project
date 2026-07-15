@@ -30,65 +30,65 @@ export const Route = createFileRoute("/api/community/search")({
 
           if (type === "all" || type === "topics") {
             searches.push(
-              db.discussionTopic.findMany({
-                where: {
-                  isSpam: false,
-                  title: searchFilter,
-                },
-                take: 10,
-                orderBy: { lastActivityAt: "desc" },
-                include: {
-                  user: { select: { name: true, avatarUrl: true } },
-                  category: { select: { name: true, slug: true } },
-                },
-              }).then((r: any[]) => {
-                results.topics = r;
-              })
+              db.discussionTopic
+                .findMany({
+                  where: {
+                    isSpam: false,
+                    title: searchFilter,
+                  },
+                  take: 10,
+                  orderBy: { lastActivityAt: "desc" },
+                  include: {
+                    user: { select: { name: true, avatarUrl: true } },
+                    category: { select: { name: true, slug: true } },
+                  },
+                })
+                .then((r: any[]) => {
+                  results.topics = r;
+                }),
             );
           }
 
           if (type === "all" || type === "groups") {
             searches.push(
-              db.communityGroup.findMany({
-                where: {
-                  isActive: true,
-                  OR: [
-                    { name: searchFilter },
-                    { description: searchFilter },
-                  ],
-                },
-                take: 10,
-                orderBy: { memberCount: "desc" },
-                select: {
-                  id: true,
-                  name: true,
-                  slug: true,
-                  description: true,
-                  privacy: true,
-                  memberCount: true,
-                  coverImage: true,
-                },
-              }).then((r: any[]) => {
-                results.groups = r;
-              })
+              db.communityGroup
+                .findMany({
+                  where: {
+                    isActive: true,
+                    OR: [{ name: searchFilter }, { description: searchFilter }],
+                  },
+                  take: 10,
+                  orderBy: { memberCount: "desc" },
+                  select: {
+                    id: true,
+                    name: true,
+                    slug: true,
+                    description: true,
+                    privacy: true,
+                    memberCount: true,
+                    coverImage: true,
+                  },
+                })
+                .then((r: any[]) => {
+                  results.groups = r;
+                }),
             );
           }
 
           if (type === "all" || type === "challenges") {
             searches.push(
-              db.storyChallenge.findMany({
-                where: {
-                  OR: [
-                    { title: searchFilter },
-                    { description: searchFilter },
-                  ],
-                },
-                take: 10,
-                orderBy: { startAt: "desc" },
-                include: { _count: { select: { entries: true } } },
-              }).then((r: any[]) => {
-                results.challenges = r;
-              })
+              db.storyChallenge
+                .findMany({
+                  where: {
+                    OR: [{ title: searchFilter }, { description: searchFilter }],
+                  },
+                  take: 10,
+                  orderBy: { startAt: "desc" },
+                  include: { _count: { select: { entries: true } } },
+                })
+                .then((r: any[]) => {
+                  results.challenges = r;
+                }),
             );
           }
 

@@ -165,7 +165,10 @@ export const Route = createFileRoute("/api/collections")({
           return json({ success: true, message: "Collection deleted successfully" });
         } catch (e: any) {
           console.error("[Collections API] DELETE error:", e);
-          return json({ error: e.message || "Failed to remove collection assets" }, { status: 500 });
+          return json(
+            { error: e.message || "Failed to remove collection assets" },
+            { status: 500 },
+          );
         }
       },
     },

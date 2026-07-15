@@ -9,7 +9,7 @@ async function translateText(text, from = "en", to = "hi") {
     const res = await fetch(url);
     if (!res.ok) throw new Error("Translation API failed");
     const json = await res.json();
-    return json[0].map(item => item[0]).join("");
+    return json[0].map((item) => item[0]).join("");
   } catch (e) {
     console.error(`Translation error for text: "${text.slice(0, 30)}..."`, e);
     return "";

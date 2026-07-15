@@ -34,7 +34,8 @@ export const Route = createFileRoute("/explore")({
       { title: "Explore stories by region & theme — India Story Project" },
       {
         name: "description",
-        content: "Discover inspiring stories of positive change, innovation, and culture from every state of India.",
+        content:
+          "Discover inspiring stories of positive change, innovation, and culture from every state of India.",
       },
     ],
   }),
@@ -166,12 +167,11 @@ function RouteComponent() {
       const matchesThemes =
         selectedThemes.length === 0 ||
         selectedThemes.every((selTheme) =>
-          storyThemes.some((t) => t.toLowerCase() === selTheme.toLowerCase())
+          storyThemes.some((t) => t.toLowerCase() === selTheme.toLowerCase()),
         );
 
       const matchesLanguage =
-        langFilter === "all" ||
-        (s.language || "en").toLowerCase() === langFilter.toLowerCase();
+        langFilter === "all" || (s.language || "en").toLowerCase() === langFilter.toLowerCase();
 
       let matchesReadTime = true;
       const rt = s.readTime || 4;
@@ -180,12 +180,10 @@ function RouteComponent() {
       else if (readTimeFilter === "long") matchesReadTime = rt > 6;
 
       const matchesDistrict =
-        !districtQuery ||
-        (s.district || "").toLowerCase().includes(districtQuery.toLowerCase());
+        !districtQuery || (s.district || "").toLowerCase().includes(districtQuery.toLowerCase());
 
       const matchesAuthor =
-        !authorQuery ||
-        (s.authorName || "").toLowerCase().includes(authorQuery.toLowerCase());
+        !authorQuery || (s.authorName || "").toLowerCase().includes(authorQuery.toLowerCase());
 
       return (
         matchesSearch &&
@@ -292,7 +290,9 @@ function RouteComponent() {
                   >
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
-                        <Label className="text-[10px] uppercase font-bold tracking-wider text-white/50">Language</Label>
+                        <Label className="text-[10px] uppercase font-bold tracking-wider text-white/50">
+                          Language
+                        </Label>
                         <select
                           value={langFilter}
                           onChange={(e) => setLangFilter(e.target.value)}
@@ -304,7 +304,9 @@ function RouteComponent() {
                         </select>
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-[10px] uppercase font-bold tracking-wider text-white/50">Read Time</Label>
+                        <Label className="text-[10px] uppercase font-bold tracking-wider text-white/50">
+                          Read Time
+                        </Label>
                         <select
                           value={readTimeFilter}
                           onChange={(e) => setReadTimeFilter(e.target.value)}
@@ -319,7 +321,9 @@ function RouteComponent() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
-                        <Label className="text-[10px] uppercase font-bold tracking-wider text-white/50">District</Label>
+                        <Label className="text-[10px] uppercase font-bold tracking-wider text-white/50">
+                          District
+                        </Label>
                         <Input
                           value={districtQuery}
                           onChange={(e) => setDistrictQuery(e.target.value)}
@@ -328,7 +332,9 @@ function RouteComponent() {
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-[10px] uppercase font-bold tracking-wider text-white/50">Author</Label>
+                        <Label className="text-[10px] uppercase font-bold tracking-wider text-white/50">
+                          Author
+                        </Label>
                         <Input
                           value={authorQuery}
                           onChange={(e) => setAuthorQuery(e.target.value)}
@@ -345,61 +351,64 @@ function RouteComponent() {
         </section>
 
         {/* ─── Trending Today (Netflix-style scroll) ─── */}
-        {trendingStories.length > 0 && !searchQuery && !selectedState && selectedThemes.length === 0 && (
-          <section className="container mx-auto px-6 py-12">
-            <div className="flex items-center gap-2 mb-6">
-              <TrendingUp className="size-4.5 text-gold animate-pulse" />
-              <h2 className="font-display text-xl md:text-2xl font-bold">Trending Stories</h2>
-            </div>
-            {/* Scrollable list wrapper */}
-            <div className="flex gap-5 overflow-x-auto pb-4 scrollbar-thin snap-x snap-mandatory">
-              {trendingStories.map((story) => {
-                const localized = translateStory(story as any, lang);
-                return (
-                  <Link
-                    key={story.id}
-                    to="/stories/$slug"
-                    params={{ slug: story.slug }}
-                    className="flex-shrink-0 w-72 sm:w-80 group snap-start bg-card/40 border border-border/30 rounded-2xl overflow-hidden hover:border-gold/30 hover:shadow-glow transition-all duration-300"
-                  >
-                    <div className="aspect-[16/10] overflow-hidden bg-muted relative">
-                      {story.image ? (
-                        <img
-                          src={story.image}
-                          alt={localized.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-primary/10 to-gold/10" />
-                      )}
-                      <span className="absolute top-3 left-3 bg-black/60 backdrop-blur text-[9px] uppercase tracking-widest text-gold px-2 py-0.5 rounded font-sans font-bold border border-gold/20">
-                        {localized.themes?.[0] ?? "Story"}
-                      </span>
-                    </div>
-                    <div className="p-4 space-y-2">
-                      <div className="flex items-center justify-between text-[9px] text-muted-foreground font-sans uppercase font-bold tracking-wider">
-                        <span className="flex items-center gap-1">
-                          <MapPin className="size-3 text-gold" />
-                          {localized.region}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="size-3 text-gold" />
-                          {localized.readTime || "4 min"}
+        {trendingStories.length > 0 &&
+          !searchQuery &&
+          !selectedState &&
+          selectedThemes.length === 0 && (
+            <section className="container mx-auto px-6 py-12">
+              <div className="flex items-center gap-2 mb-6">
+                <TrendingUp className="size-4.5 text-gold animate-pulse" />
+                <h2 className="font-display text-xl md:text-2xl font-bold">Trending Stories</h2>
+              </div>
+              {/* Scrollable list wrapper */}
+              <div className="flex gap-5 overflow-x-auto pb-4 scrollbar-thin snap-x snap-mandatory">
+                {trendingStories.map((story) => {
+                  const localized = translateStory(story as any, lang);
+                  return (
+                    <Link
+                      key={story.id}
+                      to="/stories/$slug"
+                      params={{ slug: story.slug }}
+                      className="flex-shrink-0 w-72 sm:w-80 group snap-start bg-card/40 border border-border/30 rounded-2xl overflow-hidden hover:border-gold/30 hover:shadow-glow transition-all duration-300"
+                    >
+                      <div className="aspect-[16/10] overflow-hidden bg-muted relative">
+                        {story.image ? (
+                          <img
+                            src={story.image}
+                            alt={localized.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-primary/10 to-gold/10" />
+                        )}
+                        <span className="absolute top-3 left-3 bg-black/60 backdrop-blur text-[9px] uppercase tracking-widest text-gold px-2 py-0.5 rounded font-sans font-bold border border-gold/20">
+                          {localized.themes?.[0] ?? "Story"}
                         </span>
                       </div>
-                      <h3 className="font-display font-bold text-base leading-snug text-foreground line-clamp-2 group-hover:text-primary transition-colors">
-                        {localized.title}
-                      </h3>
-                      <p className="text-xs text-muted-foreground font-sans line-clamp-2">
-                        {localized.excerpt}
-                      </p>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </section>
-        )}
+                      <div className="p-4 space-y-2">
+                        <div className="flex items-center justify-between text-[9px] text-muted-foreground font-sans uppercase font-bold tracking-wider">
+                          <span className="flex items-center gap-1">
+                            <MapPin className="size-3 text-gold" />
+                            {localized.region}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="size-3 text-gold" />
+                            {localized.readTime || "4 min"}
+                          </span>
+                        </div>
+                        <h3 className="font-display font-bold text-base leading-snug text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+                          {localized.title}
+                        </h3>
+                        <p className="text-xs text-muted-foreground font-sans line-clamp-2">
+                          {localized.excerpt}
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </section>
+          )}
 
         {/* ─── Browse by State (Chips scroll) ─── */}
         {stateStats.length > 0 && (
@@ -407,7 +416,9 @@ function RouteComponent() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Globe2 className="size-4 text-gold" />
-                <span className="text-xs uppercase tracking-[0.18em] font-sans font-bold text-gold">Browse by State</span>
+                <span className="text-xs uppercase tracking-[0.18em] font-sans font-bold text-gold">
+                  Browse by State
+                </span>
               </div>
               {selectedState && (
                 <button
@@ -443,7 +454,9 @@ function RouteComponent() {
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
                 <Filter className="size-4 text-gold" />
-                <span className="text-xs uppercase tracking-[0.18em] font-sans font-bold text-gold">Themes & Topics (Multi-Select)</span>
+                <span className="text-xs uppercase tracking-[0.18em] font-sans font-bold text-gold">
+                  Themes & Topics (Multi-Select)
+                </span>
               </div>
               {selectedThemes.length > 0 && (
                 <button
@@ -504,7 +517,13 @@ function RouteComponent() {
 
             <div className="flex items-center gap-3">
               {/* Clear filters */}
-              {(selectedThemes.length > 0 || selectedState || searchQuery || langFilter !== "all" || readTimeFilter !== "all" || districtQuery || authorQuery) && (
+              {(selectedThemes.length > 0 ||
+                selectedState ||
+                searchQuery ||
+                langFilter !== "all" ||
+                readTimeFilter !== "all" ||
+                districtQuery ||
+                authorQuery) && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -529,7 +548,9 @@ function RouteComponent() {
                 <button
                   onClick={() => setViewMode("grid")}
                   className={`p-1.5 rounded-full transition-colors ${
-                    viewMode === "grid" ? "bg-primary text-white" : "text-muted-foreground hover:text-white"
+                    viewMode === "grid"
+                      ? "bg-primary text-white"
+                      : "text-muted-foreground hover:text-white"
                   }`}
                   title="Grid View"
                 >
@@ -538,7 +559,9 @@ function RouteComponent() {
                 <button
                   onClick={() => setViewMode("list")}
                   className={`p-1.5 rounded-full transition-colors ${
-                    viewMode === "list" ? "bg-primary text-white" : "text-muted-foreground hover:text-white"
+                    viewMode === "list"
+                      ? "bg-primary text-white"
+                      : "text-muted-foreground hover:text-white"
                   }`}
                   title="List View"
                 >

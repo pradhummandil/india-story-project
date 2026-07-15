@@ -22,7 +22,10 @@ export const Route = createFileRoute("/api/community/groups")({
           const sort = url.searchParams.get("sort") ?? "popular";
           const privacy = url.searchParams.get("privacy") ?? undefined;
           const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10));
-          const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get("limit") ?? "20", 10)));
+          const limit = Math.min(
+            50,
+            Math.max(1, parseInt(url.searchParams.get("limit") ?? "20", 10)),
+          );
 
           const where: any = { isActive: true };
           if (privacy) where.privacy = privacy;
@@ -82,7 +85,12 @@ export const Route = createFileRoute("/api/community/groups")({
           const body = await request.json();
           const { name, description, privacy } = body ?? {};
 
-          if (!name || typeof name !== "string" || name.trim().length < 3 || name.trim().length > 100) {
+          if (
+            !name ||
+            typeof name !== "string" ||
+            name.trim().length < 3 ||
+            name.trim().length > 100
+          ) {
             return json({ error: "Name must be between 3 and 100 characters" }, { status: 400 });
           }
 

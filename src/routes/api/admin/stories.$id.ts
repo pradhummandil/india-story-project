@@ -11,8 +11,8 @@ const storyIncludes: any = {
   themes: {
     select: {
       themeId: true,
-      theme: { select: { id: true, name: true, slug: true } }
-    }
+      theme: { select: { id: true, name: true, slug: true } },
+    },
   },
   images: { orderBy: [{ heroImage: "desc" }, { sortOrder: "asc" }] },
 };
@@ -258,7 +258,15 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
           });
         }
 
-        const allowed = ["featured", "heroOfTheDay", "homepageSlideshow", "slideshowOrder", "status", "viewCount", "seoKeywords"];
+        const allowed = [
+          "featured",
+          "heroOfTheDay",
+          "homepageSlideshow",
+          "slideshowOrder",
+          "status",
+          "viewCount",
+          "seoKeywords",
+        ];
         const data: Record<string, unknown> = {};
         for (const key of allowed) {
           if (key in body) data[key] = body[key];

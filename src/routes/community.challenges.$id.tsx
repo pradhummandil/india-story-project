@@ -175,7 +175,10 @@ export default function ChallengeDetailPage() {
 
           {/* Submission Form (Only if active, not entered yet, and logged in) */}
           {user && isChallengeActive && !hasEntered && (
-            <form onSubmit={handleSubmitEntry} className="bg-[#121212] border border-white/8 p-6 space-y-4 rounded-sm">
+            <form
+              onSubmit={handleSubmitEntry}
+              className="bg-[#121212] border border-white/8 p-6 space-y-4 rounded-sm"
+            >
               <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-primary">
                 Submit Your Entry
               </h3>
@@ -262,9 +265,12 @@ export default function ChallengeDetailPage() {
               <div className="flex items-center gap-2.5">
                 <Check className="size-5 text-emerald-400" />
                 <div>
-                  <h4 className="text-xs font-sans font-bold text-white/90">Entry Submitted Successfully</h4>
+                  <h4 className="text-xs font-sans font-bold text-white/90">
+                    Entry Submitted Successfully
+                  </h4>
                   <p className="text-[10px] text-white/40 font-sans">
-                    Your story entry has been registered. The leaderboard will display votes shortly.
+                    Your story entry has been registered. The leaderboard will display votes
+                    shortly.
                   </p>
                 </div>
               </div>
@@ -300,10 +306,15 @@ export default function ChallengeDetailPage() {
 
           <div className="space-y-4">
             {entries.length === 0 ? (
-              <p className="text-white/20 text-xs font-sans py-4 italic">No entries submitted yet.</p>
+              <p className="text-white/20 text-xs font-sans py-4 italic">
+                No entries submitted yet.
+              </p>
             ) : (
               entries.map((entry, i) => (
-                <div key={entry.id} className="flex items-center justify-between gap-2.5 py-1.5 border-b border-white/5">
+                <div
+                  key={entry.id}
+                  className="flex items-center justify-between gap-2.5 py-1.5 border-b border-white/5"
+                >
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-mono text-white/20 w-4 font-bold">
                       {i + 1}
@@ -319,9 +330,7 @@ export default function ChallengeDetailPage() {
                   </div>
 
                   <div className="text-right flex-shrink-0">
-                    <span className="text-xs text-white/60 font-mono font-bold">
-                      {entry.votes}
-                    </span>
+                    <span className="text-xs text-white/60 font-mono font-bold">{entry.votes}</span>
                     <p className="text-[7px] text-white/30 uppercase tracking-widest font-bold">
                       Votes
                     </p>

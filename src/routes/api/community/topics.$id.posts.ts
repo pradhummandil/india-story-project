@@ -44,8 +44,16 @@ export const Route = createFileRoute("/api/community/topics/$id/posts")({
           const body = await request.json();
           const { content, parentId } = body ?? {};
 
-          if (!content || typeof content !== "string" || content.trim().length < 1 || content.trim().length > 5000) {
-            return json({ error: "Content must be between 1 and 5000 characters" }, { status: 400 });
+          if (
+            !content ||
+            typeof content !== "string" ||
+            content.trim().length < 1 ||
+            content.trim().length > 5000
+          ) {
+            return json(
+              { error: "Content must be between 1 and 5000 characters" },
+              { status: 400 },
+            );
           }
 
           // Verify topic exists and is not locked
@@ -82,14 +90,16 @@ export const Route = createFileRoute("/api/community/topics/$id/posts")({
               if (mentionedUsers.length > 0) {
                 await Promise.all(
                   mentionedUsers.map((mu: any) =>
-                    db.userMention.create({
-                      data: {
-                        postId: post.id,
-                        mentionedUserId: mu.id,
-                        mentioningUserId: user.id,
-                      },
-                    }).catch(() => {})
-                  )
+                    db.userMention
+                      .create({
+                        data: {
+                          postId: post.id,
+                          mentionedUserId: mu.id,
+                          mentioningUserId: user.id,
+                        },
+                      })
+                      .catch(() => {}),
+                  ),
                 );
               }
             } catch {

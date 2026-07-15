@@ -6,7 +6,10 @@ export const Route = createFileRoute("/disclaimer")({
   head: () => ({
     meta: [
       { title: "Disclaimer — India Story Project" },
-      { name: "description", content: "Platform disclaimer and editorial policies of the India Story Project." },
+      {
+        name: "description",
+        content: "Platform disclaimer and editorial policies of the India Story Project.",
+      },
     ],
   }),
   component: DisclaimerPage,
@@ -33,13 +36,24 @@ function DisclaimerPage() {
 
         {/* Content */}
         <div className="container mx-auto px-6 max-w-3xl bg-card border border-border/80 p-8 md:p-12 space-y-6 text-muted-foreground/90 font-sans leading-relaxed text-sm">
-          <h2 className="font-display text-xl font-bold text-white mb-2">Editorial Information &amp; Claims</h2>
+          <h2 className="font-display text-xl font-bold text-white mb-2">
+            Editorial Information &amp; Claims
+          </h2>
           <p>
-            The content, opinions, and visual dispatches hosted on the India Story Project platform represent the investigations, reporting, and views of individual chroniclers and writers. While our editorial board makes every effort to verify facts, dates, and historical details, the platform cannot guarantee the absolute precision of all statements.
+            The content, opinions, and visual dispatches hosted on the India Story Project platform
+            represent the investigations, reporting, and views of individual chroniclers and
+            writers. While our editorial board makes every effort to verify facts, dates, and
+            historical details, the platform cannot guarantee the absolute precision of all
+            statements.
           </p>
-          <h2 className="font-display text-xl font-bold text-white pt-4 mb-2">External Links &amp; Resources</h2>
+          <h2 className="font-display text-xl font-bold text-white pt-4 mb-2">
+            External Links &amp; Resources
+          </h2>
           <p>
-            Our stories and articles may contain links to external web resources, non-governmental organizations (NGOs), craft portals, or government portals. These links are provided for supplementary information purposes only. The India Story Project does not endorse or assume liability for third-party operations, products, or service offerings.
+            Our stories and articles may contain links to external web resources, non-governmental
+            organizations (NGOs), craft portals, or government portals. These links are provided for
+            supplementary information purposes only. The India Story Project does not endorse or
+            assume liability for third-party operations, products, or service offerings.
           </p>
           <div className="pt-8 border-t border-border/40">
             <Link

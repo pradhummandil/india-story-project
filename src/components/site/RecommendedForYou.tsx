@@ -29,11 +29,7 @@ import { useStoriesData } from "@/lib/stories-data";
 function deriveModesFromStories(storyList: Story[]) {
   // Drive discovery modes from actual themes in stories.
   const uniqueThemes = Array.from(
-    new Set(
-      storyList.flatMap((s) =>
-        Array.isArray(s.themes) ? s.themes : []
-      ).filter(Boolean)
-    )
+    new Set(storyList.flatMap((s) => (Array.isArray(s.themes) ? s.themes : [])).filter(Boolean)),
   );
 
   const top = uniqueThemes.slice(0, 6);

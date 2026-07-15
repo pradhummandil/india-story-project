@@ -1,6 +1,19 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, useMemo } from "react";
-import { Heart, Globe, Award, Sparkles, MapPin, Feather, Users, TreeDeciduous, HeartHandshake, ShieldAlert, BookOpen, ArrowUpRight } from "lucide-react";
+import {
+  Heart,
+  Globe,
+  Award,
+  Sparkles,
+  MapPin,
+  Feather,
+  Users,
+  TreeDeciduous,
+  HeartHandshake,
+  ShieldAlert,
+  BookOpen,
+  ArrowUpRight,
+} from "lucide-react";
 import { SiteLayout } from "@/components/site/Layout";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
@@ -8,7 +21,11 @@ export const Route = createFileRoute("/impact")({
   head: () => ({
     meta: [
       { title: "Our Impact — India Story Project" },
-      { name: "description", content: "See the tangible social, environmental, and cultural impact driven by stories on the India Story Project." },
+      {
+        name: "description",
+        content:
+          "See the tangible social, environmental, and cultural impact driven by stories on the India Story Project.",
+      },
     ],
   }),
   component: ImpactPage,
@@ -88,13 +105,15 @@ function ImpactPage() {
           authorsCount,
           statesCount,
           totalViews: totalViews || 842000, // Safe default or fallback
-          themesBreakdown: themesBreakdown.length ? themesBreakdown : [
-            { name: "Heritage", count: 42 },
-            { name: "Environment", count: 35 },
-            { name: "Science", count: 28 },
-            { name: "Culture", count: 38 },
-            { name: "Innovation", count: 22 },
-          ],
+          themesBreakdown: themesBreakdown.length
+            ? themesBreakdown
+            : [
+                { name: "Heritage", count: 42 },
+                { name: "Environment", count: 35 },
+                { name: "Science", count: 28 },
+                { name: "Culture", count: 38 },
+                { name: "Innovation", count: 22 },
+              ],
         });
       })
       .catch(console.error)
@@ -116,7 +135,8 @@ function ImpactPage() {
               Stories that drive <span className="text-primary italic">Real Change.</span>
             </h1>
             <p className="mt-4 text-muted-foreground text-sm md:text-base leading-relaxed font-sans font-medium">
-              We measure our success not in impressions, but in actions. Exploring the human, ecological, and cultural impact of slow journalism across India.
+              We measure our success not in impressions, but in actions. Exploring the human,
+              ecological, and cultural impact of slow journalism across India.
             </p>
           </div>
         </div>
@@ -171,35 +191,44 @@ function ImpactPage() {
               <Award className="size-6 text-gold" /> Tangible Achievements
             </h3>
             <p className="text-sm text-muted-foreground font-sans leading-relaxed">
-              Beyond metrics, our reporting aims to directly support conservation, organic farming, and indigenous crafts. Here is our tracking scorecard:
+              Beyond metrics, our reporting aims to directly support conservation, organic farming,
+              and indigenous crafts. Here is our tracking scorecard:
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
               <div className="border border-border/40 p-5 bg-card/45 flex items-center gap-4">
                 <TreeDeciduous className="size-10 text-emerald-400 shrink-0" />
                 <div>
                   <p className="text-lg font-bold text-white font-mono">15,400+</p>
-                  <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider font-sans">Groves &amp; Trees Protected</p>
+                  <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider font-sans">
+                    Groves &amp; Trees Protected
+                  </p>
                 </div>
               </div>
               <div className="border border-border/40 p-5 bg-card/45 flex items-center gap-4">
                 <HeartHandshake className="size-10 text-primary shrink-0" />
                 <div>
                   <p className="text-lg font-bold text-white font-mono">₹8.4 Lakhs</p>
-                  <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider font-sans">Funds Raised for Artisans</p>
+                  <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider font-sans">
+                    Funds Raised for Artisans
+                  </p>
                 </div>
               </div>
               <div className="border border-border/40 p-5 bg-card/45 flex items-center gap-4">
                 <Users className="size-10 text-gold shrink-0" />
                 <div>
                   <p className="text-lg font-bold text-white font-mono">120+</p>
-                  <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider font-sans">Women Entrepreneurs Profiled</p>
+                  <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider font-sans">
+                    Women Entrepreneurs Profiled
+                  </p>
                 </div>
               </div>
               <div className="border border-border/40 p-5 bg-card/45 flex items-center gap-4">
                 <Sparkles className="size-10 text-saffron shrink-0" />
                 <div>
                   <p className="text-lg font-bold text-white font-mono">3,200+</p>
-                  <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider font-sans">Students Engaged</p>
+                  <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider font-sans">
+                    Students Engaged
+                  </p>
                 </div>
               </div>
             </div>
@@ -220,13 +249,36 @@ function ImpactPage() {
                 <div className="w-full h-full bg-white/5 animate-pulse" />
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={stats?.themesBreakdown} layout="vertical" margin={{ left: 10, right: 10, top: 0, bottom: 0 }}>
+                  <BarChart
+                    data={stats?.themesBreakdown}
+                    layout="vertical"
+                    margin={{ left: 10, right: 10, top: 0, bottom: 0 }}
+                  >
                     <XAxis type="number" hide />
-                    <YAxis dataKey="name" type="category" stroke="#888888" fontSize={11} tickLine={false} axisLine={false} width={80} />
-                    <Tooltip cursor={{ fill: "rgba(255,255,255,0.05)" }} contentStyle={{ backgroundColor: "#161616", borderColor: "#333", fontSize: 12, color: "#fff" }} />
+                    <YAxis
+                      dataKey="name"
+                      type="category"
+                      stroke="#888888"
+                      fontSize={11}
+                      tickLine={false}
+                      axisLine={false}
+                      width={80}
+                    />
+                    <Tooltip
+                      cursor={{ fill: "rgba(255,255,255,0.05)" }}
+                      contentStyle={{
+                        backgroundColor: "#161616",
+                        borderColor: "#333",
+                        fontSize: 12,
+                        color: "#fff",
+                      }}
+                    />
                     <Bar dataKey="count" radius={[0, 4, 4, 0]}>
                       {stats?.themesBreakdown.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={chartColors[index % chartColors.length]} />
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={chartColors[index % chartColors.length]}
+                        />
                       ))}
                     </Bar>
                   </BarChart>
@@ -250,10 +302,16 @@ function ImpactPage() {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center text-[10px] uppercase font-bold tracking-wider font-sans">
                     <span className="text-gold">{cs.category}</span>
-                    <span className="text-muted-foreground flex items-center gap-1"><MapPin className="size-3" /> {cs.state}</span>
+                    <span className="text-muted-foreground flex items-center gap-1">
+                      <MapPin className="size-3" /> {cs.state}
+                    </span>
                   </div>
-                  <h4 className="font-display text-lg font-bold leading-snug text-white">{cs.title}</h4>
-                  <p className="text-xs text-muted-foreground leading-relaxed font-sans mt-2">{cs.desc}</p>
+                  <h4 className="font-display text-lg font-bold leading-snug text-white">
+                    {cs.title}
+                  </h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed font-sans mt-2">
+                    {cs.desc}
+                  </p>
                 </div>
                 <div className="mt-6 pt-4 border-t border-border/40 text-xs font-bold font-sans text-primary">
                   {cs.metric}
@@ -267,9 +325,12 @@ function ImpactPage() {
         <div className="container mx-auto px-6">
           <div className="border border-border/80 bg-card/60 p-8 md:p-12 text-center max-w-4xl mx-auto shadow-elegant">
             <HeartHandshake className="size-10 text-gold mx-auto mb-4" />
-            <h3 className="font-display text-2xl md:text-3xl font-bold mb-2">Be part of the story</h3>
+            <h3 className="font-display text-2xl md:text-3xl font-bold mb-2">
+              Be part of the story
+            </h3>
             <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
-              Are you documenting change or working on community-driven conservation in your town? Share your story with us.
+              Are you documenting change or working on community-driven conservation in your town?
+              Share your story with us.
             </p>
             <div className="flex gap-3 justify-center">
               <Link

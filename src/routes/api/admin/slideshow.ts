@@ -51,8 +51,8 @@ export const Route = createFileRoute("/api/admin/slideshow")({
               prisma.story.update({
                 where: { id },
                 data: { slideshowOrder: index },
-              })
-            )
+              }),
+            ),
           );
 
           return json({ success: true });

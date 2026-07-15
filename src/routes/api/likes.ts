@@ -39,7 +39,9 @@ export const Route = createFileRoute("/api/likes")({
                   slug: (l as any).story?.slug || "",
                   title: (l as any).story?.title || "",
                   excerpt: (l as any).story?.excerpt || "",
-                  themes: ((l as any).story?.themes || []).map((st: any) => st.theme?.name).filter(Boolean),
+                  themes: ((l as any).story?.themes || [])
+                    .map((st: any) => st.theme?.name)
+                    .filter(Boolean),
                   image: (l as any).story?.images?.[0]?.imageUrl || null,
                 },
               })),

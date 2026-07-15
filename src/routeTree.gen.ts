@@ -20,6 +20,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PartnersRouteImport } from './routes/partners'
 import { Route as MediaKitRouteImport } from './routes/media-kit'
+import { Route as MapRouteImport } from './routes/map'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as ImpactRouteImport } from './routes/impact'
@@ -77,9 +78,11 @@ import { Route as ApiCollectionsRouteImport } from './routes/api/collections'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiBookmarksRouteImport } from './routes/api/bookmarks'
 import { Route as ApiAuthorsRouteImport } from './routes/api/authors'
+import { Route as ApiAudioProgressRouteImport } from './routes/api/audio-progress'
 import { Route as AdminSlideshowRouteImport } from './routes/admin/slideshow'
 import { Route as AdminNewsletterRouteImport } from './routes/admin/newsletter'
 import { Route as AdminLeaderboardRouteImport } from './routes/admin/leaderboard'
+import { Route as AdminInfrastructureRouteImport } from './routes/admin/infrastructure'
 import { Route as AdminContactRouteImport } from './routes/admin/contact'
 import { Route as AdminCommentsRouteImport } from './routes/admin/comments'
 import { Route as AdminAchievementsRouteImport } from './routes/admin/achievements'
@@ -93,6 +96,7 @@ import { Route as AdminCommunityIndexRouteImport } from './routes/admin/communit
 import { Route as AdminCategoriesIndexRouteImport } from './routes/admin/categories/index'
 import { Route as AdminAuthorsIndexRouteImport } from './routes/admin/authors/index'
 import { Route as AdminAnalyticsIndexRouteImport } from './routes/admin/analytics/index'
+import { Route as StoriesSlugInteractiveRouteImport } from './routes/stories.$slug.interactive'
 import { Route as CommunityTopicsIdRouteImport } from './routes/community.topics.$id'
 import { Route as CommunityGroupsIdRouteImport } from './routes/community.groups.$id'
 import { Route as CommunityChallengesIdRouteImport } from './routes/community.challenges.$id'
@@ -106,6 +110,7 @@ import { Route as ApiStoriesLatestRouteImport } from './routes/api/stories/lates
 import { Route as ApiStoriesFilterRouteImport } from './routes/api/stories/filter'
 import { Route as ApiStoriesFeaturedRouteImport } from './routes/api/stories/featured'
 import { Route as ApiStoriesSlugRouteImport } from './routes/api/stories/$slug'
+import { Route as ApiPodcastEpisodesRouteImport } from './routes/api/podcast.episodes'
 import { Route as ApiNewsletterVerifyRouteImport } from './routes/api/newsletter/verify'
 import { Route as ApiNewsletterSubscribeRouteImport } from './routes/api/newsletter/subscribe'
 import { Route as ApiNewsletterCronRouteImport } from './routes/api/newsletter/cron'
@@ -139,6 +144,8 @@ import { Route as ApiAdminAuthorsRouteImport } from './routes/api/admin/authors'
 import { Route as ApiAdminAnalyticsRouteImport } from './routes/api/admin/analytics'
 import { Route as ApiAdminAchievementsRouteImport } from './routes/api/admin/achievements'
 import { Route as AdminStoriesNewRouteImport } from './routes/admin/stories/new'
+import { Route as ApiStoriesSlugAudioRouteImport } from './routes/api/stories.$slug.audio'
+import { Route as ApiPodcastFeedXmlRouteImport } from './routes/api/podcast.feed.xml'
 import { Route as ApiCommunityTopicsIdRouteImport } from './routes/api/community/topics.$id'
 import { Route as ApiCommunityGroupsIdRouteImport } from './routes/api/community/groups.$id'
 import { Route as ApiCommunityChallengesIdRouteImport } from './routes/api/community/challenges.$id'
@@ -156,6 +163,7 @@ import { Route as ApiAdminNewsroomDashboardRouteImport } from './routes/api/admi
 import { Route as ApiAdminNewsroomCommentsRouteImport } from './routes/api/admin/newsroom/comments'
 import { Route as ApiAdminNewsroomBulkRouteImport } from './routes/api/admin/newsroom/bulk'
 import { Route as ApiAdminNewsroomAiHelperRouteImport } from './routes/api/admin/newsroom/ai-helper'
+import { Route as ApiAdminInfrastructureAuditLogsRouteImport } from './routes/api/admin/infrastructure/audit-logs'
 import { Route as ApiAdminCommunityModerateRouteImport } from './routes/api/admin/community/moderate'
 import { Route as ApiAdminAuthorsIdRouteImport } from './routes/api/admin/authors.$id'
 import { Route as AdminStoriesIdEditRouteImport } from './routes/admin/stories/$id.edit'
@@ -217,6 +225,11 @@ const PartnersRoute = PartnersRouteImport.update({
 const MediaKitRoute = MediaKitRouteImport.update({
   id: '/media-kit',
   path: '/media-kit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MapRoute = MapRouteImport.update({
+  id: '/map',
+  path: '/map',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -504,6 +517,11 @@ const ApiAuthorsRoute = ApiAuthorsRouteImport.update({
   path: '/api/authors',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAudioProgressRoute = ApiAudioProgressRouteImport.update({
+  id: '/api/audio-progress',
+  path: '/api/audio-progress',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminSlideshowRoute = AdminSlideshowRouteImport.update({
   id: '/slideshow',
   path: '/slideshow',
@@ -517,6 +535,11 @@ const AdminNewsletterRoute = AdminNewsletterRouteImport.update({
 const AdminLeaderboardRoute = AdminLeaderboardRouteImport.update({
   id: '/leaderboard',
   path: '/leaderboard',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminInfrastructureRoute = AdminInfrastructureRouteImport.update({
+  id: '/infrastructure',
+  path: '/infrastructure',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminContactRoute = AdminContactRouteImport.update({
@@ -584,6 +607,11 @@ const AdminAnalyticsIndexRoute = AdminAnalyticsIndexRouteImport.update({
   path: '/analytics/',
   getParentRoute: () => AdminRoute,
 } as any)
+const StoriesSlugInteractiveRoute = StoriesSlugInteractiveRouteImport.update({
+  id: '/interactive',
+  path: '/interactive',
+  getParentRoute: () => StoriesSlugRoute,
+} as any)
 const CommunityTopicsIdRoute = CommunityTopicsIdRouteImport.update({
   id: '/topics/$id',
   path: '/topics/$id',
@@ -648,6 +676,11 @@ const ApiStoriesSlugRoute = ApiStoriesSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => ApiStoriesRoute,
+} as any)
+const ApiPodcastEpisodesRoute = ApiPodcastEpisodesRouteImport.update({
+  id: '/api/podcast/episodes',
+  path: '/api/podcast/episodes',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiNewsletterVerifyRoute = ApiNewsletterVerifyRouteImport.update({
   id: '/api/newsletter/verify',
@@ -814,6 +847,16 @@ const AdminStoriesNewRoute = AdminStoriesNewRouteImport.update({
   path: '/stories/new',
   getParentRoute: () => AdminRoute,
 } as any)
+const ApiStoriesSlugAudioRoute = ApiStoriesSlugAudioRouteImport.update({
+  id: '/audio',
+  path: '/audio',
+  getParentRoute: () => ApiStoriesSlugRoute,
+} as any)
+const ApiPodcastFeedXmlRoute = ApiPodcastFeedXmlRouteImport.update({
+  id: '/api/podcast/feed/xml',
+  path: '/api/podcast/feed/xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCommunityTopicsIdRoute = ApiCommunityTopicsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -908,6 +951,12 @@ const ApiAdminNewsroomAiHelperRoute =
     path: '/api/admin/newsroom/ai-helper',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiAdminInfrastructureAuditLogsRoute =
+  ApiAdminInfrastructureAuditLogsRouteImport.update({
+    id: '/api/admin/infrastructure/audit-logs',
+    path: '/api/admin/infrastructure/audit-logs',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiAdminCommunityModerateRoute =
   ApiAdminCommunityModerateRouteImport.update({
     id: '/api/admin/community/moderate',
@@ -968,6 +1017,7 @@ export interface FileRoutesByFullPath {
   '/impact': typeof ImpactRoute
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
+  '/map': typeof MapRoute
   '/media-kit': typeof MediaKitRoute
   '/partners': typeof PartnersRoute
   '/privacy': typeof PrivacyRoute
@@ -982,9 +1032,11 @@ export interface FileRoutesByFullPath {
   '/admin/achievements': typeof AdminAchievementsRoute
   '/admin/comments': typeof AdminCommentsRoute
   '/admin/contact': typeof AdminContactRoute
+  '/admin/infrastructure': typeof AdminInfrastructureRoute
   '/admin/leaderboard': typeof AdminLeaderboardRoute
   '/admin/newsletter': typeof AdminNewsletterRoute
   '/admin/slideshow': typeof AdminSlideshowRoute
+  '/api/audio-progress': typeof ApiAudioProgressRoute
   '/api/authors': typeof ApiAuthorsRouteWithChildren
   '/api/bookmarks': typeof ApiBookmarksRoute
   '/api/chat': typeof ApiChatRoute
@@ -1013,7 +1065,7 @@ export interface FileRoutesByFullPath {
   '/community/forums': typeof CommunityForumsRoute
   '/community/groups': typeof CommunityGroupsRouteWithChildren
   '/community/rankings': typeof CommunityRankingsRoute
-  '/stories/$slug': typeof StoriesSlugRoute
+  '/stories/$slug': typeof StoriesSlugRouteWithChildren
   '/theme/$slug': typeof ThemeSlugRoute
   '/videos/$slug': typeof VideosSlugRoute
   '/web-stories/$slug': typeof WebStoriesSlugRoute
@@ -1056,7 +1108,8 @@ export interface FileRoutesByFullPath {
   '/api/newsletter/cron': typeof ApiNewsletterCronRoute
   '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
   '/api/newsletter/verify': typeof ApiNewsletterVerifyRoute
-  '/api/stories/$slug': typeof ApiStoriesSlugRoute
+  '/api/podcast/episodes': typeof ApiPodcastEpisodesRoute
+  '/api/stories/$slug': typeof ApiStoriesSlugRouteWithChildren
   '/api/stories/featured': typeof ApiStoriesFeaturedRoute
   '/api/stories/filter': typeof ApiStoriesFilterRoute
   '/api/stories/latest': typeof ApiStoriesLatestRoute
@@ -1069,6 +1122,7 @@ export interface FileRoutesByFullPath {
   '/community/challenges/$id': typeof CommunityChallengesIdRoute
   '/community/groups/$id': typeof CommunityGroupsIdRoute
   '/community/topics/$id': typeof CommunityTopicsIdRoute
+  '/stories/$slug/interactive': typeof StoriesSlugInteractiveRoute
   '/admin/analytics/': typeof AdminAnalyticsIndexRoute
   '/admin/authors/': typeof AdminAuthorsIndexRoute
   '/admin/categories/': typeof AdminCategoriesIndexRoute
@@ -1083,6 +1137,7 @@ export interface FileRoutesByFullPath {
   '/admin/stories/$id/edit': typeof AdminStoriesIdEditRoute
   '/api/admin/authors/$id': typeof ApiAdminAuthorsIdRoute
   '/api/admin/community/moderate': typeof ApiAdminCommunityModerateRoute
+  '/api/admin/infrastructure/audit-logs': typeof ApiAdminInfrastructureAuditLogsRoute
   '/api/admin/newsroom/ai-helper': typeof ApiAdminNewsroomAiHelperRoute
   '/api/admin/newsroom/bulk': typeof ApiAdminNewsroomBulkRoute
   '/api/admin/newsroom/comments': typeof ApiAdminNewsroomCommentsRoute
@@ -1100,6 +1155,8 @@ export interface FileRoutesByFullPath {
   '/api/community/challenges/$id': typeof ApiCommunityChallengesIdRoute
   '/api/community/groups/$id': typeof ApiCommunityGroupsIdRoute
   '/api/community/topics/$id': typeof ApiCommunityTopicsIdRouteWithChildren
+  '/api/podcast/feed/xml': typeof ApiPodcastFeedXmlRoute
+  '/api/stories/$slug/audio': typeof ApiStoriesSlugAudioRoute
   '/api/community/posts/$id/react': typeof ApiCommunityPostsIdReactRoute
   '/api/community/posts/$id/report': typeof ApiCommunityPostsIdReportRoute
   '/api/community/topics/$id/posts': typeof ApiCommunityTopicsIdPostsRoute
@@ -1122,6 +1179,7 @@ export interface FileRoutesByTo {
   '/impact': typeof ImpactRoute
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
+  '/map': typeof MapRoute
   '/media-kit': typeof MediaKitRoute
   '/partners': typeof PartnersRoute
   '/privacy': typeof PrivacyRoute
@@ -1135,9 +1193,11 @@ export interface FileRoutesByTo {
   '/admin/achievements': typeof AdminAchievementsRoute
   '/admin/comments': typeof AdminCommentsRoute
   '/admin/contact': typeof AdminContactRoute
+  '/admin/infrastructure': typeof AdminInfrastructureRoute
   '/admin/leaderboard': typeof AdminLeaderboardRoute
   '/admin/newsletter': typeof AdminNewsletterRoute
   '/admin/slideshow': typeof AdminSlideshowRoute
+  '/api/audio-progress': typeof ApiAudioProgressRoute
   '/api/authors': typeof ApiAuthorsRouteWithChildren
   '/api/bookmarks': typeof ApiBookmarksRoute
   '/api/chat': typeof ApiChatRoute
@@ -1166,7 +1226,7 @@ export interface FileRoutesByTo {
   '/community/forums': typeof CommunityForumsRoute
   '/community/groups': typeof CommunityGroupsRouteWithChildren
   '/community/rankings': typeof CommunityRankingsRoute
-  '/stories/$slug': typeof StoriesSlugRoute
+  '/stories/$slug': typeof StoriesSlugRouteWithChildren
   '/theme/$slug': typeof ThemeSlugRoute
   '/videos/$slug': typeof VideosSlugRoute
   '/web-stories/$slug': typeof WebStoriesSlugRoute
@@ -1209,7 +1269,8 @@ export interface FileRoutesByTo {
   '/api/newsletter/cron': typeof ApiNewsletterCronRoute
   '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
   '/api/newsletter/verify': typeof ApiNewsletterVerifyRoute
-  '/api/stories/$slug': typeof ApiStoriesSlugRoute
+  '/api/podcast/episodes': typeof ApiPodcastEpisodesRoute
+  '/api/stories/$slug': typeof ApiStoriesSlugRouteWithChildren
   '/api/stories/featured': typeof ApiStoriesFeaturedRoute
   '/api/stories/filter': typeof ApiStoriesFilterRoute
   '/api/stories/latest': typeof ApiStoriesLatestRoute
@@ -1222,6 +1283,7 @@ export interface FileRoutesByTo {
   '/community/challenges/$id': typeof CommunityChallengesIdRoute
   '/community/groups/$id': typeof CommunityGroupsIdRoute
   '/community/topics/$id': typeof CommunityTopicsIdRoute
+  '/stories/$slug/interactive': typeof StoriesSlugInteractiveRoute
   '/admin/analytics': typeof AdminAnalyticsIndexRoute
   '/admin/authors': typeof AdminAuthorsIndexRoute
   '/admin/categories': typeof AdminCategoriesIndexRoute
@@ -1236,6 +1298,7 @@ export interface FileRoutesByTo {
   '/admin/stories/$id/edit': typeof AdminStoriesIdEditRoute
   '/api/admin/authors/$id': typeof ApiAdminAuthorsIdRoute
   '/api/admin/community/moderate': typeof ApiAdminCommunityModerateRoute
+  '/api/admin/infrastructure/audit-logs': typeof ApiAdminInfrastructureAuditLogsRoute
   '/api/admin/newsroom/ai-helper': typeof ApiAdminNewsroomAiHelperRoute
   '/api/admin/newsroom/bulk': typeof ApiAdminNewsroomBulkRoute
   '/api/admin/newsroom/comments': typeof ApiAdminNewsroomCommentsRoute
@@ -1253,6 +1316,8 @@ export interface FileRoutesByTo {
   '/api/community/challenges/$id': typeof ApiCommunityChallengesIdRoute
   '/api/community/groups/$id': typeof ApiCommunityGroupsIdRoute
   '/api/community/topics/$id': typeof ApiCommunityTopicsIdRouteWithChildren
+  '/api/podcast/feed/xml': typeof ApiPodcastFeedXmlRoute
+  '/api/stories/$slug/audio': typeof ApiStoriesSlugAudioRoute
   '/api/community/posts/$id/react': typeof ApiCommunityPostsIdReactRoute
   '/api/community/posts/$id/report': typeof ApiCommunityPostsIdReportRoute
   '/api/community/topics/$id/posts': typeof ApiCommunityTopicsIdPostsRoute
@@ -1278,6 +1343,7 @@ export interface FileRoutesById {
   '/impact': typeof ImpactRoute
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
+  '/map': typeof MapRoute
   '/media-kit': typeof MediaKitRoute
   '/partners': typeof PartnersRoute
   '/privacy': typeof PrivacyRoute
@@ -1292,9 +1358,11 @@ export interface FileRoutesById {
   '/admin/achievements': typeof AdminAchievementsRoute
   '/admin/comments': typeof AdminCommentsRoute
   '/admin/contact': typeof AdminContactRoute
+  '/admin/infrastructure': typeof AdminInfrastructureRoute
   '/admin/leaderboard': typeof AdminLeaderboardRoute
   '/admin/newsletter': typeof AdminNewsletterRoute
   '/admin/slideshow': typeof AdminSlideshowRoute
+  '/api/audio-progress': typeof ApiAudioProgressRoute
   '/api/authors': typeof ApiAuthorsRouteWithChildren
   '/api/bookmarks': typeof ApiBookmarksRoute
   '/api/chat': typeof ApiChatRoute
@@ -1323,7 +1391,7 @@ export interface FileRoutesById {
   '/community/forums': typeof CommunityForumsRoute
   '/community/groups': typeof CommunityGroupsRouteWithChildren
   '/community/rankings': typeof CommunityRankingsRoute
-  '/stories/$slug': typeof StoriesSlugRoute
+  '/stories/$slug': typeof StoriesSlugRouteWithChildren
   '/theme/$slug': typeof ThemeSlugRoute
   '/videos/$slug': typeof VideosSlugRoute
   '/web-stories/$slug': typeof WebStoriesSlugRoute
@@ -1366,7 +1434,8 @@ export interface FileRoutesById {
   '/api/newsletter/cron': typeof ApiNewsletterCronRoute
   '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
   '/api/newsletter/verify': typeof ApiNewsletterVerifyRoute
-  '/api/stories/$slug': typeof ApiStoriesSlugRoute
+  '/api/podcast/episodes': typeof ApiPodcastEpisodesRoute
+  '/api/stories/$slug': typeof ApiStoriesSlugRouteWithChildren
   '/api/stories/featured': typeof ApiStoriesFeaturedRoute
   '/api/stories/filter': typeof ApiStoriesFilterRoute
   '/api/stories/latest': typeof ApiStoriesLatestRoute
@@ -1379,6 +1448,7 @@ export interface FileRoutesById {
   '/community/challenges/$id': typeof CommunityChallengesIdRoute
   '/community/groups/$id': typeof CommunityGroupsIdRoute
   '/community/topics/$id': typeof CommunityTopicsIdRoute
+  '/stories/$slug/interactive': typeof StoriesSlugInteractiveRoute
   '/admin/analytics/': typeof AdminAnalyticsIndexRoute
   '/admin/authors/': typeof AdminAuthorsIndexRoute
   '/admin/categories/': typeof AdminCategoriesIndexRoute
@@ -1393,6 +1463,7 @@ export interface FileRoutesById {
   '/admin/stories/$id/edit': typeof AdminStoriesIdEditRoute
   '/api/admin/authors/$id': typeof ApiAdminAuthorsIdRoute
   '/api/admin/community/moderate': typeof ApiAdminCommunityModerateRoute
+  '/api/admin/infrastructure/audit-logs': typeof ApiAdminInfrastructureAuditLogsRoute
   '/api/admin/newsroom/ai-helper': typeof ApiAdminNewsroomAiHelperRoute
   '/api/admin/newsroom/bulk': typeof ApiAdminNewsroomBulkRoute
   '/api/admin/newsroom/comments': typeof ApiAdminNewsroomCommentsRoute
@@ -1410,6 +1481,8 @@ export interface FileRoutesById {
   '/api/community/challenges/$id': typeof ApiCommunityChallengesIdRoute
   '/api/community/groups/$id': typeof ApiCommunityGroupsIdRoute
   '/api/community/topics/$id': typeof ApiCommunityTopicsIdRouteWithChildren
+  '/api/podcast/feed/xml': typeof ApiPodcastFeedXmlRoute
+  '/api/stories/$slug/audio': typeof ApiStoriesSlugAudioRoute
   '/api/community/posts/$id/react': typeof ApiCommunityPostsIdReactRoute
   '/api/community/posts/$id/report': typeof ApiCommunityPostsIdReportRoute
   '/api/community/topics/$id/posts': typeof ApiCommunityTopicsIdPostsRoute
@@ -1436,6 +1509,7 @@ export interface FileRouteTypes {
     | '/impact'
     | '/join'
     | '/login'
+    | '/map'
     | '/media-kit'
     | '/partners'
     | '/privacy'
@@ -1450,9 +1524,11 @@ export interface FileRouteTypes {
     | '/admin/achievements'
     | '/admin/comments'
     | '/admin/contact'
+    | '/admin/infrastructure'
     | '/admin/leaderboard'
     | '/admin/newsletter'
     | '/admin/slideshow'
+    | '/api/audio-progress'
     | '/api/authors'
     | '/api/bookmarks'
     | '/api/chat'
@@ -1524,6 +1600,7 @@ export interface FileRouteTypes {
     | '/api/newsletter/cron'
     | '/api/newsletter/subscribe'
     | '/api/newsletter/verify'
+    | '/api/podcast/episodes'
     | '/api/stories/$slug'
     | '/api/stories/featured'
     | '/api/stories/filter'
@@ -1537,6 +1614,7 @@ export interface FileRouteTypes {
     | '/community/challenges/$id'
     | '/community/groups/$id'
     | '/community/topics/$id'
+    | '/stories/$slug/interactive'
     | '/admin/analytics/'
     | '/admin/authors/'
     | '/admin/categories/'
@@ -1551,6 +1629,7 @@ export interface FileRouteTypes {
     | '/admin/stories/$id/edit'
     | '/api/admin/authors/$id'
     | '/api/admin/community/moderate'
+    | '/api/admin/infrastructure/audit-logs'
     | '/api/admin/newsroom/ai-helper'
     | '/api/admin/newsroom/bulk'
     | '/api/admin/newsroom/comments'
@@ -1568,6 +1647,8 @@ export interface FileRouteTypes {
     | '/api/community/challenges/$id'
     | '/api/community/groups/$id'
     | '/api/community/topics/$id'
+    | '/api/podcast/feed/xml'
+    | '/api/stories/$slug/audio'
     | '/api/community/posts/$id/react'
     | '/api/community/posts/$id/report'
     | '/api/community/topics/$id/posts'
@@ -1590,6 +1671,7 @@ export interface FileRouteTypes {
     | '/impact'
     | '/join'
     | '/login'
+    | '/map'
     | '/media-kit'
     | '/partners'
     | '/privacy'
@@ -1603,9 +1685,11 @@ export interface FileRouteTypes {
     | '/admin/achievements'
     | '/admin/comments'
     | '/admin/contact'
+    | '/admin/infrastructure'
     | '/admin/leaderboard'
     | '/admin/newsletter'
     | '/admin/slideshow'
+    | '/api/audio-progress'
     | '/api/authors'
     | '/api/bookmarks'
     | '/api/chat'
@@ -1677,6 +1761,7 @@ export interface FileRouteTypes {
     | '/api/newsletter/cron'
     | '/api/newsletter/subscribe'
     | '/api/newsletter/verify'
+    | '/api/podcast/episodes'
     | '/api/stories/$slug'
     | '/api/stories/featured'
     | '/api/stories/filter'
@@ -1690,6 +1775,7 @@ export interface FileRouteTypes {
     | '/community/challenges/$id'
     | '/community/groups/$id'
     | '/community/topics/$id'
+    | '/stories/$slug/interactive'
     | '/admin/analytics'
     | '/admin/authors'
     | '/admin/categories'
@@ -1704,6 +1790,7 @@ export interface FileRouteTypes {
     | '/admin/stories/$id/edit'
     | '/api/admin/authors/$id'
     | '/api/admin/community/moderate'
+    | '/api/admin/infrastructure/audit-logs'
     | '/api/admin/newsroom/ai-helper'
     | '/api/admin/newsroom/bulk'
     | '/api/admin/newsroom/comments'
@@ -1721,6 +1808,8 @@ export interface FileRouteTypes {
     | '/api/community/challenges/$id'
     | '/api/community/groups/$id'
     | '/api/community/topics/$id'
+    | '/api/podcast/feed/xml'
+    | '/api/stories/$slug/audio'
     | '/api/community/posts/$id/react'
     | '/api/community/posts/$id/report'
     | '/api/community/topics/$id/posts'
@@ -1745,6 +1834,7 @@ export interface FileRouteTypes {
     | '/impact'
     | '/join'
     | '/login'
+    | '/map'
     | '/media-kit'
     | '/partners'
     | '/privacy'
@@ -1759,9 +1849,11 @@ export interface FileRouteTypes {
     | '/admin/achievements'
     | '/admin/comments'
     | '/admin/contact'
+    | '/admin/infrastructure'
     | '/admin/leaderboard'
     | '/admin/newsletter'
     | '/admin/slideshow'
+    | '/api/audio-progress'
     | '/api/authors'
     | '/api/bookmarks'
     | '/api/chat'
@@ -1833,6 +1925,7 @@ export interface FileRouteTypes {
     | '/api/newsletter/cron'
     | '/api/newsletter/subscribe'
     | '/api/newsletter/verify'
+    | '/api/podcast/episodes'
     | '/api/stories/$slug'
     | '/api/stories/featured'
     | '/api/stories/filter'
@@ -1846,6 +1939,7 @@ export interface FileRouteTypes {
     | '/community/challenges/$id'
     | '/community/groups/$id'
     | '/community/topics/$id'
+    | '/stories/$slug/interactive'
     | '/admin/analytics/'
     | '/admin/authors/'
     | '/admin/categories/'
@@ -1860,6 +1954,7 @@ export interface FileRouteTypes {
     | '/admin/stories/$id/edit'
     | '/api/admin/authors/$id'
     | '/api/admin/community/moderate'
+    | '/api/admin/infrastructure/audit-logs'
     | '/api/admin/newsroom/ai-helper'
     | '/api/admin/newsroom/bulk'
     | '/api/admin/newsroom/comments'
@@ -1877,6 +1972,8 @@ export interface FileRouteTypes {
     | '/api/community/challenges/$id'
     | '/api/community/groups/$id'
     | '/api/community/topics/$id'
+    | '/api/podcast/feed/xml'
+    | '/api/stories/$slug/audio'
     | '/api/community/posts/$id/react'
     | '/api/community/posts/$id/report'
     | '/api/community/topics/$id/posts'
@@ -1902,6 +1999,7 @@ export interface RootRouteChildren {
   ImpactRoute: typeof ImpactRoute
   JoinRoute: typeof JoinRoute
   LoginRoute: typeof LoginRoute
+  MapRoute: typeof MapRoute
   MediaKitRoute: typeof MediaKitRoute
   PartnersRoute: typeof PartnersRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -1913,6 +2011,7 @@ export interface RootRouteChildren {
   StoriesRoute: typeof StoriesRouteWithChildren
   TermsRoute: typeof TermsRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
+  ApiAudioProgressRoute: typeof ApiAudioProgressRoute
   ApiAuthorsRoute: typeof ApiAuthorsRouteWithChildren
   ApiBookmarksRoute: typeof ApiBookmarksRoute
   ApiChatRoute: typeof ApiChatRoute
@@ -1964,13 +2063,16 @@ export interface RootRouteChildren {
   ApiNewsletterCronRoute: typeof ApiNewsletterCronRoute
   ApiNewsletterSubscribeRoute: typeof ApiNewsletterSubscribeRoute
   ApiNewsletterVerifyRoute: typeof ApiNewsletterVerifyRoute
+  ApiPodcastEpisodesRoute: typeof ApiPodcastEpisodesRoute
   ApiAdminCommunityModerateRoute: typeof ApiAdminCommunityModerateRoute
+  ApiAdminInfrastructureAuditLogsRoute: typeof ApiAdminInfrastructureAuditLogsRoute
   ApiAdminNewsroomAiHelperRoute: typeof ApiAdminNewsroomAiHelperRoute
   ApiAdminNewsroomBulkRoute: typeof ApiAdminNewsroomBulkRoute
   ApiAdminNewsroomCommentsRoute: typeof ApiAdminNewsroomCommentsRoute
   ApiAdminNewsroomDashboardRoute: typeof ApiAdminNewsroomDashboardRoute
   ApiAdminNewsroomRevisionsRoute: typeof ApiAdminNewsroomRevisionsRoute
   ApiAdminNewsroomWorkflowRoute: typeof ApiAdminNewsroomWorkflowRoute
+  ApiPodcastFeedXmlRoute: typeof ApiPodcastFeedXmlRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -2050,6 +2152,13 @@ declare module '@tanstack/react-router' {
       path: '/media-kit'
       fullPath: '/media-kit'
       preLoaderRoute: typeof MediaKitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/map': {
+      id: '/map'
+      path: '/map'
+      fullPath: '/map'
+      preLoaderRoute: typeof MapRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -2451,6 +2560,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthorsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/audio-progress': {
+      id: '/api/audio-progress'
+      path: '/api/audio-progress'
+      fullPath: '/api/audio-progress'
+      preLoaderRoute: typeof ApiAudioProgressRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/slideshow': {
       id: '/admin/slideshow'
       path: '/slideshow'
@@ -2470,6 +2586,13 @@ declare module '@tanstack/react-router' {
       path: '/leaderboard'
       fullPath: '/admin/leaderboard'
       preLoaderRoute: typeof AdminLeaderboardRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/infrastructure': {
+      id: '/admin/infrastructure'
+      path: '/infrastructure'
+      fullPath: '/admin/infrastructure'
+      preLoaderRoute: typeof AdminInfrastructureRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/contact': {
@@ -2563,6 +2686,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAnalyticsIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/stories/$slug/interactive': {
+      id: '/stories/$slug/interactive'
+      path: '/interactive'
+      fullPath: '/stories/$slug/interactive'
+      preLoaderRoute: typeof StoriesSlugInteractiveRouteImport
+      parentRoute: typeof StoriesSlugRoute
+    }
     '/community/topics/$id': {
       id: '/community/topics/$id'
       path: '/topics/$id'
@@ -2653,6 +2783,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/stories/$slug'
       preLoaderRoute: typeof ApiStoriesSlugRouteImport
       parentRoute: typeof ApiStoriesRoute
+    }
+    '/api/podcast/episodes': {
+      id: '/api/podcast/episodes'
+      path: '/api/podcast/episodes'
+      fullPath: '/api/podcast/episodes'
+      preLoaderRoute: typeof ApiPodcastEpisodesRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/newsletter/verify': {
       id: '/api/newsletter/verify'
@@ -2885,6 +3022,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminStoriesNewRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/api/stories/$slug/audio': {
+      id: '/api/stories/$slug/audio'
+      path: '/audio'
+      fullPath: '/api/stories/$slug/audio'
+      preLoaderRoute: typeof ApiStoriesSlugAudioRouteImport
+      parentRoute: typeof ApiStoriesSlugRoute
+    }
+    '/api/podcast/feed/xml': {
+      id: '/api/podcast/feed/xml'
+      path: '/api/podcast/feed/xml'
+      fullPath: '/api/podcast/feed/xml'
+      preLoaderRoute: typeof ApiPodcastFeedXmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/community/topics/$id': {
       id: '/api/community/topics/$id'
       path: '/$id'
@@ -3004,6 +3155,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminNewsroomAiHelperRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/infrastructure/audit-logs': {
+      id: '/api/admin/infrastructure/audit-logs'
+      path: '/api/admin/infrastructure/audit-logs'
+      fullPath: '/api/admin/infrastructure/audit-logs'
+      preLoaderRoute: typeof ApiAdminInfrastructureAuditLogsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin/community/moderate': {
       id: '/api/admin/community/moderate'
       path: '/api/admin/community/moderate'
@@ -3060,6 +3218,7 @@ interface AdminRouteChildren {
   AdminAchievementsRoute: typeof AdminAchievementsRoute
   AdminCommentsRoute: typeof AdminCommentsRoute
   AdminContactRoute: typeof AdminContactRoute
+  AdminInfrastructureRoute: typeof AdminInfrastructureRoute
   AdminLeaderboardRoute: typeof AdminLeaderboardRoute
   AdminNewsletterRoute: typeof AdminNewsletterRoute
   AdminSlideshowRoute: typeof AdminSlideshowRoute
@@ -3083,6 +3242,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminAchievementsRoute: AdminAchievementsRoute,
   AdminCommentsRoute: AdminCommentsRoute,
   AdminContactRoute: AdminContactRoute,
+  AdminInfrastructureRoute: AdminInfrastructureRoute,
   AdminLeaderboardRoute: AdminLeaderboardRoute,
   AdminNewsletterRoute: AdminNewsletterRoute,
   AdminSlideshowRoute: AdminSlideshowRoute,
@@ -3149,13 +3309,25 @@ const CommunityRouteWithChildren = CommunityRoute._addFileChildren(
   CommunityRouteChildren,
 )
 
+interface StoriesSlugRouteChildren {
+  StoriesSlugInteractiveRoute: typeof StoriesSlugInteractiveRoute
+}
+
+const StoriesSlugRouteChildren: StoriesSlugRouteChildren = {
+  StoriesSlugInteractiveRoute: StoriesSlugInteractiveRoute,
+}
+
+const StoriesSlugRouteWithChildren = StoriesSlugRoute._addFileChildren(
+  StoriesSlugRouteChildren,
+)
+
 interface StoriesRouteChildren {
-  StoriesSlugRoute: typeof StoriesSlugRoute
+  StoriesSlugRoute: typeof StoriesSlugRouteWithChildren
   StoriesIndexRoute: typeof StoriesIndexRoute
 }
 
 const StoriesRouteChildren: StoriesRouteChildren = {
-  StoriesSlugRoute: StoriesSlugRoute,
+  StoriesSlugRoute: StoriesSlugRouteWithChildren,
   StoriesIndexRoute: StoriesIndexRoute,
 }
 
@@ -3265,8 +3437,20 @@ const ApiCommunityRouteWithChildren = ApiCommunityRoute._addFileChildren(
   ApiCommunityRouteChildren,
 )
 
+interface ApiStoriesSlugRouteChildren {
+  ApiStoriesSlugAudioRoute: typeof ApiStoriesSlugAudioRoute
+}
+
+const ApiStoriesSlugRouteChildren: ApiStoriesSlugRouteChildren = {
+  ApiStoriesSlugAudioRoute: ApiStoriesSlugAudioRoute,
+}
+
+const ApiStoriesSlugRouteWithChildren = ApiStoriesSlugRoute._addFileChildren(
+  ApiStoriesSlugRouteChildren,
+)
+
 interface ApiStoriesRouteChildren {
-  ApiStoriesSlugRoute: typeof ApiStoriesSlugRoute
+  ApiStoriesSlugRoute: typeof ApiStoriesSlugRouteWithChildren
   ApiStoriesFeaturedRoute: typeof ApiStoriesFeaturedRoute
   ApiStoriesFilterRoute: typeof ApiStoriesFilterRoute
   ApiStoriesLatestRoute: typeof ApiStoriesLatestRoute
@@ -3275,7 +3459,7 @@ interface ApiStoriesRouteChildren {
 }
 
 const ApiStoriesRouteChildren: ApiStoriesRouteChildren = {
-  ApiStoriesSlugRoute: ApiStoriesSlugRoute,
+  ApiStoriesSlugRoute: ApiStoriesSlugRouteWithChildren,
   ApiStoriesFeaturedRoute: ApiStoriesFeaturedRoute,
   ApiStoriesFilterRoute: ApiStoriesFilterRoute,
   ApiStoriesLatestRoute: ApiStoriesLatestRoute,
@@ -3432,6 +3616,7 @@ const rootRouteChildren: RootRouteChildren = {
   ImpactRoute: ImpactRoute,
   JoinRoute: JoinRoute,
   LoginRoute: LoginRoute,
+  MapRoute: MapRoute,
   MediaKitRoute: MediaKitRoute,
   PartnersRoute: PartnersRoute,
   PrivacyRoute: PrivacyRoute,
@@ -3443,6 +3628,7 @@ const rootRouteChildren: RootRouteChildren = {
   StoriesRoute: StoriesRouteWithChildren,
   TermsRoute: TermsRoute,
   VerifyEmailRoute: VerifyEmailRoute,
+  ApiAudioProgressRoute: ApiAudioProgressRoute,
   ApiAuthorsRoute: ApiAuthorsRouteWithChildren,
   ApiBookmarksRoute: ApiBookmarksRoute,
   ApiChatRoute: ApiChatRoute,
@@ -3494,13 +3680,16 @@ const rootRouteChildren: RootRouteChildren = {
   ApiNewsletterCronRoute: ApiNewsletterCronRoute,
   ApiNewsletterSubscribeRoute: ApiNewsletterSubscribeRoute,
   ApiNewsletterVerifyRoute: ApiNewsletterVerifyRoute,
+  ApiPodcastEpisodesRoute: ApiPodcastEpisodesRoute,
   ApiAdminCommunityModerateRoute: ApiAdminCommunityModerateRoute,
+  ApiAdminInfrastructureAuditLogsRoute: ApiAdminInfrastructureAuditLogsRoute,
   ApiAdminNewsroomAiHelperRoute: ApiAdminNewsroomAiHelperRoute,
   ApiAdminNewsroomBulkRoute: ApiAdminNewsroomBulkRoute,
   ApiAdminNewsroomCommentsRoute: ApiAdminNewsroomCommentsRoute,
   ApiAdminNewsroomDashboardRoute: ApiAdminNewsroomDashboardRoute,
   ApiAdminNewsroomRevisionsRoute: ApiAdminNewsroomRevisionsRoute,
   ApiAdminNewsroomWorkflowRoute: ApiAdminNewsroomWorkflowRoute,
+  ApiPodcastFeedXmlRoute: ApiPodcastFeedXmlRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

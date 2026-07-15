@@ -95,7 +95,9 @@ export default function GroupsPage() {
       {/* ── Groups Header ── */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/5 pb-5">
         <div>
-          <h1 className="font-display text-2xl font-bold text-white">Regional Hubs & Story Groups</h1>
+          <h1 className="font-display text-2xl font-bold text-white">
+            Regional Hubs & Story Groups
+          </h1>
           <p className="text-xs text-white/40 font-sans mt-1">
             Join groups centered around history, folklore, startups, or specific Indian states.
           </p>
@@ -129,9 +131,7 @@ export default function GroupsPage() {
               key={s.id}
               onClick={() => setSort(s.id)}
               className={`px-3 py-1.5 text-[9px] font-sans font-bold uppercase tracking-widest transition-colors ${
-                sort === s.id
-                  ? "bg-white/8 text-white"
-                  : "text-white/40 hover:text-white/70"
+                sort === s.id ? "bg-white/8 text-white" : "text-white/40 hover:text-white/70"
               }`}
             >
               {s.label}

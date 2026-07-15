@@ -32,8 +32,8 @@ export const Route = createFileRoute("/api/newsletter/subscribe")({
               data: { verificationToken: token, language },
             });
 
-            void sendVerificationEmail(email, token, language).catch(err =>
-              console.error("[Newsletter Subscribe API] Failed to resend verification email:", err)
+            void sendVerificationEmail(email, token, language).catch((err) =>
+              console.error("[Newsletter Subscribe API] Failed to resend verification email:", err),
             );
 
             return json({ success: true, message: "Verification link resent." });
@@ -50,8 +50,8 @@ export const Route = createFileRoute("/api/newsletter/subscribe")({
             },
           });
 
-          void sendVerificationEmail(email, verificationToken, language).catch(err =>
-            console.error("[Newsletter Subscribe API] Failed to send verification email:", err)
+          void sendVerificationEmail(email, verificationToken, language).catch((err) =>
+            console.error("[Newsletter Subscribe API] Failed to send verification email:", err),
           );
 
           return json({

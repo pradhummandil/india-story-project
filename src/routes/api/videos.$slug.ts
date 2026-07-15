@@ -70,7 +70,8 @@ export const Route = createFileRoute("/api/videos/$slug")({
             provider: video.provider,
             duration: video.duration,
             viewCount: video.viewCount + 1,
-            thumbnail: video.thumbnail || `https://img.youtube.com/vi/${video.videoUrl}/hqdefault.jpg`,
+            thumbnail:
+              video.thumbnail || `https://img.youtube.com/vi/${video.videoUrl}/hqdefault.jpg`,
             authorName: video.author?.name || "India Story Project Bureau",
             authorBio: video.author?.bio,
             authorAvatar: video.author?.avatar,

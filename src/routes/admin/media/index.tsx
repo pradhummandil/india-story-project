@@ -1,6 +1,16 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
-import { Upload, Copy, Trash2, Search, CheckCircle, X, ExternalLink, RefreshCw, AlertCircle } from "lucide-react";
+import {
+  Upload,
+  Copy,
+  Trash2,
+  Search,
+  CheckCircle,
+  X,
+  ExternalLink,
+  RefreshCw,
+  AlertCircle,
+} from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { useAuthStore } from "@/lib/auth-store";
 import { Input } from "@/components/ui/input";
@@ -264,7 +274,9 @@ export default function AdminMediaPage() {
                 </div>
               </div>
               <div className="absolute bottom-0 inset-x-0 px-2 py-1 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity">
-                <p className="text-[10px] text-white/60 font-sans truncate">{file.name.replace("india_story_project/", "")}</p>
+                <p className="text-[10px] text-white/60 font-sans truncate">
+                  {file.name.replace("india_story_project/", "")}
+                </p>
               </div>
             </div>
           ))}
@@ -305,8 +317,12 @@ export default function AdminMediaPage() {
             </div>
             <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="min-w-0">
-                <p className="text-xs text-white/40 font-sans uppercase font-bold tracking-wider">Public ID / Name</p>
-                <p className="text-sm text-white/80 font-mono truncate mt-0.5">{previewImage.name}</p>
+                <p className="text-xs text-white/40 font-sans uppercase font-bold tracking-wider">
+                  Public ID / Name
+                </p>
+                <p className="text-sm text-white/80 font-mono truncate mt-0.5">
+                  {previewImage.name}
+                </p>
               </div>
               <div className="flex gap-2 shrink-0">
                 <Button

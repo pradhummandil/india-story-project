@@ -75,7 +75,12 @@ function normalizeThemes(payload: ThemePayload): readonly string[] {
   } else {
     list = payload
       .map((entry) => {
-        if (typeof entry === "object" && entry && "name" in entry && typeof entry.name === "string") {
+        if (
+          typeof entry === "object" &&
+          entry &&
+          "name" in entry &&
+          typeof entry.name === "string"
+        ) {
           return entry.name;
         }
         return undefined;

@@ -41,7 +41,7 @@ export const Route = createFileRoute("/api/admin/newsletter")({
             });
 
             const headers = ["ID", "Email", "Verified", "Status", "Language", "CreatedAt"];
-            const rows = subscribers.map(sub => [
+            const rows = subscribers.map((sub) => [
               sub.id,
               sub.email,
               sub.verified ? "Yes" : "No",
@@ -50,7 +50,10 @@ export const Route = createFileRoute("/api/admin/newsletter")({
               sub.createdAt.toISOString(),
             ]);
 
-            const csvContent = [headers.join(","), ...rows.map(r => r.map(val => `"${val}"`).join(","))].join("\n");
+            const csvContent = [
+              headers.join(","),
+              ...rows.map((r) => r.map((val) => `"${val}"`).join(",")),
+            ].join("\n");
 
             return new Response(csvContent, {
               status: 200,

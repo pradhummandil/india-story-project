@@ -24,7 +24,10 @@ export const Route = createFileRoute("/api/comments")({
           // If no storyId is passed, check authentication and return user's comments
           const user = await authenticate(request);
           if (!user) {
-            return json({ error: "storyId is required or User must be authenticated" }, { status: 400 });
+            return json(
+              { error: "storyId is required or User must be authenticated" },
+              { status: 400 },
+            );
           }
 
           try {
@@ -126,7 +129,10 @@ export const Route = createFileRoute("/api/comments")({
         const ip = getClientIp(request);
         const { allowed } = checkRateLimit(ip, 10, 60 * 1000); // 10 comments per minute limit
         if (!allowed) {
-          return json({ error: "Too many comments. Please wait a minute before posting again." }, { status: 429 });
+          return json(
+            { error: "Too many comments. Please wait a minute before posting again." },
+            { status: 429 },
+          );
         }
 
         try {
@@ -186,7 +192,9 @@ export const Route = createFileRoute("/api/comments")({
                 totalXP: { increment: 5 },
               },
             });
-          } catch {/* ignore stats upsert errors */}
+          } catch {
+            /* ignore stats upsert errors */
+          }
 
           return json({
             comment: {

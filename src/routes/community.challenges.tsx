@@ -54,7 +54,8 @@ export default function ChallengesPage() {
   }, [statusTab]);
 
   // Find a featured active challenge
-  const featured = statusTab === "active" ? challenges.find((c) => c.isFeatured) || challenges[0] : null;
+  const featured =
+    statusTab === "active" ? challenges.find((c) => c.isFeatured) || challenges[0] : null;
   const listChallenges = featured ? challenges.filter((c) => c.id !== featured.id) : challenges;
 
   return (
@@ -62,9 +63,12 @@ export default function ChallengesPage() {
       {/* ── Challenges Header ── */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/5 pb-5">
         <div>
-          <h1 className="font-display text-2xl font-bold text-white">Editorial Writing Challenges</h1>
+          <h1 className="font-display text-2xl font-bold text-white">
+            Editorial Writing Challenges
+          </h1>
           <p className="text-xs text-white/40 font-sans mt-1">
-            Participate in storytelling challenges. Document unsung heroes to win unique profile badges, XP, and grants.
+            Participate in storytelling challenges. Document unsung heroes to win unique profile
+            badges, XP, and grants.
           </p>
         </div>
       </div>

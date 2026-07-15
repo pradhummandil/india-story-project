@@ -68,21 +68,34 @@ export const Route = createFileRoute("/api/admin/newsroom/dashboard")({
           });
 
           // 3. Bucket stories based on status and metadata
-          const pendingReview = stories.filter((s: any) => s.status === StoryStatus.Pending).map(mapStory);
+          const pendingReview = stories
+            .filter((s: any) => s.status === StoryStatus.Pending)
+            .map(mapStory);
 
-          const scheduled = stories.filter(
-            (s: any) => s.scheduledAt && new Date(s.scheduledAt) > now
-          ).map(mapStory);
+          const scheduled = stories
+            .filter((s: any) => s.scheduledAt && new Date(s.scheduledAt) > now)
+            .map(mapStory);
 
-          const publishedToday = stories.filter(
-            (s: any) => s.status === StoryStatus.Published && s.publishedAt && new Date(s.publishedAt) >= startOfToday
-          ).map(mapStory);
+          const publishedToday = stories
+            .filter(
+              (s: any) =>
+                s.status === StoryStatus.Published &&
+                s.publishedAt &&
+                new Date(s.publishedAt) >= startOfToday,
+            )
+            .map(mapStory);
 
-          const drafts = stories.filter(
-            (s: any) => s.status === StoryStatus.Draft && (!s.scheduledAt || new Date(s.scheduledAt) <= now)
-          ).map(mapStory);
+          const drafts = stories
+            .filter(
+              (s: any) =>
+                s.status === StoryStatus.Draft &&
+                (!s.scheduledAt || new Date(s.scheduledAt) <= now),
+            )
+            .map(mapStory);
 
-          const archived = stories.filter((s: any) => s.status === StoryStatus.Archived).map(mapStory);
+          const archived = stories
+            .filter((s: any) => s.status === StoryStatus.Archived)
+            .map(mapStory);
 
           const topPerforming = [...stories]
             .sort((a: any, b: any) => b.viewCount - a.viewCount)
@@ -90,15 +103,19 @@ export const Route = createFileRoute("/api/admin/newsroom/dashboard")({
             .map(mapStory);
 
           // Needs Fact Check: has factCheckerId assigned in workflow but status is not Published
-          const needsFactCheck = stories.filter((s: any) => {
-            const wf = storyWorkflows[s.id];
-            return wf && wf.factCheckerId && s.status !== StoryStatus.Published;
-          }).map(mapStory);
+          const needsFactCheck = stories
+            .filter((s: any) => {
+              const wf = storyWorkflows[s.id];
+              return wf && wf.factCheckerId && s.status !== StoryStatus.Published;
+            })
+            .map(mapStory);
 
           // Needs SEO: missing seoTitle or seoDescription, or empty keyword settings
-          const needsSEO = stories.filter(
-            (s: any) => s.status !== StoryStatus.Archived && (!s.seoTitle || !s.seoDescription)
-          ).map(mapStory);
+          const needsSEO = stories
+            .filter(
+              (s: any) => s.status !== StoryStatus.Archived && (!s.seoTitle || !s.seoDescription),
+            )
+            .map(mapStory);
 
           return json({
             pendingReview,
@@ -112,7 +129,10 @@ export const Route = createFileRoute("/api/admin/newsroom/dashboard")({
           });
         } catch (e: any) {
           console.error("[Newsroom Dashboard] GET error:", e);
-          return json({ error: e.message || "Failed to load dashboard statistics" }, { status: 500 });
+          return json(
+            { error: e.message || "Failed to load dashboard statistics" },
+            { status: 500 },
+          );
         }
       },
     },

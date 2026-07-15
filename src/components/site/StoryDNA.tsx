@@ -53,12 +53,9 @@ export function StoryDNA() {
     [selectedId, stories],
   );
 
-  if (!story) {
-    return null;
-  }
-
-  const dna = deriveDNA(story);
-  const connections = getConnections(story.id, 6);
+  const connections = useMemo(() => {
+    return story ? getConnections(story.id, 6) : [];
+  }, [story]);
 
   // Position nodes around a circle
   const nodes = useMemo(() => {
@@ -72,6 +69,12 @@ export function StoryDNA() {
       };
     });
   }, [connections]);
+
+  if (!story) {
+    return null;
+  }
+
+  const dna = deriveDNA(story);
 
   return (
     <section className="container mx-auto px-6 py-16 md:py-24">

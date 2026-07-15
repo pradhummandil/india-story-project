@@ -87,14 +87,14 @@ export default function EditStoryPage() {
 
         // Initial cover image & gallery images
         if (fullStory.images && fullStory.images.length > 0) {
-          const cover = fullStory.images.find(img => img.heroImage);
-          const others = fullStory.images.filter(img => !img.heroImage);
+          const cover = fullStory.images.find((img) => img.heroImage);
+          const others = fullStory.images.filter((img) => !img.heroImage);
           if (cover) {
             setCoverImageUrl(cover.imageUrl);
           } else {
             setCoverImageUrl(fullStory.images[0].imageUrl);
           }
-          setAdditionalImages(others.map(img => img.imageUrl));
+          setAdditionalImages(others.map((img) => img.imageUrl));
         }
       })
       .catch(console.error)
@@ -553,7 +553,9 @@ export default function EditStoryPage() {
                       />
                       <button
                         type="button"
-                        onClick={() => setAdditionalImages(prev => prev.filter((_, i) => i !== idx))}
+                        onClick={() =>
+                          setAdditionalImages((prev) => prev.filter((_, i) => i !== idx))
+                        }
                         className="absolute top-1.5 right-1.5 p-1 rounded-full bg-black/80 hover:bg-black text-white hover:text-red-400 transition-colors"
                         title="Delete Image"
                       >

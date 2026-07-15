@@ -1,6 +1,17 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Users, Award, MessageSquare, Plus, Send, Trophy, Flame, ChevronRight, Zap, Play } from "lucide-react";
+import {
+  Users,
+  Award,
+  MessageSquare,
+  Plus,
+  Send,
+  Trophy,
+  Flame,
+  ChevronRight,
+  Zap,
+  Play,
+} from "lucide-react";
 import { SiteLayout } from "@/components/site/Layout";
 import { useAuthStore } from "@/lib/auth-store";
 import { Button } from "@/components/ui/button";
@@ -10,7 +21,11 @@ export const Route = createFileRoute("/join")({
   head: () => ({
     meta: [
       { title: "Community Hub — India Story Project" },
-      { name: "description", content: "Join the India Story Project readers and contributors community. Discussions, leaderboards, and challenges." },
+      {
+        name: "description",
+        content:
+          "Join the India Story Project readers and contributors community. Discussions, leaderboards, and challenges.",
+      },
     ],
   }),
   component: CommunityHubPage,
@@ -167,7 +182,9 @@ function CommunityHubPage() {
           });
         // Update topics local count
         setTopics((p) =>
-          p.map((t) => (t.id === selectedTopic.id ? { ...t, repliesCount: t.repliesCount + 1 } : t))
+          p.map((t) =>
+            t.id === selectedTopic.id ? { ...t, repliesCount: t.repliesCount + 1 } : t,
+          ),
         );
       }
     } catch (err) {
@@ -190,7 +207,8 @@ function CommunityHubPage() {
               Gather, Share, <span className="text-primary italic">Co-Create.</span>
             </h1>
             <p className="mt-4 text-muted-foreground text-sm md:text-base leading-relaxed font-sans font-medium">
-              Join discussion forums, participate in editorial challenges, unlock verification badges, and explore our reader leaderboard.
+              Join discussion forums, participate in editorial challenges, unlock verification
+              badges, and explore our reader leaderboard.
             </p>
           </div>
         </div>
@@ -206,8 +224,13 @@ function CommunityHubPage() {
 
               {/* Start new topic form */}
               {user ? (
-                <form onSubmit={handleCreateTopic} className="space-y-3 bg-card/65 p-4 border border-border/50">
-                  <p className="text-[10px] uppercase font-bold tracking-wider text-gold font-sans">Start a new thread</p>
+                <form
+                  onSubmit={handleCreateTopic}
+                  className="space-y-3 bg-card/65 p-4 border border-border/50"
+                >
+                  <p className="text-[10px] uppercase font-bold tracking-wider text-gold font-sans">
+                    Start a new thread
+                  </p>
                   <Input
                     required
                     value={newTitle}
@@ -245,11 +268,16 @@ function CommunityHubPage() {
               {loading ? (
                 <div className="space-y-4">
                   {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="h-20 bg-white/5 animate-pulse rounded-none border border-border/30" />
+                    <div
+                      key={i}
+                      className="h-20 bg-white/5 animate-pulse rounded-none border border-border/30"
+                    />
                   ))}
                 </div>
               ) : topics.length === 0 ? (
-                <p className="text-xs text-muted-foreground font-sans italic">No discussion threads active yet. Be the first to start one!</p>
+                <p className="text-xs text-muted-foreground font-sans italic">
+                  No discussion threads active yet. Be the first to start one!
+                </p>
               ) : (
                 <div className="space-y-4">
                   {topics.map((t) => (
@@ -269,8 +297,12 @@ function CommunityHubPage() {
                         </div>
                       </div>
                       <div className="bg-white/5 border border-white/10 px-3 py-1.5 text-center shrink-0">
-                        <span className="text-white text-xs block font-mono font-bold">{t.repliesCount}</span>
-                        <span className="text-[7px] text-muted-foreground uppercase font-bold tracking-wider font-sans">Replies</span>
+                        <span className="text-white text-xs block font-mono font-bold">
+                          {t.repliesCount}
+                        </span>
+                        <span className="text-[7px] text-muted-foreground uppercase font-bold tracking-wider font-sans">
+                          Replies
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -295,7 +327,9 @@ function CommunityHubPage() {
                         <span className="text-muted-foreground">Ends {c.deadline}</span>
                       </div>
                       <h4 className="font-display font-bold text-md text-white">{c.title}</h4>
-                      <p className="text-xs text-muted-foreground/90 font-sans leading-relaxed">{c.desc}</p>
+                      <p className="text-xs text-muted-foreground/90 font-sans leading-relaxed">
+                        {c.desc}
+                      </p>
                     </div>
                     <div className="mt-4 pt-3 border-t border-border/40">
                       <Link
@@ -336,7 +370,11 @@ function CommunityHubPage() {
                         {index + 1}.
                       </span>
                       {lb.avatarUrl ? (
-                        <img src={lb.avatarUrl} alt={lb.name} className="size-8 rounded-full object-cover border border-white/10" />
+                        <img
+                          src={lb.avatarUrl}
+                          alt={lb.name}
+                          className="size-8 rounded-full object-cover border border-white/10"
+                        />
                       ) : (
                         <div className="size-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold text-gold uppercase shrink-0">
                           {lb.name[0]}
@@ -348,7 +386,9 @@ function CommunityHubPage() {
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <span className="text-gold text-xs font-mono font-bold block">{lb.totalXP} XP</span>
+                      <span className="text-gold text-xs font-mono font-bold block">
+                        {lb.totalXP} XP
+                      </span>
                       {lb.streak > 0 && (
                         <span className="text-[8px] text-primary font-bold flex items-center gap-0.5 justify-end">
                           <Flame className="size-2.5 fill-primary" /> {lb.streak}d
@@ -377,8 +417,12 @@ function CommunityHubPage() {
 
               {/* Topic Post Header */}
               <div className="border-b border-border/40 pb-4 mb-4 pr-8">
-                <p className="text-[10px] uppercase font-bold tracking-widest text-gold font-sans">Community Forum</p>
-                <h3 className="font-display text-xl font-bold text-white mt-1">{selectedTopic.title}</h3>
+                <p className="text-[10px] uppercase font-bold tracking-widest text-gold font-sans">
+                  Community Forum
+                </p>
+                <h3 className="font-display text-xl font-bold text-white mt-1">
+                  {selectedTopic.title}
+                </h3>
                 <p className="text-xs text-muted-foreground mt-2 leading-relaxed whitespace-pre-line bg-white/5 p-3 font-sans">
                   {selectedTopic.content}
                 </p>
@@ -391,7 +435,9 @@ function CommunityHubPage() {
 
               {/* Replies list scroll block */}
               <div className="flex-1 overflow-y-auto space-y-4 pr-1 mb-4 font-sans text-xs">
-                <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-2">Replies</p>
+                <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-2">
+                  Replies
+                </p>
                 {repliesLoading ? (
                   <div className="space-y-2">
                     {Array.from({ length: 3 }).map((_, i) => (
@@ -399,13 +445,22 @@ function CommunityHubPage() {
                     ))}
                   </div>
                 ) : replies.length === 0 ? (
-                  <p className="italic text-muted-foreground/80 py-4 text-center">No replies posted to this thread yet.</p>
+                  <p className="italic text-muted-foreground/80 py-4 text-center">
+                    No replies posted to this thread yet.
+                  </p>
                 ) : (
                   <div className="space-y-3">
                     {replies.map((post) => (
-                      <div key={post.id} className="border border-border/40 bg-card/65 p-3 flex gap-3 items-start">
+                      <div
+                        key={post.id}
+                        className="border border-border/40 bg-card/65 p-3 flex gap-3 items-start"
+                      >
                         {post.authorAvatar ? (
-                          <img src={post.authorAvatar} alt={post.authorName} className="size-8 rounded-full object-cover shrink-0" />
+                          <img
+                            src={post.authorAvatar}
+                            alt={post.authorName}
+                            className="size-8 rounded-full object-cover shrink-0"
+                          />
                         ) : (
                           <div className="size-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold text-gold uppercase shrink-0">
                             {post.authorName[0]}
@@ -413,11 +468,19 @@ function CommunityHubPage() {
                         )}
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-white text-[11px]">{post.authorName}</span>
-                            <span className="text-[8px] bg-white/5 border border-white/10 px-1 text-gold">Lvl {post.authorLevel}</span>
-                            <span className="text-[9px] text-muted-foreground">{new Date(post.createdAt).toLocaleDateString()}</span>
+                            <span className="font-bold text-white text-[11px]">
+                              {post.authorName}
+                            </span>
+                            <span className="text-[8px] bg-white/5 border border-white/10 px-1 text-gold">
+                              Lvl {post.authorLevel}
+                            </span>
+                            <span className="text-[9px] text-muted-foreground">
+                              {new Date(post.createdAt).toLocaleDateString()}
+                            </span>
                           </div>
-                          <p className="text-xs text-muted-foreground/90 mt-1 leading-relaxed whitespace-pre-line">{post.content}</p>
+                          <p className="text-xs text-muted-foreground/90 mt-1 leading-relaxed whitespace-pre-line">
+                            {post.content}
+                          </p>
                         </div>
                       </div>
                     ))}
@@ -427,7 +490,10 @@ function CommunityHubPage() {
 
               {/* Reply form */}
               {user ? (
-                <form onSubmit={handleAddReply} className="flex gap-2 pt-4 border-t border-border/40 shrink-0">
+                <form
+                  onSubmit={handleAddReply}
+                  className="flex gap-2 pt-4 border-t border-border/40 shrink-0"
+                >
                   <Input
                     required
                     value={newReply}

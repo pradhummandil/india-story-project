@@ -3,7 +3,8 @@ import { json } from "@/routes/api/-_utils";
 import { prisma } from "@/lib/repositories/prisma.server";
 import { supabase } from "@/lib/supabase-client";
 
-const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800&auto=format&fit=crop";
+const FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800&auto=format&fit=crop";
 
 async function authenticate(request: Request) {
   const authHeader = request.headers.get("Authorization");
@@ -47,8 +48,7 @@ export const Route = createFileRoute("/api/bookmarks")({
           const stories = bookmarks.map((b) => {
             const s = b.story;
             const image =
-              (s.images as any[])?.find((img) => img.type === "heroImage")?.url ??
-              FALLBACK_IMAGE;
+              (s.images as any[])?.find((img) => img.type === "heroImage")?.url ?? FALLBACK_IMAGE;
             return {
               bookmarkId: b.id,
               bookmarkedAt: b.createdAt,

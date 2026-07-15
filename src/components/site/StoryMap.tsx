@@ -350,7 +350,12 @@ export function StoryMap() {
                   </p>
 
                   <div className="flex items-center justify-between text-[9px] text-muted-foreground font-bold uppercase tracking-wider mb-3">
-                    <span>{Array.isArray(active.stories[0]?.themes) && active.stories[0].themes.length > 0 ? active.stories[0].themes[0] : ""}</span>
+                    <span>
+                      {Array.isArray(active.stories[0]?.themes) &&
+                      active.stories[0].themes.length > 0
+                        ? active.stories[0].themes[0]
+                        : ""}
+                    </span>
                     <span>{active.stories[0]?.readTime || "4 min read"}</span>
                   </div>
 

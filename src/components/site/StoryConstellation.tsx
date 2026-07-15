@@ -69,11 +69,9 @@ export function StoryConstellation() {
         id: s.id || s.slug || `c-${idx}`,
         title: s.title,
         state: s.region,
-        category: (
-          Array.isArray((s as any).themes) && (s as any).themes.length > 0
-            ? (s as any).themes[0]
-            : (s as any).category ?? "Culture"
-        ) as Node["category"],
+        category: (Array.isArray((s as any).themes) && (s as any).themes.length > 0
+          ? (s as any).themes[0]
+          : ((s as any).category ?? "Culture")) as Node["category"],
 
         summary: s.excerpt,
         x,

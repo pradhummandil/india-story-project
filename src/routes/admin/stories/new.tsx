@@ -549,7 +549,9 @@ export default function NewStoryPage() {
                       />
                       <button
                         type="button"
-                        onClick={() => setAdditionalImages(prev => prev.filter((_, i) => i !== idx))}
+                        onClick={() =>
+                          setAdditionalImages((prev) => prev.filter((_, i) => i !== idx))
+                        }
                         className="absolute top-1.5 right-1.5 p-1 rounded-full bg-black/80 hover:bg-black text-white hover:text-red-400 transition-colors"
                         title="Delete Image"
                       >
@@ -580,106 +582,106 @@ export default function NewStoryPage() {
               />
             </div>
 
-             {/* Options */}
-             <div className="bg-[#161616] border border-white/10 rounded-sm p-5 space-y-4">
-               <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-white/40">
-                 Options
-               </h3>
-               {[
-                 {
-                   label: "Featured Story",
-                   value: featured,
-                   set: setFeatured,
-                   id: "story-featured",
-                 },
-                 {
-                   label: "Hero of the Day",
-                   value: heroOfTheDay,
-                   set: setHeroOfTheDay,
-                   id: "story-hero-of-day",
-                 },
-                 {
-                   label: "Homepage Slideshow",
-                   value: homepageSlideshow,
-                   set: setHomepageSlideshow,
-                   id: "story-homepage-slideshow",
-                 },
-                 {
-                   label: "Pinned Story",
-                   value: pinnedStory,
-                   set: setPinnedStory,
-                   id: "story-pinned",
-                 },
-                 {
-                   label: "Trending Story",
-                   value: trendingStory,
-                   set: setTrendingStory,
-                   id: "story-trending",
-                 },
-                 {
-                   label: "Editor's Pick",
-                   value: editorsPick,
-                   set: setEditorsPick,
-                   id: "story-editors-pick",
-                 },
-               ].map(({ label, value, set, id }) => (
-                 <label key={id} className="flex items-center justify-between cursor-pointer">
-                   <span className="text-sm font-sans text-white/60">{label}</span>
-                   <button
-                     id={id}
-                     type="button"
-                     onClick={() => set((v) => !v)}
-                     className={`relative w-10 h-5 rounded-full transition-colors ${value ? "bg-primary" : "bg-white/10"}`}
-                   >
-                     <span
-                       className={`absolute top-0.5 size-4 rounded-full bg-white transition-all ${value ? "left-5" : "left-0.5"}`}
-                     />
-                   </button>
-                 </label>
-               ))}
+            {/* Options */}
+            <div className="bg-[#161616] border border-white/10 rounded-sm p-5 space-y-4">
+              <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-white/40">
+                Options
+              </h3>
+              {[
+                {
+                  label: "Featured Story",
+                  value: featured,
+                  set: setFeatured,
+                  id: "story-featured",
+                },
+                {
+                  label: "Hero of the Day",
+                  value: heroOfTheDay,
+                  set: setHeroOfTheDay,
+                  id: "story-hero-of-day",
+                },
+                {
+                  label: "Homepage Slideshow",
+                  value: homepageSlideshow,
+                  set: setHomepageSlideshow,
+                  id: "story-homepage-slideshow",
+                },
+                {
+                  label: "Pinned Story",
+                  value: pinnedStory,
+                  set: setPinnedStory,
+                  id: "story-pinned",
+                },
+                {
+                  label: "Trending Story",
+                  value: trendingStory,
+                  set: setTrendingStory,
+                  id: "story-trending",
+                },
+                {
+                  label: "Editor's Pick",
+                  value: editorsPick,
+                  set: setEditorsPick,
+                  id: "story-editors-pick",
+                },
+              ].map(({ label, value, set, id }) => (
+                <label key={id} className="flex items-center justify-between cursor-pointer">
+                  <span className="text-sm font-sans text-white/60">{label}</span>
+                  <button
+                    id={id}
+                    type="button"
+                    onClick={() => set((v) => !v)}
+                    className={`relative w-10 h-5 rounded-full transition-colors ${value ? "bg-primary" : "bg-white/10"}`}
+                  >
+                    <span
+                      className={`absolute top-0.5 size-4 rounded-full bg-white transition-all ${value ? "left-5" : "left-0.5"}`}
+                    />
+                  </button>
+                </label>
+              ))}
 
-               {homepageSlideshow && (
-                 <Field label="Slideshow Order">
-                   <Input
-                     type="number"
-                     value={slideshowOrder}
-                     onChange={(e) => {
-                       const val = parseInt(e.target.value, 10);
-                       setSlideshowOrder(isNaN(val) ? 0 : val);
-                     }}
-                     className={inputCls}
-                     id="story-slideshow-order"
-                   />
-                 </Field>
-               )}
+              {homepageSlideshow && (
+                <Field label="Slideshow Order">
+                  <Input
+                    type="number"
+                    value={slideshowOrder}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
+                      setSlideshowOrder(isNaN(val) ? 0 : val);
+                    }}
+                    className={inputCls}
+                    id="story-slideshow-order"
+                  />
+                </Field>
+              )}
 
-               <Field label="SEO Priority (Float 0.0 - 1.0)">
-                 <Input
-                   type="number"
-                   step="0.1"
-                   value={seoPriority}
-                   onChange={(e) => {
-                     const val = parseFloat(e.target.value);
-                     setSeoPriority(isNaN(val) ? 0.5 : val);
-                   }}
-                   className={inputCls}
-                   id="story-seo-priority"
-                 />
-               </Field>
+              <Field label="SEO Priority (Float 0.0 - 1.0)">
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={seoPriority}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    setSeoPriority(isNaN(val) ? 0.5 : val);
+                  }}
+                  className={inputCls}
+                  id="story-seo-priority"
+                />
+              </Field>
 
-               <Field label="Reading Priority (Integer)">
-                 <Input
-                   type="number"
-                   value={readingPriority}
-                   onChange={(e) => {
-                     const val = parseInt(e.target.value, 10);
-                     setReadingPriority(isNaN(val) ? 0 : val);
-                   }}
-                   className={inputCls}
-                   id="story-reading-priority"
-                 />
-               </Field>
-             </div>
+              <Field label="Reading Priority (Integer)">
+                <Input
+                  type="number"
+                  value={readingPriority}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value, 10);
+                    setReadingPriority(isNaN(val) ? 0 : val);
+                  }}
+                  className={inputCls}
+                  id="story-reading-priority"
+                />
+              </Field>
+            </div>
           </div>
         </div>
       </div>

@@ -4,11 +4,19 @@ import { json, authenticate } from "@/routes/api/-_utils";
 
 const db = prisma as any;
 
-const ALLOWED_ACTIONS = ["pin", "unpin", "lock", "unlock", "mark_spam", "restore", "delete"] as const;
+const ALLOWED_ACTIONS = [
+  "pin",
+  "unpin",
+  "lock",
+  "unlock",
+  "mark_spam",
+  "restore",
+  "delete",
+] as const;
 const ALLOWED_TARGET_TYPES = ["topic", "post", "group", "challenge"] as const;
 
-type ModerationAction = typeof ALLOWED_ACTIONS[number];
-type TargetType = typeof ALLOWED_TARGET_TYPES[number];
+type ModerationAction = (typeof ALLOWED_ACTIONS)[number];
+type TargetType = (typeof ALLOWED_TARGET_TYPES)[number];
 
 export const Route = createFileRoute("/api/admin/community/moderate")({
   server: {
@@ -37,36 +45,39 @@ export const Route = createFileRoute("/api/admin/community/moderate")({
                 post: {
                   include: {
                     user: { select: { name: true, email: true } },
-                    topic: { select: { title: true } }
-                  }
-                }
+                    topic: { select: { title: true } },
+                  },
+                },
               },
-              orderBy: { createdAt: "desc" }
+              orderBy: { createdAt: "desc" },
             });
             return json({ reports });
           } else if (type === "spam") {
             const spamTopics = await db.discussionTopic.findMany({
               where: { isSpam: true },
               include: { user: { select: { name: true, email: true } } },
-              orderBy: { updatedAt: "desc" }
+              orderBy: { updatedAt: "desc" },
             });
             const spamPosts = await db.discussionPost.findMany({
               where: { isSpam: true },
-              include: { user: { select: { name: true, email: true } }, topic: { select: { title: true } } },
-              orderBy: { updatedAt: "desc" }
+              include: {
+                user: { select: { name: true, email: true } },
+                topic: { select: { title: true } },
+              },
+              orderBy: { updatedAt: "desc" },
             });
             return json({ spamTopics, spamPosts });
           } else if (type === "pinned") {
             const pinnedTopics = await db.discussionTopic.findMany({
               where: { isPinned: true },
               include: { user: { select: { name: true, email: true } }, category: true },
-              orderBy: { updatedAt: "desc" }
+              orderBy: { updatedAt: "desc" },
             });
             return json({ pinnedTopics });
           } else if (type === "challenges") {
             const challenges = await db.storyChallenge.findMany({
               include: { _count: { select: { entries: true } } },
-              orderBy: { startAt: "desc" }
+              orderBy: { startAt: "desc" },
             });
             return json({ challenges });
           }
@@ -95,10 +106,16 @@ export const Route = createFileRoute("/api/admin/community/moderate")({
           const { action, targetType, targetId, reason } = body ?? {};
 
           if (!action || !ALLOWED_ACTIONS.includes(action as ModerationAction)) {
-            return json({ error: `Invalid action. Allowed: ${ALLOWED_ACTIONS.join(", ")}` }, { status: 400 });
+            return json(
+              { error: `Invalid action. Allowed: ${ALLOWED_ACTIONS.join(", ")}` },
+              { status: 400 },
+            );
           }
           if (!targetType || !ALLOWED_TARGET_TYPES.includes(targetType as TargetType)) {
-            return json({ error: `Invalid targetType. Allowed: ${ALLOWED_TARGET_TYPES.join(", ")}` }, { status: 400 });
+            return json(
+              { error: `Invalid targetType. Allowed: ${ALLOWED_TARGET_TYPES.join(", ")}` },
+              { status: 400 },
+            );
           }
           if (!targetId) {
             return json({ error: "targetId is required" }, { status: 400 });
@@ -144,9 +161,8 @@ export const Route = createFileRoute("/api/admin/community/moderate")({
                 updateData = { isSpam: true };
                 break;
               case "restore":
-                updateData = ttype === "topic" || ttype === "post"
-                  ? { isSpam: false }
-                  : { isActive: true };
+                updateData =
+                  ttype === "topic" || ttype === "post" ? { isSpam: false } : { isActive: true };
                 break;
             }
 

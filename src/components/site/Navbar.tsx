@@ -202,9 +202,7 @@ export function Navbar() {
           )}
 
           <Link to="/share-story" preload="intent" className="inline-flex">
-            <Button
-              className="bg-red-700 hover:bg-red-700 text-white font-sans uppercase tracking-[0.15em] text-[10px] font-bold h-9 px-5 rounded-full shadow-glow transition-all duration-300 hover:-translate-y-0.5 flex items-center"
-            >
+            <Button className="bg-red-700 hover:bg-red-700 text-white font-sans uppercase tracking-[0.15em] text-[10px] font-bold h-9 px-5 rounded-full shadow-glow transition-all duration-300 hover:-translate-y-0.5 flex items-center">
               <Sparkles className="size-3.5 mr-2 animate-pulse" />
               {lang === "hi" ? "अपनी कहानी साझा करें" : "Share Your Story"}
             </Button>

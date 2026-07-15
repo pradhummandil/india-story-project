@@ -21,7 +21,7 @@ export const Route = createFileRoute("/api/community/posts/$id/report")({
           if (!reason || !ALLOWED_REASONS.includes(reason)) {
             return json(
               { error: `Invalid reason. Allowed: ${ALLOWED_REASONS.join(", ")}` },
-              { status: 400 }
+              { status: 400 },
             );
           }
 

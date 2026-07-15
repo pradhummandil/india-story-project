@@ -195,7 +195,10 @@ export function CinematicHero() {
           {/* Metadata */}
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[10px] sm:text-xs uppercase tracking-[0.22em] font-sans font-bold text-gold">
             {(slide.themes || []).map((t, idx) => (
-              <span key={idx} className="bg-primary/25 backdrop-blur-sm px-3 py-1 border border-primary/20">
+              <span
+                key={idx}
+                className="bg-primary/25 backdrop-blur-sm px-3 py-1 border border-primary/20"
+              >
                 {t}
               </span>
             ))}
@@ -295,9 +298,7 @@ export function CinematicHero() {
             key={i}
             onClick={() => goTo(i, i > current ? 1 : -1)}
             className={`transition-all duration-300 rounded-full ${
-              i === current
-                ? "w-6 h-1.5 bg-gold"
-                : "w-1.5 h-1.5 bg-white/30 hover:bg-white/60"
+              i === current ? "w-6 h-1.5 bg-gold" : "w-1.5 h-1.5 bg-white/30 hover:bg-white/60"
             }`}
             aria-label={`Go to slide ${i + 1}`}
           />

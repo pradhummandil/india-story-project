@@ -73,8 +73,11 @@ export function ExploreIndia() {
       // Collect unique themes from all stories in this region
       const themesSet = new Set<string>();
       list.forEach((s: any) => {
-        const storyThemes: string[] = Array.isArray(s.themes) ? s.themes : 
-          (typeof s.category === "string" && s.category ? [s.category] : []);
+        const storyThemes: string[] = Array.isArray(s.themes)
+          ? s.themes
+          : typeof s.category === "string" && s.category
+            ? [s.category]
+            : [];
         storyThemes.forEach((t) => themesSet.add(t));
       });
       const categories = Array.from(themesSet).slice(0, 3);

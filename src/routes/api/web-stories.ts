@@ -11,7 +11,10 @@ export const Route = createFileRoute("/api/web-stories")({
       GET: async ({ request }) => {
         const url = new URL(request.url);
         const page = Math.max(1, parseInt(url.searchParams.get("page") || "1", 10));
-        const pageSize = Math.min(60, Math.max(1, parseInt(url.searchParams.get("pageSize") || "12", 10)));
+        const pageSize = Math.min(
+          60,
+          Math.max(1, parseInt(url.searchParams.get("pageSize") || "12", 10)),
+        );
 
         try {
           const [webStories, total] = await Promise.all([

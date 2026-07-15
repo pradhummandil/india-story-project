@@ -93,7 +93,10 @@ export const Route = createFileRoute("/api/admin/newsroom/ai-helper")({
 
             if (task === "scores" || task === "linguistics") {
               // Extract JSON from response if wrapped in markdown code blocks
-              const cleanJsonStr = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
+              const cleanJsonStr = rawText
+                .replace(/```json/g, "")
+                .replace(/```/g, "")
+                .trim();
               try {
                 const parsed = JSON.parse(cleanJsonStr);
                 return json(parsed);
@@ -117,11 +120,14 @@ export const Route = createFileRoute("/api/admin/newsroom/ai-helper")({
             });
             if (matches.length > 0) {
               return json({
-                resultText: `⚠️ Duplicate warning: Found ${matches.length} matching story titles in the database:\n` +
+                resultText:
+                  `⚠️ Duplicate warning: Found ${matches.length} matching story titles in the database:\n` +
                   matches.map((m: any) => `* [${m.title}](/stories/${m.slug})`).join("\n"),
               });
             }
-            return json({ resultText: "✅ No duplicate story titles found in the catalog database." });
+            return json({
+              resultText: "✅ No duplicate story titles found in the catalog database.",
+            });
           }
 
           // 2. Readability, SEO and Headline Scoring algorithm
@@ -142,7 +148,8 @@ export const Route = createFileRoute("/api/admin/newsroom/ai-helper")({
               headlineFeedback = "Title is too short. Try to add more descriptive details.";
             } else if (titleLen > 70) {
               headlineScore = 70;
-              headlineFeedback = "Title is too long. Keep under 60-70 characters for optimal display.";
+              headlineFeedback =
+                "Title is too long. Keep under 60-70 characters for optimal display.";
             }
 
             const excerptLen = excerpt.length;
@@ -184,21 +191,30 @@ export const Route = createFileRoute("/api/admin/newsroom/ai-helper")({
           if (task === "seo-title") {
             fallbackText = `${title} — Editorial Stories | India Story Project`;
           } else if (task === "meta") {
-            fallbackText = excerpt || "Discover inspiring chronicles of heritage, science, and heroes on India Story Project.";
+            fallbackText =
+              excerpt ||
+              "Discover inspiring chronicles of heritage, science, and heroes on India Story Project.";
           } else if (task === "keywords") {
             fallbackText = "india, history, heritage, culture, custom, chronicler";
           } else if (task === "slug") {
-            fallbackText = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+            fallbackText = title
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/(^-|-$)/g, "");
           } else if (task === "summary") {
             fallbackText = excerpt || "Editorial summary of the dispatch.";
           } else {
-            fallbackText = "Gemini API offline. Please configure process.env.GEMINI_API_KEY to enable smart AI revisions.";
+            fallbackText =
+              "Gemini API offline. Please configure process.env.GEMINI_API_KEY to enable smart AI revisions.";
           }
 
           return json({ resultText: fallbackText });
         } catch (error: any) {
           console.error("[AI Editorial Assistant API] Error:", error);
-          return json({ error: error.message || "Failed to process AI assistant task" }, { status: 500 });
+          return json(
+            { error: error.message || "Failed to process AI assistant task" },
+            { status: 500 },
+          );
         }
       },
     },

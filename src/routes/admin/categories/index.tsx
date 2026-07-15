@@ -11,6 +11,6 @@ function RedirectToThemes() {
   return null;
 }
 
-export const Route = createFileRoute("/admin/categories/")(({
+export const Route = createFileRoute("/admin/categories/")({
   component: RedirectToThemes,
-} as any));
+} as any);

@@ -50,15 +50,96 @@ export const Route = createFileRoute("/profile")({
 // ─── Badge definitions ─────────────────────────────────────────────────────
 
 const BADGE_DEFINITIONS = [
-  { slug: "explorer", name: "Explorer", icon: "🧭", color: "#C8A96A", desc: "Read 5 stories", threshold: 5, field: "storiesRead", rarity: "common" },
-  { slug: "researcher", name: "Researcher", icon: "🔬", color: "#6AB4C8", desc: "Read 20 stories", threshold: 20, field: "storiesRead", rarity: "common" },
-  { slug: "historian", name: "Historian", icon: "📜", color: "#8B7355", desc: "Read 50 stories", threshold: 50, field: "storiesRead", rarity: "rare" },
-  { slug: "story-hunter", name: "Story Hunter", icon: "🎯", color: "#C86A6A", desc: "Read 100 stories", threshold: 100, field: "storiesRead", rarity: "rare" },
-  { slug: "top-reader", name: "Top Reader", icon: "📚", color: "#8B0000", desc: "Read 200 stories", threshold: 200, field: "storiesRead", rarity: "epic" },
-  { slug: "streak-7", name: "Week Warrior", icon: "🔥", color: "#FF6B35", desc: "7-day reading streak", threshold: 7, field: "readingStreak", rarity: "common" },
-  { slug: "streak-30", name: "Monthly Legend", icon: "⚡", color: "#FFB800", desc: "30-day reading streak", threshold: 30, field: "readingStreak", rarity: "epic" },
-  { slug: "bookmarker", name: "Curator", icon: "🔖", color: "#6AC8A9", desc: "Bookmark 10 stories", threshold: 10, field: "bookmarksCount", rarity: "common" },
-  { slug: "legend", name: "Legend", icon: "👑", color: "#C8A96A", desc: "Reach 1000 XP", threshold: 1000, field: "totalXP", rarity: "legendary" },
+  {
+    slug: "explorer",
+    name: "Explorer",
+    icon: "🧭",
+    color: "#C8A96A",
+    desc: "Read 5 stories",
+    threshold: 5,
+    field: "storiesRead",
+    rarity: "common",
+  },
+  {
+    slug: "researcher",
+    name: "Researcher",
+    icon: "🔬",
+    color: "#6AB4C8",
+    desc: "Read 20 stories",
+    threshold: 20,
+    field: "storiesRead",
+    rarity: "common",
+  },
+  {
+    slug: "historian",
+    name: "Historian",
+    icon: "📜",
+    color: "#8B7355",
+    desc: "Read 50 stories",
+    threshold: 50,
+    field: "storiesRead",
+    rarity: "rare",
+  },
+  {
+    slug: "story-hunter",
+    name: "Story Hunter",
+    icon: "🎯",
+    color: "#C86A6A",
+    desc: "Read 100 stories",
+    threshold: 100,
+    field: "storiesRead",
+    rarity: "rare",
+  },
+  {
+    slug: "top-reader",
+    name: "Top Reader",
+    icon: "📚",
+    color: "#8B0000",
+    desc: "Read 200 stories",
+    threshold: 200,
+    field: "storiesRead",
+    rarity: "epic",
+  },
+  {
+    slug: "streak-7",
+    name: "Week Warrior",
+    icon: "🔥",
+    color: "#FF6B35",
+    desc: "7-day reading streak",
+    threshold: 7,
+    field: "readingStreak",
+    rarity: "common",
+  },
+  {
+    slug: "streak-30",
+    name: "Monthly Legend",
+    icon: "⚡",
+    color: "#FFB800",
+    desc: "30-day reading streak",
+    threshold: 30,
+    field: "readingStreak",
+    rarity: "epic",
+  },
+  {
+    slug: "bookmarker",
+    name: "Curator",
+    icon: "🔖",
+    color: "#6AC8A9",
+    desc: "Bookmark 10 stories",
+    threshold: 10,
+    field: "bookmarksCount",
+    rarity: "common",
+  },
+  {
+    slug: "legend",
+    name: "Legend",
+    icon: "👑",
+    color: "#C8A96A",
+    desc: "Reach 1000 XP",
+    threshold: 1000,
+    field: "totalXP",
+    rarity: "legendary",
+  },
 ];
 
 const RARITY_COLORS: Record<string, string> = {
@@ -172,7 +253,7 @@ function ProfilePage() {
         setContinueCount(d.continueCount ?? 0);
         setHistoryCount(d.historyCount ?? 0);
         setSubmissionsCount(d.submissionsCount ?? 0);
-        
+
         if (d.userProfile) {
           setFavTheme(d.userProfile.favoriteTheme || "dark");
           setFavState(d.userProfile.favoriteState || "en-normal");
@@ -263,7 +344,9 @@ function ProfilePage() {
           .then((d) => {
             if (d.progress) {
               setProgressList(d.progress);
-              setContinueCount(d.progress.filter((p: any) => !p.completed && p.progressPercent > 0).length);
+              setContinueCount(
+                d.progress.filter((p: any) => !p.completed && p.progressPercent > 0).length,
+              );
               setHistoryCount(d.progress.length);
             }
           });
@@ -327,7 +410,7 @@ function ProfilePage() {
 
   const earnedBadges = BADGE_DEFINITIONS.filter((b) => {
     if (!stats) return false;
-    const val = stats[b.field as keyof UserStats] as number ?? 0;
+    const val = (stats[b.field as keyof UserStats] as number) ?? 0;
     return val >= b.threshold;
   });
 
@@ -413,11 +496,7 @@ function ProfilePage() {
             <div className="relative flex-shrink-0">
               <div className="size-28 md:size-36 rounded-full border-4 border-background bg-card overflow-hidden shadow-xl">
                 {avatarUrl ? (
-                  <img
-                    src={avatarUrl}
-                    alt={displayName}
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full bg-primary/10 flex items-center justify-center">
                     <User className="size-12 text-primary/50" />
@@ -510,11 +589,36 @@ function ProfilePage() {
           {stats && (
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-8">
               {[
-                { label: "Stories Read", value: stats.storiesRead, icon: BookOpen, color: "text-primary" },
-                { label: "Reading Streak", value: `${stats.readingStreak}d`, icon: Flame, color: "text-orange-500" },
-                { label: "Reading Time", value: formatReadingTime((stats as any).totalReadingTime || 0), icon: Clock, color: "text-sky-500" },
-                { label: "Total XP", value: stats.totalXP.toLocaleString(), icon: Zap, color: "text-gold" },
-                { label: "Badges Earned", value: earnedBadges.length, icon: Trophy, color: "text-purple-500" },
+                {
+                  label: "Stories Read",
+                  value: stats.storiesRead,
+                  icon: BookOpen,
+                  color: "text-primary",
+                },
+                {
+                  label: "Reading Streak",
+                  value: `${stats.readingStreak}d`,
+                  icon: Flame,
+                  color: "text-orange-500",
+                },
+                {
+                  label: "Reading Time",
+                  value: formatReadingTime((stats as any).totalReadingTime || 0),
+                  icon: Clock,
+                  color: "text-sky-500",
+                },
+                {
+                  label: "Total XP",
+                  value: stats.totalXP.toLocaleString(),
+                  icon: Zap,
+                  color: "text-gold",
+                },
+                {
+                  label: "Badges Earned",
+                  value: earnedBadges.length,
+                  icon: Trophy,
+                  color: "text-purple-500",
+                },
               ].map((stat) => (
                 <div
                   key={stat.label}
@@ -653,7 +757,11 @@ function ProfilePage() {
                         {[
                           { label: "Stories Liked", value: stats.storiesLiked, icon: Heart },
                           { label: "Bookmarks", value: stats.bookmarksCount, icon: BookMarked },
-                          { label: "Longest Streak", value: `${stats.longestStreak}d`, icon: TrendingUp },
+                          {
+                            label: "Longest Streak",
+                            value: `${stats.longestStreak}d`,
+                            icon: TrendingUp,
+                          },
                           { label: "Weekly XP", value: stats.weeklyXP, icon: BarChart2 },
                         ].map((s) => (
                           <div key={s.label} className="flex items-center justify-between">
@@ -661,7 +769,9 @@ function ProfilePage() {
                               <s.icon className="size-3.5" />
                               {s.label}
                             </span>
-                            <span className="text-sm font-bold font-sans tabular-nums">{s.value}</span>
+                            <span className="text-sm font-bold font-sans tabular-nums">
+                              {s.value}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -680,7 +790,11 @@ function ProfilePage() {
                       </div>
                       <div className="flex items-center gap-2 text-xs font-sans text-muted-foreground">
                         <Calendar className="size-3.5" />
-                        Joined {new Date(user.created_at ?? Date.now()).toLocaleDateString("en-IN", { month: "long", year: "numeric" })}
+                        Joined{" "}
+                        {new Date(user.created_at ?? Date.now()).toLocaleDateString("en-IN", {
+                          month: "long",
+                          year: "numeric",
+                        })}
                       </div>
                     </div>
                   </div>
@@ -726,14 +840,21 @@ function ProfilePage() {
 
                     // CONTINUE READING
                     if (activeSub === "continue") {
-                      const list = progressList.filter(p => !p.completed && p.progressPercent > 0);
+                      const list = progressList.filter(
+                        (p) => !p.completed && p.progressPercent > 0,
+                      );
                       return (
                         <div className="space-y-4">
-                          <h3 className="font-display text-lg font-bold text-foreground">Continue Reading</h3>
+                          <h3 className="font-display text-lg font-bold text-foreground">
+                            Continue Reading
+                          </h3>
                           {list.length === 0 ? (
                             <div className="bg-card/30 border border-border/40 rounded-xl p-10 text-center">
                               <BookOpen className="size-8 text-muted-foreground/30 mx-auto mb-3" />
-                              <p className="text-sm text-muted-foreground font-sans">No stories in progress. Start reading from the homepage or Explore tab!</p>
+                              <p className="text-sm text-muted-foreground font-sans">
+                                No stories in progress. Start reading from the homepage or Explore
+                                tab!
+                              </p>
                             </div>
                           ) : (
                             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -747,15 +868,26 @@ function ProfilePage() {
                                   <div>
                                     {p.story?.image && (
                                       <div className="aspect-video overflow-hidden relative">
-                                        <img src={p.story.image} alt={p.story?.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                        <img
+                                          src={p.story.image}
+                                          alt={p.story?.title}
+                                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                        />
                                         <div className="absolute bottom-0 left-0 right-0 h-1 bg-border/40">
-                                          <div className="h-full bg-primary" style={{ width: `${p.progressPercent}%` }} />
+                                          <div
+                                            className="h-full bg-primary"
+                                            style={{ width: `${p.progressPercent}%` }}
+                                          />
                                         </div>
                                       </div>
                                     )}
                                     <div className="p-4">
-                                      <p className="text-[10px] text-gold uppercase tracking-widest font-sans mb-1">{p.story?.category}</p>
-                                      <h4 className="text-sm font-display font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors">{p.story?.title}</h4>
+                                      <p className="text-[10px] text-gold uppercase tracking-widest font-sans mb-1">
+                                        {p.story?.category}
+                                      </p>
+                                      <h4 className="text-sm font-display font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+                                        {p.story?.title}
+                                      </h4>
                                     </div>
                                   </div>
                                   <div className="px-4 pb-4 flex justify-between items-center text-[10px] font-sans text-muted-foreground">
@@ -774,11 +906,15 @@ function ProfilePage() {
                     if (activeSub === "bookmarks") {
                       return (
                         <div className="space-y-4">
-                          <h3 className="font-display text-lg font-bold text-foreground">Bookmarks</h3>
+                          <h3 className="font-display text-lg font-bold text-foreground">
+                            Bookmarks
+                          </h3>
                           {bookmarks.length === 0 ? (
                             <div className="bg-card/30 border border-border/40 rounded-xl p-10 text-center">
                               <BookMarked className="size-8 text-muted-foreground/30 mx-auto mb-3" />
-                              <p className="text-sm text-muted-foreground font-sans">No bookmarks saved yet.</p>
+                              <p className="text-sm text-muted-foreground font-sans">
+                                No bookmarks saved yet.
+                              </p>
                             </div>
                           ) : (
                             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -791,12 +927,20 @@ function ProfilePage() {
                                 >
                                   {b.story?.image && (
                                     <div className="aspect-video overflow-hidden">
-                                      <img src={b.story.image} alt={b.story?.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                      <img
+                                        src={b.story.image}
+                                        alt={b.story?.title}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                      />
                                     </div>
                                   )}
                                   <div className="p-4">
-                                    <p className="text-[10px] text-gold uppercase tracking-widest font-sans mb-1">{b.story?.category}</p>
-                                    <h4 className="text-sm font-display font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors">{b.story?.title}</h4>
+                                    <p className="text-[10px] text-gold uppercase tracking-widest font-sans mb-1">
+                                      {b.story?.category}
+                                    </p>
+                                    <h4 className="text-sm font-display font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+                                      {b.story?.title}
+                                    </h4>
                                   </div>
                                 </Link>
                               ))}
@@ -810,11 +954,15 @@ function ProfilePage() {
                     if (activeSub === "likes") {
                       return (
                         <div className="space-y-4">
-                          <h3 className="font-display text-lg font-bold text-foreground">Liked Stories</h3>
+                          <h3 className="font-display text-lg font-bold text-foreground">
+                            Liked Stories
+                          </h3>
                           {likes.length === 0 ? (
                             <div className="bg-card/30 border border-border/40 rounded-xl p-10 text-center">
                               <Heart className="size-8 text-muted-foreground/30 mx-auto mb-3" />
-                              <p className="text-sm text-muted-foreground font-sans">No liked stories yet.</p>
+                              <p className="text-sm text-muted-foreground font-sans">
+                                No liked stories yet.
+                              </p>
                             </div>
                           ) : (
                             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -827,12 +975,20 @@ function ProfilePage() {
                                 >
                                   {l.story?.image && (
                                     <div className="aspect-video overflow-hidden">
-                                      <img src={l.story.image} alt={l.story?.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                      <img
+                                        src={l.story.image}
+                                        alt={l.story?.title}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                      />
                                     </div>
                                   )}
                                   <div className="p-4">
-                                    <p className="text-[10px] text-gold uppercase tracking-widest font-sans mb-1">{l.story?.category}</p>
-                                    <h4 className="text-sm font-display font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors">{l.story?.title}</h4>
+                                    <p className="text-[10px] text-gold uppercase tracking-widest font-sans mb-1">
+                                      {l.story?.category}
+                                    </p>
+                                    <h4 className="text-sm font-display font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+                                      {l.story?.title}
+                                    </h4>
                                   </div>
                                 </Link>
                               ))}
@@ -846,11 +1002,15 @@ function ProfilePage() {
                     if (activeSub === "history") {
                       return (
                         <div className="space-y-4">
-                          <h3 className="font-display text-lg font-bold text-foreground">Reading History</h3>
+                          <h3 className="font-display text-lg font-bold text-foreground">
+                            Reading History
+                          </h3>
                           {progressList.length === 0 ? (
                             <div className="bg-card/30 border border-border/40 rounded-xl p-10 text-center">
                               <Clock className="size-8 text-muted-foreground/30 mx-auto mb-3" />
-                              <p className="text-sm text-muted-foreground font-sans">No reading history yet.</p>
+                              <p className="text-sm text-muted-foreground font-sans">
+                                No reading history yet.
+                              </p>
                             </div>
                           ) : (
                             <div className="space-y-3">
@@ -862,16 +1022,28 @@ function ProfilePage() {
                                   className="flex items-center gap-4 bg-card/30 hover:bg-card/60 border border-border/40 rounded-xl p-3 group transition-colors"
                                 >
                                   {p.story?.image && (
-                                    <img src={p.story.image} alt={p.story?.title} className="size-14 rounded-lg object-cover flex-shrink-0" />
+                                    <img
+                                      src={p.story.image}
+                                      alt={p.story?.title}
+                                      className="size-14 rounded-lg object-cover flex-shrink-0"
+                                    />
                                   )}
                                   <div className="min-w-0 flex-1">
-                                    <h4 className="text-sm font-display font-bold text-foreground truncate group-hover:text-primary transition-colors">{p.story?.title}</h4>
+                                    <h4 className="text-sm font-display font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                                      {p.story?.title}
+                                    </h4>
                                     <div className="flex items-center gap-3 text-xs font-sans text-muted-foreground mt-1">
-                                      <span className="text-gold uppercase tracking-widest text-[9px] font-bold">{p.story?.category}</span>
+                                      <span className="text-gold uppercase tracking-widest text-[9px] font-bold">
+                                        {p.story?.category}
+                                      </span>
                                       <span>•</span>
-                                      <span>{p.completed ? "Completed" : `${p.progressPercent}% read`}</span>
+                                      <span>
+                                        {p.completed ? "Completed" : `${p.progressPercent}% read`}
+                                      </span>
                                       <span>•</span>
-                                      <span>{new Date(p.lastReadAt).toLocaleDateString("en-IN")}</span>
+                                      <span>
+                                        {new Date(p.lastReadAt).toLocaleDateString("en-IN")}
+                                      </span>
                                     </div>
                                   </div>
                                 </Link>
@@ -886,11 +1058,15 @@ function ProfilePage() {
                     if (activeSub === "comments") {
                       return (
                         <div className="space-y-4">
-                          <h3 className="font-display text-lg font-bold text-foreground">My Comments</h3>
+                          <h3 className="font-display text-lg font-bold text-foreground">
+                            My Comments
+                          </h3>
                           {comments.length === 0 ? (
                             <div className="bg-card/30 border border-border/40 rounded-xl p-10 text-center">
                               <MessageSquare className="size-8 text-muted-foreground/30 mx-auto mb-3" />
-                              <p className="text-sm text-muted-foreground font-sans">You haven't commented on any stories yet.</p>
+                              <p className="text-sm text-muted-foreground font-sans">
+                                You haven't commented on any stories yet.
+                              </p>
                             </div>
                           ) : (
                             <div className="space-y-3">
@@ -902,12 +1078,21 @@ function ProfilePage() {
                                   className="block bg-card/30 hover:bg-card/60 border border-border/40 rounded-xl p-4 group transition-colors"
                                 >
                                   <div className="flex justify-between items-start">
-                                    <span className="text-[10px] text-muted-foreground font-sans">{new Date(c.createdAt).toLocaleDateString("en-IN")}</span>
-                                    <span className="text-[10px] font-sans px-2 py-0.5 rounded bg-muted border border-border/50 uppercase tracking-widest text-muted-foreground">{c.status}</span>
+                                    <span className="text-[10px] text-muted-foreground font-sans">
+                                      {new Date(c.createdAt).toLocaleDateString("en-IN")}
+                                    </span>
+                                    <span className="text-[10px] font-sans px-2 py-0.5 rounded bg-muted border border-border/50 uppercase tracking-widest text-muted-foreground">
+                                      {c.status}
+                                    </span>
                                   </div>
-                                  <p className="text-sm font-sans text-foreground mt-2 italic">"{c.content}"</p>
+                                  <p className="text-sm font-sans text-foreground mt-2 italic">
+                                    "{c.content}"
+                                  </p>
                                   <p className="text-xs font-sans text-muted-foreground mt-3">
-                                    On: <span className="font-semibold text-foreground group-hover:text-primary transition-colors">{c.storyTitle}</span>
+                                    On:{" "}
+                                    <span className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                                      {c.storyTitle}
+                                    </span>
                                   </p>
                                 </Link>
                               ))}
@@ -921,34 +1106,56 @@ function ProfilePage() {
                     if (activeSub === "submissions") {
                       return (
                         <div className="space-y-4">
-                          <h3 className="font-display text-lg font-bold text-foreground">My Submissions</h3>
+                          <h3 className="font-display text-lg font-bold text-foreground">
+                            My Submissions
+                          </h3>
                           {submissions.length === 0 ? (
                             <div className="bg-card/30 border border-border/40 rounded-xl p-10 text-center">
                               <UploadCloud className="size-8 text-muted-foreground/30 mx-auto mb-3" />
-                              <p className="text-sm text-muted-foreground font-sans">You haven't submitted any stories yet. Head to the Contributor Hub to write your first story!</p>
+                              <p className="text-sm text-muted-foreground font-sans">
+                                You haven't submitted any stories yet. Head to the Contributor Hub
+                                to write your first story!
+                              </p>
                             </div>
                           ) : (
                             <div className="space-y-3">
                               {submissions.map((s: any) => (
-                                <div key={s.id} className="bg-card/30 border border-border/40 rounded-xl p-4 space-y-3">
+                                <div
+                                  key={s.id}
+                                  className="bg-card/30 border border-border/40 rounded-xl p-4 space-y-3"
+                                >
                                   <div className="flex justify-between items-center">
-                                    <h4 className="text-sm font-display font-bold text-foreground">{s.title}</h4>
-                                    <span className={`text-[10px] font-sans px-2 py-0.5 rounded font-bold uppercase tracking-wider ${
-                                      s.status === "Approved" ? "bg-green-500/10 text-green-500 border border-green-500/20" :
-                                      s.status === "Rejected" ? "bg-destructive/10 text-destructive border border-destructive/20" :
-                                      "bg-orange-500/10 text-orange-500 border border-orange-500/20"
-                                    }`}>
+                                    <h4 className="text-sm font-display font-bold text-foreground">
+                                      {s.title}
+                                    </h4>
+                                    <span
+                                      className={`text-[10px] font-sans px-2 py-0.5 rounded font-bold uppercase tracking-wider ${
+                                        s.status === "Approved"
+                                          ? "bg-green-500/10 text-green-500 border border-green-500/20"
+                                          : s.status === "Rejected"
+                                            ? "bg-destructive/10 text-destructive border border-destructive/20"
+                                            : "bg-orange-500/10 text-orange-500 border border-orange-500/20"
+                                      }`}
+                                    >
                                       {s.status}
                                     </span>
                                   </div>
-                                  <p className="text-xs text-muted-foreground font-sans line-clamp-2">{s.excerpt}</p>
+                                  <p className="text-xs text-muted-foreground font-sans line-clamp-2">
+                                    {s.excerpt}
+                                  </p>
                                   <div className="flex justify-between items-center text-[10px] font-sans text-muted-foreground border-t border-border/20 pt-2">
-                                    <span>Submitted on {new Date(s.createdAt).toLocaleDateString("en-IN")}</span>
+                                    <span>
+                                      Submitted on{" "}
+                                      {new Date(s.createdAt).toLocaleDateString("en-IN")}
+                                    </span>
                                     <span>Category: {s.categoryName}</span>
                                   </div>
                                   {s.adminNotes && (
                                     <div className="bg-muted/50 border border-border/40 p-3 rounded-lg text-xs font-sans text-muted-foreground">
-                                      <strong className="text-foreground">Moderator Feedback:</strong> {s.adminNotes}
+                                      <strong className="text-foreground">
+                                        Moderator Feedback:
+                                      </strong>{" "}
+                                      {s.adminNotes}
                                     </div>
                                   )}
                                 </div>
@@ -968,9 +1175,7 @@ function ProfilePage() {
               {activeTab === "badges" && (
                 <div>
                   <div className="mb-6">
-                    <h2 className="font-display text-xl font-bold mb-1">
-                      Achievements
-                    </h2>
+                    <h2 className="font-display text-xl font-bold mb-1">Achievements</h2>
                     <p className="text-sm text-muted-foreground font-sans">
                       {earnedBadges.length} of {BADGE_DEFINITIONS.length} badges earned
                     </p>
@@ -979,7 +1184,7 @@ function ProfilePage() {
                     {BADGE_DEFINITIONS.map((badge) => {
                       const earned = earnedBadges.some((b) => b.slug === badge.slug);
                       const currentVal = stats
-                        ? (stats[badge.field as keyof UserStats] as number ?? 0)
+                        ? ((stats[badge.field as keyof UserStats] as number) ?? 0)
                         : 0;
                       const progress = Math.min(100, (currentVal / badge.threshold) * 100);
 
@@ -1037,7 +1242,9 @@ function ProfilePage() {
                   <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                     <div>
                       <h3 className="font-display text-lg font-bold text-white">My Collections</h3>
-                      <p className="text-xs text-muted-foreground font-sans">Organize your bookmarked stories into custom list folders</p>
+                      <p className="text-xs text-muted-foreground font-sans">
+                        Organize your bookmarked stories into custom list folders
+                      </p>
                     </div>
                     <div className="flex gap-2">
                       <Input
@@ -1076,7 +1283,10 @@ function ProfilePage() {
                   {collections.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {collections.map((col) => (
-                        <div key={col.id} className="bg-card/45 border border-border p-5 rounded-lg space-y-4">
+                        <div
+                          key={col.id}
+                          className="bg-card/45 border border-border p-5 rounded-lg space-y-4"
+                        >
                           <div className="flex justify-between items-center border-b border-border/40 pb-3">
                             <div className="flex items-center gap-2">
                               <FolderOpen className="size-5 text-gold" />
@@ -1085,7 +1295,12 @@ function ProfilePage() {
                             <button
                               onClick={async () => {
                                 if (!session) return;
-                                if (!confirm("Are you sure you want to delete this collection? Stories inside will not be deleted.")) return;
+                                if (
+                                  !confirm(
+                                    "Are you sure you want to delete this collection? Stories inside will not be deleted.",
+                                  )
+                                )
+                                  return;
                                 try {
                                   const res = await fetch("/api/collections", {
                                     method: "DELETE",
@@ -1107,7 +1322,10 @@ function ProfilePage() {
                           <div className="space-y-2">
                             {col.stories && col.stories.length > 0 ? (
                               col.stories.map((story: any) => (
-                                <div key={story.id} className="flex justify-between items-center text-xs">
+                                <div
+                                  key={story.id}
+                                  className="flex justify-between items-center text-xs"
+                                >
                                   <Link
                                     to="/stories/$slug"
                                     params={{ slug: story.slug }}
@@ -1125,7 +1343,10 @@ function ProfilePage() {
                                             "Content-Type": "application/json",
                                             Authorization: `Bearer ${session.access_token}`,
                                           },
-                                          body: JSON.stringify({ collectionId: col.id, storyId: story.id }),
+                                          body: JSON.stringify({
+                                            collectionId: col.id,
+                                            storyId: story.id,
+                                          }),
                                         });
                                         if (res.ok) refetchData();
                                       } catch {}
@@ -1137,7 +1358,9 @@ function ProfilePage() {
                                 </div>
                               ))
                             ) : (
-                              <p className="text-[11px] text-muted-foreground/80 italic font-sans">Empty collection folder. Add bookmarks from story pages!</p>
+                              <p className="text-[11px] text-muted-foreground/80 italic font-sans">
+                                Empty collection folder. Add bookmarks from story pages!
+                              </p>
                             )}
                           </div>
                         </div>
@@ -1156,15 +1379,24 @@ function ProfilePage() {
                 <div className="space-y-6">
                   <div>
                     <h3 className="font-display text-lg font-bold text-white">Following Authors</h3>
-                    <p className="text-xs text-muted-foreground font-sans">Chronicles from storytellers you follow on the portal</p>
+                    <p className="text-xs text-muted-foreground font-sans">
+                      Chronicles from storytellers you follow on the portal
+                    </p>
                   </div>
 
                   {followedAuthors.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                       {followedAuthors.map((author) => (
-                        <div key={author.id} className="bg-card/45 border border-border p-4 rounded-lg flex items-start gap-4">
+                        <div
+                          key={author.id}
+                          className="bg-card/45 border border-border p-4 rounded-lg flex items-start gap-4"
+                        >
                           {author.avatar ? (
-                            <img src={author.avatar} alt={author.name} className="size-12 rounded-full object-cover shrink-0" />
+                            <img
+                              src={author.avatar}
+                              alt={author.name}
+                              className="size-12 rounded-full object-cover shrink-0"
+                            />
                           ) : (
                             <div className="size-12 rounded-full bg-primary/25 border border-primary/25 text-white font-sans text-sm font-bold flex items-center justify-center shrink-0">
                               {author.name[0]}
@@ -1177,7 +1409,9 @@ function ProfilePage() {
                                   {author.name}
                                 </Link>
                               </h4>
-                              <p className="text-[10px] text-muted-foreground line-clamp-1">{author.bio || "India Story Contributor"}</p>
+                              <p className="text-[10px] text-muted-foreground line-clamp-1">
+                                {author.bio || "India Story Contributor"}
+                              </p>
                             </div>
 
                             <button
@@ -1274,10 +1508,38 @@ function ProfilePage() {
                       </p>
                       <div className="space-y-3">
                         {[
-                          { id: "website", label: "Website URL", Icon: Globe, value: website, setter: setWebsite, placeholder: "https://yoursite.com" },
-                          { id: "twitter", label: "Twitter Handle", Icon: Twitter, value: twitter, setter: setTwitter, placeholder: "@handle" },
-                          { id: "instagram", label: "Instagram", Icon: Instagram, value: instagram, setter: setInstagram, placeholder: "@handle" },
-                          { id: "linkedin", label: "LinkedIn URL", Icon: Linkedin, value: linkedin, setter: setLinkedin, placeholder: "linkedin.com/in/..." },
+                          {
+                            id: "website",
+                            label: "Website URL",
+                            Icon: Globe,
+                            value: website,
+                            setter: setWebsite,
+                            placeholder: "https://yoursite.com",
+                          },
+                          {
+                            id: "twitter",
+                            label: "Twitter Handle",
+                            Icon: Twitter,
+                            value: twitter,
+                            setter: setTwitter,
+                            placeholder: "@handle",
+                          },
+                          {
+                            id: "instagram",
+                            label: "Instagram",
+                            Icon: Instagram,
+                            value: instagram,
+                            setter: setInstagram,
+                            placeholder: "@handle",
+                          },
+                          {
+                            id: "linkedin",
+                            label: "LinkedIn URL",
+                            Icon: Linkedin,
+                            value: linkedin,
+                            setter: setLinkedin,
+                            placeholder: "linkedin.com/in/...",
+                          },
                         ].map((field) => (
                           <div key={field.id} className="relative">
                             <field.Icon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -1339,7 +1601,9 @@ function ProfilePage() {
                         <label className="block font-bold text-white/60 mb-1">Language</label>
                         <select
                           value={favState.split("-")[0]}
-                          onChange={(e) => setFavState(`${e.target.value}-${favState.split("-")[1] || "normal"}`)}
+                          onChange={(e) =>
+                            setFavState(`${e.target.value}-${favState.split("-")[1] || "normal"}`)
+                          }
                           className="w-full bg-[#1e1e1e] text-white border border-border px-3 py-2 rounded focus:outline-none"
                         >
                           <option value="en">English</option>
@@ -1350,7 +1614,9 @@ function ProfilePage() {
                         <label className="block font-bold text-white/60 mb-1">Text Size</label>
                         <select
                           value={favState.split("-")[1] || "normal"}
-                          onChange={(e) => setFavState(`${favState.split("-")[0] || "en"}-${e.target.value}`)}
+                          onChange={(e) =>
+                            setFavState(`${favState.split("-")[0] || "en"}-${e.target.value}`)
+                          }
                           className="w-full bg-[#1e1e1e] text-white border border-border px-3 py-2 rounded focus:outline-none"
                         >
                           <option value="normal">Normal</option>
@@ -1371,7 +1637,10 @@ function ProfilePage() {
                                 "Content-Type": "application/json",
                                 Authorization: `Bearer ${session.access_token}`,
                               },
-                              body: JSON.stringify({ favoriteTheme: favTheme, favoriteState: favState }),
+                              body: JSON.stringify({
+                                favoriteTheme: favTheme,
+                                favoriteState: favState,
+                              }),
                             });
                             if (res.ok) {
                               setPrefSaved(true);
@@ -1392,7 +1661,9 @@ function ProfilePage() {
                         {prefSaving ? "Saving preferences..." : "Save Preferences"}
                       </Button>
                       {prefSaved && (
-                        <span className="text-xs text-gold flex items-center font-bold">Preferences saved!</span>
+                        <span className="text-xs text-gold flex items-center font-bold">
+                          Preferences saved!
+                        </span>
                       )}
                     </div>
                   </div>
@@ -1429,7 +1700,12 @@ function ProfilePage() {
                       <Button
                         onClick={async () => {
                           if (!session) return;
-                          if (!confirm("⚠️ WARNING: Deleting your account will wipe all bookmarks, collections, comments, claps, and reading streaks forever. This action is irreversible. Proceed?")) return;
+                          if (
+                            !confirm(
+                              "⚠️ WARNING: Deleting your account will wipe all bookmarks, collections, comments, claps, and reading streaks forever. This action is irreversible. Proceed?",
+                            )
+                          )
+                            return;
                           try {
                             const res = await fetch("/api/auth/delete-account", {
                               method: "POST",

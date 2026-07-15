@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { json } from "@/routes/api/-_utils";
 import { storyRepository } from "@/lib/repositories/story-repository.server";
 
-const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800&auto=format&fit=crop";
+const FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800&auto=format&fit=crop";
 
 export const Route = createFileRoute("/api/featured")({
   server: {

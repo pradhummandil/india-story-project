@@ -58,15 +58,15 @@ Unlike traditional blogs, this platform is built around **immersive, cinematic s
 
 The platform isn't just a content site — it's built as a **visual experience layer** on top of the stories themselves.
 
-| Element | Details |
-|---|---|
-| 🌌 **Cinematic Landing** | Full-viewport hero with layered parallax scroll and gradient depth |
-| 🗺️ **Interactive India Map** | Hover/tap-driven state exploration with depth-based scaling & glow transitions |
-| ✨ **Motion Engine** | Powered by **GSAP** (scroll-triggered timelines) + **Framer Motion** (component-level micro-interactions) |
-| 🪟 **Glass Navigation** | Frosted-glass navbar with dynamic blur on scroll |
-| 🌓 **Dark Luxury Theme** | Deep editorial palette with accent gradients per category/state |
-| 🎞️ **Page Transitions** | Smooth cross-fade & slide transitions between routes via TanStack Router |
-| 📱 **Adaptive Motion** | Animations scale down gracefully on mobile for performance |
+| Element                      | Details                                                                                                   |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 🌌 **Cinematic Landing**     | Full-viewport hero with layered parallax scroll and gradient depth                                        |
+| 🗺️ **Interactive India Map** | Hover/tap-driven state exploration with depth-based scaling & glow transitions                            |
+| ✨ **Motion Engine**         | Powered by **GSAP** (scroll-triggered timelines) + **Framer Motion** (component-level micro-interactions) |
+| 🪟 **Glass Navigation**      | Frosted-glass navbar with dynamic blur on scroll                                                          |
+| 🌓 **Dark Luxury Theme**     | Deep editorial palette with accent gradients per category/state                                           |
+| 🎞️ **Page Transitions**      | Smooth cross-fade & slide transitions between routes via TanStack Router                                  |
+| 📱 **Adaptive Motion**       | Animations scale down gracefully on mobile for performance                                                |
 
 > Design philosophy: every scroll, hover, and transition should feel like turning the page of a premium storybook — not a static blog.
 
@@ -75,6 +75,7 @@ The platform isn't just a content site — it's built as a **visual experience l
 ## ✨ Features
 
 ### 📚 Story Platform
+
 - 400+ curated Indian stories
 - Rich story detail pages with reading progress & estimated reading time
 - Story categories & themes
@@ -85,17 +86,20 @@ The platform isn't just a content site — it's built as a **visual experience l
 - Fully responsive layout
 
 ### 🌏 Explore India
+
 - Interactive, animated India map
 - State-wise story navigation
 - Region & category discovery
 - Explore by theme
 
 ### 🌐 Multilingual
+
 - English & Hindi interface
 - Dynamic language toggle
 - Localized categories and states
 
 ### 👤 Authentication
+
 - Email login & signup
 - Google authentication (OAuth)
 - Password reset & email verification
@@ -103,12 +107,14 @@ The platform isn't just a content site — it's built as a **visual experience l
 - Powered by Supabase Auth
 
 ### 👑 Admin Dashboard
+
 - Secure admin login with role-based authorization
 - Story, user, category & theme management
 - Featured / hero story control
 - Analytics dashboard with view statistics
 
 ### 🎨 Premium UI
+
 - Editorial, cinematic design language
 - Smooth animations & glass navigation
 - Dark luxury theme
@@ -120,12 +126,12 @@ The platform isn't just a content site — it's built as a **visual experience l
 
 <div align="center">
 
-| Layer | Technologies |
-|---|---|
-| **Frontend** | ![React](https://img.shields.io/badge/-React_19-61DAFB?logo=react&logoColor=white) ![TypeScript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white) ![TanStack](https://img.shields.io/badge/-TanStack_Start-FF4154) ![Tailwind](https://img.shields.io/badge/-Tailwind_CSS-06B6D4?logo=tailwindcss&logoColor=white) |
-| **Motion / 3D** | ![Framer Motion](https://img.shields.io/badge/-Framer_Motion-black?logo=framer) ![GSAP](https://img.shields.io/badge/-GSAP-88CE02?logo=greensock&logoColor=black) |
-| **Backend** | ![Supabase](https://img.shields.io/badge/-Supabase-3ECF8E?logo=supabase&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/-PostgreSQL-4169E1?logo=postgresql&logoColor=white) ![Prisma](https://img.shields.io/badge/-Prisma-2D3748?logo=prisma&logoColor=white) |
-| **Deployment** | ![Vercel](https://img.shields.io/badge/-Vercel-000000?logo=vercel&logoColor=white) |
+| Layer           | Technologies                                                                                                                                                                                                                                                                                                                                       |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Frontend**    | ![React](https://img.shields.io/badge/-React_19-61DAFB?logo=react&logoColor=white) ![TypeScript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white) ![TanStack](https://img.shields.io/badge/-TanStack_Start-FF4154) ![Tailwind](https://img.shields.io/badge/-Tailwind_CSS-06B6D4?logo=tailwindcss&logoColor=white) |
+| **Motion / 3D** | ![Framer Motion](https://img.shields.io/badge/-Framer_Motion-black?logo=framer) ![GSAP](https://img.shields.io/badge/-GSAP-88CE02?logo=greensock&logoColor=black)                                                                                                                                                                                  |
+| **Backend**     | ![Supabase](https://img.shields.io/badge/-Supabase-3ECF8E?logo=supabase&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/-PostgreSQL-4169E1?logo=postgresql&logoColor=white) ![Prisma](https://img.shields.io/badge/-Prisma-2D3748?logo=prisma&logoColor=white)                                                                         |
+| **Deployment**  | ![Vercel](https://img.shields.io/badge/-Vercel-000000?logo=vercel&logoColor=white)                                                                                                                                                                                                                                                                 |
 
 </div>
 
@@ -152,22 +158,27 @@ india-story-project/
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js (v18 or higher recommended)
 - A Supabase project (for database & auth)
 
 ### 1. Clone the Repository
+
 ```bash
 git clone https://github.com/pradhummandil/india-story-project.git
 cd india-story-project
 ```
 
 ### 2. Install Dependencies
+
 ```bash
 npm install
 ```
 
 ### 3. Configure Environment Variables
+
 Create a `.env` file in the root directory:
+
 ```env
 DATABASE_URL=
 DIRECT_URL=
@@ -178,16 +189,19 @@ SUPABASE_SERVICE_ROLE_KEY=
 ```
 
 ### 4. Generate Prisma Client
+
 ```bash
 npx prisma generate
 ```
 
 ### 5. Run the Development Server
+
 ```bash
 npm run dev
 ```
 
 ### 6. Production Build
+
 ```bash
 npm run build
 ```
@@ -196,16 +210,16 @@ npm run build
 
 ## 📸 Major Modules
 
-| Module | Description |
-|---|---|
-| Home | Cinematic landing experience |
-| Explore India | Interactive map-based story discovery |
-| Stories Archive | Full searchable & filterable story catalog |
-| Story Detail | Rich reading experience with progress tracking |
-| Login / Signup | Secure authentication flows |
-| User Profile | Personalized user space |
-| Admin Dashboard | Full content & analytics control panel |
-| Community | User engagement & contributions |
+| Module          | Description                                    |
+| --------------- | ---------------------------------------------- |
+| Home            | Cinematic landing experience                   |
+| Explore India   | Interactive map-based story discovery          |
+| Stories Archive | Full searchable & filterable story catalog     |
+| Story Detail    | Rich reading experience with progress tracking |
+| Login / Signup  | Secure authentication flows                    |
+| User Profile    | Personalized user space                        |
+| Admin Dashboard | Full content & analytics control panel         |
+| Community       | User engagement & contributions                |
 
 <br/>
 
@@ -263,6 +277,7 @@ Contributions are what make the open-source community such an amazing place to l
 <img src="assets/pradhum-mandil.jpg" width="150" style="border-radius:50%; border:3px solid #8B0000;" />
 
 ### Pradhum Mandil
+
 **Full Stack Developer & Creative Technologist**
 
 📍 India
@@ -285,6 +300,7 @@ Founder-minded builder passionate about scalable web apps, AI-powered platforms,
 <img src="assets/mayank-sahu.png" width="150" style="border-radius:50%; border:3px solid #8B0000;" />
 
 ### Mayank Sahu
+
 **Full Stack Developer**
 
 📍 India

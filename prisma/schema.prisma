@@ -89,6 +89,7 @@ model UserProfile {
   mentionsSent     UserMention[]     @relation("MentionedBy")
   groupMemberships GroupMember[]
   challengeEntries ChallengeEntry[]
+  audioProgress    AudioProgress[]
   @@index([role])
   @@index([totalXP])
   @@index([readingStreak])
@@ -210,6 +211,7 @@ model Story {
   collections      CollectionStory[]
   pageViews        PageView[]
   challengeEntries ChallengeEntry[]
+  audioProgress    AudioProgress[]
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   @@index([slug])
@@ -846,3 +848,24 @@ model PageView {
   @@index([country])
   @@index([createdAt])
 }
+
+model AudioProgress {
+  id          String      @id @default(uuid()) @db.Uuid
+  userId      String      @db.Uuid
+  user        UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storyId     String      @db.Uuid
+  story       Story       @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  currentTime Float       @default(0)
+  duration    Float       @default(0)
+  language    String      @default("en")
+  voiceId     String      @default("female")
+  completed   Boolean     @default(false)
+  updatedAt   DateTime    @updatedAt
+  createdAt   DateTime    @default(now())
+
+  @@unique([userId, storyId, language, voiceId])
+  @@index([userId])
+  @@index([storyId])
+  @@index([updatedAt])
+}
+

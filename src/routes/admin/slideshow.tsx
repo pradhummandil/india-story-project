@@ -80,11 +80,14 @@ export default function AdminSlideshowPage() {
     const delayDebounce = setTimeout(async () => {
       try {
         setSearching(true);
-        const res = await fetch(`/api/admin/stories?limit=10&query=${encodeURIComponent(searchQuery)}`, {
-          headers: {
-            Authorization: `Bearer ${session?.access_token || ""}`,
+        const res = await fetch(
+          `/api/admin/stories?limit=10&query=${encodeURIComponent(searchQuery)}`,
+          {
+            headers: {
+              Authorization: `Bearer ${session?.access_token || ""}`,
+            },
           },
-        });
+        );
         if (res.ok) {
           const data = await res.json();
           // Filter out stories already in slides
@@ -216,7 +219,10 @@ export default function AdminSlideshowPage() {
   };
 
   return (
-    <AdminLayout title="Homepage Slideshow Manager" subtitle="Manage and reorder the main featured homepage slideshow.">
+    <AdminLayout
+      title="Homepage Slideshow Manager"
+      subtitle="Manage and reorder the main featured homepage slideshow."
+    >
       <div className="max-w-4xl space-y-8">
         {/* Messages */}
         <AnimatePresence>
@@ -261,8 +267,13 @@ export default function AdminSlideshowPage() {
           {searchResults.length > 0 && (
             <div className="border border-white/10 rounded-sm divide-y divide-white/5 max-h-60 overflow-y-auto bg-black/20">
               {searchResults.map((story) => (
-                <div key={story.id} className="p-3 flex items-center justify-between hover:bg-white/5 transition-colors">
-                  <span className="text-sm font-sans text-white/80 font-medium truncate pr-4">{story.title}</span>
+                <div
+                  key={story.id}
+                  className="p-3 flex items-center justify-between hover:bg-white/5 transition-colors"
+                >
+                  <span className="text-sm font-sans text-white/80 font-medium truncate pr-4">
+                    {story.title}
+                  </span>
                   <Button
                     size="sm"
                     onClick={() => handleAdd(story)}
@@ -296,12 +307,16 @@ export default function AdminSlideshowPage() {
           ) : slides.length === 0 ? (
             <div className="py-12 border border-dashed border-white/10 rounded-sm text-center">
               <p className="text-sm text-white/40">No stories added to the slideshow yet.</p>
-              <p className="text-xs text-white/20 mt-1">Use the search above to add stories to the homepage slideshow.</p>
+              <p className="text-xs text-white/20 mt-1">
+                Use the search above to add stories to the homepage slideshow.
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
               {slides.map((slide, index) => {
-                const imageUrl = slide.images?.[0]?.imageUrl || "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=300&q=80";
+                const imageUrl =
+                  slide.images?.[0]?.imageUrl ||
+                  "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=300&q=80";
                 return (
                   <div
                     key={slide.id}

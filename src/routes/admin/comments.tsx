@@ -92,18 +92,24 @@ export default function AdminCommentsPage() {
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="font-display text-2xl font-bold text-white tracking-wide">Comment Moderation</h1>
-          <p className="text-xs font-sans text-white/50 uppercase tracking-widest mt-1">Review reader comments and manage reports</p>
+          <h1 className="font-display text-2xl font-bold text-white tracking-wide">
+            Comment Moderation
+          </h1>
+          <p className="text-xs font-sans text-white/50 uppercase tracking-widest mt-1">
+            Review reader comments and manage reports
+          </p>
         </div>
 
         {/* Tab switcher */}
         <div className="flex border-b border-white/10 overflow-x-auto pb-px">
-          {([
-            { id: "all", label: "All Comments" },
-            { id: "pending", label: "Pending" },
-            { id: "approved", label: "Approved" },
-            { id: "flagged", label: "Flagged Reports" },
-          ] as const).map((tab) => (
+          {(
+            [
+              { id: "all", label: "All Comments" },
+              { id: "pending", label: "Pending" },
+              { id: "approved", label: "Approved" },
+              { id: "flagged", label: "Flagged Reports" },
+            ] as const
+          ).map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
@@ -121,7 +127,10 @@ export default function AdminCommentsPage() {
         {loading ? (
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-16 bg-[#161616] animate-pulse rounded border border-white/5" />
+              <div
+                key={i}
+                className="h-16 bg-[#161616] animate-pulse rounded border border-white/5"
+              />
             ))}
           </div>
         ) : activeTab === "flagged" ? (
@@ -133,32 +142,52 @@ export default function AdminCommentsPage() {
               </div>
             ) : (
               reports.map((rep) => (
-                <div key={rep.id} className="bg-[#161616] border border-white/10 rounded-lg p-5 flex flex-col md:flex-row justify-between gap-4">
+                <div
+                  key={rep.id}
+                  className="bg-[#161616] border border-white/10 rounded-lg p-5 flex flex-col md:flex-row justify-between gap-4"
+                >
                   <div className="space-y-2 flex-1">
                     <div className="flex items-center gap-2 text-xs">
                       <span className="font-bold text-red-400 flex items-center gap-1">
                         <ShieldAlert className="size-3.5" /> Flagged
                       </span>
-                      <span className="text-white/40 font-sans">Reported by {rep.reporterName} ({rep.reporterEmail})</span>
+                      <span className="text-white/40 font-sans">
+                        Reported by {rep.reporterName} ({rep.reporterEmail})
+                      </span>
                     </div>
                     <div className="bg-black/20 border border-white/5 rounded p-3 text-xs font-sans text-white/80 italic">
                       " {rep.commentContent} "
                     </div>
                     <p className="text-[10px] text-white/40 font-sans">
-                      Author: <span className="text-white/70 font-semibold">{rep.commentAuthor}</span> · Story: <span className="text-white/70 font-semibold">{rep.storyTitle}</span>
+                      Author:{" "}
+                      <span className="text-white/70 font-semibold">{rep.commentAuthor}</span> ·
+                      Story: <span className="text-white/70 font-semibold">{rep.storyTitle}</span>
                     </p>
                     <p className="text-xs text-yellow-400 font-sans bg-yellow-500/5 border border-yellow-500/10 rounded px-2.5 py-1 inline-block">
                       Reason: <span className="font-semibold">{rep.reason}</span>
                     </p>
                   </div>
                   <div className="flex items-center gap-2 md:self-center">
-                    <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-xs rounded-sm text-white" onClick={() => handleAction(rep.commentId, "approve", rep.id)}>
+                    <Button
+                      size="sm"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-xs rounded-sm text-white"
+                      onClick={() => handleAction(rep.commentId, "approve", rep.id)}
+                    >
                       Approve Comment
                     </Button>
-                    <Button size="sm" className="bg-destructive hover:bg-destructive/90 text-xs rounded-sm text-white" onClick={() => handleAction(rep.commentId, "delete", rep.id)}>
+                    <Button
+                      size="sm"
+                      className="bg-destructive hover:bg-destructive/90 text-xs rounded-sm text-white"
+                      onClick={() => handleAction(rep.commentId, "delete", rep.id)}
+                    >
                       Remove Comment
                     </Button>
-                    <Button size="sm" variant="outline" className="border-white/10 text-xs rounded-sm text-white/60" onClick={() => handleAction(null, "dismissReport", rep.id)}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-white/10 text-xs rounded-sm text-white/60"
+                      onClick={() => handleAction(null, "dismissReport", rep.id)}
+                    >
                       Dismiss Report
                     </Button>
                   </div>
@@ -170,7 +199,9 @@ export default function AdminCommentsPage() {
           /* STANDARD COMMENTS LIST */
           <div className="bg-[#161616] border border-white/10 rounded overflow-hidden">
             {comments.length === 0 ? (
-              <div className="p-8 text-center text-sm font-sans text-white/40">No comments found.</div>
+              <div className="p-8 text-center text-sm font-sans text-white/40">
+                No comments found.
+              </div>
             ) : (
               <table className="w-full text-left font-sans text-xs border-collapse">
                 <thead>
@@ -188,7 +219,11 @@ export default function AdminCommentsPage() {
                       <td className="p-4 font-medium">
                         <div className="flex items-center gap-2">
                           {c.authorAvatar ? (
-                            <img src={c.authorAvatar} className="size-6 rounded-full object-cover" alt="" />
+                            <img
+                              src={c.authorAvatar}
+                              className="size-6 rounded-full object-cover"
+                              alt=""
+                            />
                           ) : (
                             <div className="size-6 rounded-full bg-primary/20 flex items-center justify-center font-bold text-[10px] text-primary">
                               <User className="size-3" />
@@ -201,30 +236,46 @@ export default function AdminCommentsPage() {
                         </div>
                       </td>
                       <td className="p-4 max-w-xs truncate text-white/90">{c.content}</td>
-                      <td className="p-4 font-semibold text-white/70 max-w-xs truncate">{c.storyTitle}</td>
+                      <td className="p-4 font-semibold text-white/70 max-w-xs truncate">
+                        {c.storyTitle}
+                      </td>
                       <td className="p-4">
-                        <span className={`px-2 py-0.5 rounded text-[9px] uppercase tracking-wider font-bold ${
-                          c.status === "approved"
-                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                            : c.status === "rejected"
-                            ? "bg-red-500/10 text-red-400 border border-red-500/20"
-                            : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                        }`}>
+                        <span
+                          className={`px-2 py-0.5 rounded text-[9px] uppercase tracking-wider font-bold ${
+                            c.status === "approved"
+                              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                              : c.status === "rejected"
+                                ? "bg-red-500/10 text-red-400 border border-red-500/20"
+                                : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                          }`}
+                        >
                           {c.status}
                         </span>
                       </td>
                       <td className="p-4 text-right space-x-2 whitespace-nowrap">
                         {c.status !== "approved" && (
-                          <button onClick={() => handleAction(c.id, "approve")} className="p-1 text-emerald-400 hover:text-emerald-300 transition-colors inline-block" title="Approve">
+                          <button
+                            onClick={() => handleAction(c.id, "approve")}
+                            className="p-1 text-emerald-400 hover:text-emerald-300 transition-colors inline-block"
+                            title="Approve"
+                          >
                             <Check className="size-4" />
                           </button>
                         )}
                         {c.status !== "rejected" && (
-                          <button onClick={() => handleAction(c.id, "reject")} className="p-1 text-red-400 hover:text-red-300 transition-colors inline-block" title="Reject">
+                          <button
+                            onClick={() => handleAction(c.id, "reject")}
+                            className="p-1 text-red-400 hover:text-red-300 transition-colors inline-block"
+                            title="Reject"
+                          >
                             <X className="size-4" />
                           </button>
                         )}
-                        <button onClick={() => handleAction(c.id, "delete")} className="p-1 text-white/30 hover:text-red-400 transition-colors inline-block" title="Delete Content">
+                        <button
+                          onClick={() => handleAction(c.id, "delete")}
+                          className="p-1 text-white/30 hover:text-red-400 transition-colors inline-block"
+                          title="Delete Content"
+                        >
                           <Trash2 className="size-4" />
                         </button>
                       </td>

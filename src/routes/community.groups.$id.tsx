@@ -1,6 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Users, Globe, Lock, ShieldAlert, ArrowLeft, Send, Sparkles, MessageCircle } from "lucide-react";
+import {
+  Users,
+  Globe,
+  Lock,
+  ShieldAlert,
+  ArrowLeft,
+  Send,
+  Sparkles,
+  MessageCircle,
+} from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 
 export const Route = createFileRoute("/community/groups/$id")({
@@ -139,12 +148,8 @@ export default function GroupDetailPage() {
               {group.privacy === "public" ? "🌐 Public Group" : "🔒 Private Group"}
             </span>
           </div>
-          <h1 className="font-display text-3xl font-bold text-white leading-tight">
-            {group.name}
-          </h1>
-          <p className="text-xs text-white/50 leading-relaxed font-sans">
-            {group.description}
-          </p>
+          <h1 className="font-display text-3xl font-bold text-white leading-tight">{group.name}</h1>
+          <p className="text-xs text-white/50 leading-relaxed font-sans">{group.description}</p>
         </div>
 
         {user ? (
@@ -191,7 +196,10 @@ export default function GroupDetailPage() {
               </div>
             ) : (
               announcements.map((ann) => (
-                <div key={ann.id} className="bg-primary/5 border border-primary/10 p-5 rounded-sm space-y-2">
+                <div
+                  key={ann.id}
+                  className="bg-primary/5 border border-primary/10 p-5 rounded-sm space-y-2"
+                >
                   <h4 className="text-xs font-sans font-bold text-white/95">{ann.title}</h4>
                   <p className="text-xs text-white/50 leading-relaxed font-sans">{ann.content}</p>
                   <p className="text-[8px] text-white/20 font-sans">
@@ -204,7 +212,10 @@ export default function GroupDetailPage() {
 
           {/* Add Announcement Form (Moderator only) */}
           {isOwnerOrMod && (
-            <form onSubmit={handleCreateAnnouncement} className="bg-[#121212] border border-white/5 p-5 space-y-3 rounded-sm">
+            <form
+              onSubmit={handleCreateAnnouncement}
+              className="bg-[#121212] border border-white/5 p-5 space-y-3 rounded-sm"
+            >
               <h4 className="text-[10px] font-sans font-bold uppercase tracking-widest text-white/70">
                 Post New Announcement
               </h4>

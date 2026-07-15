@@ -9,8 +9,8 @@ const storyIncludes: any = {
   themes: {
     select: {
       themeId: true,
-      theme: { select: { id: true, name: true, slug: true } }
-    }
+      theme: { select: { id: true, name: true, slug: true } },
+    },
   },
   images: {
     orderBy: [{ heroImage: "desc" }, { sortOrder: "asc" }],
@@ -69,7 +69,8 @@ export const Route = createFileRoute("/api/admin/stories")({
         const query = url.searchParams.get("query") ?? undefined;
         const status = url.searchParams.get("status") ?? undefined;
         const region = url.searchParams.get("region") ?? undefined;
-        const theme = (url.searchParams.get("theme") || url.searchParams.get("category")) ?? undefined;
+        const theme =
+          (url.searchParams.get("theme") || url.searchParams.get("category")) ?? undefined;
         const sortBy = url.searchParams.get("sortBy") ?? "date";
         const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10));
         const pageSize = Math.min(
@@ -104,7 +105,7 @@ export const Route = createFileRoute("/api/admin/stories")({
             { author: { name: { contains: query, mode: "insensitive" } } },
             { themes: { some: { theme: { name: { contains: query, mode: "insensitive" } } } } },
             { state: { name: { contains: query, mode: "insensitive" } } },
-            { tags: { some: { tag: { name: { contains: query, mode: "insensitive" } } } } }
+            { tags: { some: { tag: { name: { contains: query, mode: "insensitive" } } } } },
           ];
         }
 
@@ -142,8 +143,8 @@ export const Route = createFileRoute("/api/admin/stories")({
               themes: {
                 select: {
                   themeId: true,
-                  theme: { select: { id: true, name: true, slug: true } }
-                }
+                  theme: { select: { id: true, name: true, slug: true } },
+                },
               },
               images: {
                 orderBy: { sortOrder: "asc" },
@@ -185,8 +186,7 @@ export const Route = createFileRoute("/api/admin/stories")({
         ) {
           return json(
             {
-              error:
-                "title, excerpt, content, slug, stateId, authorId, themeIds are required",
+              error: "title, excerpt, content, slug, stateId, authorId, themeIds are required",
             },
             { status: 400 },
           );

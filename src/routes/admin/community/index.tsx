@@ -31,24 +31,34 @@ export const Route = createFileRoute("/admin/community/")({
   component: AdminCommunityPage,
 });
 
-type Tab = "reports" | "spam" | "pinned" | "challenges" | "pending" | "approved" | "rejected" | "published" | "hidden" | "archived";
+type Tab =
+  | "reports"
+  | "spam"
+  | "pinned"
+  | "challenges"
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "published"
+  | "hidden"
+  | "archived";
 
 export default function AdminCommunityPage() {
   const navigate = useNavigate();
   const { user, session, initialized } = useAuthStore();
   const [activeTab, setActiveTab] = useState<Tab>("reports");
-  
+
   // Existing submission/story states
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [stories, setStories] = useState<any[]>([]);
-  
+
   // New community moderation states
   const [reports, setReports] = useState<any[]>([]);
   const [spamTopics, setSpamTopics] = useState<any[]>([]);
   const [spamPosts, setSpamPosts] = useState<any[]>([]);
   const [pinnedTopics, setPinnedTopics] = useState<any[]>([]);
   const [challenges, setChallenges] = useState<any[]>([]);
-  
+
   // New Challenge creation form state
   const [challengeTitle, setChallengeTitle] = useState("");
   const [challengeDesc, setChallengeDesc] = useState("");
@@ -113,9 +123,12 @@ export default function AdminCommunityPage() {
       } else {
         // Fetch published, hidden, archived stories
         const statusMap = { published: "Published", hidden: "Hidden", archived: "Archived" };
-        const res = await fetch(`/api/admin/stories?status=${statusMap[activeTab as "published" | "hidden" | "archived"]}&pageSize=100`, {
-          headers: { Authorization: `Bearer ${session.access_token}` },
-        });
+        const res = await fetch(
+          `/api/admin/stories?status=${statusMap[activeTab as "published" | "hidden" | "archived"]}&pageSize=100`,
+          {
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          },
+        );
         if (res.ok) {
           const data = await res.json();
           setStories(data.stories || []);
@@ -223,7 +236,10 @@ export default function AdminCommunityPage() {
     }
   };
 
-  const handleStoryVisibility = async (storyId: string, status: "Published" | "Hidden" | "Archived") => {
+  const handleStoryVisibility = async (
+    storyId: string,
+    status: "Published" | "Hidden" | "Archived",
+  ) => {
     if (!session) return;
     try {
       const res = await fetch("/api/admin/stories/visibility", {
@@ -270,8 +286,8 @@ export default function AdminCommunityPage() {
               Authorization: `Bearer ${session.access_token}`,
             },
             body: JSON.stringify({ submissionId: id, action: "Approve" }),
-          })
-        )
+          }),
+        ),
       );
       setSelectedIds([]);
       void loadData();
@@ -297,8 +313,8 @@ export default function AdminCommunityPage() {
               Authorization: `Bearer ${session.access_token}`,
             },
             body: JSON.stringify({ submissionId: id, action: "Reject", adminNotes: notes }),
-          })
-        )
+          }),
+        ),
       );
       setSelectedIds([]);
       void loadData();
@@ -319,8 +335,8 @@ export default function AdminCommunityPage() {
           fetch(`/api/admin/stories/${id}`, {
             method: "DELETE",
             headers: { Authorization: `Bearer ${session.access_token}` },
-          })
-        )
+          }),
+        ),
       );
       setSelectedIds([]);
       void loadData();
@@ -332,9 +348,7 @@ export default function AdminCommunityPage() {
   };
 
   const toggleSelect = (id: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   };
 
   const toggleSelectAll = (allIds: string[]) => {
@@ -362,22 +376,27 @@ export default function AdminCommunityPage() {
   });
 
   return (
-    <AdminLayout title="Community & Moderation" subtitle="Moderate forums, comments, regional groups and competitions">
+    <AdminLayout
+      title="Community & Moderation"
+      subtitle="Moderate forums, comments, regional groups and competitions"
+    >
       <div className="space-y-6">
         {/* Tabs Bar */}
         <div className="flex border-b border-white/10 overflow-x-auto pb-px">
-          {([
-            { id: "reports", label: "Abuse Reports" },
-            { id: "spam", label: "Spam Queue" },
-            { id: "pinned", label: "Pinned Threads" },
-            { id: "challenges", label: "Writing Challenges" },
-            { id: "pending", label: "Pending Submissions" },
-            { id: "approved", label: "Approved" },
-            { id: "rejected", label: "Rejected" },
-            { id: "published", label: "Published Stories" },
-            { id: "hidden", label: "Hidden" },
-            { id: "archived", label: "Archived" },
-          ] as { id: Tab; label: string }[]).map((tab) => (
+          {(
+            [
+              { id: "reports", label: "Abuse Reports" },
+              { id: "spam", label: "Spam Queue" },
+              { id: "pinned", label: "Pinned Threads" },
+              { id: "challenges", label: "Writing Challenges" },
+              { id: "pending", label: "Pending Submissions" },
+              { id: "approved", label: "Approved" },
+              { id: "rejected", label: "Rejected" },
+              { id: "published", label: "Published Stories" },
+              { id: "hidden", label: "Hidden" },
+              { id: "archived", label: "Archived" },
+            ] as { id: Tab; label: string }[]
+          ).map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
@@ -396,7 +415,10 @@ export default function AdminCommunityPage() {
         {loading ? (
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-16 bg-white/5 animate-pulse rounded border border-white/5" />
+              <div
+                key={i}
+                className="h-16 bg-white/5 animate-pulse rounded border border-white/5"
+              />
             ))}
           </div>
         ) : (
@@ -405,7 +427,9 @@ export default function AdminCommunityPage() {
             {activeTab === "reports" && (
               <div className="bg-[#141414] border border-white/8 rounded overflow-hidden">
                 {reports.length === 0 ? (
-                  <div className="p-8 text-center text-white/30 italic">No reported posts at this time.</div>
+                  <div className="p-8 text-center text-white/30 italic">
+                    No reported posts at this time.
+                  </div>
                 ) : (
                   <table className="w-full text-left border-collapse">
                     <thead>
@@ -420,15 +444,21 @@ export default function AdminCommunityPage() {
                     <tbody className="divide-y divide-white/5 text-white/85">
                       {reports.map((r) => (
                         <tr key={r.id} className="hover:bg-white/3">
-                          <td className="p-4 font-bold text-white/60">{r.user?.name || "Member"}</td>
-                          <td className="p-4 font-bold text-white/60">{r.post?.user?.name || "Member"}</td>
+                          <td className="p-4 font-bold text-white/60">
+                            {r.user?.name || "Member"}
+                          </td>
+                          <td className="p-4 font-bold text-white/60">
+                            {r.post?.user?.name || "Member"}
+                          </td>
                           <td className="p-4">
                             <span className="bg-red-950/20 border border-red-500/20 text-red-400 font-bold uppercase tracking-wider text-[8px] px-2 py-0.5 rounded-full">
                               {r.reason}
                             </span>
                           </td>
                           <td className="p-4 max-w-xs truncate">
-                            <p className="font-bold text-white/40 mb-0.5">Topic: {r.post?.topic?.title}</p>
+                            <p className="font-bold text-white/40 mb-0.5">
+                              Topic: {r.post?.topic?.title}
+                            </p>
                             <p className="italic text-white/70">"{r.post?.content}"</p>
                           </td>
                           <td className="p-4 text-right space-x-2 whitespace-nowrap">
@@ -462,7 +492,9 @@ export default function AdminCommunityPage() {
             {/* 2. SPAM QUEUE */}
             {activeTab === "spam" && (
               <div className="space-y-4">
-                <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-white/40">Spam discussions & posts</h3>
+                <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-white/40">
+                  Spam discussions & posts
+                </h3>
                 <div className="bg-[#141414] border border-white/8 rounded overflow-hidden">
                   {spamTopics.length === 0 && spamPosts.length === 0 ? (
                     <div className="p-8 text-center text-white/30 italic">Spam queue is empty.</div>
@@ -500,7 +532,9 @@ export default function AdminCommunityPage() {
                               Spam Reply
                             </span>
                             <p className="italic text-white/70">"{p.content}"</p>
-                            <p className="text-[10px] text-white/40">By {p.user?.name} in "{p.topic?.title}"</p>
+                            <p className="text-[10px] text-white/40">
+                              By {p.user?.name} in "{p.topic?.title}"
+                            </p>
                           </div>
                           <div className="flex gap-2">
                             <button
@@ -558,7 +592,9 @@ export default function AdminCommunityPage() {
             {activeTab === "challenges" && (
               <div className="space-y-4">
                 <div className="flex justify-between items-center pb-2">
-                  <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-white/40">Competitions & Story Challenges</h3>
+                  <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-white/40">
+                    Competitions & Story Challenges
+                  </h3>
                   <button
                     onClick={() => setShowChallengeForm(!showChallengeForm)}
                     className="flex items-center gap-1.5 bg-primary text-white text-[10px] font-sans font-bold uppercase tracking-widest px-3 py-1.5 rounded-sm hover:bg-primary/95"
@@ -569,13 +605,18 @@ export default function AdminCommunityPage() {
                 </div>
 
                 {showChallengeForm && (
-                  <form onSubmit={handleCreateChallenge} className="bg-[#141414] border border-white/10 p-5 rounded space-y-4 max-w-xl">
+                  <form
+                    onSubmit={handleCreateChallenge}
+                    className="bg-[#141414] border border-white/10 p-5 rounded space-y-4 max-w-xl"
+                  >
                     <h4 className="text-xs font-sans font-bold uppercase tracking-widest text-primary border-b border-white/5 pb-2">
                       Create Story Challenge
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1 col-span-2">
-                        <label className="text-[9px] uppercase tracking-wider text-white/40">Challenge Title</label>
+                        <label className="text-[9px] uppercase tracking-wider text-white/40">
+                          Challenge Title
+                        </label>
                         <input
                           type="text"
                           required
@@ -585,7 +626,9 @@ export default function AdminCommunityPage() {
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[9px] uppercase tracking-wider text-white/40">Theme state/tag</label>
+                        <label className="text-[9px] uppercase tracking-wider text-white/40">
+                          Theme state/tag
+                        </label>
                         <input
                           type="text"
                           value={challengeTheme}
@@ -594,7 +637,9 @@ export default function AdminCommunityPage() {
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[9px] uppercase tracking-wider text-white/40">Prize Details</label>
+                        <label className="text-[9px] uppercase tracking-wider text-white/40">
+                          Prize Details
+                        </label>
                         <input
                           type="text"
                           value={challengePrize}
@@ -603,7 +648,9 @@ export default function AdminCommunityPage() {
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[9px] uppercase tracking-wider text-white/40">Start Date</label>
+                        <label className="text-[9px] uppercase tracking-wider text-white/40">
+                          Start Date
+                        </label>
                         <input
                           type="datetime-local"
                           required
@@ -613,7 +660,9 @@ export default function AdminCommunityPage() {
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[9px] uppercase tracking-wider text-white/40">End Date / Deadline</label>
+                        <label className="text-[9px] uppercase tracking-wider text-white/40">
+                          End Date / Deadline
+                        </label>
                         <input
                           type="datetime-local"
                           required
@@ -623,7 +672,9 @@ export default function AdminCommunityPage() {
                         />
                       </div>
                       <div className="space-y-1 col-span-2">
-                        <label className="text-[9px] uppercase tracking-wider text-white/40">Description Overview</label>
+                        <label className="text-[9px] uppercase tracking-wider text-white/40">
+                          Description Overview
+                        </label>
                         <textarea
                           required
                           rows={3}
@@ -633,7 +684,9 @@ export default function AdminCommunityPage() {
                         />
                       </div>
                       <div className="space-y-1 col-span-2">
-                        <label className="text-[9px] uppercase tracking-wider text-white/40">Detailed Rules</label>
+                        <label className="text-[9px] uppercase tracking-wider text-white/40">
+                          Detailed Rules
+                        </label>
                         <textarea
                           required
                           rows={3}
@@ -663,7 +716,9 @@ export default function AdminCommunityPage() {
 
                 <div className="bg-[#141414] border border-white/8 rounded overflow-hidden">
                   {challenges.length === 0 ? (
-                    <div className="p-8 text-center text-white/30 italic">No challenges launched yet.</div>
+                    <div className="p-8 text-center text-white/30 italic">
+                      No challenges launched yet.
+                    </div>
                   ) : (
                     <table className="w-full text-left border-collapse">
                       <thead>
@@ -686,9 +741,13 @@ export default function AdminCommunityPage() {
                               <td className="p-4">{c.prize || "Badge / XP"}</td>
                               <td className="p-4 font-mono">{c._count?.entries ?? 0}</td>
                               <td className="p-4">
-                                <span className={`text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm ${
-                                  isEnded ? "bg-red-950/20 text-red-400 border border-red-500/10" : "bg-emerald-950/20 text-emerald-400 border border-emerald-500/10"
-                                }`}>
+                                <span
+                                  className={`text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm ${
+                                    isEnded
+                                      ? "bg-red-950/20 text-red-400 border border-red-500/10"
+                                      : "bg-emerald-950/20 text-emerald-400 border border-emerald-500/10"
+                                  }`}
+                                >
                                   {isEnded ? "Ended" : "Active"}
                                 </span>
                               </td>
@@ -714,7 +773,9 @@ export default function AdminCommunityPage() {
             {(activeTab === "pending" || activeTab === "approved" || activeTab === "rejected") && (
               <div className="bg-[#141414] border border-white/8 rounded overflow-hidden">
                 {processedSubmissions.length === 0 ? (
-                  <div className="p-8 text-center text-sm font-sans text-white/40">No contributions found matching your filters.</div>
+                  <div className="p-8 text-center text-sm font-sans text-white/40">
+                    No contributions found matching your filters.
+                  </div>
                 ) : (
                   <table className="w-full text-left font-sans text-xs border-collapse">
                     <thead>
@@ -722,7 +783,10 @@ export default function AdminCommunityPage() {
                         <th className="p-4 w-10">
                           <input
                             type="checkbox"
-                            checked={selectedIds.length > 0 && selectedIds.length === processedSubmissions.length}
+                            checked={
+                              selectedIds.length > 0 &&
+                              selectedIds.length === processedSubmissions.length
+                            }
                             onChange={() => toggleSelectAll(processedSubmissions.map((s) => s.id))}
                             className="rounded bg-zinc-900 border-white/10 cursor-pointer"
                           />
@@ -746,29 +810,53 @@ export default function AdminCommunityPage() {
                           <td className="p-4 font-medium">
                             <div className="flex items-center gap-2">
                               {s.user?.avatarUrl ? (
-                                <img src={s.user.avatarUrl} className="size-6 rounded-full object-cover" alt="" />
+                                <img
+                                  src={s.user.avatarUrl}
+                                  className="size-6 rounded-full object-cover"
+                                  alt=""
+                                />
                               ) : (
                                 <div className="size-6 rounded-full bg-primary/20 flex items-center justify-center font-bold text-[10px] text-primary">
                                   {s.user?.name?.slice(0, 1) || "C"}
                                 </div>
                               )}
                               <div>
-                                <p className="font-semibold text-white">{s.user?.name || "Anonymous"}</p>
+                                <p className="font-semibold text-white">
+                                  {s.user?.name || "Anonymous"}
+                                </p>
                                 <p className="text-[10px] text-white/40">{s.user?.email}</p>
                               </div>
                             </div>
                           </td>
-                          <td className="p-4 max-w-xs font-semibold text-white truncate">{s.title}</td>
+                          <td className="p-4 max-w-xs font-semibold text-white truncate">
+                            {s.title}
+                          </td>
                           <td className="p-4 text-right space-x-2">
-                            <Button size="sm" variant="outline" className="h-7 text-[10px] px-2 rounded-sm border-white/10 text-white" onClick={() => setPreviewStory(s)}>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-[10px] px-2 rounded-sm border-white/10 text-white"
+                              onClick={() => setPreviewStory(s)}
+                            >
                               <Eye className="size-3 mr-1" /> Preview
                             </Button>
                             {activeTab === "pending" && (
                               <>
-                                <Button size="sm" className="h-7 text-[10px] px-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-sm" onClick={() => handleSubAction(s.id, "Approve")}>
+                                <Button
+                                  size="sm"
+                                  className="h-7 text-[10px] px-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-sm"
+                                  onClick={() => handleSubAction(s.id, "Approve")}
+                                >
                                   Approve
                                 </Button>
-                                <Button size="sm" className="h-7 text-[10px] px-2 bg-destructive hover:bg-destructive/90 text-white rounded-sm" onClick={() => { setRejectNotesId(s.id); setRejectNotesText(""); }}>
+                                <Button
+                                  size="sm"
+                                  className="h-7 text-[10px] px-2 bg-destructive hover:bg-destructive/90 text-white rounded-sm"
+                                  onClick={() => {
+                                    setRejectNotesId(s.id);
+                                    setRejectNotesText("");
+                                  }}
+                                >
                                   Reject
                                 </Button>
                               </>
@@ -786,7 +874,9 @@ export default function AdminCommunityPage() {
             {(activeTab === "published" || activeTab === "hidden" || activeTab === "archived") && (
               <div className="bg-[#141414] border border-white/8 rounded overflow-hidden">
                 {processedStories.length === 0 ? (
-                  <div className="p-8 text-center text-sm font-sans text-white/40">No stories found matching your filters.</div>
+                  <div className="p-8 text-center text-sm font-sans text-white/40">
+                    No stories found matching your filters.
+                  </div>
                 ) : (
                   <table className="w-full text-left font-sans text-xs border-collapse">
                     <thead>
@@ -794,7 +884,10 @@ export default function AdminCommunityPage() {
                         <th className="p-4 w-10">
                           <input
                             type="checkbox"
-                            checked={selectedIds.length > 0 && selectedIds.length === processedStories.length}
+                            checked={
+                              selectedIds.length > 0 &&
+                              selectedIds.length === processedStories.length
+                            }
                             onChange={() => toggleSelectAll(processedStories.map((s) => s.id))}
                             className="rounded bg-zinc-900 border-white/10 cursor-pointer"
                           />
@@ -816,26 +909,48 @@ export default function AdminCommunityPage() {
                               className="rounded bg-zinc-900 border-white/10 cursor-pointer"
                             />
                           </td>
-                          <td className="p-4 max-w-sm font-semibold text-white truncate">{st.title}</td>
-                          <td className="p-4 font-semibold text-white/70">{st.authorName || "Staff"}</td>
+                          <td className="p-4 max-w-sm font-semibold text-white truncate">
+                            {st.title}
+                          </td>
+                          <td className="p-4 font-semibold text-white/70">
+                            {st.authorName || "Staff"}
+                          </td>
                           <td className="p-4 text-white/40">{st.viewCount || 0}</td>
                           <td className="p-4 text-right space-x-2">
                             {activeTab !== "published" && (
-                              <Button size="sm" className="h-7 text-[10px] px-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-sm" onClick={() => handleStoryVisibility(st.id, "Published")}>
+                              <Button
+                                size="sm"
+                                className="h-7 text-[10px] px-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-sm"
+                                onClick={() => handleStoryVisibility(st.id, "Published")}
+                              >
                                 Publish
                               </Button>
                             )}
                             {activeTab !== "hidden" && (
-                              <Button size="sm" variant="outline" className="h-7 text-[10px] px-2 border-white/10 text-white" onClick={() => handleStoryVisibility(st.id, "Hidden")}>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-[10px] px-2 border-white/10 text-white"
+                                onClick={() => handleStoryVisibility(st.id, "Hidden")}
+                              >
                                 Hide
                               </Button>
                             )}
                             {activeTab !== "archived" && (
-                              <Button size="sm" variant="outline" className="h-7 text-[10px] px-2 border-white/10 text-white/60" onClick={() => handleStoryVisibility(st.id, "Archived")}>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-[10px] px-2 border-white/10 text-white/60"
+                                onClick={() => handleStoryVisibility(st.id, "Archived")}
+                              >
                                 Archive
                               </Button>
                             )}
-                            <Button size="sm" className="h-7 text-[10px] px-2 bg-destructive hover:bg-destructive/90 text-white rounded-sm animate-none" onClick={() => handleDeleteStory(st.id)}>
+                            <Button
+                              size="sm"
+                              className="h-7 text-[10px] px-2 bg-destructive hover:bg-destructive/90 text-white rounded-sm animate-none"
+                              onClick={() => handleDeleteStory(st.id)}
+                            >
                               <Trash2 className="size-3" />
                             </Button>
                           </td>
@@ -861,25 +976,46 @@ export default function AdminCommunityPage() {
               >
                 <div className="p-6 border-b border-white/10 flex justify-between items-start">
                   <div>
-                    <h2 className="font-display text-xl font-bold text-white mt-1">{previewStory.title}</h2>
-                    <p className="text-[10px] text-white/40 font-sans mt-0.5">By {previewStory.authorName} ({previewStory.stateName})</p>
+                    <h2 className="font-display text-xl font-bold text-white mt-1">
+                      {previewStory.title}
+                    </h2>
+                    <p className="text-[10px] text-white/40 font-sans mt-0.5">
+                      By {previewStory.authorName} ({previewStory.stateName})
+                    </p>
                   </div>
-                  <button onClick={() => setPreviewStory(null)} className="text-white/40 hover:text-white">&times;</button>
+                  <button
+                    onClick={() => setPreviewStory(null)}
+                    className="text-white/40 hover:text-white"
+                  >
+                    &times;
+                  </button>
                 </div>
-                
+
                 <div className="p-6 overflow-y-auto space-y-4 text-sm font-sans text-white/80 leading-relaxed whitespace-pre-wrap">
                   {previewStory.imageUrl && (
-                    <img src={previewStory.imageUrl} className="w-full h-48 object-cover rounded-lg mb-4" alt="" />
+                    <img
+                      src={previewStory.imageUrl}
+                      className="w-full h-48 object-cover rounded-lg mb-4"
+                      alt=""
+                    />
                   )}
                   <strong>Excerpt:</strong>
-                  <p className="italic text-white/60 pl-3 border-l-2 border-primary">{previewStory.excerpt}</p>
+                  <p className="italic text-white/60 pl-3 border-l-2 border-primary">
+                    {previewStory.excerpt}
+                  </p>
                   <hr className="border-white/10" />
                   <strong>Story Body:</strong>
                   <p>{previewStory.content}</p>
                 </div>
 
                 <div className="p-6 border-t border-white/10 flex justify-end gap-2">
-                  <Button variant="outline" className="border-white/10 rounded-sm text-white" onClick={() => setPreviewStory(null)}>Close</Button>
+                  <Button
+                    variant="outline"
+                    className="border-white/10 rounded-sm text-white"
+                    onClick={() => setPreviewStory(null)}
+                  >
+                    Close
+                  </Button>
                 </div>
               </motion.div>
             </div>
@@ -904,8 +1040,19 @@ export default function AdminCommunityPage() {
                   className="w-full min-h-[100px] border border-white/10 bg-transparent rounded p-2 text-xs font-sans text-white focus:outline-none focus:ring-1 focus:ring-primary"
                 />
                 <div className="flex justify-end gap-2">
-                  <Button variant="outline" className="border-white/10 text-xs rounded-sm text-white" onClick={() => setRejectNotesId(null)}>Cancel</Button>
-                  <Button className="bg-destructive hover:bg-destructive/90 text-xs rounded-sm text-white" onClick={() => handleSubAction(rejectNotesId, "Reject")}>Submit Rejection</Button>
+                  <Button
+                    variant="outline"
+                    className="border-white/10 text-xs rounded-sm text-white"
+                    onClick={() => setRejectNotesId(null)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    className="bg-destructive hover:bg-destructive/90 text-xs rounded-sm text-white"
+                    onClick={() => handleSubAction(rejectNotesId, "Reject")}
+                  >
+                    Submit Rejection
+                  </Button>
                 </div>
               </motion.div>
             </div>

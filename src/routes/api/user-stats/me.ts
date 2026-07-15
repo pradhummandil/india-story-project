@@ -65,23 +65,20 @@ export const Route = createFileRoute("/api/user-stats/me")({
           let historyCount = 0;
 
           try {
-            const [
-              badgeC,
-              commentsC,
-              submissionsC,
-              bookmarksC,
-              likesC,
-              continueC,
-              historyC
-            ] = await Promise.all([
-              prisma.userBadge.count({ where: { userId: user.id } }).catch(() => 0),
-              prisma.comment.count({ where: { userId: user.id } }).catch(() => 0),
-              prisma.submittedStory.count({ where: { userId: user.id } }).catch(() => 0),
-              prisma.bookmark.count({ where: { userId: user.id } }).catch(() => 0),
-              prisma.storyLike.count({ where: { userId: user.id } }).catch(() => 0),
-              prisma.readingProgress.count({ where: { userId: user.id, completed: false, progressPercent: { gt: 0 } } }).catch(() => 0),
-              prisma.readingProgress.count({ where: { userId: user.id } }).catch(() => 0)
-            ]);
+            const [badgeC, commentsC, submissionsC, bookmarksC, likesC, continueC, historyC] =
+              await Promise.all([
+                prisma.userBadge.count({ where: { userId: user.id } }).catch(() => 0),
+                prisma.comment.count({ where: { userId: user.id } }).catch(() => 0),
+                prisma.submittedStory.count({ where: { userId: user.id } }).catch(() => 0),
+                prisma.bookmark.count({ where: { userId: user.id } }).catch(() => 0),
+                prisma.storyLike.count({ where: { userId: user.id } }).catch(() => 0),
+                prisma.readingProgress
+                  .count({
+                    where: { userId: user.id, completed: false, progressPercent: { gt: 0 } },
+                  })
+                  .catch(() => 0),
+                prisma.readingProgress.count({ where: { userId: user.id } }).catch(() => 0),
+              ]);
 
             badgeCount = badgeC;
             commentsCount = commentsC;
@@ -103,7 +100,7 @@ export const Route = createFileRoute("/api/user-stats/me")({
             bookmarksCount,
             likesCount,
             continueCount,
-            historyCount
+            historyCount,
           });
         } catch (e: any) {
           console.error("[user-stats/me] error:", e);
@@ -117,7 +114,7 @@ export const Route = createFileRoute("/api/user-stats/me")({
               bookmarksCount: 0,
               likesCount: 0,
               continueCount: 0,
-              historyCount: 0
+              historyCount: 0,
             });
           }
           return json({ error: "Server error" }, { status: 500 });

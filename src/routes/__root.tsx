@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { stories, categories, useStoriesData } from "../lib/stories-data";
 import { CinematicLoader } from "../components/site/CinematicLoader";
 import { initAuthListener, useAuthStore } from "../lib/auth-store";
+import PodcastPlayer from "../components/audio/PodcastPlayer";
 
 if (typeof window !== "undefined") {
   const originalFetch = window.fetch;
@@ -182,6 +183,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <CinematicLoader />
       <Outlet />
+      <PodcastPlayer />
     </QueryClientProvider>
   );
 }
