@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
-import { Menu, X, Compass, User, LogOut, Shield, Sparkles, Search } from "lucide-react";
+import { Menu, X, Compass, User, LogOut, Shield, Sparkles, Search, Layers, Edit3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LanguageToggle } from "./LanguageToggle";
 import { openGlobalSearch } from "@/components/common/GlobalSearch";
@@ -15,7 +15,7 @@ export function Navbar() {
   const { location } = useRouterState();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const { user, signOut } = useAuthStore();
+  const { user, profile, signOut } = useAuthStore();
   const lang = useI18nStore((s) => s.lang);
   const navText = getNavText(lang);
 
@@ -50,6 +50,7 @@ export function Navbar() {
   const isAdmin = user?.app_metadata?.role === "Admin" || user?.app_metadata?.role === "SuperAdmin";
   const avatarUrl = user?.user_metadata?.avatar_url as string | undefined;
   const displayName = (user?.user_metadata?.name as string) || user?.email?.split("@")[0] || "User";
+  const role = profile?.role?.toLowerCase();
 
   return (
     <header
@@ -177,7 +178,7 @@ export function Navbar() {
                       My Profile
                     </Link>
 
-                    {isAdmin && (
+                    {(role === "admin" || role === "superadmin") && (
                       <Link
                         to="/admin"
                         preload="intent"
@@ -185,7 +186,29 @@ export function Navbar() {
                         className="flex items-center gap-2 px-4 py-2 text-xs font-sans text-white/70 hover:text-white hover:bg-white/5 transition-colors"
                       >
                         <Shield className="size-3.5" />
-                        Admin Dashboard
+                        Admin CMS
+                      </Link>
+                    )}
+                    {role === "editor" && (
+                      <Link
+                        to="/editor"
+                        preload="intent"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-xs font-sans text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                      >
+                        <Layers className="size-3.5" />
+                        Editor Workspace
+                      </Link>
+                    )}
+                    {role === "author" && (
+                      <Link
+                        to="/dashboard"
+                        preload="intent"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-xs font-sans text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                      >
+                        <Edit3 className="size-3.5" />
+                        Author Dashboard
                       </Link>
                     )}
 
@@ -296,14 +319,34 @@ export function Navbar() {
                     <User className="size-4" />
                     My Profile ({displayName})
                   </Link>
-                  {isAdmin && (
+                  {(role === "admin" || role === "superadmin") && (
                     <Link
                       to="/admin"
                       onClick={() => setOpen(false)}
                       className="py-2 text-muted-foreground hover:text-foreground border-b border-border/40 flex items-center gap-2"
                     >
                       <Shield className="size-4" />
-                      Admin Dashboard
+                      Admin CMS
+                    </Link>
+                  )}
+                  {role === "editor" && (
+                    <Link
+                      to="/editor"
+                      onClick={() => setOpen(false)}
+                      className="py-2 text-muted-foreground hover:text-foreground border-b border-border/40 flex items-center gap-2"
+                    >
+                      <Layers className="size-4" />
+                      Editor Workspace
+                    </Link>
+                  )}
+                  {role === "author" && (
+                    <Link
+                      to="/dashboard"
+                      onClick={() => setOpen(false)}
+                      className="py-2 text-muted-foreground hover:text-foreground border-b border-border/40 flex items-center gap-2"
+                    >
+                      <Edit3 className="size-4" />
+                      Author Dashboard
                     </Link>
                   )}
                   <button

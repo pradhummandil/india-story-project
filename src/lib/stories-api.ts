@@ -165,7 +165,7 @@ function normalizeThemes(payload: ThemePayload): readonly string[] {
 
 async function fetchAllStories(): Promise<Story[]> {
   const stories: Story[] = [];
-  const pageSize = 60;
+  const pageSize = 1000;
 
   for (let page = 1; ; page += 1) {
     const payload = (await requestJson(

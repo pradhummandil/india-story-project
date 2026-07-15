@@ -240,7 +240,7 @@ function subscribe(listener: () => void) {
 }
 
 export async function loadStoriesData(force = false): Promise<void> {
-  if (!force && (hasLoadedRemote || loadPromise)) {
+  if (!force && (hasLoadedRemote || stories.length > 0 || loadPromise)) {
     return loadPromise ?? Promise.resolve();
   }
 

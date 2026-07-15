@@ -15,6 +15,7 @@ import { Route as StoriesRouteImport } from './routes/stories'
 import { Route as SponsorshipRouteImport } from './routes/sponsorship'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ShareStoryRouteImport } from './routes/share-story'
+import { Route as RssRouteImport } from './routes/rss'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PrivacyRouteImport } from './routes/privacy'
@@ -88,6 +89,7 @@ import { Route as AdminContactRouteImport } from './routes/admin/contact'
 import { Route as AdminCommentsRouteImport } from './routes/admin/comments'
 import { Route as AdminAchievementsRouteImport } from './routes/admin/achievements'
 import { Route as AdminUsersIndexRouteImport } from './routes/admin/users/index'
+import { Route as AdminThemesIndexRouteImport } from './routes/admin/themes/index'
 import { Route as AdminStoriesIndexRouteImport } from './routes/admin/stories/index'
 import { Route as AdminStatesIndexRouteImport } from './routes/admin/states/index'
 import { Route as AdminSettingsIndexRouteImport } from './routes/admin/settings/index'
@@ -204,6 +206,11 @@ const SignupRoute = SignupRouteImport.update({
 const ShareStoryRoute = ShareStoryRouteImport.update({
   id: '/share-story',
   path: '/share-story',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RssRoute = RssRouteImport.update({
+  id: '/rss',
+  path: '/rss',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -569,6 +576,11 @@ const AdminAchievementsRoute = AdminAchievementsRouteImport.update({
 const AdminUsersIndexRoute = AdminUsersIndexRouteImport.update({
   id: '/users/',
   path: '/users/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminThemesIndexRoute = AdminThemesIndexRouteImport.update({
+  id: '/themes/',
+  path: '/themes/',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminStoriesIndexRoute = AdminStoriesIndexRouteImport.update({
@@ -1049,6 +1061,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/rss': typeof RssRoute
   '/share-story': typeof ShareStoryRoute
   '/signup': typeof SignupRoute
   '/sponsorship': typeof SponsorshipRoute
@@ -1160,6 +1173,7 @@ export interface FileRoutesByFullPath {
   '/admin/settings/': typeof AdminSettingsIndexRoute
   '/admin/states/': typeof AdminStatesIndexRoute
   '/admin/stories/': typeof AdminStoriesIndexRoute
+  '/admin/themes/': typeof AdminThemesIndexRoute
   '/admin/users/': typeof AdminUsersIndexRoute
   '/admin/newsroom/story/$id': typeof AdminNewsroomStoryIdRoute
   '/admin/stories/$id/edit': typeof AdminStoriesIdEditRoute
@@ -1215,6 +1229,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/rss': typeof RssRoute
   '/share-story': typeof ShareStoryRoute
   '/signup': typeof SignupRoute
   '/sponsorship': typeof SponsorshipRoute
@@ -1325,6 +1340,7 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminSettingsIndexRoute
   '/admin/states': typeof AdminStatesIndexRoute
   '/admin/stories': typeof AdminStoriesIndexRoute
+  '/admin/themes': typeof AdminThemesIndexRoute
   '/admin/users': typeof AdminUsersIndexRoute
   '/admin/newsroom/story/$id': typeof AdminNewsroomStoryIdRoute
   '/admin/stories/$id/edit': typeof AdminStoriesIdEditRoute
@@ -1383,6 +1399,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/rss': typeof RssRoute
   '/share-story': typeof ShareStoryRoute
   '/signup': typeof SignupRoute
   '/sponsorship': typeof SponsorshipRoute
@@ -1494,6 +1511,7 @@ export interface FileRoutesById {
   '/admin/settings/': typeof AdminSettingsIndexRoute
   '/admin/states/': typeof AdminStatesIndexRoute
   '/admin/stories/': typeof AdminStoriesIndexRoute
+  '/admin/themes/': typeof AdminThemesIndexRoute
   '/admin/users/': typeof AdminUsersIndexRoute
   '/admin/newsroom/story/$id': typeof AdminNewsroomStoryIdRoute
   '/admin/stories/$id/edit': typeof AdminStoriesIdEditRoute
@@ -1553,6 +1571,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/profile'
     | '/reset-password'
+    | '/rss'
     | '/share-story'
     | '/signup'
     | '/sponsorship'
@@ -1664,6 +1683,7 @@ export interface FileRouteTypes {
     | '/admin/settings/'
     | '/admin/states/'
     | '/admin/stories/'
+    | '/admin/themes/'
     | '/admin/users/'
     | '/admin/newsroom/story/$id'
     | '/admin/stories/$id/edit'
@@ -1719,6 +1739,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/profile'
     | '/reset-password'
+    | '/rss'
     | '/share-story'
     | '/signup'
     | '/sponsorship'
@@ -1829,6 +1850,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/states'
     | '/admin/stories'
+    | '/admin/themes'
     | '/admin/users'
     | '/admin/newsroom/story/$id'
     | '/admin/stories/$id/edit'
@@ -1886,6 +1908,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/profile'
     | '/reset-password'
+    | '/rss'
     | '/share-story'
     | '/signup'
     | '/sponsorship'
@@ -1997,6 +2020,7 @@ export interface FileRouteTypes {
     | '/admin/settings/'
     | '/admin/states/'
     | '/admin/stories/'
+    | '/admin/themes/'
     | '/admin/users/'
     | '/admin/newsroom/story/$id'
     | '/admin/stories/$id/edit'
@@ -2055,6 +2079,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  RssRoute: typeof RssRoute
   ShareStoryRoute: typeof ShareStoryRoute
   SignupRoute: typeof SignupRoute
   SponsorshipRoute: typeof SponsorshipRoute
@@ -2170,6 +2195,13 @@ declare module '@tanstack/react-router' {
       path: '/share-story'
       fullPath: '/share-story'
       preLoaderRoute: typeof ShareStoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rss': {
+      id: '/rss'
+      path: '/rss'
+      fullPath: '/rss'
+      preLoaderRoute: typeof RssRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -2681,6 +2713,13 @@ declare module '@tanstack/react-router' {
       path: '/users'
       fullPath: '/admin/users/'
       preLoaderRoute: typeof AdminUsersIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/themes/': {
+      id: '/admin/themes/'
+      path: '/themes'
+      fullPath: '/admin/themes/'
+      preLoaderRoute: typeof AdminThemesIndexRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/stories/': {
@@ -3314,6 +3353,7 @@ interface AdminRouteChildren {
   AdminSettingsIndexRoute: typeof AdminSettingsIndexRoute
   AdminStatesIndexRoute: typeof AdminStatesIndexRoute
   AdminStoriesIndexRoute: typeof AdminStoriesIndexRoute
+  AdminThemesIndexRoute: typeof AdminThemesIndexRoute
   AdminUsersIndexRoute: typeof AdminUsersIndexRoute
   AdminNewsroomStoryIdRoute: typeof AdminNewsroomStoryIdRoute
   AdminStoriesIdEditRoute: typeof AdminStoriesIdEditRoute
@@ -3338,6 +3378,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminSettingsIndexRoute: AdminSettingsIndexRoute,
   AdminStatesIndexRoute: AdminStatesIndexRoute,
   AdminStoriesIndexRoute: AdminStoriesIndexRoute,
+  AdminThemesIndexRoute: AdminThemesIndexRoute,
   AdminUsersIndexRoute: AdminUsersIndexRoute,
   AdminNewsroomStoryIdRoute: AdminNewsroomStoryIdRoute,
   AdminStoriesIdEditRoute: AdminStoriesIdEditRoute,
@@ -3715,6 +3756,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  RssRoute: RssRoute,
   ShareStoryRoute: ShareStoryRoute,
   SignupRoute: SignupRoute,
   SponsorshipRoute: SponsorshipRoute,

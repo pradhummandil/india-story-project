@@ -10,7 +10,7 @@ export const Route = createFileRoute("/admin")({
 function isAdminRole(role: string | null | undefined): boolean {
   if (!role) return false;
   const r = role.toLowerCase();
-  return r === "admin" || r === "superadmin" || r === "editor";
+  return r === "admin" || r === "superadmin";
 }
 
 function AdminRootLayout() {

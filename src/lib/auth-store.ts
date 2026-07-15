@@ -41,7 +41,15 @@ export const useAuthStore = create<AuthState>((set) => ({
       return;
     }
 
-    set({ session, user: session.user, loading: true });
+    const isInitialLoad = !useAuthStore.getState().initialized;
+    const hasNoUser = !useAuthStore.getState().user;
+    const shouldShowLoading = isInitialLoad || hasNoUser;
+
+    if (shouldShowLoading) {
+      set({ session, user: session.user, loading: true });
+    } else {
+      set({ session, user: session.user });
+    }
 
     try {
       const res = await fetch("/api/auth/profile", {

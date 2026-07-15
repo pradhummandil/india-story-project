@@ -104,7 +104,7 @@ export const Route = createFileRoute("/api/search")({
           }
 
           // 2. Perform live multi-category database search
-          const [stories, themes, authors, videos, webStories, states, tags] = await Promise.all([
+          const [stories, themes, authors, videos, webStories, states, tags, community] = await Promise.all([
             prisma.story.findMany({
               where: {
                 status: "Published",
@@ -189,8 +189,38 @@ export const Route = createFileRoute("/api/search")({
               where: { name: { contains: query, mode: "insensitive" } },
               take: 5,
               select: { id: true, name: true, slug: true }
+            }),
+            prisma.discussionTopic.findMany({
+              where: {
+                OR: [
+                  { title: { contains: query, mode: "insensitive" } },
+                  { content: { contains: query, mode: "insensitive" } },
+                ]
+              },
+              take: 5,
+              select: { id: true, title: true, content: true }
             })
           ]);
+
+          const CAREER_OPENINGS = [
+            { id: "career-1", title: "Storytelling Fellow", location: "Lucknow / Remote", desc: "Crafting narratives of changemakers and rural innovations." },
+            { id: "career-2", title: "Video Documentary Producer", location: "New Delhi", desc: "Producing cinematic, deep-dive documentaries on regional heroes." },
+            { id: "career-3", title: "Community Manager", location: "Bhopal", desc: "Engaging and cultivating dialogue across local story circles." },
+          ];
+
+          const IMPACT_MILESTONES = [
+            { id: "impact-1", title: "500+ Changemakers Cataloged", desc: "Directly tracking local heroes across multiple states." },
+            { id: "impact-2", title: "20+ Regional States Mapped", desc: "Bringing underrepresented dispatches to national attention." },
+            { id: "impact-3", title: "10M+ Reader Impressions", desc: "Driving tangible policy attention and community support." },
+          ];
+
+          const matchedCareers = CAREER_OPENINGS.filter(c =>
+            c.title.toLowerCase().includes(cacheKey) || c.desc.toLowerCase().includes(cacheKey)
+          );
+
+          const matchedImpact = IMPACT_MILESTONES.filter(m =>
+            m.title.toLowerCase().includes(cacheKey) || m.desc.toLowerCase().includes(cacheKey)
+          );
 
           const payload = {
             stories,
@@ -200,6 +230,9 @@ export const Route = createFileRoute("/api/search")({
             webStories,
             states,
             tags,
+            community,
+            careers: matchedCareers,
+            impact: matchedImpact,
             isSuggestions: false
           };
 

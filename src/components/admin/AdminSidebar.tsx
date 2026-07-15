@@ -18,6 +18,7 @@ import {
   Award,
   Mail,
   Layers,
+  Compass,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/lib/auth-store";
@@ -25,6 +26,7 @@ import { useAuthStore } from "@/lib/auth-store";
 const NAV_ITEMS = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/stories", label: "Stories", icon: BookOpen },
+  { to: "/admin/newsroom", label: "Newsroom Console", icon: BookOpen },
   { to: "/admin/slideshow", label: "Slideshow", icon: Layers },
   { to: "/admin/contact", label: "Inbox", icon: Mail },
   { to: "/admin/newsletter", label: "Newsletter", icon: Mail },
@@ -32,9 +34,13 @@ const NAV_ITEMS = [
   { to: "/admin/comments", label: "Comments", icon: MessageSquare },
   { to: "/admin/leaderboard", label: "Leaderboard", icon: Trophy },
   { to: "/admin/achievements", label: "Achievements", icon: Award },
-  { to: "/admin/users", label: "Users", icon: Users },
-  { to: "/admin/media", label: "Media", icon: Image },
+  { to: "/admin/users", label: "Users & Roles", icon: Users },
+  { to: "/admin/authors", label: "Authors CMS", icon: Users },
+  { to: "/admin/themes", label: "Themes CMS", icon: Compass },
+  { to: "/admin/states", label: "States CMS", icon: MapPin },
+  { to: "/admin/media", label: "Media Library", icon: Image },
   { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+  { to: "/admin/infrastructure", label: "Infrastructure", icon: Settings },
   { to: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
@@ -46,7 +52,15 @@ export function AdminSidebar({
   onToggle: () => void;
 }) {
   const { location } = useRouterState();
-  const { signOut } = useAuthStore();
+  const { profile, signOut } = useAuthStore();
+  const role = profile?.role?.toLowerCase();
+
+  const filteredNavItems = NAV_ITEMS.filter((item) => {
+    if (item.to === "/admin/settings" || item.to === "/admin/infrastructure") {
+      return role === "superadmin";
+    }
+    return true;
+  });
 
   const isActive = (item: (typeof NAV_ITEMS)[0]) => {
     if (item.exact) return location.pathname === item.to;
@@ -102,7 +116,7 @@ export function AdminSidebar({
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
-        {NAV_ITEMS.map((item) => {
+        {filteredNavItems.map((item) => {
           const active = isActive(item);
           const Icon = item.icon;
           return (

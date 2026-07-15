@@ -48,55 +48,86 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Sitemap links */}
+          {/* Column 3: Sitemap Explore & Actions */}
           <div className="space-y-4">
             <h4 className="text-xs uppercase tracking-widest font-bold text-primary font-sans">
-              {footerText.explore}
+              Explore & Community
             </h4>
             <ul className="space-y-2 text-sm font-sans font-medium">
               <li>
-                <Link
-                  to="/"
-                  className="text-muted-foreground hover:text-foreground hover:underline transition-all"
-                >
-                  {footerText.home}
+                <Link to="/" className="text-muted-foreground hover:text-foreground transition-all">
+                  Home
                 </Link>
               </li>
               <li>
-                <Link
-                  to="/stories"
-                  className="text-muted-foreground hover:text-foreground hover:underline transition-all"
-                >
-                  {footerText.stories}
+                <Link to="/stories" className="text-muted-foreground hover:text-foreground transition-all">
+                  Stories
                 </Link>
               </li>
               <li>
-                <Link
-                  to="/about"
-                  className="text-muted-foreground hover:text-foreground hover:underline transition-all"
-                >
-                  {footerText.about}
+                <Link to="/explore" className="text-muted-foreground hover:text-foreground transition-all">
+                  Explore Hub
                 </Link>
               </li>
               <li>
-                <Link
-                  to="/contact"
-                  className="text-muted-foreground hover:text-foreground hover:underline transition-all"
-                >
-                  {footerText.contact}
+                <Link to="/map" className="text-muted-foreground hover:text-foreground transition-all">
+                  Interactive Map
+                </Link>
+              </li>
+              <li>
+                <Link to="/community" className="text-muted-foreground hover:text-foreground transition-all">
+                  Community Forums
+                </Link>
+              </li>
+              <li>
+                <Link to="/share-story" className="text-muted-foreground hover:text-foreground transition-all">
+                  Share Your Story
+                </Link>
+              </li>
+              <li>
+                <Link to="/rss" className="text-muted-foreground hover:text-foreground transition-all">
+                  Podcast RSS Feed
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Contact Details */}
+          {/* Column 4: Company & Compliance */}
           <div className="space-y-4">
             <h4 className="text-xs uppercase tracking-widest font-bold text-primary font-sans">
-              {footerText.getInTouch}
+              Company & Legal
             </h4>
-            <ul className="space-y-2 text-sm text-muted-foreground font-sans">
-              <li>indiastoryprojectmanager21@gmail.com</li>
-              <li>Lucknow · Delhi · Bhopal</li>
+            <ul className="space-y-2 text-sm font-sans font-medium">
+              <li>
+                <Link to="/about" className="text-muted-foreground hover:text-foreground transition-all">
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link to="/careers" className="text-muted-foreground hover:text-foreground transition-all">
+                  Careers
+                </Link>
+              </li>
+              <li>
+                <Link to="/impact" className="text-muted-foreground hover:text-foreground transition-all">
+                  Impact Initiatives
+                </Link>
+              </li>
+              <li>
+                <Link to="/media-kit" className="text-muted-foreground hover:text-foreground transition-all">
+                  Media & Press Kit
+                </Link>
+              </li>
+              <li>
+                <Link to="/privacy" className="text-muted-foreground hover:text-foreground transition-all">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact" className="text-muted-foreground hover:text-foreground transition-all">
+                  Contact Support
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
