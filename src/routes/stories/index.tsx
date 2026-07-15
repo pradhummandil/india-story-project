@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { openGlobalSearch } from "@/components/common/GlobalSearch";
 import { Search, ArrowUpDown, MapPin, User, Compass } from "lucide-react";
 import { SiteLayout } from "@/components/site/Layout";
 import { StoryCard } from "@/components/site/StoryCard";
@@ -318,13 +319,15 @@ function StoriesList() {
         {/* Toolbar: Search, Filters, Sort, Language */}
         <div className="flex flex-col lg:flex-row flex-wrap items-stretch gap-4 mb-12 bg-card/45 border border-border/50 p-6">
           {/* Search Box */}
-          <div className="flex-1 min-w-[240px] relative">
+          <div
+            onClick={openGlobalSearch}
+            className="flex-1 min-w-[240px] relative cursor-pointer"
+          >
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
-              value={query}
-              onChange={(e) => handleSearchChange(e.target.value)}
+              readOnly
               placeholder={commonText.searchPlaceholder}
-              className="pl-11 h-12 bg-background border-border rounded-none focus-visible:ring-primary/45 font-sans"
+              className="pl-11 h-12 bg-background border-border rounded-none focus-visible:ring-0 font-sans cursor-pointer"
             />
           </div>
 

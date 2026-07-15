@@ -229,9 +229,9 @@ export function StoryMap() {
                     onMouseLeave={() => setHoveredPath(null)}
                     onClick={() => {
                       void navigate({
-                        to: "/stories/" as any,
+                        to: "/stories/",
                         search: { state: path.name },
-                      });
+                      } as any);
                     }}
                   />
                 );

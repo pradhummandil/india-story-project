@@ -1,8 +1,9 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
-import { Menu, X, Compass, User, LogOut, Shield, Sparkles } from "lucide-react";
+import { Menu, X, Compass, User, LogOut, Shield, Sparkles, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LanguageToggle } from "./LanguageToggle";
+import { openGlobalSearch } from "@/components/common/GlobalSearch";
 import { useI18nStore, getNavText } from "@/lib/i18n";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/lib/auth-store";
@@ -122,6 +123,15 @@ export function Navbar() {
 
         {/* Right side elements: Language Switch + Auth / Explore Button */}
         <div className="hidden md:flex items-center gap-4">
+          <button
+            onClick={openGlobalSearch}
+            className={`p-2 rounded-full hover:bg-muted/80 transition-colors duration-300 relative focus:outline-none cursor-pointer ${
+              isTransparent ? "text-white/80 hover:text-white" : "text-foreground/80 hover:text-primary"
+            }`}
+            title="Search (Ctrl+K)"
+          >
+            <Search className="size-4" />
+          </button>
           <LanguageToggle />
 
           {user ? (
@@ -211,6 +221,15 @@ export function Navbar() {
 
         {/* Mobile controls */}
         <div className="flex md:hidden items-center gap-4">
+          <button
+            onClick={openGlobalSearch}
+            className={`p-2 transition-colors duration-300 relative focus:outline-none cursor-pointer ${
+              isTransparent ? "text-white" : "text-foreground"
+            }`}
+            title="Search"
+          >
+            <Search className="size-5" />
+          </button>
           <LanguageToggle />
           <button
             className={`p-2 transition-colors duration-300 relative focus:outline-none ${

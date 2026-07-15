@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { PremiumLoader } from "@/components/common/PremiumLoader";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -201,8 +202,142 @@ function ProfilePage() {
   const [historyCount, setHistoryCount] = useState(0);
   const [submissionsCount, setSubmissionsCount] = useState(0);
 
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
   const coverInputRef = useRef<HTMLInputElement>(null);
   const hasInitializedForm = useRef(false);
+
+  useEffect(() => {
+    if (user?.user_metadata?.avatar_url) {
+      setAvatarUrl(user.user_metadata.avatar_url);
+    }
+  }, [user]);
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      setUploadError("Invalid file type. Only JPG, JPEG, PNG, and WEBP are supported.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError("Image is too large. Max size is 5MB.");
+      return;
+    }
+
+    setUploadError(null);
+    setUploadingAvatar(true);
+    setUploadProgress(0);
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = 300;
+        canvas.height = 300;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          const minDim = Math.min(img.width, img.height);
+          const sx = (img.width - minDim) / 2;
+          const sy = (img.height - minDim) / 2;
+          ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, 300, 300);
+
+          canvas.toBlob((blob) => {
+            if (blob) {
+              uploadAvatarBlob(blob, file.name);
+            } else {
+              setUploadError("Failed to crop image.");
+              setUploadingAvatar(false);
+            }
+          }, "image/jpeg", 0.85);
+        }
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const uploadAvatarBlob = (blob: Blob, originalName: string) => {
+    if (!session) return;
+
+    const formData = new FormData();
+    formData.append("files", blob, originalName);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/admin/media");
+    xhr.setRequestHeader("Authorization", `Bearer ${session.access_token}`);
+
+    xhr.upload.addEventListener("progress", (event) => {
+      if (event.lengthComputable) {
+        const percent = Math.round((event.loaded / event.total) * 100);
+        setUploadProgress(percent);
+      }
+    });
+
+    xhr.onload = async () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const resData = JSON.parse(xhr.responseText);
+          const secureUrl = resData.files?.[0]?.url;
+          if (secureUrl) {
+            const profileRes = await fetch("/api/auth/profile", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${session.access_token}`,
+              },
+              body: JSON.stringify({
+                name,
+                bio,
+                website,
+                twitter,
+                instagram,
+                linkedin,
+                avatarUrl: secureUrl,
+              }),
+            });
+
+            if (profileRes.ok) {
+              await supabase.auth.updateUser({
+                data: { avatar_url: secureUrl },
+              });
+              setAvatarUrl(secureUrl);
+              setUploadingAvatar(false);
+              setUploadProgress(100);
+              refetchData();
+            } else {
+              setUploadError("Failed to save avatar URL to profile.");
+              setUploadingAvatar(false);
+            }
+          } else {
+            setUploadError("Upload succeeded but URL was missing.");
+            setUploadingAvatar(false);
+          }
+        } catch {
+          setUploadError("Failed to parse server response.");
+          setUploadingAvatar(false);
+        }
+      } else {
+        setUploadError(`Upload failed with status: ${xhr.status}`);
+        setUploadingAvatar(false);
+      }
+    };
+
+    xhr.onerror = () => {
+      setUploadError("Network error during upload.");
+      setUploadingAvatar(false);
+    };
+
+    xhr.send(formData);
+  };
 
   // Edit form state
   const [name, setName] = useState(user?.user_metadata?.name ?? "");
@@ -236,6 +371,7 @@ function ProfilePage() {
           setStats(d.stats);
         }
         if (d.userProfile) {
+          setAvatarUrl(d.userProfile.avatarUrl || null);
           if (!hasInitializedForm.current) {
             setName(d.userProfile.name || "");
             setBio(d.userProfile.bio || "");
@@ -391,20 +527,11 @@ function ProfilePage() {
   }, [refetchData]);
 
   if (loading || !user) {
-    return (
-      <SiteLayout>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-muted-foreground font-sans text-xs uppercase tracking-widest animate-pulse">
-            Loading profile…
-          </div>
-        </div>
-      </SiteLayout>
-    );
+    return <PremiumLoader />;
   }
 
-  const avatarUrl = user.user_metadata?.avatar_url as string | undefined;
   const userEmail = user.email ?? "";
-  const displayName = (user.user_metadata?.name as string) || userEmail.split("@")[0];
+  const displayName = name || userEmail.split("@")[0];
   const xpToNextLevel = (stats?.level ?? 1) * 500;
   const xpProgress = stats ? Math.min(100, ((stats.totalXP % 500) / 500) * 100) : 0;
 
@@ -494,18 +621,37 @@ function ProfilePage() {
           <div className="relative -mt-16 md:-mt-20 flex flex-col sm:flex-row sm:items-end gap-4 mb-8">
             {/* Avatar */}
             <div className="relative flex-shrink-0">
-              <div className="size-28 md:size-36 rounded-full border-4 border-background bg-card overflow-hidden shadow-xl">
+              <div className="size-28 md:size-36 rounded-full border-4 border-background bg-card overflow-hidden shadow-xl relative">
                 {avatarUrl ? (
                   <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full bg-primary/10 flex items-center justify-center">
-                    <User className="size-12 text-primary/50" />
+                  <div className="w-full h-full bg-gradient-to-br from-gold/25 to-primary/15 flex items-center justify-center font-display text-4xl font-bold text-primary">
+                    {displayName.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                {uploadingAvatar && (
+                  <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white px-2">
+                    <span className="text-[10px] font-sans font-bold uppercase tracking-wider mb-1">Uploading</span>
+                    <div className="w-16 h-1 bg-white/20 rounded-full overflow-hidden">
+                      <div className="h-full bg-gold transition-all" style={{ width: `${uploadProgress}%` }} />
+                    </div>
+                    <span className="text-[9px] font-mono mt-1">{uploadProgress}%</span>
                   </div>
                 )}
               </div>
+              <input
+                type="file"
+                ref={avatarInputRef}
+                onChange={handleAvatarChange}
+                accept="image/png, image/jpeg, image/jpg, image/webp"
+                className="hidden"
+              />
               <button
-                className="absolute bottom-1 right-1 size-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 transition-colors shadow"
-                title="Change avatar (coming soon)"
+                type="button"
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={uploadingAvatar}
+                className="absolute bottom-1 right-1 size-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 transition-colors shadow disabled:opacity-50 cursor-pointer"
+                title="Change avatar"
               >
                 <Camera className="size-3.5" />
               </button>
@@ -517,6 +663,18 @@ function ProfilePage() {
                 <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground truncate">
                   {displayName}
                 </h1>
+                {uploadError && (
+                  <span className="text-xs text-destructive font-sans font-semibold flex items-center gap-1">
+                    ⚠️ {uploadError}
+                    <button
+                      type="button"
+                      onClick={() => avatarInputRef.current?.click()}
+                      className="underline text-gold hover:text-saffron font-bold uppercase tracking-wider text-[10px] ml-1"
+                    >
+                      Retry
+                    </button>
+                  </span>
+                )}
                 {stats && stats.level >= 5 && (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gold/15 border border-gold/30 text-xs font-sans font-bold text-gold uppercase tracking-wider">
                     <CheckCircle2 className="size-3" />

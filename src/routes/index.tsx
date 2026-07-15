@@ -26,7 +26,7 @@ import { RecommendedForYou } from "@/components/site/RecommendedForYou";
 import { HeroOfTheDay } from "@/components/site/HeroOfTheDay";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useStoriesData } from "@/lib/stories-data";
+import { useStoriesData, loadStoriesData } from "@/lib/stories-data";
 import { useI18nStore, translateStory, getCommonText } from "@/lib/i18n";
 import { getStoryAuthor } from "@/lib/utils";
 
@@ -153,7 +153,7 @@ function Home() {
   }, [dbStories]);
 
   const trendingStoriesRaw = useMemo(() => {
-    return [...dbStories].sort((a, b) => b.viewCount - a.viewCount).slice(0, 6);
+    return [...dbStories].sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0)).slice(0, 6);
   }, [dbStories]);
 
   const dataLoading = dbStories.length === 0 && storeLoading;
@@ -254,7 +254,7 @@ function Home() {
           </p>
           <div className="pt-4">
             <Button
-              onClick={() => void fetchHomeData()}
+              onClick={() => void loadStoriesData(true)}
               className="bg-primary hover:bg-primary/95 text-white font-sans uppercase tracking-widest text-xs h-11 px-6 rounded-none shadow-sm"
             >
               {lang === "en" ? "Retry Connection" : "पुनः प्रयास करें"}

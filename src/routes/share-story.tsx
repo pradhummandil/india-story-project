@@ -618,7 +618,7 @@ function ShareStoryPage() {
     <SiteLayout>
       <div className="bg-background text-foreground min-h-screen">
         {/* ─── Hero Section ─── */}
-        <section className="relative overflow-hidden pt-28 pb-20 md:pt-40 md:pb-32 bg-black border-b border-border/40">
+        <section className="relative overflow-hidden pt-28 pb-20 md:pt-40 md:pb-32 bg-card border-b border-border/40">
           {/* Background gradients */}
           <div className="absolute inset-0 bg-hero opacity-20 pointer-events-none" />
           <div className="absolute top-0 left-0 w-full h-full">
@@ -630,7 +630,7 @@ function ShareStoryPage() {
           <div
             className="absolute inset-0 opacity-[0.03] pointer-events-none"
             style={{
-              backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
+              backgroundImage: "radial-gradient(circle at 1px 1px, var(--border) 1px, transparent 0)",
               backgroundSize: "40px 40px",
             }}
           />
@@ -1096,10 +1096,10 @@ function ShareStoryPage() {
 
                       {isPreview ? (
                         <div className="space-y-6">
-                          <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                          <div className="flex items-center justify-between border-b border-border pb-4">
                             <div className="flex items-center gap-2">
                               <Sparkles className="size-4.5 text-gold" />
-                              <h3 className="font-display text-xl font-bold text-white">
+                              <h3 className="font-display text-xl font-bold text-foreground">
                                 Story Preview
                               </h3>
                             </div>
@@ -1107,7 +1107,7 @@ function ShareStoryPage() {
                               type="button"
                               onClick={() => setIsPreview(false)}
                               variant="outline"
-                              className="h-9 px-4 rounded-xl border-border font-sans text-xs uppercase tracking-wider hover:bg-white/5 text-white"
+                              className="h-9 px-4 rounded-xl border-border font-sans text-xs uppercase tracking-wider text-foreground"
                             >
                               Back to Editor
                             </Button>
@@ -1115,7 +1115,7 @@ function ShareStoryPage() {
 
                           <div className="space-y-6 max-w-2xl mx-auto py-4">
                             {coverImage && (
-                              <div className="aspect-[16/9] w-full overflow-hidden rounded-xl border border-white/10">
+                              <div className="aspect-[16/9] w-full overflow-hidden rounded-xl border border-border">
                                 <img
                                   src={coverImage}
                                   className="w-full h-full object-cover"
@@ -1142,16 +1142,16 @@ function ShareStoryPage() {
                                 <span>•</span>
                                 <span>{language === "hi" ? "हिन्दी" : "English"}</span>
                               </div>
-                              <h1 className="font-display text-3xl md:text-5xl font-bold text-white leading-tight">
+                              <h1 className="font-display text-3xl md:text-5xl font-bold text-foreground leading-tight">
                                 {title || "Untitled Story"}
                               </h1>
                               {heroName && (
-                                <p className="text-xs font-sans text-white/50 italic">
+                                <p className="text-xs font-sans text-muted-foreground italic">
                                   Subject:{" "}
                                   <span className="text-gold font-bold not-italic">{heroName}</span>
                                 </p>
                               )}
-                              <p className="text-xs font-sans text-white/45">
+                              <p className="text-xs font-sans text-muted-foreground">
                                 By {authorName || "Anonymous Contributor"}
                               </p>
                             </div>
@@ -1162,20 +1162,20 @@ function ShareStoryPage() {
                               </p>
                             </div>
 
-                            <div className="text-sm text-white/80 font-sans leading-relaxed whitespace-pre-wrap pt-4 border-t border-white/5">
+                            <div className="text-sm text-foreground font-sans leading-relaxed whitespace-pre-wrap pt-4 border-t border-border">
                               {story || "Write your story of change..."}
                             </div>
 
                             {videoUrl && (
-                              <div className="pt-4 border-t border-white/5">
-                                <p className="text-xs text-white/40 uppercase tracking-widest font-sans font-bold mb-2">
+                              <div className="pt-4 border-t border-border">
+                                <p className="text-xs text-muted-foreground uppercase tracking-widest font-sans font-bold mb-2">
                                   Video Attachment
                                 </p>
                                 <a
                                   href={videoUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-xs text-gold underline hover:text-white transition-colors break-all"
+                                  className="text-xs text-gold underline hover:text-foreground transition-colors break-all"
                                 >
                                   {videoUrl}
                                 </a>
@@ -1183,8 +1183,8 @@ function ShareStoryPage() {
                             )}
 
                             {externalLinks && (
-                              <div className="pt-4 border-t border-white/5">
-                                <p className="text-xs text-white/40 uppercase tracking-widest font-sans font-bold mb-2">
+                              <div className="pt-4 border-t border-border">
+                                <p className="text-xs text-muted-foreground uppercase tracking-widest font-sans font-bold mb-2">
                                   References & Links
                                 </p>
                                 <div className="flex flex-wrap gap-2">
@@ -1194,7 +1194,7 @@ function ShareStoryPage() {
                                       href={link.trim()}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-[10px] bg-white/5 border border-white/10 px-2 py-1 rounded hover:bg-gold/10 hover:text-gold transition-colors"
+                                      className="text-[10px] bg-card border border-border px-2 py-1 rounded hover:bg-gold/10 hover:text-gold transition-colors text-foreground"
                                     >
                                       {link.trim()}
                                     </a>
@@ -1204,12 +1204,12 @@ function ShareStoryPage() {
                             )}
                           </div>
 
-                          <div className="pt-6 border-t border-white/5 flex gap-3 justify-end">
+                          <div className="pt-6 border-t border-border flex gap-3 justify-end">
                             <Button
                               type="button"
                               onClick={() => setIsPreview(false)}
                               variant="outline"
-                              className="h-11 px-6 rounded-xl border-border text-white text-xs font-sans uppercase tracking-widest"
+                              className="h-11 px-6 rounded-xl border-border text-foreground text-xs font-sans uppercase tracking-widest"
                             >
                               Keep Editing
                             </Button>

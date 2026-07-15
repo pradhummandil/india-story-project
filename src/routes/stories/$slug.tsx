@@ -2,6 +2,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import type { Story } from "@/components/site/StoryCard";
 import { StoryDetail } from "@/components/site/StoryDetail";
+import { PremiumLoader } from "@/components/common/PremiumLoader";
 
 export const Route = createFileRoute("/stories/$slug")({
   component: StoryDetailPage,
@@ -64,13 +65,7 @@ function StoryDetailPage() {
   }, [slug]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-muted-foreground font-sans font-semibold uppercase tracking-widest text-xs animate-pulse">
-          Loading story…
-        </div>
-      </div>
-    );
+    return <PremiumLoader />;
   }
 
   if (error || !story) {

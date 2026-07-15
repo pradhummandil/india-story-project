@@ -62,6 +62,7 @@ model UserProfile {
   likes            StoryLike[]
   submissions      SubmittedStory[]
   userBadges       UserBadge[]
+  searchHistory    SearchHistory[]
   mentionsSent     UserMention[]     @relation("MentionedBy")
   mentionsReceived UserMention[]     @relation("MentionedUser")
   userStat         UserStat?
@@ -890,4 +891,24 @@ enum UserRole {
   Editor
   Author
   Reader
+}
+
+model SearchHistory {
+  id        String      @id @default(uuid()) @db.Uuid
+  userId    String      @db.Uuid
+  query     String
+  createdAt DateTime    @default(now())
+  user      UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model SearchQueryTracker {
+  id        String   @id @default(uuid()) @db.Uuid
+  query     String   @unique
+  count     Int      @default(1)
+  updatedAt DateTime @updatedAt
+
+  @@index([count])
 }

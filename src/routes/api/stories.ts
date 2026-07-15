@@ -45,7 +45,10 @@ export const Route = createFileRoute("/api/stories")({
         // Fallback to stories-backup.json if database has no records
         if (payload.total === 0) {
           try {
-            const fallbackJson = (await import("@/../stories-backup.json")).default;
+            const fs = await import("node:fs");
+            const path = await import("node:path");
+            const backupPath = path.resolve(process.cwd(), "stories-backup.json");
+            const fallbackJson = JSON.parse(fs.readFileSync(backupPath, "utf8"));
             let fallbackStories = fallbackJson.stories || [];
 
             // Apply filters manually to the fallback stories

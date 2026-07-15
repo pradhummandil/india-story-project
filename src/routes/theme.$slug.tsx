@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { PremiumLoader } from "@/components/common/PremiumLoader";
 import {
   ArrowLeft,
   BookOpen,
@@ -80,15 +81,7 @@ function ThemePortalPage() {
   };
 
   if (loading) {
-    return (
-      <SiteLayout>
-        <div className="min-h-[70vh] flex items-center justify-center bg-background">
-          <div className="text-muted-foreground font-sans font-semibold uppercase tracking-widest text-xs animate-pulse">
-            Loading Topic Portal…
-          </div>
-        </div>
-      </SiteLayout>
-    );
+    return <PremiumLoader />;
   }
 
   if (error || !data) {

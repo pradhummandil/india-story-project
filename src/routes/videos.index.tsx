@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, useMemo } from "react";
+import { openGlobalSearch } from "@/components/common/GlobalSearch";
+import { VideoSkeleton } from "@/components/common/Skeletons";
 import {
   Search,
   Compass,
@@ -183,13 +185,15 @@ function VideosPage() {
         <div className="container mx-auto px-6 mb-12">
           <div className="flex flex-col lg:flex-row flex-wrap gap-4 bg-card/45 border border-border/50 p-6">
             {/* Search Box */}
-            <div className="flex-1 min-w-[240px] relative">
+            <div
+              onClick={openGlobalSearch}
+              className="flex-1 min-w-[240px] relative cursor-pointer"
+            >
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                readOnly
                 placeholder="Search documentaries..."
-                className="pl-11 h-12 bg-background border-border rounded-none focus-visible:ring-primary/45 font-sans"
+                className="pl-11 h-12 bg-background border-border rounded-none focus-visible:ring-0 font-sans cursor-pointer"
               />
             </div>
 
@@ -252,10 +256,7 @@ function VideosPage() {
           {loading && videos.length === 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="aspect-video bg-white/5 rounded-none border border-border/30 animate-pulse"
-                />
+                <VideoSkeleton key={i} />
               ))}
             </div>
           ) : videos.length === 0 ? (

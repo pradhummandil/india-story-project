@@ -241,14 +241,14 @@ function Contact() {
     <SiteLayout>
       <div className="bg-background text-foreground min-h-screen">
         {/* ─── Hero ─── */}
-        <section className="relative overflow-hidden pt-32 pb-24 md:pt-44 md:pb-32 border-b border-border/40 bg-black">
+        <section className="relative overflow-hidden pt-32 pb-24 md:pt-44 md:pb-32 border-b border-border/40 bg-card">
           <div className="absolute inset-0 bg-hero opacity-20 pointer-events-none" />
           <div className="absolute -top-60 left-1/3 size-[600px] rounded-full bg-gold/6 blur-[130px] pointer-events-none" />
           <div className="absolute -bottom-60 right-1/3 size-[500px] rounded-full bg-saffron/6 blur-[130px] pointer-events-none" />
           <div
             className="absolute inset-0 opacity-[0.02] pointer-events-none"
             style={{
-              backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
+              backgroundImage: "radial-gradient(circle at 1px 1px, var(--border) 1px, transparent 0)",
               backgroundSize: "48px 48px",
             }}
           />

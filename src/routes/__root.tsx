@@ -15,6 +15,7 @@ import { stories, categories, useStoriesData } from "../lib/stories-data";
 import { CinematicLoader } from "../components/site/CinematicLoader";
 import { initAuthListener, useAuthStore } from "../lib/auth-store";
 import PodcastPlayer from "../components/audio/PodcastPlayer";
+import { GlobalSearch } from "../components/common/GlobalSearch";
 
 if (typeof window !== "undefined") {
   const originalFetch = window.fetch;
@@ -184,6 +185,7 @@ function RootComponent() {
       <CinematicLoader />
       <Outlet />
       <PodcastPlayer />
+      <GlobalSearch />
     </QueryClientProvider>
   );
 }

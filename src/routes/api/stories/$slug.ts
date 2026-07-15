@@ -16,7 +16,10 @@ export const Route = createFileRoute("/api/stories/$slug")({
         let story = await storyService.getStoryBySlug(slug);
         if (!story) {
           try {
-            const fallbackJson = (await import("@/../stories-backup.json")).default;
+            const fs = await import("node:fs");
+            const path = await import("node:path");
+            const backupPath = path.resolve(process.cwd(), "stories-backup.json");
+            const fallbackJson = JSON.parse(fs.readFileSync(backupPath, "utf8"));
             const fallbackStory = fallbackJson.stories.find((s: any) => s.slug === slug) as any;
             if (fallbackStory) {
               story = {

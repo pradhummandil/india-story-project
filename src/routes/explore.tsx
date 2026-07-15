@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
+import { openGlobalSearch } from "@/components/common/GlobalSearch";
 import {
   ArrowRight,
   Compass,
@@ -251,22 +252,18 @@ function RouteComponent() {
               </motion.h1>
 
               {/* Search Bar */}
-              <motion.form
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-                onSubmit={handleSearchSubmit}
-                className="relative max-w-xl mx-auto"
+              <div
+                onClick={openGlobalSearch}
+                className="relative max-w-xl mx-auto cursor-pointer"
               >
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
                   type="text"
+                  readOnly
                   placeholder="Search stories, states, themes..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full h-14 pl-12 pr-4 bg-card/65 border-border/80 focus-visible:ring-gold/40 rounded-xl font-sans text-sm shadow-elegant"
+                  className="w-full h-14 pl-12 pr-4 bg-card/65 border-border/80 rounded-xl font-sans text-sm shadow-elegant cursor-pointer focus-visible:ring-0"
                 />
-              </motion.form>
+              </div>
 
               <div className="flex justify-center gap-2 mt-4 z-20 relative">
                 <Button

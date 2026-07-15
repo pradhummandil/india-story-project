@@ -65,6 +65,7 @@ import { Route as ApiStoriesCatalogueDataRouteImport } from './routes/api/storie
 import { Route as ApiStoriesCatalogueRouteImport } from './routes/api/stories-catalogue'
 import { Route as ApiStoriesRouteImport } from './routes/api/stories'
 import { Route as ApiStatesRouteImport } from './routes/api/states'
+import { Route as ApiSearchRouteImport } from './routes/api/search'
 import { Route as ApiReadingProgressRouteImport } from './routes/api/reading-progress'
 import { Route as ApiLikesRouteImport } from './routes/api/likes'
 import { Route as ApiLatestStoriesRouteImport } from './routes/api/latest-stories'
@@ -110,6 +111,7 @@ import { Route as ApiStoriesLatestRouteImport } from './routes/api/stories/lates
 import { Route as ApiStoriesFilterRouteImport } from './routes/api/stories/filter'
 import { Route as ApiStoriesFeaturedRouteImport } from './routes/api/stories/featured'
 import { Route as ApiStoriesSlugRouteImport } from './routes/api/stories/$slug'
+import { Route as ApiSearchHistoryRouteImport } from './routes/api/search/history'
 import { Route as ApiPodcastEpisodesRouteImport } from './routes/api/podcast.episodes'
 import { Route as ApiNewsletterVerifyRouteImport } from './routes/api/newsletter/verify'
 import { Route as ApiNewsletterSubscribeRouteImport } from './routes/api/newsletter/subscribe'
@@ -454,6 +456,11 @@ const ApiStatesRoute = ApiStatesRouteImport.update({
   path: '/api/states',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiSearchRoute = ApiSearchRouteImport.update({
+  id: '/api/search',
+  path: '/api/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiReadingProgressRoute = ApiReadingProgressRouteImport.update({
   id: '/api/reading-progress',
   path: '/api/reading-progress',
@@ -678,6 +685,11 @@ const ApiStoriesSlugRoute = ApiStoriesSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => ApiStoriesRoute,
+} as any)
+const ApiSearchHistoryRoute = ApiSearchHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => ApiSearchRoute,
 } as any)
 const ApiPodcastEpisodesRoute = ApiPodcastEpisodesRouteImport.update({
   id: '/api/podcast/episodes',
@@ -1064,6 +1076,7 @@ export interface FileRoutesByFullPath {
   '/api/latest-stories': typeof ApiLatestStoriesRoute
   '/api/likes': typeof ApiLikesRoute
   '/api/reading-progress': typeof ApiReadingProgressRoute
+  '/api/search': typeof ApiSearchRouteWithChildren
   '/api/states': typeof ApiStatesRoute
   '/api/stories': typeof ApiStoriesRouteWithChildren
   '/api/stories-catalogue': typeof ApiStoriesCatalogueRoute
@@ -1123,6 +1136,7 @@ export interface FileRoutesByFullPath {
   '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
   '/api/newsletter/verify': typeof ApiNewsletterVerifyRoute
   '/api/podcast/episodes': typeof ApiPodcastEpisodesRoute
+  '/api/search/history': typeof ApiSearchHistoryRoute
   '/api/stories/$slug': typeof ApiStoriesSlugRouteWithChildren
   '/api/stories/featured': typeof ApiStoriesFeaturedRoute
   '/api/stories/filter': typeof ApiStoriesFilterRoute
@@ -1227,6 +1241,7 @@ export interface FileRoutesByTo {
   '/api/latest-stories': typeof ApiLatestStoriesRoute
   '/api/likes': typeof ApiLikesRoute
   '/api/reading-progress': typeof ApiReadingProgressRoute
+  '/api/search': typeof ApiSearchRouteWithChildren
   '/api/states': typeof ApiStatesRoute
   '/api/stories': typeof ApiStoriesRouteWithChildren
   '/api/stories-catalogue': typeof ApiStoriesCatalogueRoute
@@ -1286,6 +1301,7 @@ export interface FileRoutesByTo {
   '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
   '/api/newsletter/verify': typeof ApiNewsletterVerifyRoute
   '/api/podcast/episodes': typeof ApiPodcastEpisodesRoute
+  '/api/search/history': typeof ApiSearchHistoryRoute
   '/api/stories/$slug': typeof ApiStoriesSlugRouteWithChildren
   '/api/stories/featured': typeof ApiStoriesFeaturedRoute
   '/api/stories/filter': typeof ApiStoriesFilterRoute
@@ -1394,6 +1410,7 @@ export interface FileRoutesById {
   '/api/latest-stories': typeof ApiLatestStoriesRoute
   '/api/likes': typeof ApiLikesRoute
   '/api/reading-progress': typeof ApiReadingProgressRoute
+  '/api/search': typeof ApiSearchRouteWithChildren
   '/api/states': typeof ApiStatesRoute
   '/api/stories': typeof ApiStoriesRouteWithChildren
   '/api/stories-catalogue': typeof ApiStoriesCatalogueRoute
@@ -1453,6 +1470,7 @@ export interface FileRoutesById {
   '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
   '/api/newsletter/verify': typeof ApiNewsletterVerifyRoute
   '/api/podcast/episodes': typeof ApiPodcastEpisodesRoute
+  '/api/search/history': typeof ApiSearchHistoryRoute
   '/api/stories/$slug': typeof ApiStoriesSlugRouteWithChildren
   '/api/stories/featured': typeof ApiStoriesFeaturedRoute
   '/api/stories/filter': typeof ApiStoriesFilterRoute
@@ -1562,6 +1580,7 @@ export interface FileRouteTypes {
     | '/api/latest-stories'
     | '/api/likes'
     | '/api/reading-progress'
+    | '/api/search'
     | '/api/states'
     | '/api/stories'
     | '/api/stories-catalogue'
@@ -1621,6 +1640,7 @@ export interface FileRouteTypes {
     | '/api/newsletter/subscribe'
     | '/api/newsletter/verify'
     | '/api/podcast/episodes'
+    | '/api/search/history'
     | '/api/stories/$slug'
     | '/api/stories/featured'
     | '/api/stories/filter'
@@ -1725,6 +1745,7 @@ export interface FileRouteTypes {
     | '/api/latest-stories'
     | '/api/likes'
     | '/api/reading-progress'
+    | '/api/search'
     | '/api/states'
     | '/api/stories'
     | '/api/stories-catalogue'
@@ -1784,6 +1805,7 @@ export interface FileRouteTypes {
     | '/api/newsletter/subscribe'
     | '/api/newsletter/verify'
     | '/api/podcast/episodes'
+    | '/api/search/history'
     | '/api/stories/$slug'
     | '/api/stories/featured'
     | '/api/stories/filter'
@@ -1891,6 +1913,7 @@ export interface FileRouteTypes {
     | '/api/latest-stories'
     | '/api/likes'
     | '/api/reading-progress'
+    | '/api/search'
     | '/api/states'
     | '/api/stories'
     | '/api/stories-catalogue'
@@ -1950,6 +1973,7 @@ export interface FileRouteTypes {
     | '/api/newsletter/subscribe'
     | '/api/newsletter/verify'
     | '/api/podcast/episodes'
+    | '/api/search/history'
     | '/api/stories/$slug'
     | '/api/stories/featured'
     | '/api/stories/filter'
@@ -2051,6 +2075,7 @@ export interface RootRouteChildren {
   ApiLatestStoriesRoute: typeof ApiLatestStoriesRoute
   ApiLikesRoute: typeof ApiLikesRoute
   ApiReadingProgressRoute: typeof ApiReadingProgressRoute
+  ApiSearchRoute: typeof ApiSearchRouteWithChildren
   ApiStatesRoute: typeof ApiStatesRoute
   ApiStoriesRoute: typeof ApiStoriesRouteWithChildren
   ApiStoriesCatalogueRoute: typeof ApiStoriesCatalogueRoute
@@ -2497,6 +2522,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiStatesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/search': {
+      id: '/api/search'
+      path: '/api/search'
+      fullPath: '/api/search'
+      preLoaderRoute: typeof ApiSearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/reading-progress': {
       id: '/api/reading-progress'
       path: '/api/reading-progress'
@@ -2811,6 +2843,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/stories/$slug'
       preLoaderRoute: typeof ApiStoriesSlugRouteImport
       parentRoute: typeof ApiStoriesRoute
+    }
+    '/api/search/history': {
+      id: '/api/search/history'
+      path: '/history'
+      fullPath: '/api/search/history'
+      preLoaderRoute: typeof ApiSearchHistoryRouteImport
+      parentRoute: typeof ApiSearchRoute
     }
     '/api/podcast/episodes': {
       id: '/api/podcast/episodes'
@@ -3479,6 +3518,18 @@ const ApiCommunityRouteWithChildren = ApiCommunityRoute._addFileChildren(
   ApiCommunityRouteChildren,
 )
 
+interface ApiSearchRouteChildren {
+  ApiSearchHistoryRoute: typeof ApiSearchHistoryRoute
+}
+
+const ApiSearchRouteChildren: ApiSearchRouteChildren = {
+  ApiSearchHistoryRoute: ApiSearchHistoryRoute,
+}
+
+const ApiSearchRouteWithChildren = ApiSearchRoute._addFileChildren(
+  ApiSearchRouteChildren,
+)
+
 interface ApiStoriesSlugRouteChildren {
   ApiStoriesSlugAudioRoute: typeof ApiStoriesSlugAudioRoute
 }
@@ -3684,6 +3735,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiLatestStoriesRoute: ApiLatestStoriesRoute,
   ApiLikesRoute: ApiLikesRoute,
   ApiReadingProgressRoute: ApiReadingProgressRoute,
+  ApiSearchRoute: ApiSearchRouteWithChildren,
   ApiStatesRoute: ApiStatesRoute,
   ApiStoriesRoute: ApiStoriesRouteWithChildren,
   ApiStoriesCatalogueRoute: ApiStoriesCatalogueRoute,

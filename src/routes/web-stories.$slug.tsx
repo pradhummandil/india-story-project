@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
+import { PremiumLoader } from "@/components/common/PremiumLoader";
 import {
   ArrowLeft,
   Play,
@@ -150,11 +151,7 @@ function WebStoryPlayerPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center text-white/50 font-sans font-semibold uppercase tracking-widest text-xs">
-        Loading Story Frame…
-      </div>
-    );
+    return <PremiumLoader />;
   }
 
   if (error || !story || story.pages.length === 0) {

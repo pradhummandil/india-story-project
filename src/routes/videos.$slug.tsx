@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Play, Eye, Compass, User, MapPin, Calendar, Clock } from "lucide-react";
 import { SiteLayout } from "@/components/site/Layout";
+import { PremiumLoader } from "@/components/common/PremiumLoader";
 
 export const Route = createFileRoute("/videos/$slug")({
   component: VideoDetailPage,
@@ -65,15 +66,7 @@ function VideoDetailPage() {
   }, [slug]);
 
   if (loading) {
-    return (
-      <SiteLayout>
-        <div className="min-h-[70vh] flex items-center justify-center bg-background">
-          <div className="text-muted-foreground font-sans font-semibold uppercase tracking-widest text-xs animate-pulse">
-            Loading Video Dispatches…
-          </div>
-        </div>
-      </SiteLayout>
-    );
+    return <PremiumLoader />;
   }
 
   if (error || !data) {
