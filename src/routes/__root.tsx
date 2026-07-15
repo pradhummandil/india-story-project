@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Analytics } from "@vercel/analytics/react";
 import {
   Outlet,
   Link,
@@ -164,17 +165,19 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
-  // Subscribe to stories-data updates so components re-render when fetching finishes on mount
+  // Subscribe to stories-data updates
   useStoriesData();
 
-  // Initialize auth listener and PWA sw
+  // Initialize auth listener and Service Worker
   useEffect(() => {
     const unsubscribe = initAuthListener();
+
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("/sw.js").catch(console.error);
       });
     }
+
     return () => {
       unsubscribe();
     };
@@ -183,9 +186,14 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <CinematicLoader />
+
       <Outlet />
+
       <PodcastPlayer />
+
       <GlobalSearch />
+
+      <Analytics />
     </QueryClientProvider>
   );
 }
