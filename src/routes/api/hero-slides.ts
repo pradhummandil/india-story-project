@@ -134,28 +134,28 @@ export const Route = createFileRoute("/api/hero-slides")({
           cache.expiry = now + CACHE_TTL;
 
           return json({ slides });
-        } } catch (error: any) {
-  console.error("FULL HERO SLIDES ERROR");
-  console.error(error);
-  console.error(error.stack);
+        } catch (error: any) {
+          console.error("FULL HERO SLIDES ERROR");
+          console.error(error);
+          console.error(error.stack);
 
-  try {
-    const fallbackJson = await fetchStoriesBackup(request);
+          try {
+            const fallbackJson = await fetchStoriesBackup(request);
 
-    const fallbackStories = (fallbackJson.stories || [])
-      .filter((s: any) => s.homepageSlideshow || s.heroOfTheDay || s.featured)
-      .slice(0, 5);
+            const fallbackStories = (fallbackJson.stories || [])
+             .filter((s: any) => s.homepageSlideshow || s.heroOfTheDay || s.featured)
+             .slice(0, 5);
 
-    const slides = fallbackStories.map((s: any) => ({
-      id: s.id,
-      storyId: s.id,
-      slug: s.slug,
-      title: s.title,
+           const slides = fallbackStories.map((s: any) => ({
+            id: s.id,
+              storyId: s.id,
+              slug: s.slug,
+                title: s.title,
       excerpt: s.excerpt,
       titleHi: s.titleHi ?? null,
       excerptHi: s.excerptHi ?? null,
       themes: Array.isArray(s.themes)
-        ? s.themes
+               ? s.themes
         : [s.category || s.theme].filter(Boolean),
       state: s.region ?? "India",
       author: s.authorName ?? "India Story Project",
@@ -164,13 +164,13 @@ export const Route = createFileRoute("/api/hero-slides")({
       caption: null,
     }));
 
-    return json({ slides });
+              return json({ slides });
 
-  } catch (e) {
-    console.error("Fallback JSON failed", e);
-    return json({ slides: [] });
-  }
-}
+  }     catch (e) {
+               console.error("Fallback JSON failed", e);
+            return json({ slides: [] });
+             }
+          }
       },
     },
   },
