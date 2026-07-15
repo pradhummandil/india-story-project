@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { json, authenticate, checkRateLimit, getClientIp } from "@/routes/api/-_utils";
+import { json, authenticate, checkRateLimit, getClientIp, sanitizeInput } from "@/routes/api/-_utils";
 import { prisma } from "@/lib/repositories/prisma.server";
 
 export const Route = createFileRoute("/api/submissions")({
@@ -86,20 +86,20 @@ export const Route = createFileRoute("/api/submissions")({
 
           let submission;
           const dataPayload = {
-            title: title.trim(),
-            excerpt: excerpt?.trim() || "",
-            content: content?.trim() || "",
-            titleHi: titleHi?.trim() || null,
-            excerptHi: excerptHi?.trim() || null,
-            contentHi: contentHi?.trim() || null,
+            title: sanitizeInput(title),
+            excerpt: sanitizeInput(excerpt || ""),
+            content: sanitizeInput(content || ""),
+            titleHi: titleHi ? sanitizeInput(titleHi) : null,
+            excerptHi: excerptHi ? sanitizeInput(excerptHi) : null,
+            contentHi: contentHi ? sanitizeInput(contentHi) : null,
             stateName: stateName?.trim() || "Delhi",
             cityName: cityName?.trim() || null,
             themes: themes?.trim() || null,
-            authorName: authorName?.trim() || userProfile.name || "Anonymous Contributor",
+            authorName: authorName ? sanitizeInput(authorName) : userProfile.name || "Anonymous Contributor",
             imageUrl: imageUrl?.trim() || null,
-            imageCaption: imageCaption?.trim() || null,
+            imageCaption: imageCaption ? sanitizeInput(imageCaption) : null,
             status: status || "Pending",
-            heroName: heroName?.trim() || null,
+            heroName: heroName ? sanitizeInput(heroName) : null,
             district: district?.trim() || null,
             language: language || "en",
             email: email?.trim() || null,
@@ -108,8 +108,8 @@ export const Route = createFileRoute("/api/submissions")({
             externalLinks: externalLinks?.trim() || null,
             phone: phone?.trim() || null,
             tags: tags?.trim() || null,
-            seoTitle: seoTitle?.trim() || null,
-            seoDescription: seoDescription?.trim() || null,
+            seoTitle: seoTitle ? sanitizeInput(seoTitle) : null,
+            seoDescription: seoDescription ? sanitizeInput(seoDescription) : null,
             seoKeywords: seoKeywords?.trim() || null,
           };
 

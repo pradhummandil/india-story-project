@@ -143,6 +143,8 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en" className="dark">
       <head>
         <HeadContent />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#8b0000" />
       </head>
       <body>
         <script
@@ -163,9 +165,14 @@ function RootComponent() {
   // Subscribe to stories-data updates so components re-render when fetching finishes on mount
   useStoriesData();
 
-  // Initialize auth listener
+  // Initialize auth listener and PWA sw
   useEffect(() => {
     const unsubscribe = initAuthListener();
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js").catch(console.error);
+      });
+    }
     return () => {
       unsubscribe();
     };

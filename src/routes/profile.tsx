@@ -30,6 +30,9 @@ import {
   MessageSquare,
   UploadCloud,
   Clock,
+  FolderOpen,
+  Users,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -76,13 +79,15 @@ type UserStats = {
   weeklyXP: number;
 };
 
-type Tab = "overview" | "reading" | "badges" | "edit";
+type Tab = "overview" | "reading" | "badges" | "collections" | "following" | "edit";
 
 const TABS: { id: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: "overview", label: "Overview", icon: User },
-  { id: "reading", label: "Reading", icon: BookOpen },
+  { id: "reading", label: "Reading Logs", icon: BookOpen },
   { id: "badges", label: "Badges", icon: Trophy },
-  { id: "edit", label: "Edit Profile", icon: Edit3 },
+  { id: "collections", label: "Collections", icon: FolderOpen },
+  { id: "following", label: "Following", icon: Heart },
+  { id: "edit", label: "Settings", icon: Edit3 },
 ];
 
 function ProfilePage() {
@@ -97,6 +102,15 @@ function ProfilePage() {
   const [progressList, setProgressList] = useState<any[]>([]);
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [statsLoading, setStatsLoading] = useState(true);
+
+  // Collections & Following & Preferences state
+  const [collections, setCollections] = useState<any[]>([]);
+  const [followedAuthors, setFollowedAuthors] = useState<any[]>([]);
+  const [newColName, setNewColName] = useState("");
+  const [favTheme, setFavTheme] = useState("dark");
+  const [favState, setFavState] = useState("en-normal");
+  const [prefSaving, setPrefSaving] = useState(false);
+  const [prefSaved, setPrefSaved] = useState(false);
 
   // Sub-counts
   const [bookmarksCount, setBookmarksCount] = useState(0);
@@ -159,9 +173,37 @@ function ProfilePage() {
         setHistoryCount(d.historyCount ?? 0);
         setSubmissionsCount(d.submissionsCount ?? 0);
         
+        if (d.userProfile) {
+          setFavTheme(d.userProfile.favoriteTheme || "dark");
+          setFavState(d.userProfile.favoriteState || "en-normal");
+        }
         setStatsLoading(false);
       })
       .catch(() => setStatsLoading(false));
+
+    // Load followed authors
+    fetch("/api/authors", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((arr) => {
+        if (Array.isArray(arr)) {
+          setFollowedAuthors(arr.filter((a: any) => a.followed));
+        }
+      })
+      .catch(console.error);
+
+    // Load collections
+    fetch("/api/collections", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.collections) {
+          setCollections(d.collections);
+        }
+      })
+      .catch(console.error);
 
     // Load recent bookmarks for overview tab
     fetch("/api/bookmarks", {
@@ -423,6 +465,12 @@ function ProfilePage() {
                   <span className="text-[10px] text-muted-foreground font-sans tabular-nums">
                     {stats.totalXP} / {xpToNextLevel} XP
                   </span>
+                  {stats.readingStreak > 0 && (
+                    <span className="flex items-center gap-1 bg-amber-950/35 border border-amber-500/25 px-2.5 py-0.5 rounded text-amber-400 text-[10px] font-sans font-bold uppercase tracking-wider">
+                      <Flame className="size-3 text-amber-500 fill-amber-500 animate-pulse" />
+                      {stats.readingStreak} Day Streak
+                    </span>
+                  )}
                 </div>
               )}
             </div>
@@ -983,6 +1031,186 @@ function ProfilePage() {
                 </div>
               )}
 
+              {/* ── Collections Tab ── */}
+              {activeTab === "collections" && (
+                <div className="space-y-6">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                    <div>
+                      <h3 className="font-display text-lg font-bold text-white">My Collections</h3>
+                      <p className="text-xs text-muted-foreground font-sans">Organize your bookmarked stories into custom list folders</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        type="text"
+                        placeholder="Collection name..."
+                        value={newColName}
+                        onChange={(e) => setNewColName(e.target.value)}
+                        className="h-10 text-xs font-sans max-w-xs"
+                      />
+                      <Button
+                        onClick={async () => {
+                          if (!newColName.trim() || !session) return;
+                          try {
+                            const res = await fetch("/api/collections", {
+                              method: "POST",
+                              headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${session.access_token}`,
+                              },
+                              body: JSON.stringify({ name: newColName }),
+                            });
+                            const out = await res.json();
+                            if (out.success) {
+                              setNewColName("");
+                              refetchData();
+                            }
+                          } catch {}
+                        }}
+                        className="h-10 px-4 bg-primary hover:bg-primary/90 text-white font-sans text-xs uppercase tracking-wider font-bold"
+                      >
+                        Create Folder
+                      </Button>
+                    </div>
+                  </div>
+
+                  {collections.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {collections.map((col) => (
+                        <div key={col.id} className="bg-card/45 border border-border p-5 rounded-lg space-y-4">
+                          <div className="flex justify-between items-center border-b border-border/40 pb-3">
+                            <div className="flex items-center gap-2">
+                              <FolderOpen className="size-5 text-gold" />
+                              <h4 className="font-bold text-sm text-white">{col.name}</h4>
+                            </div>
+                            <button
+                              onClick={async () => {
+                                if (!session) return;
+                                if (!confirm("Are you sure you want to delete this collection? Stories inside will not be deleted.")) return;
+                                try {
+                                  const res = await fetch("/api/collections", {
+                                    method: "DELETE",
+                                    headers: {
+                                      "Content-Type": "application/json",
+                                      Authorization: `Bearer ${session.access_token}`,
+                                    },
+                                    body: JSON.stringify({ collectionId: col.id }),
+                                  });
+                                  if (res.ok) refetchData();
+                                } catch {}
+                              }}
+                              className="text-muted-foreground hover:text-red-400 transition-colors p-1"
+                            >
+                              <Trash2 className="size-4" />
+                            </button>
+                          </div>
+
+                          <div className="space-y-2">
+                            {col.stories && col.stories.length > 0 ? (
+                              col.stories.map((story: any) => (
+                                <div key={story.id} className="flex justify-between items-center text-xs">
+                                  <Link
+                                    to="/stories/$slug"
+                                    params={{ slug: story.slug }}
+                                    className="text-white hover:text-gold transition-colors font-medium font-sans truncate max-w-xs"
+                                  >
+                                    {story.title}
+                                  </Link>
+                                  <button
+                                    onClick={async () => {
+                                      if (!session) return;
+                                      try {
+                                        const res = await fetch("/api/collections", {
+                                          method: "DELETE",
+                                          headers: {
+                                            "Content-Type": "application/json",
+                                            Authorization: `Bearer ${session.access_token}`,
+                                          },
+                                          body: JSON.stringify({ collectionId: col.id, storyId: story.id }),
+                                        });
+                                        if (res.ok) refetchData();
+                                      } catch {}
+                                    }}
+                                    className="text-muted-foreground/60 hover:text-white transition-colors"
+                                  >
+                                    <X className="size-3" />
+                                  </button>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-[11px] text-muted-foreground/80 italic font-sans">Empty collection folder. Add bookmarks from story pages!</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-16 border border-dashed border-border/50 text-xs text-muted-foreground uppercase tracking-widest">
+                      No collections created.
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── Following Tab ── */}
+              {activeTab === "following" && (
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="font-display text-lg font-bold text-white">Following Authors</h3>
+                    <p className="text-xs text-muted-foreground font-sans">Chronicles from storytellers you follow on the portal</p>
+                  </div>
+
+                  {followedAuthors.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {followedAuthors.map((author) => (
+                        <div key={author.id} className="bg-card/45 border border-border p-4 rounded-lg flex items-start gap-4">
+                          {author.avatar ? (
+                            <img src={author.avatar} alt={author.name} className="size-12 rounded-full object-cover shrink-0" />
+                          ) : (
+                            <div className="size-12 rounded-full bg-primary/25 border border-primary/25 text-white font-sans text-sm font-bold flex items-center justify-center shrink-0">
+                              {author.name[0]}
+                            </div>
+                          )}
+                          <div className="flex-1 space-y-2">
+                            <div>
+                              <h4 className="font-bold text-xs text-white hover:underline">
+                                <Link to="/authors/$id" params={{ id: author.id }}>
+                                  {author.name}
+                                </Link>
+                              </h4>
+                              <p className="text-[10px] text-muted-foreground line-clamp-1">{author.bio || "India Story Contributor"}</p>
+                            </div>
+
+                            <button
+                              onClick={async () => {
+                                if (!session) return;
+                                try {
+                                  const res = await fetch("/api/authors/follow", {
+                                    method: "POST",
+                                    headers: {
+                                      "Content-Type": "application/json",
+                                      Authorization: `Bearer ${session.access_token}`,
+                                    },
+                                    body: JSON.stringify({ authorId: author.id }),
+                                  });
+                                  if (res.ok) refetchData();
+                                } catch {}
+                              }}
+                              className="bg-primary/10 border border-primary/25 hover:bg-primary/20 text-gold text-[9px] uppercase tracking-wider font-bold px-2 py-0.5"
+                            >
+                              Unfollow
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-16 border border-dashed border-border/50 text-xs text-muted-foreground uppercase tracking-widest">
+                      You are not following any authors yet.
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* ── Edit Tab ── */}
               {activeTab === "edit" && (
                 <div className="max-w-xl">
@@ -1088,6 +1316,143 @@ function ProfilePage() {
                       {saving ? "Saving…" : "Save Changes"}
                     </Button>
                   </form>
+
+                  {/* Site Preferences Settings */}
+                  <div className="mt-8 pt-8 border-t border-border/50 space-y-4">
+                    <p className="text-xs font-sans font-semibold uppercase tracking-widest text-muted-foreground mb-4">
+                      Site Preferences
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 font-sans text-xs">
+                      <div>
+                        <label className="block font-bold text-white/60 mb-1">Color Theme</label>
+                        <select
+                          value={favTheme}
+                          onChange={(e) => setFavTheme(e.target.value)}
+                          className="w-full bg-[#1e1e1e] text-white border border-border px-3 py-2 rounded focus:outline-none"
+                        >
+                          <option value="dark">Dark Accents</option>
+                          <option value="light">Light Editorial</option>
+                          <option value="sepia">Warm Sepia</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block font-bold text-white/60 mb-1">Language</label>
+                        <select
+                          value={favState.split("-")[0]}
+                          onChange={(e) => setFavState(`${e.target.value}-${favState.split("-")[1] || "normal"}`)}
+                          className="w-full bg-[#1e1e1e] text-white border border-border px-3 py-2 rounded focus:outline-none"
+                        >
+                          <option value="en">English</option>
+                          <option value="hi">हिंदी (Hindi)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block font-bold text-white/60 mb-1">Text Size</label>
+                        <select
+                          value={favState.split("-")[1] || "normal"}
+                          onChange={(e) => setFavState(`${favState.split("-")[0] || "en"}-${e.target.value}`)}
+                          className="w-full bg-[#1e1e1e] text-white border border-border px-3 py-2 rounded focus:outline-none"
+                        >
+                          <option value="normal">Normal</option>
+                          <option value="large">Large Reading Font</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={async () => {
+                          if (!session) return;
+                          setPrefSaving(true);
+                          setPrefSaved(false);
+                          try {
+                            const res = await fetch("/api/auth/profile", {
+                              method: "POST",
+                              headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${session.access_token}`,
+                              },
+                              body: JSON.stringify({ favoriteTheme: favTheme, favoriteState: favState }),
+                            });
+                            if (res.ok) {
+                              setPrefSaved(true);
+                              // Instantly apply class overrides for theme/font-size
+                              if (favTheme === "light") {
+                                document.documentElement.classList.remove("dark");
+                              } else {
+                                document.documentElement.classList.add("dark");
+                              }
+                              setTimeout(() => setPrefSaved(false), 2000);
+                            }
+                          } catch {}
+                          setPrefSaving(false);
+                        }}
+                        disabled={prefSaving}
+                        className="h-10 px-4 bg-primary hover:bg-primary/90 text-white font-sans text-xs uppercase tracking-wider font-bold rounded-none"
+                      >
+                        {prefSaving ? "Saving preferences..." : "Save Preferences"}
+                      </Button>
+                      {prefSaved && (
+                        <span className="text-xs text-gold flex items-center font-bold">Preferences saved!</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Account Danger / Compliance Actions */}
+                  <div className="mt-8 pt-8 border-t border-border/50 space-y-4">
+                    <p className="text-xs font-sans font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+                      Account Utilities & Privacy
+                    </p>
+                    <div className="flex flex-wrap gap-3">
+                      <Button
+                        onClick={async () => {
+                          if (!session) return;
+                          try {
+                            const res = await fetch("/api/auth/export-history", {
+                              headers: { Authorization: `Bearer ${session.access_token}` },
+                            });
+                            const blob = await res.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement("a");
+                            a.href = url;
+                            a.download = "india-story-reading-history.json";
+                            document.body.appendChild(a);
+                            a.click();
+                            a.remove();
+                          } catch {
+                            alert("Failed to export logs.");
+                          }
+                        }}
+                        className="h-10 px-4 bg-white/5 border border-white/10 hover:bg-white/10 text-white font-sans text-xs uppercase font-bold tracking-wider rounded-none"
+                      >
+                        Export Reading History
+                      </Button>
+                      <Button
+                        onClick={async () => {
+                          if (!session) return;
+                          if (!confirm("⚠️ WARNING: Deleting your account will wipe all bookmarks, collections, comments, claps, and reading streaks forever. This action is irreversible. Proceed?")) return;
+                          try {
+                            const res = await fetch("/api/auth/delete-account", {
+                              method: "POST",
+                              headers: { Authorization: `Bearer ${session.access_token}` },
+                            });
+                            const out = await res.json();
+                            if (out.success) {
+                              alert("Your account data was completely deleted.");
+                              await signOut();
+                              void navigate({ to: "/" });
+                            } else {
+                              alert(out.error || "Failed to delete account.");
+                            }
+                          } catch {
+                            alert("An error occurred during account deletion.");
+                          }
+                        }}
+                        className="h-10 px-4 bg-red-950/40 border border-red-500/35 hover:bg-red-900/40 text-red-400 font-sans text-xs uppercase font-bold tracking-wider rounded-none"
+                      >
+                        Delete Account
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               )}
             </motion.div>

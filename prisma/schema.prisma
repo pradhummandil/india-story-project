@@ -83,6 +83,12 @@ model UserProfile {
   collections      Collection[]
   discussionTopics DiscussionTopic[]
   discussionPosts  DiscussionPost[]
+  postReactions    PostReaction[]
+  postReports      PostReport[]
+  mentionsReceived UserMention[]     @relation("MentionedUser")
+  mentionsSent     UserMention[]     @relation("MentionedBy")
+  groupMemberships GroupMember[]
+  challengeEntries ChallengeEntry[]
   @@index([role])
   @@index([totalXP])
   @@index([readingStreak])
@@ -200,8 +206,10 @@ model Story {
   heroSlides      HeroSlide[]
   featuredIn      FeaturedStory[]
   comments        Comment[]
-  revisions       StoryRevision[]
-  collections     CollectionStory[]
+  revisions        StoryRevision[]
+  collections      CollectionStory[]
+  pageViews        PageView[]
+  challengeEntries ChallengeEntry[]
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   @@index([slug])
@@ -601,23 +609,240 @@ model AuditLog {
   createdAt  DateTime @default(now())
 }
 
-model DiscussionTopic {
-  id        String              @id @default(uuid()) @db.Uuid
-  title     String
-  content   String              @db.Text
-  userId    String              @db.Uuid
-  user      UserProfile         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  posts     DiscussionPost[]
-  createdAt DateTime            @default(now())
-  updatedAt DateTime            @updatedAt
+// ─── Discussion Categories (Forum Sections) ───────────────────────────────────
+model DiscussionCategory {
+  id          String            @id @default(uuid()) @db.Uuid
+  name        String
+  slug        String            @unique
+  description String?           @db.Text
+  icon        String            @default("💬")
+  color       String            @default("#C8A96A")
+  sortOrder   Int               @default(0)
+  isActive    Boolean           @default(true)
+  topics      DiscussionTopic[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  @@index([slug])
+  @@index([sortOrder])
 }
 
+// ─── Discussion Topics (Threads) ──────────────────────────────────────────────
+model DiscussionTopic {
+  id             String              @id @default(uuid()) @db.Uuid
+  title          String
+  content        String              @db.Text
+  userId         String              @db.Uuid
+  user           UserProfile         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId     String?             @db.Uuid
+  category       DiscussionCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  isPinned       Boolean             @default(false)
+  isTrending     Boolean             @default(false)
+  isLocked       Boolean             @default(false)
+  isSpam         Boolean             @default(false)
+  viewCount      Int                 @default(0)
+  replyCount     Int                 @default(0)
+  reportCount    Int                 @default(0)
+  lastActivityAt DateTime            @default(now())
+  posts          DiscussionPost[]
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  @@index([categoryId])
+  @@index([isPinned])
+  @@index([isTrending])
+  @@index([lastActivityAt])
+  @@index([viewCount])
+}
+
+// ─── Discussion Posts (Replies) ───────────────────────────────────────────────
 model DiscussionPost {
-  id        String              @id @default(uuid()) @db.Uuid
-  topicId   String              @db.Uuid
-  topic     DiscussionTopic     @relation(fields: [topicId], references: [id], onDelete: Cascade)
-  userId    String              @db.Uuid
-  user      UserProfile         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  content   String              @db.Text
-  createdAt DateTime            @default(now())
+  id               String          @id @default(uuid()) @db.Uuid
+  topicId          String          @db.Uuid
+  topic            DiscussionTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  userId           String          @db.Uuid
+  user             UserProfile     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content          String          @db.Text
+  parentId         String?         @db.Uuid        // for nested replies
+  isPinned         Boolean         @default(false)
+  isSpam           Boolean         @default(false)
+  reportCount      Int             @default(0)
+  mentionedUserIds String[]                        // array of mentioned user IDs
+  reactions        PostReaction[]
+  reports          PostReport[]
+  mentions         UserMention[]
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  @@index([topicId])
+  @@index([userId])
+  @@index([parentId])
+  @@index([isSpam])
+}
+
+// ─── Post Reactions (Emoji) ───────────────────────────────────────────────────
+model PostReaction {
+  id        String          @id @default(uuid()) @db.Uuid
+  postId    String          @db.Uuid
+  post      DiscussionPost  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String          @db.Uuid
+  user      UserProfile     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emoji     String          // 👍 ❤️ 🔥 💡 🤔 😂
+  createdAt DateTime        @default(now())
+  @@unique([postId, userId, emoji])
+  @@index([postId])
+  @@index([userId])
+}
+
+// ─── Post Reports (Abuse) ─────────────────────────────────────────────────────
+model PostReport {
+  id        String          @id @default(uuid()) @db.Uuid
+  postId    String          @db.Uuid
+  post      DiscussionPost  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String          @db.Uuid
+  user      UserProfile     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reason    String          // spam | hate | harassment | misinformation | other
+  details   String?         @db.Text
+  resolved  Boolean         @default(false)
+  createdAt DateTime        @default(now())
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([resolved])
+}
+
+// ─── User Mentions (@username) ────────────────────────────────────────────────
+model UserMention {
+  id              String          @id @default(uuid()) @db.Uuid
+  postId          String          @db.Uuid
+  post            DiscussionPost  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  mentionedUserId String          @db.Uuid
+  mentionedUser   UserProfile     @relation("MentionedUser", fields: [mentionedUserId], references: [id], onDelete: Cascade)
+  mentionedByUser UserProfile     @relation("MentionedBy", fields: [mentionedByUserId], references: [id], onDelete: Cascade)
+  mentionedByUserId String        @db.Uuid
+  isRead          Boolean         @default(false)
+  createdAt       DateTime        @default(now())
+  @@index([mentionedUserId])
+  @@index([isRead])
+}
+
+// ─── Community Groups ─────────────────────────────────────────────────────────
+model CommunityGroup {
+  id          String        @id @default(uuid()) @db.Uuid
+  name        String
+  slug        String        @unique
+  description String        @db.Text
+  coverUrl    String?       @db.Text
+  avatarUrl   String?       @db.Text
+  privacy     String        @default("public")   // public | private | secret
+  memberCount Int           @default(0)
+  isActive    Boolean       @default(true)
+  createdBy   String        @db.Uuid
+  members     GroupMember[]
+  announcements CommunityAnnouncement[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  @@index([slug])
+  @@index([privacy])
+  @@index([memberCount])
+}
+
+// ─── Group Members ────────────────────────────────────────────────────────────
+model GroupMember {
+  id        String          @id @default(uuid()) @db.Uuid
+  groupId   String          @db.Uuid
+  group     CommunityGroup  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId    String          @db.Uuid
+  user      UserProfile     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String          @default("member")   // member | moderator | owner
+  joinedAt  DateTime        @default(now())
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+}
+
+// ─── Story Challenges / Writing Competitions ──────────────────────────────────
+model StoryChallenge {
+  id          String            @id @default(uuid()) @db.Uuid
+  title       String
+  slug        String            @unique
+  description String            @db.Text
+  rules       String            @db.Text
+  theme       String?
+  prize       String?           @db.Text
+  badgeId     String?           @db.Uuid
+  startAt     DateTime
+  endAt       DateTime
+  isActive    Boolean           @default(true)
+  isFeatured  Boolean           @default(false)
+  createdBy   String            @db.Uuid
+  entries     ChallengeEntry[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  @@index([slug])
+  @@index([endAt])
+  @@index([isActive])
+}
+
+// ─── Challenge Entries ────────────────────────────────────────────────────────
+model ChallengeEntry {
+  id          String          @id @default(uuid()) @db.Uuid
+  challengeId String          @db.Uuid
+  challenge   StoryChallenge  @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  userId      String          @db.Uuid
+  user        UserProfile     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storyId     String?         @db.Uuid
+  story       Story?          @relation(fields: [storyId], references: [id], onDelete: SetNull)
+  storyTitle  String?
+  storyUrl    String?         @db.Text
+  votes       Int             @default(0)
+  rank        Int?
+  isWinner    Boolean         @default(false)
+  createdAt   DateTime        @default(now())
+  @@unique([challengeId, userId])
+  @@index([challengeId])
+  @@index([votes])
+  @@index([isWinner])
+}
+
+// ─── Community Announcements (Pinned by Moderators) ───────────────────────────
+model CommunityAnnouncement {
+  id        String          @id @default(uuid()) @db.Uuid
+  groupId   String?         @db.Uuid
+  group     CommunityGroup? @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  title     String
+  content   String          @db.Text
+  createdBy String          @db.Uuid
+  isGlobal  Boolean         @default(false)
+  expiresAt DateTime?
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  @@index([groupId])
+  @@index([isGlobal])
+}
+
+model PageView {
+  id              String    @id @default(uuid()) @db.Uuid
+  sessionId       String    // Anonymous visitor session identifier
+  userId          String?   // Authenticated user id (nullable)
+  path            String    // URL path e.g. /stories/my-story
+  storyId         String?   @db.Uuid
+  story           Story?    @relation(fields: [storyId], references: [id], onDelete: SetNull)
+  themeSlug       String?
+  authorId        String?   @db.Uuid
+  referrer        String?   // Referring URL or source
+  trafficSource   String?   // google | facebook | instagram | twitter | search | direct | email
+  country         String?
+  state           String?
+  city            String?
+  deviceType      String?   // desktop | mobile | tablet
+  browser         String?
+  scrollDepth     Int       @default(0)   // 0-100 percent
+  readingTime     Int       @default(0)   // seconds spent on page
+  completed       Boolean   @default(false) // read completion 95%+
+  isReturn        Boolean   @default(false) // returning visitor
+  createdAt       DateTime  @default(now())
+
+  @@index([path])
+  @@index([storyId])
+  @@index([sessionId])
+  @@index([trafficSource])
+  @@index([country])
+  @@index([createdAt])
 }

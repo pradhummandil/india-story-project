@@ -85,6 +85,16 @@ export function invalidQueryResponse(message: string) {
   return json({ error: message }, { status: 400 });
 }
 
+export function sanitizeInput(text: string): string {
+  if (!text) return "";
+  return text
+    .replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, "")
+    .replace(/on\w+\s*=\s*"[^"]*"/gi, "")
+    .replace(/on\w+\s*=\s*'[^']*'/gi, "")
+    .replace(/javascript\s*:\s*[^\s"']*/gi, "")
+    .trim();
+}
+
 // Simple in-memory IP rate limiter
 const ipRequestCounts = new Map<string, { count: number; resetAt: number }>();
 

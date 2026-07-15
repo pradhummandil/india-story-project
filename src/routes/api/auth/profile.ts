@@ -3,6 +3,8 @@ import { prisma } from "@/lib/repositories/prisma.server";
 import { supabase } from "@/lib/supabase-client";
 import { json } from "@/routes/api/-_utils";
 
+const db = prisma as any;
+
 export const Route = createFileRoute("/api/auth/profile")({
   server: {
     handlers: {
@@ -23,7 +25,6 @@ export const Route = createFileRoute("/api/auth/profile")({
           }
 
           const email = user.email!;
-          
           let body: any = {};
           try {
             body = await request.json();
@@ -40,6 +41,10 @@ export const Route = createFileRoute("/api/auth/profile")({
           const instagram = body.instagram || user.user_metadata?.instagram || null;
           const linkedin = body.linkedin || user.user_metadata?.linkedin || null;
 
+          // Support theme & language/accessibility preferences directly in columns
+          const favoriteTheme = body.favoriteTheme || null;
+          const favoriteState = body.favoriteState || null;
+
           // Determine if we should set admin role
           let roleToAssign = "user";
           if (email.toLowerCase() === "indiastoryprojectmanager21@gmail.com") {
@@ -47,13 +52,12 @@ export const Route = createFileRoute("/api/auth/profile")({
           }
 
           // Upsert profile in database
-          const profile = await prisma.profile.upsert({
+          const profile = await db.profile.upsert({
             where: { id: user.id },
             update: {
               email,
               fullName,
               avatarUrl,
-              // Only overwrite role to admin if we mapped it, otherwise keep current role
               ...(roleToAssign === "admin" ? { role: "admin" } : {}),
             },
             create: {
@@ -66,7 +70,7 @@ export const Route = createFileRoute("/api/auth/profile")({
           });
 
           // Also upsert/update UserProfile
-          const userProfile = await prisma.userProfile.upsert({
+          const userProfile = await db.userProfile.upsert({
             where: { id: user.id },
             update: {
               name: fullName,
@@ -76,6 +80,8 @@ export const Route = createFileRoute("/api/auth/profile")({
               twitter,
               instagram,
               linkedin,
+              favoriteTheme,
+              favoriteState,
             },
             create: {
               id: user.id,
@@ -87,17 +93,19 @@ export const Route = createFileRoute("/api/auth/profile")({
               twitter,
               instagram,
               linkedin,
+              favoriteTheme,
+              favoriteState,
             },
           });
 
           return json({ profile, userProfile });
         } catch (e: any) {
-          console.error("Profile endpoint error:", e);
+          console.error("Profile POST endpoint error:", e);
           return json({ error: e.message || "Server Error" }, { status: 500 });
         }
       },
+
       GET: async ({ request }) => {
-        // Retrieve current profile
         const authHeader = request.headers.get("Authorization");
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
           return json({ error: "Unauthorized" }, { status: 401 });
@@ -113,7 +121,11 @@ export const Route = createFileRoute("/api/auth/profile")({
             return json({ error: "Unauthorized" }, { status: 401 });
           }
 
-          const profile = await prisma.profile.findUnique({
+          const profile = await db.profile.findUnique({
+            where: { id: user.id },
+          });
+
+          const userProfile = await db.userProfile.findUnique({
             where: { id: user.id },
           });
 
@@ -121,7 +133,7 @@ export const Route = createFileRoute("/api/auth/profile")({
             return json({ error: "Profile not found" }, { status: 404 });
           }
 
-          return json({ profile });
+          return json({ profile, userProfile });
         } catch (e: any) {
           return json({ error: e.message }, { status: 500 });
         }

@@ -15,24 +15,50 @@ import {
   Archive,
   User,
   ExternalLink,
+  ShieldAlert,
+  Pin,
+  Trophy,
+  AlertTriangle,
+  FileText,
+  Plus,
 } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { useAuthStore } from "@/lib/auth-store";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/admin/community/")({
-  head: () => ({ meta: [{ title: "Community Reviews — Admin" }] }),
+  head: () => ({ meta: [{ title: "Community Moderation — Admin" }] }),
   component: AdminCommunityPage,
 });
 
-type Tab = "pending" | "approved" | "rejected" | "published" | "hidden" | "archived";
+type Tab = "reports" | "spam" | "pinned" | "challenges" | "pending" | "approved" | "rejected" | "published" | "hidden" | "archived";
 
 export default function AdminCommunityPage() {
   const navigate = useNavigate();
   const { user, session, initialized } = useAuthStore();
-  const [activeTab, setActiveTab] = useState<Tab>("pending");
+  const [activeTab, setActiveTab] = useState<Tab>("reports");
+  
+  // Existing submission/story states
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [stories, setStories] = useState<any[]>([]);
+  
+  // New community moderation states
+  const [reports, setReports] = useState<any[]>([]);
+  const [spamTopics, setSpamTopics] = useState<any[]>([]);
+  const [spamPosts, setSpamPosts] = useState<any[]>([]);
+  const [pinnedTopics, setPinnedTopics] = useState<any[]>([]);
+  const [challenges, setChallenges] = useState<any[]>([]);
+  
+  // New Challenge creation form state
+  const [challengeTitle, setChallengeTitle] = useState("");
+  const [challengeDesc, setChallengeDesc] = useState("");
+  const [challengeRules, setChallengeRules] = useState("");
+  const [challengeTheme, setChallengeTheme] = useState("");
+  const [challengePrize, setChallengePrize] = useState("");
+  const [challengeStart, setChallengeStart] = useState("");
+  const [challengeEnd, setChallengeEnd] = useState("");
+  const [showChallengeForm, setShowChallengeForm] = useState(false);
+
   const [loading, setLoading] = useState(true);
   const [previewStory, setPreviewStory] = useState<any | null>(null);
   const [rejectNotesId, setRejectNotesId] = useState<string | null>(null);
@@ -56,7 +82,21 @@ export default function AdminCommunityPage() {
     if (!session) return;
     setLoading(true);
     try {
-      if (activeTab === "pending" || activeTab === "approved" || activeTab === "rejected") {
+      if (["reports", "spam", "pinned", "challenges"].includes(activeTab)) {
+        // Fetch new community moderation items
+        const res = await fetch(`/api/admin/community/moderate?type=${activeTab}`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        if (res.ok) {
+          const d = await res.json();
+          if (activeTab === "reports") setReports(d.reports ?? []);
+          else if (activeTab === "spam") {
+            setSpamTopics(d.spamTopics ?? []);
+            setSpamPosts(d.spamPosts ?? []);
+          } else if (activeTab === "pinned") setPinnedTopics(d.pinnedTopics ?? []);
+          else if (activeTab === "challenges") setChallenges(d.challenges ?? []);
+        }
+      } else if (["pending", "approved", "rejected"].includes(activeTab)) {
         // Fetch submissions
         const res = await fetch("/api/admin/submissions", {
           headers: { Authorization: `Bearer ${session.access_token}` },
@@ -94,6 +134,68 @@ export default function AdminCommunityPage() {
     }
   }, [user, activeTab]);
 
+  // Moderate action dispatcher
+  const handleModerateAction = async (action: string, targetType: string, targetId: string) => {
+    if (!session) return;
+    try {
+      const res = await fetch("/api/admin/community/moderate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ action, targetType, targetId }),
+      });
+      if (res.ok) {
+        void loadData();
+      } else {
+        const err = await res.json();
+        alert(err.error || "Action failed");
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleCreateChallenge = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!session) return;
+    try {
+      const res = await fetch("/api/community/challenges", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          title: challengeTitle,
+          description: challengeDesc,
+          rules: challengeRules,
+          theme: challengeTheme || undefined,
+          prize: challengePrize || undefined,
+          startAt: new Date(challengeStart).toISOString(),
+          endAt: new Date(challengeEnd).toISOString(),
+        }),
+      });
+
+      if (res.ok) {
+        setChallengeTitle("");
+        setChallengeDesc("");
+        setChallengeRules("");
+        setChallengeTheme("");
+        setChallengePrize("");
+        setShowChallengeForm(false);
+        void loadData();
+      } else {
+        const err = await res.json();
+        alert(err.error || "Failed to create challenge");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Submissions Approve/Reject
   const handleSubAction = async (submissionId: string, action: "Approve" | "Reject") => {
     if (!session) return;
     try {
@@ -115,11 +217,6 @@ export default function AdminCommunityPage() {
         setRejectNotesText("");
         setPreviewStory(null);
         void loadData();
-        try {
-          new BroadcastChannel("isp-stories-updates").postMessage("update");
-        } catch (bcErr) {
-          console.error("Broadcast failed:", bcErr);
-        }
       }
     } catch (e) {
       console.error(e);
@@ -137,14 +234,8 @@ export default function AdminCommunityPage() {
         },
         body: JSON.stringify({ storyId, status }),
       });
-
       if (res.ok) {
         void loadData();
-        try {
-          new BroadcastChannel("isp-stories-updates").postMessage("update");
-        } catch (bcErr) {
-          console.error("Broadcast failed:", bcErr);
-        }
       }
     } catch (e) {
       console.error(e);
@@ -152,21 +243,14 @@ export default function AdminCommunityPage() {
   };
 
   const handleDeleteStory = async (storyId: string) => {
-    if (!session) return;
-    if (!confirm("Are you sure you want to delete this story? This cannot be undone.")) return;
+    if (!session || !confirm("Are you sure you want to delete this story?")) return;
     try {
       const res = await fetch(`/api/admin/stories/${storyId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
-
       if (res.ok) {
         void loadData();
-        try {
-          new BroadcastChannel("isp-stories-updates").postMessage("update");
-        } catch (bcErr) {
-          console.error("Broadcast failed:", bcErr);
-        }
       }
     } catch (e) {
       console.error(e);
@@ -175,7 +259,6 @@ export default function AdminCommunityPage() {
 
   const handleBulkApprove = async () => {
     if (!session || selectedIds.length === 0) return;
-    if (!confirm(`Are you sure you want to approve ${selectedIds.length} submissions?`)) return;
     setBulkActionLoading(true);
     try {
       await Promise.all(
@@ -192,11 +275,6 @@ export default function AdminCommunityPage() {
       );
       setSelectedIds([]);
       void loadData();
-      try {
-        new BroadcastChannel("isp-stories-updates").postMessage("update");
-      } catch (bcErr) {
-        console.error("Broadcast failed:", bcErr);
-      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -206,7 +284,7 @@ export default function AdminCommunityPage() {
 
   const handleBulkReject = async () => {
     if (!session || selectedIds.length === 0) return;
-    const notes = prompt("Enter rejection reason for selected submissions:");
+    const notes = prompt("Enter rejection reason:");
     if (notes === null) return;
     setBulkActionLoading(true);
     try {
@@ -224,11 +302,6 @@ export default function AdminCommunityPage() {
       );
       setSelectedIds([]);
       void loadData();
-      try {
-        new BroadcastChannel("isp-stories-updates").postMessage("update");
-      } catch (bcErr) {
-        console.error("Broadcast failed:", bcErr);
-      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -238,7 +311,7 @@ export default function AdminCommunityPage() {
 
   const handleBulkDelete = async () => {
     if (!session || selectedIds.length === 0) return;
-    if (!confirm(`Are you sure you want to delete ${selectedIds.length} stories? This cannot be undone.`)) return;
+    if (!confirm("Are you sure you want to delete selected stories?")) return;
     setBulkActionLoading(true);
     try {
       await Promise.all(
@@ -251,74 +324,12 @@ export default function AdminCommunityPage() {
       );
       setSelectedIds([]);
       void loadData();
-      try {
-        new BroadcastChannel("isp-stories-updates").postMessage("update");
-      } catch (bcErr) {
-        console.error("Broadcast failed:", bcErr);
-      }
     } catch (e) {
       console.error(e);
     } finally {
       setBulkActionLoading(false);
     }
   };
-
-  const processedSubmissions = submissions
-    .filter((s) => {
-      const matchSearch =
-        !searchQuery ||
-        s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        s.user?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        s.user?.email?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchCat = !filterTheme || s.themes?.includes(filterTheme) || s.categoryName === filterTheme;
-      const matchSt = !filterState || s.stateName === filterState;
-      return matchSearch && matchCat && matchSt;
-    })
-    .sort((a, b) => {
-      if (sortBy === "newest") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      if (sortBy === "oldest") return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      if (sortBy === "author") return (a.user?.name || "").localeCompare(b.user?.name || "");
-      if (sortBy === "title") return a.title.localeCompare(b.title);
-      return 0;
-    });
-
-  const processedStories = stories
-    .filter((s) => {
-      const matchSearch =
-        !searchQuery ||
-        s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        s.authorName?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchCat = !filterTheme || (
-        Array.isArray((s as any).themes)
-          ? (s as any).themes.includes(filterTheme)
-          : (s as any).category === filterTheme
-      );
-      const matchSt = !filterState || s.region === filterState;
-      return matchSearch && matchCat && matchSt;
-    })
-    .sort((a, b) => {
-      if (sortBy === "newest") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      if (sortBy === "oldest") return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      if (sortBy === "author") return (a.authorName || "").localeCompare(b.authorName || "");
-      if (sortBy === "title") return a.title.localeCompare(b.title);
-      return 0;
-    });
-
-  const themeOptions = Array.from(
-    new Set(
-      activeTab === "pending" || activeTab === "approved" || activeTab === "rejected"
-        ? submissions.flatMap((s) => s.themes ? (Array.isArray(s.themes) ? s.themes : [s.themes]) : s.categoryName ? [s.categoryName] : []).filter(Boolean)
-        : stories.flatMap((s: any) => Array.isArray(s.themes) ? s.themes : s.category ? [s.category] : []).filter(Boolean)
-    )
-  ) as string[];
-
-  const stateOptions = Array.from(
-    new Set(
-      activeTab === "pending" || activeTab === "approved" || activeTab === "rejected"
-        ? submissions.map((s) => s.stateName).filter(Boolean)
-        : stories.map((s) => s.region).filter(Boolean)
-    )
-  ) as string[];
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) =>
@@ -334,24 +345,39 @@ export default function AdminCommunityPage() {
     }
   };
 
-  return (
-    <AdminLayout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="font-display text-2xl font-bold text-white tracking-wide">Community & Moderation</h1>
-          <p className="text-xs font-sans text-white/50 uppercase tracking-widest mt-1">Review guest contributions and moderate comments/stories</p>
-        </div>
+  const processedSubmissions = submissions.filter((s) => {
+    const matchSearch =
+      !searchQuery ||
+      s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.user?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchSearch;
+  });
 
+  const processedStories = stories.filter((s) => {
+    const matchSearch =
+      !searchQuery ||
+      s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.authorName?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchSearch;
+  });
+
+  return (
+    <AdminLayout title="Community & Moderation" subtitle="Moderate forums, comments, regional groups and competitions">
+      <div className="space-y-6">
         {/* Tabs Bar */}
         <div className="flex border-b border-white/10 overflow-x-auto pb-px">
           {([
+            { id: "reports", label: "Abuse Reports" },
+            { id: "spam", label: "Spam Queue" },
+            { id: "pinned", label: "Pinned Threads" },
+            { id: "challenges", label: "Writing Challenges" },
             { id: "pending", label: "Pending Submissions" },
             { id: "approved", label: "Approved" },
             { id: "rejected", label: "Rejected" },
             { id: "published", label: "Published Stories" },
             { id: "hidden", label: "Hidden" },
             { id: "archived", label: "Archived" },
-          ] as const).map((tab) => (
+          ] as { id: Tab; label: string }[]).map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
@@ -366,108 +392,327 @@ export default function AdminCommunityPage() {
           ))}
         </div>
 
-        {/* Search, Filter, Sort and Bulk Actions Bar */}
-        <div className="flex flex-col md:flex-row gap-3 items-start md:items-center justify-between bg-zinc-950/40 p-4 border border-white/10 rounded">
-          {/* Left: Search, Filter, Sort */}
-          <div className="flex flex-wrap gap-2 items-center flex-1 max-w-2xl">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search title, contributor..."
-              className="bg-zinc-900 border border-white/10 text-white text-xs px-3 h-9 rounded focus:outline-none focus:border-primary/50 w-full sm:w-[200px]"
-            />
-            <select
-              value={filterTheme}
-              onChange={(e) => setFilterTheme(e.target.value)}
-              className="bg-zinc-900 border border-white/10 text-white/70 text-xs px-2 h-9 rounded outline-none"
-            >
-              <option value="">All Themes</option>
-              {themeOptions.map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
-            <select
-              value={filterState}
-              onChange={(e) => setFilterState(e.target.value)}
-              className="bg-zinc-900 border border-white/10 text-white/70 text-xs px-2 h-9 rounded outline-none"
-            >
-              <option value="">All States</option>
-              {stateOptions.map((st) => (
-                <option key={st} value={st}>{st}</option>
-              ))}
-            </select>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="bg-zinc-900 border border-white/10 text-white/70 text-xs px-2 h-9 rounded outline-none"
-            >
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="author">Author (A-Z)</option>
-              <option value="title">Title (A-Z)</option>
-            </select>
-          </div>
-
-          {/* Right: Bulk Actions */}
-          {selectedIds.length > 0 && (
-            <div className="flex items-center gap-2 bg-primary/10 border border-primary/20 px-3 py-1.5 rounded">
-              <span className="text-[10px] uppercase font-bold tracking-wider text-primary">
-                {selectedIds.length} selected
-              </span>
-              {bulkActionLoading ? (
-                <span className="text-[10px] text-white/50 animate-pulse font-sans">Processing...</span>
-              ) : (
-                <div className="flex gap-1.5">
-                  {(activeTab === "pending" || activeTab === "approved" || activeTab === "rejected") ? (
-                    <>
-                      {activeTab === "pending" && (
-                        <button
-                          onClick={handleBulkApprove}
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white font-sans font-bold text-[9px] uppercase tracking-wider h-6 px-2.5 rounded cursor-pointer"
-                        >
-                          Approve
-                        </button>
-                      )}
-                      <button
-                        onClick={handleBulkReject}
-                        className="bg-destructive hover:bg-destructive/95 text-white font-sans font-bold text-[9px] uppercase tracking-wider h-6 px-2.5 rounded cursor-pointer"
-                      >
-                        Reject
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      onClick={handleBulkDelete}
-                      className="bg-destructive hover:bg-destructive/95 text-white font-sans font-bold text-[9px] uppercase tracking-wider h-6 px-2.5 rounded cursor-pointer"
-                    >
-                      Delete
-                    </button>
-                  )}
-                  <button
-                    onClick={() => setSelectedIds([])}
-                    className="bg-white/5 border border-white/10 hover:bg-white/10 text-white/70 font-sans text-[9px] uppercase tracking-wider h-6 px-2 rounded cursor-pointer"
-                  >
-                    Clear
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Content Listing */}
+        {/* Dynamic Panels */}
         {loading ? (
           <div className="space-y-3">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-16 bg-[#161616] animate-pulse rounded border border-white/5" />
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-16 bg-white/5 animate-pulse rounded border border-white/5" />
             ))}
           </div>
         ) : (
-          <div className="space-y-4">
-            {/* SUBMISSIONS LIST */}
+          <div className="space-y-4 font-sans text-xs">
+            {/* 1. REPORTS TAB */}
+            {activeTab === "reports" && (
+              <div className="bg-[#141414] border border-white/8 rounded overflow-hidden">
+                {reports.length === 0 ? (
+                  <div className="p-8 text-center text-white/30 italic">No reported posts at this time.</div>
+                ) : (
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-white/10 bg-white/5 text-white/50 uppercase tracking-widest text-[9px]">
+                        <th className="p-4 font-bold">Reporter</th>
+                        <th className="p-4 font-bold">Post Author</th>
+                        <th className="p-4 font-bold">Reason</th>
+                        <th className="p-4 font-bold">Topic/Content Preview</th>
+                        <th className="p-4 font-bold text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5 text-white/85">
+                      {reports.map((r) => (
+                        <tr key={r.id} className="hover:bg-white/3">
+                          <td className="p-4 font-bold text-white/60">{r.user?.name || "Member"}</td>
+                          <td className="p-4 font-bold text-white/60">{r.post?.user?.name || "Member"}</td>
+                          <td className="p-4">
+                            <span className="bg-red-950/20 border border-red-500/20 text-red-400 font-bold uppercase tracking-wider text-[8px] px-2 py-0.5 rounded-full">
+                              {r.reason}
+                            </span>
+                          </td>
+                          <td className="p-4 max-w-xs truncate">
+                            <p className="font-bold text-white/40 mb-0.5">Topic: {r.post?.topic?.title}</p>
+                            <p className="italic text-white/70">"{r.post?.content}"</p>
+                          </td>
+                          <td className="p-4 text-right space-x-2 whitespace-nowrap">
+                            <button
+                              onClick={() => handleModerateAction("mark_spam", "post", r.post?.id)}
+                              className="bg-red-950 text-red-400 hover:bg-red-900 px-2 py-1 uppercase tracking-wider text-[8px] font-bold"
+                            >
+                              Mark Spam
+                            </button>
+                            <button
+                              onClick={() => handleModerateAction("restore", "post", r.post?.id)}
+                              className="bg-white/5 border border-white/8 px-2 py-1 uppercase tracking-wider text-[8px] font-bold text-white/60 hover:text-white"
+                            >
+                              Restore
+                            </button>
+                            <button
+                              onClick={() => handleModerateAction("delete", "post", r.post?.id)}
+                              className="bg-destructive text-white px-2 py-1 uppercase tracking-wider text-[8px] font-bold"
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            )}
+
+            {/* 2. SPAM QUEUE */}
+            {activeTab === "spam" && (
+              <div className="space-y-4">
+                <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-white/40">Spam discussions & posts</h3>
+                <div className="bg-[#141414] border border-white/8 rounded overflow-hidden">
+                  {spamTopics.length === 0 && spamPosts.length === 0 ? (
+                    <div className="p-8 text-center text-white/30 italic">Spam queue is empty.</div>
+                  ) : (
+                    <div className="divide-y divide-white/5">
+                      {spamTopics.map((t) => (
+                        <div key={t.id} className="p-4 flex items-center justify-between gap-4">
+                          <div className="space-y-1">
+                            <span className="text-[8px] font-bold uppercase bg-red-950/20 text-red-400 border border-red-500/10 px-2 py-0.5">
+                              Spam Topic
+                            </span>
+                            <h4 className="font-bold text-white/80">{t.title}</h4>
+                            <p className="text-[10px] text-white/40">By {t.user?.name}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleModerateAction("restore", "topic", t.id)}
+                              className="bg-emerald-700 text-white px-2 py-1 uppercase tracking-wider text-[8px] font-bold"
+                            >
+                              Clean / Restore
+                            </button>
+                            <button
+                              onClick={() => handleModerateAction("delete", "topic", t.id)}
+                              className="bg-destructive text-white px-2 py-1 uppercase tracking-wider text-[8px] font-bold"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                      {spamPosts.map((p) => (
+                        <div key={p.id} className="p-4 flex items-center justify-between gap-4">
+                          <div className="space-y-1">
+                            <span className="text-[8px] font-bold uppercase bg-red-950/20 text-red-400 border border-red-500/10 px-2 py-0.5">
+                              Spam Reply
+                            </span>
+                            <p className="italic text-white/70">"{p.content}"</p>
+                            <p className="text-[10px] text-white/40">By {p.user?.name} in "{p.topic?.title}"</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleModerateAction("restore", "post", p.id)}
+                              className="bg-emerald-700 text-white px-2 py-1 uppercase tracking-wider text-[8px] font-bold"
+                            >
+                              Clean / Restore
+                            </button>
+                            <button
+                              onClick={() => handleModerateAction("delete", "post", p.id)}
+                              className="bg-destructive text-white px-2 py-1 uppercase tracking-wider text-[8px] font-bold"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* 3. PINNED THREADS */}
+            {activeTab === "pinned" && (
+              <div className="bg-[#141414] border border-white/8 rounded overflow-hidden">
+                {pinnedTopics.length === 0 ? (
+                  <div className="p-8 text-center text-white/30 italic">No pinned threads.</div>
+                ) : (
+                  <div className="divide-y divide-white/5">
+                    {pinnedTopics.map((t) => (
+                      <div key={t.id} className="p-4 flex items-center justify-between gap-4">
+                        <div className="space-y-1">
+                          <h4 className="font-bold text-white/80 flex items-center gap-1.5">
+                            <Pin className="size-3.5 text-primary fill-primary" /> {t.title}
+                          </h4>
+                          <p className="text-[10px] text-white/40">
+                            By {t.user?.name} • Category: {t.category?.name || "General"}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleModerateAction("unpin", "topic", t.id)}
+                          className="bg-white/5 border border-white/10 text-white/60 hover:text-white px-3 py-1.5 uppercase tracking-wider text-[9px] font-bold"
+                        >
+                          Unpin Topic
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 4. WRITING CHALLENGES */}
+            {activeTab === "challenges" && (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center pb-2">
+                  <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-white/40">Competitions & Story Challenges</h3>
+                  <button
+                    onClick={() => setShowChallengeForm(!showChallengeForm)}
+                    className="flex items-center gap-1.5 bg-primary text-white text-[10px] font-sans font-bold uppercase tracking-widest px-3 py-1.5 rounded-sm hover:bg-primary/95"
+                  >
+                    <Plus className="size-3.5" />
+                    New Challenge
+                  </button>
+                </div>
+
+                {showChallengeForm && (
+                  <form onSubmit={handleCreateChallenge} className="bg-[#141414] border border-white/10 p-5 rounded space-y-4 max-w-xl">
+                    <h4 className="text-xs font-sans font-bold uppercase tracking-widest text-primary border-b border-white/5 pb-2">
+                      Create Story Challenge
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1 col-span-2">
+                        <label className="text-[9px] uppercase tracking-wider text-white/40">Challenge Title</label>
+                        <input
+                          type="text"
+                          required
+                          value={challengeTitle}
+                          onChange={(e) => setChallengeTitle(e.target.value)}
+                          className="bg-black border border-white/8 w-full p-2 text-xs text-white"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[9px] uppercase tracking-wider text-white/40">Theme state/tag</label>
+                        <input
+                          type="text"
+                          value={challengeTheme}
+                          onChange={(e) => setChallengeTheme(e.target.value)}
+                          className="bg-black border border-white/8 w-full p-2 text-xs text-white"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[9px] uppercase tracking-wider text-white/40">Prize Details</label>
+                        <input
+                          type="text"
+                          value={challengePrize}
+                          onChange={(e) => setChallengePrize(e.target.value)}
+                          className="bg-black border border-white/8 w-full p-2 text-xs text-white"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[9px] uppercase tracking-wider text-white/40">Start Date</label>
+                        <input
+                          type="datetime-local"
+                          required
+                          value={challengeStart}
+                          onChange={(e) => setChallengeStart(e.target.value)}
+                          className="bg-black border border-white/8 w-full p-2 text-xs text-white"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[9px] uppercase tracking-wider text-white/40">End Date / Deadline</label>
+                        <input
+                          type="datetime-local"
+                          required
+                          value={challengeEnd}
+                          onChange={(e) => setChallengeEnd(e.target.value)}
+                          className="bg-black border border-white/8 w-full p-2 text-xs text-white"
+                        />
+                      </div>
+                      <div className="space-y-1 col-span-2">
+                        <label className="text-[9px] uppercase tracking-wider text-white/40">Description Overview</label>
+                        <textarea
+                          required
+                          rows={3}
+                          value={challengeDesc}
+                          onChange={(e) => setChallengeDesc(e.target.value)}
+                          className="bg-black border border-white/8 w-full p-2 text-xs text-white resize-none"
+                        />
+                      </div>
+                      <div className="space-y-1 col-span-2">
+                        <label className="text-[9px] uppercase tracking-wider text-white/40">Detailed Rules</label>
+                        <textarea
+                          required
+                          rows={3}
+                          value={challengeRules}
+                          onChange={(e) => setChallengeRules(e.target.value)}
+                          className="bg-black border border-white/8 w-full p-2 text-xs text-white resize-none"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-2 pt-2 border-t border-white/5">
+                      <button
+                        type="button"
+                        onClick={() => setShowChallengeForm(false)}
+                        className="bg-white/5 border border-white/8 text-white/40 px-3 py-1.5 uppercase font-bold text-[9px]"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="bg-primary text-white px-4 py-1.5 uppercase font-bold text-[9px]"
+                      >
+                        Launch Competition
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                <div className="bg-[#141414] border border-white/8 rounded overflow-hidden">
+                  {challenges.length === 0 ? (
+                    <div className="p-8 text-center text-white/30 italic">No challenges launched yet.</div>
+                  ) : (
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="border-b border-white/10 bg-white/5 text-white/50 uppercase tracking-widest text-[9px]">
+                          <th className="p-4 font-bold">Challenge Title</th>
+                          <th className="p-4 font-bold">Theme / State</th>
+                          <th className="p-4 font-bold">Prize</th>
+                          <th className="p-4 font-bold">Entries</th>
+                          <th className="p-4 font-bold">Status</th>
+                          <th className="p-4 font-bold text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5 text-white/85">
+                        {challenges.map((c) => {
+                          const isEnded = new Date(c.endAt).getTime() < Date.now();
+                          return (
+                            <tr key={c.id}>
+                              <td className="p-4 font-bold text-white">{c.title}</td>
+                              <td className="p-4 text-primary font-bold">{c.theme || "—"}</td>
+                              <td className="p-4">{c.prize || "Badge / XP"}</td>
+                              <td className="p-4 font-mono">{c._count?.entries ?? 0}</td>
+                              <td className="p-4">
+                                <span className={`text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm ${
+                                  isEnded ? "bg-red-950/20 text-red-400 border border-red-500/10" : "bg-emerald-950/20 text-emerald-400 border border-emerald-500/10"
+                                }`}>
+                                  {isEnded ? "Ended" : "Active"}
+                                </span>
+                              </td>
+                              <td className="p-4 text-right">
+                                <button
+                                  onClick={() => handleModerateAction("delete", "challenge", c.id)}
+                                  className="bg-destructive hover:bg-destructive/95 text-white px-2.5 py-1 uppercase font-bold text-[8px] tracking-wider"
+                                >
+                                  Delete
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ── EXISTING: SUBMISSIONS LIST ── */}
             {(activeTab === "pending" || activeTab === "approved" || activeTab === "rejected") && (
-              <div className="bg-[#161616] border border-white/10 rounded overflow-hidden">
+              <div className="bg-[#141414] border border-white/8 rounded overflow-hidden">
                 {processedSubmissions.length === 0 ? (
                   <div className="p-8 text-center text-sm font-sans text-white/40">No contributions found matching your filters.</div>
                 ) : (
@@ -484,8 +729,6 @@ export default function AdminCommunityPage() {
                         </th>
                         <th className="p-4 font-bold">Contributor</th>
                         <th className="p-4 font-bold">Title</th>
-                        <th className="p-4 font-bold">Category/Region</th>
-                        <th className="p-4 font-bold">Submitted Date</th>
                         <th className="p-4 font-bold text-right">Actions</th>
                       </tr>
                     </thead>
@@ -516,17 +759,8 @@ export default function AdminCommunityPage() {
                             </div>
                           </td>
                           <td className="p-4 max-w-xs font-semibold text-white truncate">{s.title}</td>
-                          <td className="p-4">
-                            <p className="text-primary font-bold">
-                              {Array.isArray(s.themes) && s.themes.length > 0
-                                ? s.themes.join(", ")
-                                : s.categoryName || "—"}
-                            </p>
-                            <p className="text-white/40">{s.stateName}</p>
-                          </td>
-                          <td className="p-4 text-white/40">{new Date(s.createdAt).toLocaleDateString("en-IN")}</td>
                           <td className="p-4 text-right space-x-2">
-                            <Button size="sm" variant="outline" className="h-7 text-[10px] px-2 rounded-sm border-white/10" onClick={() => setPreviewStory(s)}>
+                            <Button size="sm" variant="outline" className="h-7 text-[10px] px-2 rounded-sm border-white/10 text-white" onClick={() => setPreviewStory(s)}>
                               <Eye className="size-3 mr-1" /> Preview
                             </Button>
                             {activeTab === "pending" && (
@@ -548,9 +782,9 @@ export default function AdminCommunityPage() {
               </div>
             )}
 
-            {/* SYSTEM STORIES LIST */}
+            {/* ── EXISTING: STORIES LIST ── */}
             {(activeTab === "published" || activeTab === "hidden" || activeTab === "archived") && (
-              <div className="bg-[#161616] border border-white/10 rounded overflow-hidden">
+              <div className="bg-[#141414] border border-white/8 rounded overflow-hidden">
                 {processedStories.length === 0 ? (
                   <div className="p-8 text-center text-sm font-sans text-white/40">No stories found matching your filters.</div>
                 ) : (
@@ -567,7 +801,6 @@ export default function AdminCommunityPage() {
                         </th>
                         <th className="p-4 font-bold">Title</th>
                         <th className="p-4 font-bold">Author</th>
-                        <th className="p-4 font-bold">Themes/Region</th>
                         <th className="p-4 font-bold">Views</th>
                         <th className="p-4 font-bold text-right">Actions</th>
                       </tr>
@@ -585,14 +818,6 @@ export default function AdminCommunityPage() {
                           </td>
                           <td className="p-4 max-w-sm font-semibold text-white truncate">{st.title}</td>
                           <td className="p-4 font-semibold text-white/70">{st.authorName || "Staff"}</td>
-                          <td className="p-4">
-                            <p className="text-primary font-bold">
-                              {Array.isArray((st as any).themes) && (st as any).themes.length > 0
-                                ? (st as any).themes.join(", ")
-                                : (st as any).category || "—"}
-                            </p>
-                            <p className="text-white/40">{st.region}</p>
-                          </td>
                           <td className="p-4 text-white/40">{st.viewCount || 0}</td>
                           <td className="p-4 text-right space-x-2">
                             {activeTab !== "published" && (
@@ -601,7 +826,7 @@ export default function AdminCommunityPage() {
                               </Button>
                             )}
                             {activeTab !== "hidden" && (
-                              <Button size="sm" variant="outline" className="h-7 text-[10px] px-2 border-white/10" onClick={() => handleStoryVisibility(st.id, "Hidden")}>
+                              <Button size="sm" variant="outline" className="h-7 text-[10px] px-2 border-white/10 text-white" onClick={() => handleStoryVisibility(st.id, "Hidden")}>
                                 Hide
                               </Button>
                             )}
@@ -610,7 +835,7 @@ export default function AdminCommunityPage() {
                                 Archive
                               </Button>
                             )}
-                            <Button size="sm" className="h-7 text-[10px] px-2 bg-destructive hover:bg-destructive/90 text-white rounded-sm" onClick={() => handleDeleteStory(st.id)}>
+                            <Button size="sm" className="h-7 text-[10px] px-2 bg-destructive hover:bg-destructive/90 text-white rounded-sm animate-none" onClick={() => handleDeleteStory(st.id)}>
                               <Trash2 className="size-3" />
                             </Button>
                           </td>
@@ -624,7 +849,7 @@ export default function AdminCommunityPage() {
           </div>
         )}
 
-        {/* PREVIEW MODAL */}
+        {/* ── PREVIEW STORY MODAL ── */}
         <AnimatePresence>
           {previewStory && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
@@ -636,11 +861,6 @@ export default function AdminCommunityPage() {
               >
                 <div className="p-6 border-b border-white/10 flex justify-between items-start">
                   <div>
-                    <span className="text-[9px] uppercase tracking-widest text-primary font-bold">
-                      {Array.isArray(previewStory.themes) && previewStory.themes.length > 0
-                        ? previewStory.themes.join(", ")
-                        : previewStory.categoryName || "—"}
-                    </span>
                     <h2 className="font-display text-xl font-bold text-white mt-1">{previewStory.title}</h2>
                     <p className="text-[10px] text-white/40 font-sans mt-0.5">By {previewStory.authorName} ({previewStory.stateName})</p>
                   </div>
@@ -656,43 +876,17 @@ export default function AdminCommunityPage() {
                   <hr className="border-white/10" />
                   <strong>Story Body:</strong>
                   <p>{previewStory.content}</p>
-                  {previewStory.galleryUrls && (() => {
-                    try {
-                      const urls = JSON.parse(previewStory.galleryUrls);
-                      if (Array.isArray(urls) && urls.length > 0) {
-                        return (
-                          <div className="space-y-2 mt-4">
-                            <strong className="text-white">Gallery Images:</strong>
-                            <div className="grid grid-cols-3 gap-2">
-                              {urls.map((url: string, index: number) => (
-                                <img key={index} src={url} className="w-full h-24 object-cover rounded border border-white/10" alt="" />
-                              ))}
-                            </div>
-                          </div>
-                        );
-                      }
-                    } catch (e) {
-                      console.error("Failed to parse previewStory.galleryUrls", e);
-                    }
-                    return null;
-                  })()}
                 </div>
 
                 <div className="p-6 border-t border-white/10 flex justify-end gap-2">
-                  <Button variant="outline" className="border-white/10 rounded-sm" onClick={() => setPreviewStory(null)}>Close</Button>
-                  {previewStory.status === "Pending" && (
-                    <>
-                      <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-sm" onClick={() => handleSubAction(previewStory.id, "Approve")}>Approve Submission</Button>
-                      <Button className="bg-destructive hover:bg-destructive/95 text-white rounded-sm" onClick={() => { setRejectNotesId(previewStory.id); setRejectNotesText(""); }}>Reject</Button>
-                    </>
-                  )}
+                  <Button variant="outline" className="border-white/10 rounded-sm text-white" onClick={() => setPreviewStory(null)}>Close</Button>
                 </div>
               </motion.div>
             </div>
           )}
         </AnimatePresence>
 
-        {/* REJECT NOTES MODAL */}
+        {/* ── REJECT CONTRIBUTION FEEDBACK MODAL ── */}
         <AnimatePresence>
           {rejectNotesId && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
@@ -710,8 +904,8 @@ export default function AdminCommunityPage() {
                   className="w-full min-h-[100px] border border-white/10 bg-transparent rounded p-2 text-xs font-sans text-white focus:outline-none focus:ring-1 focus:ring-primary"
                 />
                 <div className="flex justify-end gap-2">
-                  <Button variant="outline" className="border-white/10 text-xs rounded-sm" onClick={() => setRejectNotesId(null)}>Cancel</Button>
-                  <Button className="bg-destructive hover:bg-destructive/90 text-xs rounded-sm" onClick={() => handleSubAction(rejectNotesId, "Reject")}>Submit Rejection</Button>
+                  <Button variant="outline" className="border-white/10 text-xs rounded-sm text-white" onClick={() => setRejectNotesId(null)}>Cancel</Button>
+                  <Button className="bg-destructive hover:bg-destructive/90 text-xs rounded-sm text-white" onClick={() => handleSubAction(rejectNotesId, "Reject")}>Submit Rejection</Button>
                 </div>
               </motion.div>
             </div>
