@@ -78,7 +78,7 @@ export function AdminSidebar({
         {!collapsed && (
           <Link to="/" className="flex items-center gap-2">
             <img
-              src="https://indiastoryproject.com/wp-content/uploads/2022/04/Logo-ISP.png"
+              src="Logo-ISP.jpg"
               alt="ISP"
               className="size-7 rounded-full border border-white/20"
             />
@@ -90,7 +90,7 @@ export function AdminSidebar({
         {collapsed && (
           <Link to="/" className="mx-auto">
             <img
-              src="https://indiastoryproject.com/wp-content/uploads/2022/04/Logo-ISP.png"
+              src="Logo-ISP.jpg"
               alt="ISP"
               className="size-7 rounded-full border border-white/20"
             />

@@ -188,7 +188,7 @@ export function PremiumLoader({
               className="flex items-center gap-2 mt-4"
             >
               <img
-                src="https://indiastoryproject.com/wp-content/uploads/2022/04/Logo-ISP.png"
+                src="Logo-ISP.jpg"
                 alt="ISP"
                 className="size-8 rounded-full border border-[#c8a96a]/20"
               />

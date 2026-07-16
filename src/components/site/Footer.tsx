@@ -21,7 +21,7 @@ export function Footer() {
           <div className="md:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
               <img
-                src="https://indiastoryproject.com/wp-content/uploads/2022/04/Logo-ISP.png"
+                src="Logo-ISP.jpg"
                 alt="India Story Project logo"
                 className="size-8 rounded-full border border-border object-cover"
               />

@@ -80,7 +80,7 @@ function SignupPage() {
         <div className="relative z-10 flex flex-col justify-end p-16 text-white">
           <Link to="/" className="flex items-center gap-3 mb-16">
             <img
-              src="https://indiastoryproject.com/wp-content/uploads/2022/04/Logo-ISP.png"
+              src="Logo-ISP.jpg"
               alt="ISP"
               className="size-10 rounded-full border border-white/20"
             />
@@ -101,7 +101,7 @@ function SignupPage() {
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-16">
         <Link to="/" className="flex items-center gap-2 mb-12 lg:hidden">
           <img
-            src="https://indiastoryproject.com/wp-content/uploads/2022/04/Logo-ISP.png"
+            src="Logo-ISP.jpg"
             alt="ISP"
             className="size-8 rounded-full border border-border"
           />
