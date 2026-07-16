@@ -4,7 +4,7 @@
 export const optimizationService = {
   // Image Compression & Optimization (Unsplash CDN resizing parameters)
   optimizeImage: (url: string, width = 800, quality = 80): string => {
-    if (!url) return "/logo.png";
+    if (!url) return "/Logo-ISP.jpg";
     if (url.includes("unsplash.com")) {
       // Modify/append Unsplash parameters for lightweight delivery
       const baseUrl = url.split("?")[0];

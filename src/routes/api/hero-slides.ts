@@ -12,19 +12,6 @@ const cache = {
 };
 const CACHE_TTL = 10 * 60 * 1000; // 10 minutes cache
 
-// Helper to run promises with a timeout
-async function withTimeout<T>(promise: Promise<T>, timeoutMs = 1500): Promise<T> {
-  let timeoutId: ReturnType<typeof setTimeout>;
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    timeoutId = setTimeout(() => {
-      reject(new Error("Database query timed out"));
-    }, timeoutMs);
-  });
-  return Promise.race([promise, timeoutPromise]).finally(() => {
-    clearTimeout(timeoutId);
-  });
-}
-
 export const Route = createFileRoute("/api/hero-slides")({
   server: {
     handlers: {
@@ -55,20 +42,19 @@ export const Route = createFileRoute("/api/hero-slides")({
           };
 
           // Fetch ONLY Homepage Slideshow stories (no hero-of-the-day substitution)
-          const slideshowStories = await withTimeout(
-            prisma.story.findMany({
-              where: {
-                homepageSlideshow: true,
-                status: "Published",
-                deleted: false,
-              },
-              orderBy: {
-                slideshowOrder: "asc",
-              },
-              select: slideSelect,
-            }),
-            1500,
-          );
+          const start = Date.now();
+          const slideshowStories = await prisma.story.findMany({
+            where: {
+              homepageSlideshow: true,
+              status: "Published",
+              deleted: false,
+            },
+            orderBy: {
+              slideshowOrder: "asc",
+            },
+            select: slideSelect,
+          });
+          console.log("[hero-slides] Prisma query completed in", Date.now() - start, "ms");
 
           // No mixing/substitution logic: slideshow endpoint returns ONLY
           // homepageSlideshow=true stories (with Published+!deleted eligibility).
@@ -97,6 +83,7 @@ export const Route = createFileRoute("/api/hero-slides")({
 
           return json({ slides });
         } catch (error: any) {
+          console.error("[hero-slides]", error);
           console.error("FULL HERO SLIDES ERROR");
           console.error(error);
           console.error(error.stack);

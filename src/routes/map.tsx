@@ -453,7 +453,7 @@ function InteractiveMapPage() {
       audioUrl: `/api/stories/${story.slug}/audio`,
       duration: (parseInt(story.readTime || "5") || 5) * 60,
       authorName: story.authorName || "India Story Project",
-      imageUrl: story.image || "/logo.png",
+      imageUrl: story.image || "/Logo-ISP.jpg",
     };
     useAudioStore.getState().playEpisode(episode, lang);
     useAudioStore.getState().setPlayerOpen(true);

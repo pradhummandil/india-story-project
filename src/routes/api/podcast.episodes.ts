@@ -34,7 +34,7 @@ export const Route = createFileRoute("/api/podcast/episodes")({
             duration: (s.readingTime || 5) * 60,
             publishedAt: s.publishedAt || s.createdAt,
             authorName: s.author?.name || "India Story Project",
-            imageUrl: s.images[0]?.imageUrl || "/logo.png",
+            imageUrl: s.images[0]?.imageUrl || "/Logo-ISP.jpg",
           }));
 
           return json({ episodes });

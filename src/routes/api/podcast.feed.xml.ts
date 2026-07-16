@@ -31,7 +31,7 @@ export const Route = createFileRoute("/api/podcast/feed/xml")({
                 ? new Date(story.publishedAt).toUTCString()
                 : new Date(story.createdAt).toUTCString();
 
-              const imageUrl = story.images[0]?.imageUrl || `${host}/logo.png`;
+              const imageUrl = story.images[0]?.imageUrl || `${host}/Logo-ISP.jpg`;
               const durationSeconds = (story.readingTime || 5) * 60;
               const authorName = story.author?.name || "India Story Project";
 
@@ -67,7 +67,7 @@ export const Route = createFileRoute("/api/podcast/feed/xml")({
       <itunes:name>India Story Project</itunes:name>
       <itunes:email>support@indiastoryproject.com</itunes:email>
     </itunes:owner>
-    <itunes:image href="${host}/logo.png" />
+    <itunes:image href="${host}/Logo-ISP.jpg" />
     <itunes:category text="Society &amp; Culture">
       <itunes:category text="History" />
     </itunes:category>

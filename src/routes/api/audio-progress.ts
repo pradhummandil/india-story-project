@@ -73,7 +73,7 @@ export const Route = createFileRoute("/api/audio-progress")({
               excerpt: item.story.excerpt,
               excerptHi: item.story.excerptHi,
               authorName: item.story.author?.name || "India Story Project",
-              imageUrl: item.story.images[0]?.imageUrl || "/logo.png",
+              imageUrl: item.story.images[0]?.imageUrl || "/Logo-ISP.jpg",
               duration: (item.story.readingTime || 5) * 60,
             },
           }));
