@@ -177,15 +177,179 @@ export function GlobalSearch() {
     }
   };
 
+  const STOP_WORDS = new Set([
+    "a",
+    "an",
+    "the",
+    "of",
+    "and",
+    "or",
+    "to",
+    "in",
+    "on",
+    "for",
+    "with",
+    "at",
+    "by",
+    "from",
+    "is",
+    "are",
+    "was",
+    "were",
+    "be",
+    "been",
+    "being",
+  ]);
+
+  const normalizeAndTokenize = (input: string): string[] => {
+    const cleaned = input
+      .toLowerCase()
+      .trim()
+      .replace(/[\p{P}\p{S}]/gu, " ");
+
+    const tokens = cleaned
+      .split(/\s+/)
+      .map((t) => t.trim())
+      .filter(Boolean)
+      .filter((t) => !STOP_WORDS.has(t))
+      .filter((t) => t.length >= 2);
+
+    // De-dup while preserving order
+    return Array.from(new Set(tokens));
+  };
+
+  const rankByQuery = (story: any, token: string) => {
+    const title = (lang === "hi" ? story?.titleHi : story?.title) || story?.title || "";
+    const slug = story?.slug || "";
+    const excerpt = (lang === "hi" ? story?.excerptHi : story?.excerpt) || story?.excerpt || "";
+    const content = story?.content || "";
+
+    const exactTitle = typeof title === "string" && title.toLowerCase() === token;
+    const partialTitle = typeof title === "string" && title.toLowerCase().includes(token);
+    const partialSlug = typeof slug === "string" && slug.toLowerCase().includes(token);
+    const partialExcerpt = typeof excerpt === "string" && excerpt.toLowerCase().includes(token);
+    const partialContent = typeof content === "string" && content.toLowerCase().includes(token);
+
+    const tokenLower = token.toLowerCase();
+    const tags = Array.isArray(story?.tags) ? story.tags : [];
+    const themes = Array.isArray(story?.themes) ? story.themes : [];
+
+    const partialTags = tags.some((x: any) => String(x).toLowerCase().includes(tokenLower));
+    const partialThemes = themes.some((x: any) => String(x).toLowerCase().includes(tokenLower));
+
+    // Higher is better
+    if (exactTitle) return 100;
+    if (partialTitle) return 80;
+    if (partialSlug) return 60;
+    if (partialExcerpt) return 50;
+    if (partialContent) return 40;
+    if (partialTags) return 30;
+    if (partialThemes) return 20;
+    return 0;
+  };
+
   const fetchResults = async (searchVal: string) => {
     setLoading(true);
     try {
-      const url = `/api/search?query=${encodeURIComponent(searchVal)}`;
-      const res = await fetch(url);
-      if (res.ok) {
-        const data = await res.json();
-        setResults(data);
+      const tokens = normalizeAndTokenize(searchVal);
+
+      // Keep existing behavior for suggestions / empty query
+      if (!tokens.length) {
+        const url = `/api/search?query=`;
+        const res = await fetch(url);
+        if (res.ok) setResults(await res.json());
+        return;
       }
+
+      // Fetch per-token then merge & rank
+      const tokenRequests = tokens.map(async (token) => {
+        const url = `/api/search?query=${encodeURIComponent(token)}`;
+        const res = await fetch(url);
+        if (!res.ok) return null;
+        return res.json();
+      });
+
+      const tokenPayloads = (await Promise.all(tokenRequests)).filter(Boolean) as any[];
+
+      const merged: any = {
+        stories: [],
+        themes: [],
+        authors: [],
+        videos: [],
+        webStories: [],
+        states: [],
+        tags: [],
+        community: [],
+        careers: [],
+        impact: [],
+        isSuggestions: false,
+      };
+
+      const storyById = new Map<string, { story: any; bestScore: number }>();
+
+      for (const payload of tokenPayloads) {
+        if (Array.isArray(payload.stories)) {
+          for (const story of payload.stories) {
+            const id = String(story.id);
+            const score = Math.max(...tokens.map((t) => rankByQuery(story, t)));
+            const existing = storyById.get(id);
+            if (!existing || score > existing.bestScore) {
+              storyById.set(id, { story, bestScore: score });
+            }
+          }
+        }
+
+        // For non-story entities, just concatenate/dedupe by id/name
+        for (const key of [
+          "themes",
+          "authors",
+          "videos",
+          "webStories",
+          "states",
+          "tags",
+          "community",
+          "careers",
+          "impact",
+        ]) {
+          if (!Array.isArray(payload[key])) continue;
+          merged[key] = merged[key].concat(payload[key]);
+        }
+      }
+
+      merged.stories = Array.from(storyById.values())
+        .sort((a, b) => b.bestScore - a.bestScore)
+        .map((x) => x.story);
+
+      // De-dupe other arrays by stable key
+      const dedupeBy = (arr: any[], keyFn: (x: any) => string) => {
+        const seen = new Set<string>();
+        const out: any[] = [];
+        for (const item of arr) {
+          const k = keyFn(item);
+          if (!seen.has(k)) {
+            seen.add(k);
+            out.push(item);
+          }
+        }
+        return out;
+      };
+
+      merged.themes = dedupeBy(merged.themes, (t) => String(t.id ?? t.slug ?? t.name ?? ""));
+      merged.authors = dedupeBy(merged.authors, (a) => String(a.id ?? a.name ?? ""));
+      merged.videos = dedupeBy(merged.videos, (v) => String(v.id ?? v.slug ?? ""));
+      merged.webStories = dedupeBy(merged.webStories, (ws) =>
+        String(ws.id ?? ws.slug ?? ws.coverImage ?? "")
+      );
+      merged.states = dedupeBy(
+        merged.states,
+        (s) => String(s.id ?? s.slug ?? s.name ?? ""),
+      );
+      merged.tags = dedupeBy(merged.tags, (t) => String(t.id ?? t.slug ?? t.name ?? ""));
+
+      // Limit stories to what backend returns per token (keeps UI responsive)
+      merged.stories = merged.stories.slice(0, 15);
+
+      setResults(merged);
     } catch (err) {
       console.error("Failed to fetch global search results:", err);
     } finally {
@@ -317,12 +481,24 @@ export function GlobalSearch() {
         )}
 
         {/* Dynamic empty/no results state */}
-        {!loading && results && Object.values(results).every((arr: any) => !Array.isArray(arr) || arr.length === 0) && (
-          <CommandEmpty className="py-12 text-center text-sm font-sans text-muted-foreground">
-            {lang === "hi"
-              ? "कोई परिणाम नहीं मिला। कृपया दूसरे शब्दों का प्रयास करें।"
-              : "No matches found. Try searching for a different keyword."}
-          </CommandEmpty>
+        {!loading && results && (
+          (
+            (Array.isArray(results.stories) && results.stories.length > 0) ||
+            (Array.isArray(results.themes) && results.themes.length > 0) ||
+            (Array.isArray(results.authors) && results.authors.length > 0) ||
+            (Array.isArray(results.videos) && results.videos.length > 0) ||
+            (Array.isArray(results.webStories) && results.webStories.length > 0) ||
+            (Array.isArray(results.states) && results.states.length > 0) ||
+            (Array.isArray(results.tags) && results.tags.length > 0)
+          )
+            ? null
+            : (
+              <CommandEmpty className="py-12 text-center text-sm font-sans text-muted-foreground">
+                {lang === "hi"
+                  ? "कोई परिणाम नहीं मिला। कृपया दूसरे शब्दों का प्रयास करें।"
+                  : "No matches found. Try searching for a different keyword."}
+              </CommandEmpty>
+            )
         )}
 
         {/* Search Recommendations / Popular elements */}

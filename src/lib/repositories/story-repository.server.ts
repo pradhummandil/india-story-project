@@ -65,7 +65,8 @@ const storyCardSelect = {
     },
   },
   images: {
-    orderBy: { sortOrder: "asc" as any },
+    // Prefer a hero image if present; otherwise lowest sortOrder.
+    orderBy: [{ heroImage: "desc" as any }, { sortOrder: "asc" as any }],
     select: { id: true, imageUrl: true, caption: true, heroImage: true },
     take: 1,
   },
@@ -128,6 +129,8 @@ function toStoryCardCompatible(story: any): StoryCardCompatible {
 
 export class StoryRepository {
   constructor(private readonly db = prisma) {}
+
+  // Temporary debug logs used during incident response; keep query logic unchanged.
 
   async findPublishedBySlug(slug: string): Promise<StoryCardCompatible | null> {
     const story = await this.db.story.findFirst({
@@ -219,19 +222,26 @@ export class StoryRepository {
       orderBy = [{ title: "asc" }];
     }
 
+    const skip = (options.page - 1) * options.pageSize;
+    const take = options.pageSize;
+
     const [stories, total] = await Promise.all([
       this.db.story.findMany({
         where,
         orderBy,
-        skip: (options.page - 1) * options.pageSize,
-        take: options.pageSize,
+        skip,
+        take,
         select: storyCardSelect,
       }),
+      // Exact total for the same filter set.
       this.db.story.count({ where }),
     ]);
 
+    const mappedStories = stories.map(toStoryCardCompatible);
+
     return {
-      stories: stories.map(toStoryCardCompatible),
+      // Preserve API response shape
+      stories: mappedStories,
       total,
     };
   }

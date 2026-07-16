@@ -57,6 +57,7 @@ export const Route = createFileRoute("/api/stories")({
         const pageSize = readPositiveInt(url.searchParams.get("pageSize"), 12);
 
         let payload: any = null;
+        let shouldFallbackToJson = false;
 
         try {
           payload = await withTimeout(
@@ -70,16 +71,24 @@ export const Route = createFileRoute("/api/stories")({
               page,
               pageSize,
             }),
-            1500
+            5000,
           );
         } catch (error: any) {
-          console.warn("[stories API] Database query timeout or failure - falling back to JSON:", error.message);
+          // Only fallback when Prisma throws / DB unavailable / query timed out.
+          shouldFallbackToJson = true;
+          console.warn(
+            "[stories API] DB unavailable; falling back to JSON backup.",
+            error?.name,
+            error?.message,
+          );
         }
 
-        // Fallback to stories-backup.json if database has no records or timed out
-        if (!payload || payload.total === 0) {
+        // JSON fallback is ONLY allowed on genuine DB unavailability.
+        // Never fallback because total===0 or because this specific page has no rows.
+        if ((!payload || typeof payload !== "object") && shouldFallbackToJson) {
           try {
             const fallbackJson = await fetchStoriesBackup(request);
+
             let fallbackStories = fallbackJson.stories || [];
 
             // Apply filters manually to the fallback stories

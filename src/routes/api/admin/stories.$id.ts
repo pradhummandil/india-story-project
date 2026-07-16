@@ -121,47 +121,66 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
           }
         };
 
-        // Cover image updates
-        if (body.coverImage) {
-          const existing = await prisma.storyImage.findFirst({
-            where: { storyId: params.id, heroImage: true },
-          });
-          if (existing) {
-            if (existing.imageUrl !== body.coverImage) {
-              await deleteOldImage(existing.imageUrl);
+        // Normalize cover image input: treat empty string as null (delete)
+        const coverImageUrl: string | null =
+          typeof body.coverImage === "string"
+            ? body.coverImage.trim() || null
+            : body.coverImage === undefined
+              ? undefined
+              : body.coverImage === null
+                ? null
+                : null;
+
+        // Cover image updates (only when coverImage is explicitly provided)
+        if (coverImageUrl !== undefined) {
+          if (coverImageUrl) {
+            const existing = await prisma.storyImage.findFirst({
+              where: { storyId: params.id, heroImage: true },
+            });
+            if (existing) {
+              if (existing.imageUrl !== coverImageUrl) {
+                await deleteOldImage(existing.imageUrl);
+              }
+              await prisma.storyImage.update({
+                where: { id: existing.id },
+                data: { imageUrl: coverImageUrl },
+              });
+            } else {
+              await prisma.storyImage.create({
+                data: {
+                  storyId: params.id,
+                  imageUrl: coverImageUrl,
+                  heroImage: true,
+                  sortOrder: 0,
+                },
+              });
             }
-            await prisma.storyImage.update({
-              where: { id: existing.id },
-              data: { imageUrl: body.coverImage },
-            });
           } else {
-            await prisma.storyImage.create({
-              data: {
-                storyId: params.id,
-                imageUrl: body.coverImage,
-                heroImage: true,
-                sortOrder: 0,
-              },
+            const existing = await prisma.storyImage.findFirst({
+              where: { storyId: params.id, heroImage: true },
             });
-          }
-        } else if (body.coverImage === null) {
-          const existing = await prisma.storyImage.findFirst({
-            where: { storyId: params.id, heroImage: true },
-          });
-          if (existing) {
-            await deleteOldImage(existing.imageUrl);
-            await prisma.storyImage.delete({ where: { id: existing.id } });
+            if (existing) {
+              await deleteOldImage(existing.imageUrl);
+              await prisma.storyImage.delete({ where: { id: existing.id } });
+            }
           }
         }
 
         // Additional images updates
-        if (Array.isArray(body.additionalImages)) {
+        // Only replace gallery images when client explicitly includes the field.
+        if (
+          Object.prototype.hasOwnProperty.call(body, "additionalImages") &&
+          Array.isArray(body.additionalImages)
+        ) {
+          const nextAdditional = body.additionalImages as string[];
+
           const oldAdditional = await prisma.storyImage.findMany({
+
             where: { storyId: params.id, heroImage: false },
           });
 
           // Delete files from storage that were removed from gallery
-          const newUrlsSet = new Set(body.additionalImages);
+          const newUrlsSet = new Set(nextAdditional);
           for (const img of oldAdditional) {
             if (!newUrlsSet.has(img.imageUrl)) {
               await deleteOldImage(img.imageUrl);
@@ -174,9 +193,9 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
           });
 
           // Create new database records
-          if (body.additionalImages.length > 0) {
+          if (nextAdditional.length > 0) {
             await prisma.storyImage.createMany({
-              data: body.additionalImages.map((url: string, index: number) => ({
+              data: nextAdditional.map((url: string, index: number) => ({
                 storyId: params.id,
                 imageUrl: url,
                 heroImage: false,

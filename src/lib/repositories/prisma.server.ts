@@ -6,6 +6,26 @@ const globalForPrisma = globalThis as typeof globalThis & {
   indiaStoryPrisma?: PrismaClientInstance;
 };
 
-export const prisma = globalForPrisma.indiaStoryPrisma ?? new PrismaClient();
+const prismaClient =
+  globalForPrisma.indiaStoryPrisma ??
+  new PrismaClient({
+    log: [
+      { emit: "event", level: "query" },
+      { emit: "event", level: "info" },
+      { emit: "event", level: "warn" },
+      { emit: "event", level: "error" },
+    ],
+  });
 
-globalForPrisma.indiaStoryPrisma = prisma;
+prismaClient.$on("query", (e) => {
+  console.log("[PRISMA][query]", {
+    durationMs: e.duration,
+    target: e.target,
+    sql: e.query,
+    params: e.params,
+  });
+});
+
+export const prisma = prismaClient;
+
+globalForPrisma.indiaStoryPrisma = prismaClient;
