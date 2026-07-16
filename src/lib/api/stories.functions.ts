@@ -5,7 +5,10 @@ import { themeService } from "../services/theme-service.server";
 export const getInitialStoriesAndCategories = createServerFn({ method: "GET" }).handler(
   async () => {
     try {
-      const storiesResult = await storyService.getPublishedStories({ pageSize: 1000 });
+      const storiesResult = await storyService.getPublishedStories({
+        page: 1,
+        pageSize: 12,
+});
       const themesResult = await themeService.getAllThemeNames();
       return {
         stories: storiesResult.stories,
