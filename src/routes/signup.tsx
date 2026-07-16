@@ -80,7 +80,7 @@ function SignupPage() {
         <div className="relative z-10 flex flex-col justify-end p-16 text-white">
           <Link to="/" className="flex items-center gap-3 mb-16">
             <img
-              src="Logo-ISP.jpg"
+              src="/Logo-ISP.jpg"
               alt="ISP"
               className="size-10 rounded-full border border-white/20"
             />

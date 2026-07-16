@@ -188,7 +188,7 @@ export function PremiumLoader({
               className="flex items-center gap-2 mt-4"
             >
               <img
-                src="Logo-ISP.jpg"
+                src="/Logo-ISP.jpg"
                 alt="ISP"
                 className="size-8 rounded-full border border-[#c8a96a]/20"
               />

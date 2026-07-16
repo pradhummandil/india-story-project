@@ -21,7 +21,7 @@ export function Footer() {
           <div className="md:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
               <img
-                src="Logo-ISP.jpg"
+                src="/Logo-ISP.jpg"
                 alt="India Story Project logo"
                 className="size-8 rounded-full border border-border object-cover"
               />
@@ -60,32 +60,50 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/stories" className="text-muted-foreground hover:text-foreground transition-all">
+                <Link
+                  to="/stories"
+                  className="text-muted-foreground hover:text-foreground transition-all"
+                >
                   Stories
                 </Link>
               </li>
               <li>
-                <Link to="/explore" className="text-muted-foreground hover:text-foreground transition-all">
+                <Link
+                  to="/explore"
+                  className="text-muted-foreground hover:text-foreground transition-all"
+                >
                   Explore Hub
                 </Link>
               </li>
               <li>
-                <Link to="/map" className="text-muted-foreground hover:text-foreground transition-all">
+                <Link
+                  to="/map"
+                  className="text-muted-foreground hover:text-foreground transition-all"
+                >
                   Interactive Map
                 </Link>
               </li>
               <li>
-                <Link to="/community" className="text-muted-foreground hover:text-foreground transition-all">
+                <Link
+                  to="/community"
+                  className="text-muted-foreground hover:text-foreground transition-all"
+                >
                   Community Forums
                 </Link>
               </li>
               <li>
-                <Link to="/share-story" className="text-muted-foreground hover:text-foreground transition-all">
+                <Link
+                  to="/share-story"
+                  className="text-muted-foreground hover:text-foreground transition-all"
+                >
                   Share Your Story
                 </Link>
               </li>
               <li>
-                <Link to="/rss" className="text-muted-foreground hover:text-foreground transition-all">
+                <Link
+                  to="/rss"
+                  className="text-muted-foreground hover:text-foreground transition-all"
+                >
                   Podcast RSS Feed
                 </Link>
               </li>
@@ -99,32 +117,50 @@ export function Footer() {
             </h4>
             <ul className="space-y-2 text-sm font-sans font-medium">
               <li>
-                <Link to="/about" className="text-muted-foreground hover:text-foreground transition-all">
+                <Link
+                  to="/about"
+                  className="text-muted-foreground hover:text-foreground transition-all"
+                >
                   About Us
                 </Link>
               </li>
               <li>
-                <Link to="/careers" className="text-muted-foreground hover:text-foreground transition-all">
+                <Link
+                  to="/careers"
+                  className="text-muted-foreground hover:text-foreground transition-all"
+                >
                   Careers
                 </Link>
               </li>
               <li>
-                <Link to="/impact" className="text-muted-foreground hover:text-foreground transition-all">
+                <Link
+                  to="/impact"
+                  className="text-muted-foreground hover:text-foreground transition-all"
+                >
                   Impact Initiatives
                 </Link>
               </li>
               <li>
-                <Link to="/media-kit" className="text-muted-foreground hover:text-foreground transition-all">
+                <Link
+                  to="/media-kit"
+                  className="text-muted-foreground hover:text-foreground transition-all"
+                >
                   Media & Press Kit
                 </Link>
               </li>
               <li>
-                <Link to="/privacy" className="text-muted-foreground hover:text-foreground transition-all">
+                <Link
+                  to="/privacy"
+                  className="text-muted-foreground hover:text-foreground transition-all"
+                >
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="text-muted-foreground hover:text-foreground transition-all">
+                <Link
+                  to="/contact"
+                  className="text-muted-foreground hover:text-foreground transition-all"
+                >
                   Contact Support
                 </Link>
               </li>
