@@ -29,11 +29,8 @@ export const Route = createFileRoute("/api/hero-slides")({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        const now = Date.now();
-        if (cache.slides && now < cache.expiry) {
-          return json({ slides: cache.slides });
-        }
-
+        // const now = Date.now();
+        // CACHE DISABLED FOR DEBUG
         try {
           const slideSelect = {
             id: true,
@@ -57,60 +54,25 @@ export const Route = createFileRoute("/api/hero-slides")({
             },
           };
 
-          // Fetch Hero of the Day with 1500ms timeout
-          const [heroStory, slideshowStories] = await Promise.all([
-            withTimeout(
-              prisma.story.findFirst({
-                 where: {
-               heroOfTheDay: true,
-                  status: "Published",
-                  deleted: false,
-      },
-           select: slideSelect,
-    }),
-  1500
-  ),
-
-            withTimeout(
-              prisma.story.findMany({
-               where: {
-               homepageSlideshow: true,
-               status: "Published",
-                  deleted: false,
-      },
+          // Fetch ONLY Homepage Slideshow stories (no hero-of-the-day substitution)
+          const slideshowStories = await withTimeout(
+            prisma.story.findMany({
+              where: {
+                homepageSlideshow: true,
+                status: "Published",
+                deleted: false,
+              },
               orderBy: {
-                   slideshowOrder: "asc",
-                },
-               select: slideSelect,
-              }),
-           1500
-  ),
-]);
-          const activeStories = [];
-          if (heroStory) {
-            activeStories.push(heroStory);
-          }
-          activeStories.push(...slideshowStories);
+                slideshowOrder: "asc",
+              },
+              select: slideSelect,
+            }),
+            1500,
+          );
 
-          if (activeStories.length === 0) {
-            const fallbackStories = await withTimeout(
-              prisma.story.findMany({
-                where: {
-                  status: "Published",
-                  deleted: false,
-                  featured: false,
-                  heroOfTheDay: false,
-                },
-                orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
-                take: 5,
-                select: slideSelect,
-              }),
-              5000
-            );
-            activeStories.push(...fallbackStories);
-          }
-
-          const slides = activeStories.map((s: any) => {
+          // No mixing/substitution logic: slideshow endpoint returns ONLY
+          // homepageSlideshow=true stories (with Published+!deleted eligibility).
+          const slides = slideshowStories.map((s: any) => {
             const heroImage = s.images?.[0]?.imageUrl ?? FALLBACK_IMAGE;
             return {
               id: s.id,
@@ -130,8 +92,8 @@ export const Route = createFileRoute("/api/hero-slides")({
           });
 
           // Cache the compiled slides
-          cache.slides = slides;
-          cache.expiry = now + CACHE_TTL;
+          //cache.slides = slides;
+          //cache.expiry = now + CACHE_TTL;
 
           return json({ slides });
         } catch (error: any) {
@@ -142,35 +104,36 @@ export const Route = createFileRoute("/api/hero-slides")({
           try {
             const fallbackJson = await fetchStoriesBackup(request);
 
+            // Fallback must still respect slideshow-only eligibility.
             const fallbackStories = (fallbackJson.stories || [])
-             .filter((s: any) => s.homepageSlideshow || s.heroOfTheDay || s.featured)
-             .slice(0, 5);
+              .filter(
+                (s: any) =>
+                  s.homepageSlideshow === true && s.status === "Published" && s.deleted === false,
+              )
+              .slice(0, 5);
 
-           const slides = fallbackStories.map((s: any) => ({
-            id: s.id,
+            const slides = fallbackStories.map((s: any) => ({
+              id: s.id,
               storyId: s.id,
               slug: s.slug,
-                title: s.title,
-      excerpt: s.excerpt,
-      titleHi: s.titleHi ?? null,
-      excerptHi: s.excerptHi ?? null,
-      themes: Array.isArray(s.themes)
-               ? s.themes
-        : [s.category || s.theme].filter(Boolean),
-      state: s.region ?? "India",
-      author: s.authorName ?? "India Story Project",
-      readingTime: s.readTime ?? "4 min read",
-      image: s.image || FALLBACK_IMAGE,
-      caption: null,
-    }));
+              title: s.title,
+              excerpt: s.excerpt,
+              titleHi: s.titleHi ?? null,
+              excerptHi: s.excerptHi ?? null,
+              themes: Array.isArray(s.themes) ? s.themes : [s.category || s.theme].filter(Boolean),
+              state: s.region ?? "India",
+              author: s.authorName ?? "India Story Project",
+              readingTime: s.readTime ?? "4 min read",
+              image: s.image || FALLBACK_IMAGE,
+              caption: null,
+            }));
 
-              return json({ slides });
-
-  }     catch (e) {
-               console.error("Fallback JSON failed", e);
+            return json({ slides });
+          } catch (e) {
+            console.error("Fallback JSON failed", e);
             return json({ slides: [] });
-             }
           }
+        }
       },
     },
   },
