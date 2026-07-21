@@ -136,7 +136,7 @@ export const Route = createFileRoute("/api/admin/media")({
             const arrayBuffer = await file.arrayBuffer();
             const buffer = Buffer.from(arrayBuffer);
 
-            const url = await uploadToCloudinary(buffer, file.name, file.type);
+            const { url } = await uploadToCloudinary(buffer, file.name, file.type);
 
             results.push({
               name: file.name,

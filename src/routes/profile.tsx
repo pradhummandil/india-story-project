@@ -206,6 +206,7 @@ function ProfilePage() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -269,10 +270,10 @@ function ProfilePage() {
     if (!session) return;
 
     const formData = new FormData();
-    formData.append("files", blob, originalName);
+    formData.append("file", blob, originalName);
 
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/admin/media");
+    xhr.open("POST", "/api/profile/avatar");
     xhr.setRequestHeader("Authorization", `Bearer ${session.access_token}`);
 
     xhr.upload.addEventListener("progress", (event) => {
@@ -286,37 +287,13 @@ function ProfilePage() {
       if (xhr.status >= 200 && xhr.status < 300) {
         try {
           const resData = JSON.parse(xhr.responseText);
-          const secureUrl = resData.files?.[0]?.url;
+          const secureUrl = resData.avatarUrl;
           if (secureUrl) {
-            const profileRes = await fetch("/api/auth/profile", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${session.access_token}`,
-              },
-              body: JSON.stringify({
-                name,
-                bio,
-                website,
-                twitter,
-                instagram,
-                linkedin,
-                avatarUrl: secureUrl,
-              }),
-            });
-
-            if (profileRes.ok) {
-              await supabase.auth.updateUser({
-                data: { avatar_url: secureUrl },
-              });
-              setAvatarUrl(secureUrl);
-              setUploadingAvatar(false);
-              setUploadProgress(100);
-              refetchData();
-            } else {
-              setUploadError("Failed to save avatar URL to profile.");
-              setUploadingAvatar(false);
-            }
+            setAvatarUrl(secureUrl);
+            setUploadingAvatar(false);
+            setUploadProgress(100);
+            setSuccessMessage("Avatar updated successfully.");
+            refetchData();
           } else {
             setUploadError("Upload succeeded but URL was missing.");
             setUploadingAvatar(false);
@@ -326,9 +303,15 @@ function ProfilePage() {
           setUploadingAvatar(false);
         }
       } else {
-        setUploadError(`Upload failed with status: ${xhr.status}`);
+        try {
+          const errData = JSON.parse(xhr.responseText);
+          setUploadError(errData.error || `Upload failed with status: ${xhr.status}`);
+        } catch {
+          setUploadError(`Upload failed with status: ${xhr.status}`);
+        }
         setUploadingAvatar(false);
       }
+      setTimeout(() => setSuccessMessage(null), 3000);
     };
 
     xhr.onerror = () => {
@@ -337,6 +320,36 @@ function ProfilePage() {
     };
 
     xhr.send(formData);
+  };
+
+  const handleRemoveAvatar = async () => {
+    if (!session || !avatarUrl) return;
+    setUploadingAvatar(true);
+    setUploadError(null);
+    setSuccessMessage(null);
+
+    try {
+      const res = await fetch("/api/profile/avatar", {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (res.ok) {
+        setAvatarUrl(null);
+        setSuccessMessage("Avatar removed successfully.");
+        refetchData();
+      } else {
+        const errJson = await res.json();
+        setUploadError(errJson.error || "Failed to remove avatar.");
+      }
+    } catch (err: any) {
+      setUploadError(err.message || "Network error removing avatar.");
+    } finally {
+      setUploadingAvatar(false);
+      setTimeout(() => setSuccessMessage(null), 3000);
+    }
   };
 
   // Edit form state
@@ -650,6 +663,17 @@ function ProfilePage() {
               >
                 <Camera className="size-3.5" />
               </button>
+              {avatarUrl && (
+                <button
+                  type="button"
+                  onClick={handleRemoveAvatar}
+                  disabled={uploadingAvatar}
+                  className="absolute bottom-1 -left-1 size-8 rounded-full bg-destructive text-white flex items-center justify-center hover:bg-destructive/90 transition-colors shadow disabled:opacity-50 cursor-pointer"
+                  title="Remove avatar"
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
+              )}
             </div>
 
             {/* Name + Role */}
@@ -664,10 +688,15 @@ function ProfilePage() {
                     <button
                       type="button"
                       onClick={() => avatarInputRef.current?.click()}
-                      className="underline text-gold hover:text-saffron font-bold uppercase tracking-wider text-[10px] ml-1"
+                      className="underline text-gold hover:text-saffron font-bold uppercase tracking-wider text-[10px] ml-1 cursor-pointer"
                     >
                       Retry
                     </button>
+                  </span>
+                )}
+                {successMessage && (
+                  <span className="text-xs text-emerald-600 font-sans font-semibold flex items-center gap-1">
+                    ✓ {successMessage}
                   </span>
                 )}
                 {stats && stats.level >= 5 && (

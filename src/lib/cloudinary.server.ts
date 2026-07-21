@@ -10,7 +10,7 @@ export async function uploadToCloudinary(
   fileName: string,
   contentType: string,
   folder = "india_story_project",
-): Promise<string> {
+): Promise<{ url: string; publicId: string }> {
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim();
   const apiKey = process.env.CLOUDINARY_API_KEY?.trim();
   const apiSecret = process.env.CLOUDINARY_API_SECRET?.trim();
@@ -64,7 +64,10 @@ export async function uploadToCloudinary(
     throw new Error(`Cloudinary returned no secure_url. Response: ${JSON.stringify(data)}`);
   }
 
-  return data.secure_url as string;
+  return {
+    url: data.secure_url as string,
+    publicId: data.public_id as string,
+  };
 }
 
 export function isCloudinaryConfigured(): boolean {

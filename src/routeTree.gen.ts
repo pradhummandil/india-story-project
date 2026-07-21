@@ -116,6 +116,7 @@ import { Route as ApiStoriesFilterRouteImport } from './routes/api/stories/filte
 import { Route as ApiStoriesFeaturedRouteImport } from './routes/api/stories/featured'
 import { Route as ApiStoriesSlugRouteImport } from './routes/api/stories/$slug'
 import { Route as ApiSearchHistoryRouteImport } from './routes/api/search/history'
+import { Route as ApiProfileAvatarRouteImport } from './routes/api/profile/avatar'
 import { Route as ApiPodcastEpisodesRouteImport } from './routes/api/podcast.episodes'
 import { Route as ApiNewsletterVerifyRouteImport } from './routes/api/newsletter/verify'
 import { Route as ApiNewsletterSubscribeRouteImport } from './routes/api/newsletter/subscribe'
@@ -753,6 +754,11 @@ const ApiSearchHistoryRoute = ApiSearchHistoryRouteImport.update({
   path: '/history',
   getParentRoute: () => ApiSearchRoute,
 } as any)
+const ApiProfileAvatarRoute = ApiProfileAvatarRouteImport.update({
+  id: '/api/profile/avatar',
+  path: '/api/profile/avatar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPodcastEpisodesRoute = ApiPodcastEpisodesRouteImport.update({
   id: '/api/podcast/episodes',
   path: '/api/podcast/episodes',
@@ -1230,6 +1236,7 @@ export interface FileRoutesByFullPath {
   '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
   '/api/newsletter/verify': typeof ApiNewsletterVerifyRoute
   '/api/podcast/episodes': typeof ApiPodcastEpisodesRoute
+  '/api/profile/avatar': typeof ApiProfileAvatarRoute
   '/api/search/history': typeof ApiSearchHistoryRoute
   '/api/stories/$slug': typeof ApiStoriesSlugRouteWithChildren
   '/api/stories/featured': typeof ApiStoriesFeaturedRoute
@@ -1403,6 +1410,7 @@ export interface FileRoutesByTo {
   '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
   '/api/newsletter/verify': typeof ApiNewsletterVerifyRoute
   '/api/podcast/episodes': typeof ApiPodcastEpisodesRoute
+  '/api/profile/avatar': typeof ApiProfileAvatarRoute
   '/api/search/history': typeof ApiSearchHistoryRoute
   '/api/stories/$slug': typeof ApiStoriesSlugRouteWithChildren
   '/api/stories/featured': typeof ApiStoriesFeaturedRoute
@@ -1580,6 +1588,7 @@ export interface FileRoutesById {
   '/api/newsletter/subscribe': typeof ApiNewsletterSubscribeRoute
   '/api/newsletter/verify': typeof ApiNewsletterVerifyRoute
   '/api/podcast/episodes': typeof ApiPodcastEpisodesRoute
+  '/api/profile/avatar': typeof ApiProfileAvatarRoute
   '/api/search/history': typeof ApiSearchHistoryRoute
   '/api/stories/$slug': typeof ApiStoriesSlugRouteWithChildren
   '/api/stories/featured': typeof ApiStoriesFeaturedRoute
@@ -1758,6 +1767,7 @@ export interface FileRouteTypes {
     | '/api/newsletter/subscribe'
     | '/api/newsletter/verify'
     | '/api/podcast/episodes'
+    | '/api/profile/avatar'
     | '/api/search/history'
     | '/api/stories/$slug'
     | '/api/stories/featured'
@@ -1931,6 +1941,7 @@ export interface FileRouteTypes {
     | '/api/newsletter/subscribe'
     | '/api/newsletter/verify'
     | '/api/podcast/episodes'
+    | '/api/profile/avatar'
     | '/api/search/history'
     | '/api/stories/$slug'
     | '/api/stories/featured'
@@ -2107,6 +2118,7 @@ export interface FileRouteTypes {
     | '/api/newsletter/subscribe'
     | '/api/newsletter/verify'
     | '/api/podcast/episodes'
+    | '/api/profile/avatar'
     | '/api/search/history'
     | '/api/stories/$slug'
     | '/api/stories/featured'
@@ -2257,6 +2269,7 @@ export interface RootRouteChildren {
   ApiNewsletterSubscribeRoute: typeof ApiNewsletterSubscribeRoute
   ApiNewsletterVerifyRoute: typeof ApiNewsletterVerifyRoute
   ApiPodcastEpisodesRoute: typeof ApiPodcastEpisodesRoute
+  ApiProfileAvatarRoute: typeof ApiProfileAvatarRoute
   ApiAdminCommunityModerateRoute: typeof ApiAdminCommunityModerateRoute
   ApiAdminInfrastructureAuditLogsRoute: typeof ApiAdminInfrastructureAuditLogsRoute
   ApiAdminInfrastructureFlagsRoute: typeof ApiAdminInfrastructureFlagsRoute
@@ -3021,6 +3034,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/search/history'
       preLoaderRoute: typeof ApiSearchHistoryRouteImport
       parentRoute: typeof ApiSearchRoute
+    }
+    '/api/profile/avatar': {
+      id: '/api/profile/avatar'
+      path: '/api/profile/avatar'
+      fullPath: '/api/profile/avatar'
+      preLoaderRoute: typeof ApiProfileAvatarRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/podcast/episodes': {
       id: '/api/podcast/episodes'
@@ -3983,6 +4003,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiNewsletterSubscribeRoute: ApiNewsletterSubscribeRoute,
   ApiNewsletterVerifyRoute: ApiNewsletterVerifyRoute,
   ApiPodcastEpisodesRoute: ApiPodcastEpisodesRoute,
+  ApiProfileAvatarRoute: ApiProfileAvatarRoute,
   ApiAdminCommunityModerateRoute: ApiAdminCommunityModerateRoute,
   ApiAdminInfrastructureAuditLogsRoute: ApiAdminInfrastructureAuditLogsRoute,
   ApiAdminInfrastructureFlagsRoute: ApiAdminInfrastructureFlagsRoute,

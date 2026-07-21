@@ -28,6 +28,7 @@ model UserProfile {
   email            String            @unique
   name             String?
   avatarUrl        String?
+  avatarPublicId   String?
   bio              String?
   role             UserRole          @default(Reader)
   active           Boolean           @default(true)
@@ -368,14 +369,15 @@ model FeaturedStory {
 }
 
 model Profile {
-  id        String   @id @db.Uuid
-  email     String   @unique
-  fullName  String?  @map("full_name")
-  avatarUrl String?  @map("avatar_url")
-  role      String   @default("user")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  active    Boolean  @default(true)
+  id             String   @id @db.Uuid
+  email          String   @unique
+  fullName       String?  @map("full_name")
+  avatarUrl      String?  @map("avatar_url")
+  avatarPublicId String?  @map("avatar_public_id")
+  role           String   @default("user")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  active         Boolean  @default(true)
 
   @@map("profiles")
 }
