@@ -17,10 +17,11 @@ import {
   Zap,
   Eye,
   Code2,
-  Smartphone,
   Brain,
-  ExternalLink,
+  Instagram,
+  Mail,
 } from "lucide-react";
+import { teamMembers } from "@/lib/data/teamMembers";
 import { SiteLayout } from "@/components/site/Layout";
 
 export const Route = createFileRoute("/about")({
@@ -400,137 +401,144 @@ function About() {
           </div>
         </section>
 
-        {/* ─── Meet the Developer (PREMIUM CARD) ─── */}
+        {/* ─── Team India Story Project ─── */}
         <section className="py-24 border-b border-border/40">
-          <div className="container mx-auto px-6 max-w-5xl">
+          <div className="container mx-auto px-6 max-w-6xl">
             <div className="text-center mb-16">
               <span className="text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-gold">
-                The Architect
+                Team India Story Project
               </span>
               <h2 className="font-display text-3xl md:text-5xl font-bold mt-3 leading-tight">
-                Meet the Builder
+                Team India Story Project
               </h2>
               <p className="mt-4 text-muted-foreground font-sans max-w-xl mx-auto text-sm">
-                The engineer who designed and built the India Story Project from first principles.
+                The people preserving India's stories through technology, culture, research and design.
               </p>
             </div>
 
-            <div className="max-w-3xl mx-auto">
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                className="relative overflow-hidden rounded-3xl"
-              >
-                {/* Outer glow border */}
-                <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-gold/30 via-transparent to-saffron/20 p-px">
-                  <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[#0d0d0d] to-[#111] backdrop-blur-xl" />
-                </div>
-
-                <div className="relative p-8 md:p-12">
-                  {/* Decorative corner elements */}
-                  <div className="absolute top-4 right-4 text-[9px] font-sans uppercase tracking-[0.25em] text-gold/40 font-bold">
-                    Lead Engineer
-                  </div>
-                  <div className="absolute bottom-4 left-4 size-1 rounded-full bg-gold/30" />
-                  <div className="absolute bottom-4 left-7 size-1 rounded-full bg-gold/20" />
-                  <div className="absolute bottom-4 left-10 size-1 rounded-full bg-gold/10" />
-
-                  <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-center md:items-start">
-                    {/* Avatar */}
-                    <div className="relative shrink-0">
-                      <div className="size-32 md:size-40 rounded-2xl overflow-hidden bg-gradient-to-br from-gold/20 to-saffron/10 border border-gold/25 flex items-center justify-center relative shadow-glow">
-                        {/* Decorative icon-based avatar */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-[#0d0d0d] to-[#1a1a1a]" />
-                        <div className="relative z-10 flex flex-col items-center gap-1">
-                          <Cpu className="size-10 text-gold" />
-                          <Sparkles className="size-4 text-saffron absolute -top-1 -right-1 animate-pulse" />
-                          <span className="text-[8px] uppercase font-sans font-black tracking-[0.25em] text-white/40 mt-1">
-                            ISP Dev
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Status badge */}
-                      <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap bg-gradient-to-r from-gold to-saffron text-[8px] uppercase font-black tracking-[0.2em] text-black px-3 py-1 rounded-full shadow-glow">
-                        Verified Developer
-                      </div>
-                    </div>
-
-                    {/* Details */}
-                    <div className="flex-1 text-center md:text-left space-y-5">
-                      <div>
-                        <h3 className="font-display text-3xl md:text-4xl font-extrabold text-white leading-tight">
-                          Pradhum Mandil
-                        </h3>
-                        <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-3">
-                          {[
-                            { icon: Code2, label: "Full Stack Web" },
-                            { icon: Smartphone, label: "Flutter Apps" },
-                            { icon: Brain, label: "AI Engineer" },
-                          ].map((role, i) => (
-                            <span
-                              key={i}
-                              className="inline-flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider text-gold/80 bg-gold/8 border border-gold/15 px-2.5 py-1 rounded-full font-sans"
-                            >
-                              <role.icon className="size-3" />
-                              {role.label}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                      <p className="text-sm text-muted-foreground leading-relaxed font-sans">
-                        Pradhum Mandil is the principal architect of the India Story Project. He
-                        designed the entire platform from first principles — engineering the
-                        high-performance TanStack routing engine, building the real-time Supabase
-                        Auth and database layer, developing the hybrid Cloudinary/Supabase media
-                        storage pipeline, and integrating the context-aware Gemini AI chatbot that
-                        surfaces local hero stories across Bharat.
-                      </p>
-
-                      <div className="flex justify-center md:justify-start items-center gap-3 pt-1">
-                        {[
-                          {
-                            icon: Github,
-                            href: "https://github.com",
-                            label: "GitHub",
-                            hint: "github.com/pradhummandil",
-                          },
-                          {
-                            icon: Linkedin,
-                            href: "https://linkedin.com",
-                            label: "LinkedIn",
-                            hint: "linkedin.com/in/pradhum",
-                          },
-                          {
-                            icon: Twitter,
-                            href: "https://twitter.com",
-                            label: "Twitter / X",
-                            hint: "@pradhummandil",
-                          },
-                        ].map((soc, i) => (
-                          <a
-                            key={i}
-                            href={soc.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="group flex items-center gap-2 px-3 py-2 rounded-xl bg-white/4 border border-white/8 hover:border-gold/30 hover:bg-gold/8 transition-all duration-300"
-                            aria-label={soc.label}
-                          >
-                            <soc.icon className="size-3.5 text-white/60 group-hover:text-gold transition-colors" />
-                            <span className="text-[10px] font-sans text-white/40 group-hover:text-gold/70 transition-colors hidden sm:block">
-                              {soc.hint}
-                            </span>
-                            <ExternalLink className="size-2.5 text-white/20 group-hover:text-gold/40 transition-colors" />
-                          </a>
-                        ))}
-                      </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {teamMembers.map((member, i) => (
+                <motion.div
+                  key={member.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                  className="group relative overflow-hidden rounded-2xl border border-border/30 bg-card/10 hover:border-gold/30 hover:bg-card/25 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col items-center p-6 text-center"
+                >
+                  {/* Circular Avatar / Placeholder */}
+                  <div className="relative mb-6">
+                    <div className="size-28 rounded-full overflow-hidden border border-gold/20 flex items-center justify-center bg-gradient-to-br from-gold/15 to-saffron/10 relative shadow-inner group-hover:scale-105 transition-transform duration-500">
+                      {member.photo ? (
+                        <img
+                          src={member.photo}
+                          alt={member.name}
+                          loading="lazy"
+                          className="size-full object-cover"
+                        />
+                      ) : (
+                        <span className="font-display text-2xl md:text-3xl font-black text-gradient-gold tracking-wider select-none">
+                          {member.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .substring(0, 2)
+                            .toUpperCase()}
+                        </span>
+                      )}
                     </div>
                   </div>
-                </div>
-              </motion.div>
+
+                  {/* Name & Role */}
+                  <h3 className="font-display text-lg font-bold text-foreground group-hover:text-primary transition-colors duration-300">
+                    {member.name}
+                  </h3>
+                  <p className="text-xs uppercase tracking-wider font-sans font-bold text-gold mt-1.5 mb-3">
+                    {member.role}
+                  </p>
+
+                  {/* Bio */}
+                  <p className="text-xs text-muted-foreground font-sans leading-relaxed flex-1 mb-4">
+                    {member.bio}
+                  </p>
+
+                  {/* Location if available */}
+                  {member.location && (
+                    <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground/60 font-sans mb-5 flex items-center gap-1">
+                      <MapPin className="size-3 text-gold/60" />
+                      {member.location}
+                    </p>
+                  )}
+
+                  {/* Social Links */}
+                  <div className="flex items-center justify-center gap-3 mt-auto pt-4 border-t border-border/40 w-full">
+                    {member.linkedin && (
+                      <a
+                        href={member.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-lg bg-white/4 border border-white/5 hover:border-gold/30 hover:bg-gold/8 text-white/50 hover:text-gold transition-all duration-300"
+                        aria-label={`${member.name}'s LinkedIn profile`}
+                      >
+                        <Linkedin className="size-4" />
+                      </a>
+                    )}
+                    {member.github && (
+                      <a
+                        href={member.github}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-lg bg-white/4 border border-white/5 hover:border-gold/30 hover:bg-gold/8 text-white/50 hover:text-gold transition-all duration-300"
+                        aria-label={`${member.name}'s GitHub profile`}
+                      >
+                        <Github className="size-4" />
+                      </a>
+                    )}
+                    {member.instagram && (
+                      <a
+                        href={member.instagram}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-lg bg-white/4 border border-white/5 hover:border-gold/30 hover:bg-gold/8 text-white/50 hover:text-gold transition-all duration-300"
+                        aria-label={`${member.name}'s Instagram profile`}
+                      >
+                        <Instagram className="size-4" />
+                      </a>
+                    )}
+                    {member.twitter && (
+                      <a
+                        href={member.twitter}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-lg bg-white/4 border border-white/5 hover:border-gold/30 hover:bg-gold/8 text-white/50 hover:text-gold transition-all duration-300"
+                        aria-label={`${member.name}'s X/Twitter profile`}
+                      >
+                        <Twitter className="size-4" />
+                      </a>
+                    )}
+                    {member.website && (
+                      <a
+                        href={member.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-lg bg-white/4 border border-white/5 hover:border-gold/30 hover:bg-gold/8 text-white/50 hover:text-gold transition-all duration-300"
+                        aria-label={`${member.name}'s official website`}
+                      >
+                        <Globe className="size-4" />
+                      </a>
+                    )}
+                    {member.email && (
+                      <a
+                        href={`mailto:${member.email}`}
+                        className="p-2 rounded-lg bg-white/4 border border-white/5 hover:border-gold/30 hover:bg-gold/8 text-white/50 hover:text-gold transition-all duration-300"
+                        aria-label={`Email ${member.name}`}
+                      >
+                        <Mail className="size-4" />
+                      </a>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
             </div>
           </div>
         </section>
