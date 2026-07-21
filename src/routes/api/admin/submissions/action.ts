@@ -24,7 +24,6 @@ export const Route = createFileRoute("/api/admin/submissions/action")({
             action,
             adminNotes,
             featured = false,
-            heroOfTheDay = false,
             homepageSlideshow = false,
             slideshowOrder = 0,
           } = body;
@@ -149,7 +148,6 @@ export const Route = createFileRoute("/api/admin/submissions/action")({
                 readingTime: Math.max(1, Math.ceil(submission.content.split(/\s+/).length / 200)),
                 publishedAt: new Date(),
                 featured,
-                heroOfTheDay,
                 homepageSlideshow,
                 slideshowOrder,
               },

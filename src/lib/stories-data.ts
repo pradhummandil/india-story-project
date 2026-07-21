@@ -114,7 +114,6 @@ function normalizeStory(raw: Record<string, unknown>): Story {
     publishedAt: getString(raw.publishedAt) || undefined,
     createdAt: getString(raw.createdAt) || undefined,
     featured: !!raw.featured,
-    heroOfTheDay: !!raw.heroOfTheDay,
     homepageSlideshow: !!raw.homepageSlideshow,
     slideshowOrder: typeof raw.slideshowOrder === "number" ? raw.slideshowOrder : 0,
     seoKeywords: typeof raw.seoKeywords === "string" ? raw.seoKeywords : null,

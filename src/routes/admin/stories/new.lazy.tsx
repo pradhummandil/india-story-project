@@ -34,7 +34,6 @@ export default function NewStoryPage() {
   const [seoDesc, setSeoDesc] = useState("");
   const [readingTime, setReadingTime] = useState("");
   const [featured, setFeatured] = useState(false);
-  const [heroOfTheDay, setHeroOfTheDay] = useState(false);
   const [homepageSlideshow, setHomepageSlideshow] = useState(false);
   const [slideshowOrder, setSlideshowOrder] = useState(0);
   const [seoPriority, setSeoPriority] = useState(0.5);
@@ -196,7 +195,6 @@ export default function NewStoryPage() {
       seoDescription: seoDesc || excerpt,
       readingTime: readingTime ? parseInt(readingTime, 10) : null,
       featured,
-      heroOfTheDay,
       homepageSlideshow,
       slideshowOrder,
       seoPriority,
@@ -592,12 +590,6 @@ export default function NewStoryPage() {
                   value: featured,
                   set: setFeatured,
                   id: "story-featured",
-                },
-                {
-                  label: "Hero of the Day",
-                  value: heroOfTheDay,
-                  set: setHeroOfTheDay,
-                  id: "story-hero-of-day",
                 },
                 {
                   label: "Homepage Slideshow",

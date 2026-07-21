@@ -150,7 +150,9 @@ function RootShell({ children }: { children: ReactNode }) {
     themes: loaderData?.themes || categories,
     categories: loaderData?.categories || categories,
     heroSlides: loaderData?.heroSlides || [],
-    heroOfTheDay: loaderData?.heroOfTheDay || null,
+    featuredStory: loaderData?.featuredStory || null,
+    trendingStories: loaderData?.trendingStories || [],
+    stateCounts: loaderData?.stateCounts || {},
   };
   const serialized = JSON.stringify(initialData).replace(/</g, "\\u003c");
 

@@ -31,7 +31,7 @@ export const getInitialStoriesAndCategories = createServerFn({ method: "GET" }).
         },
       };
 
-      const [storiesResult, themesResult, slideshowStories, heroOfTheDayStory] = await Promise.all([
+      const [storiesResult, themesResult, slideshowStories, featuredStories, trendingResult, stateCountsList] = await Promise.all([
         storyService.getPublishedStories({ page: 1, pageSize: 12 }),
         themeService.getAllThemeNames(),
         prisma.story.findMany({
@@ -45,8 +45,31 @@ export const getInitialStoriesAndCategories = createServerFn({ method: "GET" }).
           },
           select: slideSelect,
         }),
-        storyRepository.findHeroOfTheDay().catch(() => null),
+        storyRepository.listFeatured(1).catch(() => []),
+        storyService.getPublishedStories({ sortBy: "views", page: 1, pageSize: 6 }),
+        prisma.state.findMany({
+          select: {
+            name: true,
+            _count: {
+              select: {
+                stories: {
+                  where: {
+                    status: "Published",
+                    deleted: false,
+                  },
+                },
+              },
+            },
+          },
+        }),
       ]);
+
+      const stateCountsResult: Record<string, number> = {};
+      stateCountsList.forEach((s: any) => {
+        if (s._count.stories > 0) {
+          stateCountsResult[s.name] = s._count.stories;
+        }
+      });
 
       const slides = slideshowStories.map((s: any) => {
         const heroImage = s.images?.[0]?.imageUrl ?? FALLBACK_IMAGE;
@@ -67,28 +90,16 @@ export const getInitialStoriesAndCategories = createServerFn({ method: "GET" }).
         };
       });
 
-      let mappedHero = null;
-      if (heroOfTheDayStory) {
-        mappedHero = {
-          id: heroOfTheDayStory.id,
-          slug: heroOfTheDayStory.slug,
-          title: heroOfTheDayStory.title,
-          excerpt: heroOfTheDayStory.excerpt,
-          themes: heroOfTheDayStory.themes || [],
-          region: heroOfTheDayStory.region || "India",
-          readTime: heroOfTheDayStory.readTime || "4 min read",
-          image: heroOfTheDayStory.image,
-          publishedAt: heroOfTheDayStory.publishedAt,
-          createdAt: heroOfTheDayStory.createdAt,
-        };
-      }
+      const featuredStory = featuredStories[0] || null;
 
       return {
         stories: storiesResult.stories,
         themes: themesResult,
         categories: themesResult,
         heroSlides: slides,
-        heroOfTheDay: mappedHero,
+        featuredStory: featuredStory,
+        trendingStories: trendingResult.stories,
+        stateCounts: stateCountsResult,
       };
     } catch (err) {
       console.error("Failed to load initial stories in server function:", err);

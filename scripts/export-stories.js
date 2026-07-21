@@ -53,7 +53,6 @@ function pickImage(storyImages) {
         publishedAt: true,
         readingTime: true,
         featured: true,
-        heroOfTheDay: true,
         homepageSlideshow: true,
         slideshowOrder: true,
         author: {
@@ -119,7 +118,6 @@ function pickImage(storyImages) {
         readTime: formatReadTime(s.readingTime),
 
         featured: s.featured,
-        heroOfTheDay: s.heroOfTheDay,
         homepageSlideshow: s.homepageSlideshow,
         slideshowOrder: s.slideshowOrder,
 

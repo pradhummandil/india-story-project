@@ -154,7 +154,6 @@ model Story {
   seoTitle          String?
   seoDescription    String?
   featured          Boolean           @default(false)
-  heroOfTheDay      Boolean           @default(false)
   status            StoryStatus       @default(Draft)
   authorId          String            @db.Uuid
   stateId           String            @db.Uuid
@@ -200,7 +199,6 @@ model Story {
   @@index([status])
   @@index([publishedAt])
   @@index([featured])
-  @@index([heroOfTheDay])
   @@index([pinnedStory])
   @@index([trendingStory])
   @@index([editorsPick])

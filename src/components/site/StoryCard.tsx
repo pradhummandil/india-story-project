@@ -30,7 +30,6 @@ export interface Story {
   createdAt?: string;
   viewCount?: number;
   featured?: boolean;
-  heroOfTheDay?: boolean;
   homepageSlideshow?: boolean;
   slideshowOrder?: number;
   seoKeywords?: string | null;

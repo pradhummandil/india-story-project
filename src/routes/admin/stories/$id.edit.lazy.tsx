@@ -23,7 +23,6 @@ type StoryFull = {
   seoDescription?: string;
   readingTime?: number;
   featured: boolean;
-  heroOfTheDay: boolean;
   homepageSlideshow: boolean;
   slideshowOrder: number;
   seoPriority: number;
@@ -439,7 +438,6 @@ export default function EditStoryPage() {
               {(
                 [
                   { label: "Featured Story", key: "featured" },
-                  { label: "Hero of the Day", key: "heroOfTheDay" },
                   { label: "Homepage Slideshow", key: "homepageSlideshow" },
                   { label: "Pinned Story", key: "pinnedStory" },
                   { label: "Trending Story", key: "trendingStory" },

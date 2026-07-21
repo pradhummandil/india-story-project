@@ -51,11 +51,27 @@ export const Route = createFileRoute("/api/admin/newsroom/bulk")({
             updatedCount = res.count;
           } else if (action === "featured") {
             const value = !!payload?.value;
-            const res = await db.story.updateMany({
-              where: { id: { in: storyIds } },
-              data: { featured: value },
-            });
-            updatedCount = res.count;
+            if (value) {
+              await db.story.updateMany({
+                data: { featured: false },
+              });
+              const targetId = storyIds[0];
+              if (targetId) {
+                await db.story.update({
+                  where: { id: targetId },
+                  data: { featured: true },
+                });
+                updatedCount = 1;
+              } else {
+                updatedCount = 0;
+              }
+            } else {
+              const res = await db.story.updateMany({
+                where: { id: { in: storyIds } },
+                data: { featured: false },
+              });
+              updatedCount = res.count;
+            }
           } else if (action === "slideshow") {
             const value = !!payload?.value;
             const res = await db.story.updateMany({
@@ -63,16 +79,7 @@ export const Route = createFileRoute("/api/admin/newsroom/bulk")({
               data: { homepageSlideshow: value },
             });
             updatedCount = res.count;
-          } else if (action === "hero") {
-            // Un-hero existing and hero the selected ones
-            await db.story.updateMany({
-              data: { heroOfTheDay: false },
-            });
-            const res = await db.story.updateMany({
-              where: { id: { in: storyIds } },
-              data: { heroOfTheDay: true },
-            });
-            updatedCount = res.count;
+
           } else if (action === "seo") {
             const { seoTitle, seoDescription, seoKeywords } = payload || {};
             const res = await db.story.updateMany({

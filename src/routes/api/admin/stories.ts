@@ -32,7 +32,6 @@ function toAdminRow(story: any) {
     seoDescription: story.seoDescription,
     readingTime: story.readingTime,
     featured: story.featured,
-    heroOfTheDay: story.heroOfTheDay,
     homepageSlideshow: story.homepageSlideshow,
     slideshowOrder: story.slideshowOrder,
     seoPriority: story.seoPriority,
@@ -129,7 +128,6 @@ export const Route = createFileRoute("/api/admin/stories")({
               excerpt: true,
               readingTime: true,
               featured: true,
-              heroOfTheDay: true,
               status: true,
               viewCount: true,
               publishedAt: true,
@@ -198,7 +196,6 @@ export const Route = createFileRoute("/api/admin/stories")({
           return json({ error: "A story with this slug already exists." }, { status: 400 });
 
         const featured = body.featured ?? false;
-        const heroOfTheDay = body.heroOfTheDay ?? false;
         const homepageSlideshow = body.homepageSlideshow ?? false;
         const slideshowOrder = body.slideshowOrder ? parseInt(body.slideshowOrder, 10) : 0;
         const seoPriority = body.seoPriority ? parseFloat(body.seoPriority) : 0.5;
@@ -212,11 +209,6 @@ export const Route = createFileRoute("/api/admin/stories")({
         if (featured) {
           await prisma.story.updateMany({
             data: { featured: false },
-          });
-        }
-        if (heroOfTheDay) {
-          await prisma.story.updateMany({
-            data: { heroOfTheDay: false },
           });
         }
 
@@ -234,7 +226,6 @@ export const Route = createFileRoute("/api/admin/stories")({
             seoKeywords,
             readingTime: body.readingTime ? parseInt(body.readingTime, 10) : null,
             featured,
-            heroOfTheDay,
             homepageSlideshow,
             slideshowOrder,
             seoPriority,

@@ -82,10 +82,6 @@ export class StoryService {
     return this.stories.listFeatured(limit);
   }
 
-  async getHeroOfTheDay(): Promise<StoryCardCompatible | null> {
-    return this.stories.findHeroOfTheDay();
-  }
-
   async getLatestStories(limit = 6): Promise<StoryCardCompatible[]> {
     return this.stories.listPublished(limit);
   }

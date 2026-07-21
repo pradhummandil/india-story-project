@@ -33,7 +33,6 @@ export const Route = createFileRoute("/api/admin/stories/duplicate")({
               seoDescription: story.seoDescription,
               readingTime: story.readingTime,
               featured: false, // Avoid duplicate featured/hero on duplication
-              heroOfTheDay: false,
               status: "Draft",
               stateId: story.stateId,
               authorId: story.authorId,

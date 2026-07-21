@@ -23,14 +23,17 @@ import { StoryCard, type Story } from "@/components/site/StoryCard";
 import { Hero } from "@/components/site/Hero";
 import { StoryMap } from "@/components/site/StoryMap";
 import { RecommendedForYou } from "@/components/site/RecommendedForYou";
-import { HeroOfTheDay } from "@/components/site/HeroOfTheDay";
+import { FeaturedStoryCard } from "@/components/site/FeaturedStoryCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useStoriesData, loadStoriesData } from "@/lib/stories-data";
 import { useI18nStore, translateStory, getCommonText } from "@/lib/i18n";
 import { getStoryAuthor, getOptimizedImageUrl, getResponsiveSrcSet } from "@/lib/utils";
+import { getInitialStoriesAndCategories } from "@/lib/api/stories.functions";
 
 export const Route = createFileRoute("/")({
+  loader: async () => {
+    return getInitialStoriesAndCategories();
+  },
   head: () => ({
     meta: [
       { title: "India Story Project — Experience India's Stories" },
@@ -121,34 +124,27 @@ const CATEGORY_MEDIAS = [
 function Home() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const { stories: dbStories, loading: storeLoading, error: storeError } = useStoriesData();
+  const loaderData = Route.useLoaderData() as any;
   const lang = useI18nStore((s) => s.lang);
   const commonText = getCommonText(lang);
 
-  const featuredStoryRaw = useMemo(() => {
-    return dbStories.find((s) => s.featured) || dbStories[0] || null;
-  }, [dbStories]);
+  const dbStories = loaderData?.stories || [];
+  const trendingStoriesRaw = loaderData?.trendingStories || [];
+  const featuredStoryRaw = loaderData?.featuredStory || null;
+  const stateCounts = loaderData?.stateCounts || {};
+  const themes = loaderData?.themes || [];
 
-  const gridStoriesRaw = useMemo(() => {
-    return dbStories.slice(0, 6);
-  }, [dbStories]);
+  const latestStories = useMemo(() => {
+    return dbStories.slice(0, 4).map((s: any) => translateStory(s, lang));
+  }, [dbStories, lang]);
 
-  const latestStoriesRaw = useMemo(() => {
-    return [...dbStories]
-      .sort(
-        (a, b) =>
-          new Date(b.publishedAt || b.createdAt || 0).getTime() -
-          new Date(a.publishedAt || a.createdAt || 0).getTime(),
-      )
-      .slice(0, 4);
-  }, [dbStories]);
+  const trendingStories = useMemo(() => {
+    return trendingStoriesRaw.map((s: any) => translateStory(s, lang));
+  }, [trendingStoriesRaw, lang]);
 
-  const trendingStoriesRaw = useMemo(() => {
-    return [...dbStories].sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0)).slice(0, 6);
-  }, [dbStories]);
-
-  const dataLoading = dbStories.length === 0 && storeLoading;
-  const hasError = !!storeError && dbStories.length === 0;
+  const featuredStory = useMemo(() => {
+    return featuredStoryRaw ? translateStory(featuredStoryRaw, lang) : null;
+  }, [featuredStoryRaw, lang]);
 
   const handleSubscribe = async () => {
     if (!email.trim()) {
@@ -186,30 +182,14 @@ function Home() {
     }
   };
 
-  const featuredStory = useMemo(() => {
-    return featuredStoryRaw ? translateStory(featuredStoryRaw, lang) : null;
-  }, [featuredStoryRaw, lang]);
-
-  const gridStories = useMemo(() => {
-    return gridStoriesRaw.map((s) => translateStory(s, lang));
-  }, [gridStoriesRaw, lang]);
-
-  const latestStories = useMemo(() => {
-    return latestStoriesRaw.map((s) => translateStory(s, lang));
-  }, [latestStoriesRaw, lang]);
-
-  const trendingStories = useMemo(() => {
-    return trendingStoriesRaw.map((s) => translateStory(s, lang));
-  }, [trendingStoriesRaw, lang]);
-
   // Category fallback image mapper (Task 6)
   const categoryMediasWithImages = useMemo(() => {
     return CATEGORY_MEDIAS.map((cat) => {
       // Find first story with a matching theme
-      const matchingStory = dbStories.find((s) => {
+      const matchingStory = dbStories.find((s: any) => {
         const storyThemes = Array.isArray(s.themes) ? s.themes : [];
         return storyThemes.some(
-          (t) =>
+          (t: string) =>
             t.toLowerCase() === cat.id.toLowerCase() ||
             (cat.id === "Festival" &&
               (t.toLowerCase() === "festivals" || t.toLowerCase() === "त्योहार")),
@@ -228,7 +208,7 @@ function Home() {
 
   return (
     <SiteLayout>
-      {hasError ? (
+      {dbStories.length === 0 ? (
         <div className="container mx-auto px-6 py-24 text-center space-y-4">
           <p className="text-sm font-sans uppercase tracking-[0.2em] text-red-500 font-semibold">
             {lang === "en" ? "Unable to Load Stories" : "कहानियां लोड करने में असमर्थ"}
@@ -243,40 +223,6 @@ function Home() {
               ? "We encountered a problem fetching the latest content. Please check your internet connection and try again."
               : "हमें नवीनतम सामग्री प्राप्त करने में समस्या आई। कृपया अपना इंटरनेट कनेक्शन जांचें और पुनः प्रयास करें।"}
           </p>
-          <div className="pt-4">
-            <Button
-              onClick={() => void loadStoriesData(true)}
-              className="bg-primary hover:bg-primary/95 text-white font-sans uppercase tracking-widest text-xs h-11 px-6 rounded-none shadow-sm"
-            >
-              {lang === "en" ? "Retry Connection" : "पुनः प्रयास करें"}
-            </Button>
-          </div>
-        </div>
-      ) : dataLoading ? (
-        <div className="container mx-auto px-6 py-12 space-y-24">
-          <div className="h-[60vh] bg-white/5 rounded w-full animate-pulse border border-white/5" />
-          <div className="space-y-6 animate-pulse">
-            <div className="h-4 w-32 bg-white/5 rounded mx-auto" />
-            <div className="h-8 w-64 bg-white/5 rounded mx-auto" />
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-12">
-              <div className="lg:col-span-8 aspect-[16/10] bg-white/5 rounded" />
-              <div className="lg:col-span-4 space-y-4">
-                <div className="h-4 w-24 bg-white/5 rounded" />
-                <div className="h-8 w-full bg-white/5 rounded" />
-                <div className="h-16 w-full bg-white/5 rounded" />
-              </div>
-            </div>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="space-y-4 border border-white/5 p-5 animate-pulse">
-                <div className="h-40 bg-white/5 rounded" />
-                <div className="h-4 w-20 bg-white/5 rounded" />
-                <div className="h-6 w-full bg-white/5 rounded" />
-                <div className="h-4 w-32 bg-white/5 rounded" />
-              </div>
-            ))}
-          </div>
         </div>
       ) : (
         <>
@@ -285,7 +231,7 @@ function Home() {
 
           {/* 2. TRENDING STORIES */}
           {trendingStories.length > 0 && (
-            <section className="container mx-auto px-6 py-24 border-b border-border/70 bg-card/10">
+            <section className="container mx-auto px-6 py-16 md:py-24 border-b border-border/70 bg-card/10">
               <div className="mb-12 flex items-center gap-3">
                 <span className="p-2 rounded-full bg-primary/5 text-primary border border-primary/10">
                   <TrendingUp className="size-5" />
@@ -302,9 +248,9 @@ function Home() {
 
               {/* Framer motion draggable carousel container */}
               <div className="relative">
-                <div className="flex gap-6 overflow-x-auto pb-6 scrollbar-none snap-x snap-mandatory">
-                  {trendingStories.map((s, i) => (
-                    <div key={s.id} className="w-[300px] sm:w-[350px] shrink-0 snap-start">
+                <div className="flex gap-6 overflow-x-auto pb-6 scrollbar-none snap-x snap-mandatory touch-pan-x">
+                  {trendingStories.map((s: any, i: number) => (
+                    <div key={s.id} className="w-[280px] sm:w-[320px] md:w-[350px] shrink-0 snap-start">
                       <StoryCard story={s} index={i} />
                     </div>
                   ))}
@@ -315,106 +261,16 @@ function Home() {
             </section>
           )}
 
-          {/* 3. HERO OF THE DAY */}
-          <HeroOfTheDay />
-
-          {/* 4. FEATURED STORY magazine grid */}
-          {featuredStory && (
-            <section className="container mx-auto px-6 py-24 border-b border-border/70">
-              <div className="text-center mb-16">
-                <p className="text-xs uppercase tracking-[0.25em] font-sans font-bold text-gold mb-3">
-                  {lang === "en" ? "Curated Collections" : "चुनिंदा संग्रह"}
-                </p>
-                <h2 className="font-display text-4xl md:text-5xl font-bold">
-                  {commonText.featuredToday}
-                </h2>
-                <div className="w-12 h-[1px] bg-primary mx-auto mt-4" />
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch mb-16">
-                {/* 1 featured large card */}
-                <div className="lg:col-span-12 border border-border/80 bg-card p-6 md:p-8 flex flex-col lg:flex-row gap-8 items-center shadow-sm">
-                  <div className="w-full lg:w-3/5 aspect-[16/10] overflow-hidden border border-border/40 bg-muted">
-                    {featuredStory.image ? (
-                      <img
-                        src={getOptimizedImageUrl(featuredStory.image, 1000)}
-                        srcSet={getResponsiveSrcSet(featuredStory.image, [480, 800, 1200])}
-                        sizes="(max-width: 1024px) 100vw, 60vw"
-                        alt={featuredStory.imageAlt ?? featuredStory.title}
-                        loading="lazy"
-                        decoding="async"
-                        width="800"
-                        height="500"
-                        className="w-full h-full object-cover filter saturate-[0.85] hover:scale-102 transition-transform duration-[1s]"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-red-950/40 to-stone-900 flex items-center justify-center">
-                        <span className="font-display italic text-3xl text-gold/30">ISP</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="w-full lg:w-2/5 flex flex-col justify-center space-y-4">
-                    <div className="flex items-center gap-3 text-[10px] tracking-[0.25em] uppercase font-bold text-gold font-sans">
-                      <span className="bg-primary/5 px-2.5 py-0.5 border border-primary/15">
-                        {Array.isArray((featuredStory as any).themes) &&
-                        (featuredStory as any).themes.length > 0
-                          ? (featuredStory as any).themes[0]
-                          : ""}
-                      </span>
-                      <span>•</span>
-                      <span>{featuredStory.region}</span>
-                    </div>
-                    <h3 className="font-display text-3xl md:text-5xl leading-[1.1] font-bold text-foreground hover:text-primary transition-colors">
-                      <Link to="/stories/$slug" params={{ slug: featuredStory.slug }}>
-                        {featuredStory.title}
-                      </Link>
-                    </h3>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground font-sans font-medium">
-                      <span>
-                        {lang === "en"
-                          ? `By ${getStoryAuthor(featuredStory.slug)}`
-                          : `लेखक: ${getStoryAuthor(featuredStory.slug)}`}
-                      </span>
-                      <span>•</span>
-                      <span>{featuredStory.readTime || "4 min read"}</span>
-                    </div>
-                    <p className="text-sm md:text-base text-muted-foreground leading-relaxed font-sans font-normal">
-                      {featuredStory.excerpt}
-                    </p>
-                    <div className="pt-4">
-                      <Button
-                        asChild
-                        className="bg-primary hover:bg-primary/95 text-primary-foreground font-sans uppercase tracking-[0.15em] text-xs h-11 px-6 rounded-none shadow-sm btn-premium"
-                      >
-                        <Link to="/stories/$slug" params={{ slug: featuredStory.slug }}>
-                          {commonText.readStory}
-                          <ArrowRight className="size-4 ml-2" />
-                        </Link>
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 6 secondary cards */}
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {gridStories.map((s, i) => (
-                  <StoryCard key={s.id} story={s} index={i} />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* 4. LATEST STORIES */}
+          {/* 3. LATEST STORIES (Fresh Perspectives) */}
           {latestStories.length > 0 && (
-            <section className="container mx-auto px-6 py-24 border-b border-border/70">
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-b border-border pb-6">
+            <section className="container mx-auto px-6 py-16 md:py-24 border-b border-border/70">
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12 border-b border-border pb-6">
                 <div>
                   <p className="text-xs uppercase tracking-[0.25em] font-sans font-bold text-gold mb-2">
                     {lang === "en" ? "Fresh Perspectives" : "नए दृष्टिकोण"}
                   </p>
-                  <h2 className="font-display text-4xl md:text-5xl font-bold">
-                    {commonText.latestStories}
+                  <h2 className="font-display text-3xl md:text-5xl font-bold">
+                    {lang === "en" ? "Latest Stories" : "नवीनतम कहानियाँ"}
                   </h2>
                 </div>
                 <Link
@@ -427,7 +283,7 @@ function Home() {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {latestStories.map((s, i) => {
+                {latestStories.map((s: any, i: number) => {
                   const authorName = getStoryAuthor(s.slug);
                   return (
                     <motion.div
@@ -438,12 +294,12 @@ function Home() {
                       transition={{ duration: 0.6, delay: i * 0.05 }}
                       className="border border-border/60 bg-card p-4 hover:border-gold/30 hover:bg-card/70 transition-all duration-300 flex flex-col sm:flex-row gap-5 shadow-sm"
                     >
-                      <div className="w-full sm:w-2/5 aspect-[4/3] sm:aspect-square overflow-hidden bg-muted border border-border/30 shrink-0">
+                      <div className="w-full sm:w-2/5 aspect-[16/10] sm:aspect-square overflow-hidden bg-muted border border-border/30 shrink-0">
                         {s.image ? (
                           <img
                             src={getOptimizedImageUrl(s.image, 400)}
                             srcSet={getResponsiveSrcSet(s.image, [240, 400, 600])}
-                            sizes="(max-width: 640px) 40vw, 20vw"
+                            sizes="(max-width: 640px) 100vw, 20vw"
                             alt={s.imageAlt ?? s.title}
                             loading="lazy"
                             decoding="async"
@@ -457,7 +313,7 @@ function Home() {
                           </div>
                         )}
                       </div>
-                      <div className="flex flex-col justify-between py-1">
+                      <div className="flex flex-col justify-between py-1 flex-1">
                         <div className="space-y-2">
                           <div className="flex items-center justify-between text-[9px] tracking-[0.2em] uppercase font-bold text-gold font-sans">
                             <span>
@@ -488,13 +344,38 @@ function Home() {
             </section>
           )}
 
-          {/* 5. STORIES BY CATEGORY */}
-          <section className="container mx-auto px-6 py-24 border-b border-border/70">
-            <div className="text-center mb-16">
+          {/* 4. FEATURED STORY (ONE story only) */}
+          {featuredStory && (
+            <section className="container mx-auto px-6 py-16 md:py-24 border-b border-border/70">
+              <div className="text-center mb-12 md:mb-16">
+                <p className="text-xs uppercase tracking-[0.25em] font-sans font-bold text-gold mb-3">
+                  {lang === "en" ? "Featured Story" : "विशेष कहानी"}
+                </p>
+                <h2 className="font-display text-3xl md:text-5xl font-bold">
+                  {commonText.featuredToday}
+                </h2>
+                <div className="w-12 h-[1px] bg-primary mx-auto mt-4" />
+              </div>
+
+              <FeaturedStoryCard story={featuredStory} />
+            </section>
+          )}
+
+          {/* 5. RECOMMENDED FOR YOU */}
+          <section className="border-b border-border/80 bg-card/20">
+            <RecommendedForYou themes={themes} />
+          </section>
+
+          {/* 6. STORIES BY STATE */}
+          <StoryMap stateCounts={stateCounts} />
+
+          {/* 7. STORIES BY CATEGORY */}
+          <section className="container mx-auto px-6 py-16 md:py-24 border-b border-border/70">
+            <div className="text-center mb-12 md:mb-16">
               <p className="text-xs uppercase tracking-[0.25em] font-sans font-bold text-gold mb-3">
                 {lang === "en" ? "Thematic Explorer" : "विषय-आधारित अन्वेषक"}
               </p>
-              <h2 className="font-display text-4xl md:text-5xl font-bold">
+              <h2 className="font-display text-3xl md:text-5xl font-bold">
                 {commonText.exploreByTheme}
               </h2>
               <div className="w-12 h-[1px] bg-primary mx-auto mt-4" />
@@ -546,14 +427,6 @@ function Home() {
                 );
               })}
             </div>
-          </section>
-
-          {/* 6. STORIES BY STATE */}
-          <StoryMap />
-
-          {/* 7. RECOMMENDED FOR YOU */}
-          <section className="border-b border-border/80 bg-card/20">
-            <RecommendedForYou />
           </section>
 
           {/* 8. NEWSLETTER SUBSCRIBE */}

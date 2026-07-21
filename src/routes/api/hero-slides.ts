@@ -48,7 +48,7 @@ export const Route = createFileRoute("/api/hero-slides")({
             },
           };
 
-          // Fetch ONLY Homepage Slideshow stories (no hero-of-the-day substitution)
+          // Fetch ONLY Homepage Slideshow stories
           const start = Date.now();
           const slideshowStories = await prisma.story.findMany({
             where: {

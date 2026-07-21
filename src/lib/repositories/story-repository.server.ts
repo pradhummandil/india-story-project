@@ -26,7 +26,6 @@ export type StoryCardCompatible = {
   createdAt?: Date;
   viewCount?: number;
   featured?: boolean;
-  heroOfTheDay?: boolean;
   homepageSlideshow?: boolean;
   slideshowOrder?: number;
   seoKeywords?: string | null;
@@ -45,7 +44,6 @@ const storyCardSelect = {
   publishedAt: true,
   createdAt: true,
   featured: true,
-  heroOfTheDay: true,
   homepageSlideshow: true,
   slideshowOrder: true,
   seoKeywords: true,
@@ -72,7 +70,6 @@ const storyDetailSelect = {
   seoTitle: true,
   seoDescription: true,
   featured: true,
-  heroOfTheDay: true,
   status: true,
   createdAt: true,
   updatedAt: true,
@@ -132,7 +129,6 @@ function toStoryCardCompatible(story: any): StoryCardCompatible {
     createdAt: story.createdAt,
     viewCount: story.viewCount,
     featured: story.featured,
-    heroOfTheDay: story.heroOfTheDay,
     homepageSlideshow: story.homepageSlideshow,
     slideshowOrder: story.slideshowOrder,
     seoKeywords: story.seoKeywords,
@@ -334,22 +330,6 @@ export class StoryRepository {
     return stories.map(toStoryCardCompatible);
   }
 
-  async findHeroOfTheDay(): Promise<StoryCardCompatible | null> {
-    const story = await this.db.story.findFirst({
-      where: {
-        status: StoryStatus.Published,
-        heroOfTheDay: true,
-      },
-      orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
-      select: storyCardSelect,
-    });
-
-    if (story) {
-      await populateThemesAndTagsForStories([story]);
-    }
-
-    return story ? toStoryCardCompatible(story) : null;
-  }
 }
 
 export const storyRepository = new StoryRepository();

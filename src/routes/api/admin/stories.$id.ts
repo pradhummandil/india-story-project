@@ -31,7 +31,6 @@ function toAdminRow(story: any) {
     seoDescription: story.seoDescription,
     readingTime: story.readingTime,
     featured: story.featured,
-    heroOfTheDay: story.heroOfTheDay,
     homepageSlideshow: story.homepageSlideshow,
     slideshowOrder: story.slideshowOrder,
     seoPriority: story.seoPriority,
@@ -81,7 +80,6 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
         }
 
         const featured = body.featured ?? false;
-        const heroOfTheDay = body.heroOfTheDay ?? false;
         const homepageSlideshow = body.homepageSlideshow ?? false;
         const slideshowOrder = body.slideshowOrder ? parseInt(body.slideshowOrder, 10) : 0;
         const seoPriority = body.seoPriority ? parseFloat(body.seoPriority) : 0.5;
@@ -89,19 +87,11 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
         const pinnedStory = body.pinnedStory ?? false;
         const trendingStory = body.trendingStory ?? false;
         const editorsPick = body.editorsPick ?? false;
-        const seoKeywords = body.seoKeywords ?? null;
 
-        // Mutual exclusivity enforcement
         if (featured) {
           await prisma.story.updateMany({
             where: { id: { not: params.id } },
             data: { featured: false },
-          });
-        }
-        if (heroOfTheDay) {
-          await prisma.story.updateMany({
-            where: { id: { not: params.id } },
-            data: { heroOfTheDay: false },
           });
         }
 
@@ -220,7 +210,6 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
             seoKeywords: body.seoKeywords ?? null,
             readingTime: body.readingTime ? parseInt(body.readingTime, 10) : null,
             featured,
-            heroOfTheDay,
             homepageSlideshow,
             slideshowOrder,
             seoPriority,
@@ -260,26 +249,8 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
           return json({ error: "Invalid JSON" }, { status: 400 });
         }
 
-        const featured = body.featured;
-        const heroOfTheDay = body.heroOfTheDay;
-
-        // Mutual exclusivity enforcement on patch updates
-        if (featured === true) {
-          await prisma.story.updateMany({
-            where: { id: { not: params.id } },
-            data: { featured: false },
-          });
-        }
-        if (heroOfTheDay === true) {
-          await prisma.story.updateMany({
-            where: { id: { not: params.id } },
-            data: { heroOfTheDay: false },
-          });
-        }
-
         const allowed = [
           "featured",
-          "heroOfTheDay",
           "homepageSlideshow",
           "slideshowOrder",
           "status",

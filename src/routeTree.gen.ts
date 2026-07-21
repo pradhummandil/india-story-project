@@ -71,7 +71,6 @@ import { Route as ApiReadingProgressRouteImport } from './routes/api/reading-pro
 import { Route as ApiLikesRouteImport } from './routes/api/likes'
 import { Route as ApiLatestStoriesRouteImport } from './routes/api/latest-stories'
 import { Route as ApiHeroSlidesRouteImport } from './routes/api/hero-slides'
-import { Route as ApiHeroOfTheDayRouteImport } from './routes/api/hero-of-the-day'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiFeaturedRouteImport } from './routes/api/featured'
 import { Route as ApiContactRouteImport } from './routes/api/contact'
@@ -108,6 +107,7 @@ import { Route as ApiWebStoriesSlugRouteImport } from './routes/api/web-stories.
 import { Route as ApiVideosSlugRouteImport } from './routes/api/videos.$slug'
 import { Route as ApiUserStatsMeRouteImport } from './routes/api/user-stats/me'
 import { Route as ApiThemesSlugRouteImport } from './routes/api/themes.$slug'
+import { Route as ApiStoriesStateCountsRouteImport } from './routes/api/stories/state-counts'
 import { Route as ApiStoriesSearchRouteImport } from './routes/api/stories/search'
 import { Route as ApiStoriesRecommendedRouteImport } from './routes/api/stories/recommended'
 import { Route as ApiStoriesLatestRouteImport } from './routes/api/stories/latest'
@@ -489,11 +489,6 @@ const ApiHeroSlidesRoute = ApiHeroSlidesRouteImport.update({
   path: '/api/hero-slides',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiHeroOfTheDayRoute = ApiHeroOfTheDayRouteImport.update({
-  id: '/api/hero-of-the-day',
-  path: '/api/hero-of-the-day',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiHealthRoute = ApiHealthRouteImport.update({
   id: '/api/health',
   path: '/api/health',
@@ -707,6 +702,11 @@ const ApiThemesSlugRoute = ApiThemesSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => ApiThemesRoute,
+} as any)
+const ApiStoriesStateCountsRoute = ApiStoriesStateCountsRouteImport.update({
+  id: '/state-counts',
+  path: '/state-counts',
+  getParentRoute: () => ApiStoriesRoute,
 } as any)
 const ApiStoriesSearchRoute = ApiStoriesSearchRouteImport.update({
   id: '/search',
@@ -1131,7 +1131,6 @@ export interface FileRoutesByFullPath {
   '/api/contact': typeof ApiContactRoute
   '/api/featured': typeof ApiFeaturedRoute
   '/api/health': typeof ApiHealthRoute
-  '/api/hero-of-the-day': typeof ApiHeroOfTheDayRoute
   '/api/hero-slides': typeof ApiHeroSlidesRoute
   '/api/latest-stories': typeof ApiLatestStoriesRoute
   '/api/likes': typeof ApiLikesRoute
@@ -1203,6 +1202,7 @@ export interface FileRoutesByFullPath {
   '/api/stories/latest': typeof ApiStoriesLatestRoute
   '/api/stories/recommended': typeof ApiStoriesRecommendedRoute
   '/api/stories/search': typeof ApiStoriesSearchRoute
+  '/api/stories/state-counts': typeof ApiStoriesStateCountsRoute
   '/api/themes/$slug': typeof ApiThemesSlugRoute
   '/api/user-stats/me': typeof ApiUserStatsMeRoute
   '/api/videos/$slug': typeof ApiVideosSlugRoute
@@ -1299,7 +1299,6 @@ export interface FileRoutesByTo {
   '/api/contact': typeof ApiContactRoute
   '/api/featured': typeof ApiFeaturedRoute
   '/api/health': typeof ApiHealthRoute
-  '/api/hero-of-the-day': typeof ApiHeroOfTheDayRoute
   '/api/hero-slides': typeof ApiHeroSlidesRoute
   '/api/latest-stories': typeof ApiLatestStoriesRoute
   '/api/likes': typeof ApiLikesRoute
@@ -1371,6 +1370,7 @@ export interface FileRoutesByTo {
   '/api/stories/latest': typeof ApiStoriesLatestRoute
   '/api/stories/recommended': typeof ApiStoriesRecommendedRoute
   '/api/stories/search': typeof ApiStoriesSearchRoute
+  '/api/stories/state-counts': typeof ApiStoriesStateCountsRoute
   '/api/themes/$slug': typeof ApiThemesSlugRoute
   '/api/user-stats/me': typeof ApiUserStatsMeRoute
   '/api/videos/$slug': typeof ApiVideosSlugRoute
@@ -1471,7 +1471,6 @@ export interface FileRoutesById {
   '/api/contact': typeof ApiContactRoute
   '/api/featured': typeof ApiFeaturedRoute
   '/api/health': typeof ApiHealthRoute
-  '/api/hero-of-the-day': typeof ApiHeroOfTheDayRoute
   '/api/hero-slides': typeof ApiHeroSlidesRoute
   '/api/latest-stories': typeof ApiLatestStoriesRoute
   '/api/likes': typeof ApiLikesRoute
@@ -1543,6 +1542,7 @@ export interface FileRoutesById {
   '/api/stories/latest': typeof ApiStoriesLatestRoute
   '/api/stories/recommended': typeof ApiStoriesRecommendedRoute
   '/api/stories/search': typeof ApiStoriesSearchRoute
+  '/api/stories/state-counts': typeof ApiStoriesStateCountsRoute
   '/api/themes/$slug': typeof ApiThemesSlugRoute
   '/api/user-stats/me': typeof ApiUserStatsMeRoute
   '/api/videos/$slug': typeof ApiVideosSlugRoute
@@ -1644,7 +1644,6 @@ export interface FileRouteTypes {
     | '/api/contact'
     | '/api/featured'
     | '/api/health'
-    | '/api/hero-of-the-day'
     | '/api/hero-slides'
     | '/api/latest-stories'
     | '/api/likes'
@@ -1716,6 +1715,7 @@ export interface FileRouteTypes {
     | '/api/stories/latest'
     | '/api/stories/recommended'
     | '/api/stories/search'
+    | '/api/stories/state-counts'
     | '/api/themes/$slug'
     | '/api/user-stats/me'
     | '/api/videos/$slug'
@@ -1812,7 +1812,6 @@ export interface FileRouteTypes {
     | '/api/contact'
     | '/api/featured'
     | '/api/health'
-    | '/api/hero-of-the-day'
     | '/api/hero-slides'
     | '/api/latest-stories'
     | '/api/likes'
@@ -1884,6 +1883,7 @@ export interface FileRouteTypes {
     | '/api/stories/latest'
     | '/api/stories/recommended'
     | '/api/stories/search'
+    | '/api/stories/state-counts'
     | '/api/themes/$slug'
     | '/api/user-stats/me'
     | '/api/videos/$slug'
@@ -1983,7 +1983,6 @@ export interface FileRouteTypes {
     | '/api/contact'
     | '/api/featured'
     | '/api/health'
-    | '/api/hero-of-the-day'
     | '/api/hero-slides'
     | '/api/latest-stories'
     | '/api/likes'
@@ -2055,6 +2054,7 @@ export interface FileRouteTypes {
     | '/api/stories/latest'
     | '/api/stories/recommended'
     | '/api/stories/search'
+    | '/api/stories/state-counts'
     | '/api/themes/$slug'
     | '/api/user-stats/me'
     | '/api/videos/$slug'
@@ -2148,7 +2148,6 @@ export interface RootRouteChildren {
   ApiContactRoute: typeof ApiContactRoute
   ApiFeaturedRoute: typeof ApiFeaturedRoute
   ApiHealthRoute: typeof ApiHealthRoute
-  ApiHeroOfTheDayRoute: typeof ApiHeroOfTheDayRoute
   ApiHeroSlidesRoute: typeof ApiHeroSlidesRoute
   ApiLatestStoriesRoute: typeof ApiLatestStoriesRoute
   ApiLikesRoute: typeof ApiLikesRoute
@@ -2642,13 +2641,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiHeroSlidesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/hero-of-the-day': {
-      id: '/api/hero-of-the-day'
-      path: '/api/hero-of-the-day'
-      fullPath: '/api/hero-of-the-day'
-      preLoaderRoute: typeof ApiHeroOfTheDayRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/health': {
       id: '/api/health'
       path: '/api/health'
@@ -2900,6 +2892,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/themes/$slug'
       preLoaderRoute: typeof ApiThemesSlugRouteImport
       parentRoute: typeof ApiThemesRoute
+    }
+    '/api/stories/state-counts': {
+      id: '/api/stories/state-counts'
+      path: '/state-counts'
+      fullPath: '/api/stories/state-counts'
+      preLoaderRoute: typeof ApiStoriesStateCountsRouteImport
+      parentRoute: typeof ApiStoriesRoute
     }
     '/api/stories/search': {
       id: '/api/stories/search'
@@ -3650,6 +3649,7 @@ interface ApiStoriesRouteChildren {
   ApiStoriesLatestRoute: typeof ApiStoriesLatestRoute
   ApiStoriesRecommendedRoute: typeof ApiStoriesRecommendedRoute
   ApiStoriesSearchRoute: typeof ApiStoriesSearchRoute
+  ApiStoriesStateCountsRoute: typeof ApiStoriesStateCountsRoute
 }
 
 const ApiStoriesRouteChildren: ApiStoriesRouteChildren = {
@@ -3659,6 +3659,7 @@ const ApiStoriesRouteChildren: ApiStoriesRouteChildren = {
   ApiStoriesLatestRoute: ApiStoriesLatestRoute,
   ApiStoriesRecommendedRoute: ApiStoriesRecommendedRoute,
   ApiStoriesSearchRoute: ApiStoriesSearchRoute,
+  ApiStoriesStateCountsRoute: ApiStoriesStateCountsRoute,
 }
 
 const ApiStoriesRouteWithChildren = ApiStoriesRoute._addFileChildren(
@@ -3833,7 +3834,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiContactRoute: ApiContactRoute,
   ApiFeaturedRoute: ApiFeaturedRoute,
   ApiHealthRoute: ApiHealthRoute,
-  ApiHeroOfTheDayRoute: ApiHeroOfTheDayRoute,
   ApiHeroSlidesRoute: ApiHeroSlidesRoute,
   ApiLatestStoriesRoute: ApiLatestStoriesRoute,
   ApiLikesRoute: ApiLikesRoute,
