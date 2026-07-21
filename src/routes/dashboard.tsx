@@ -41,13 +41,27 @@ type Tab =
 
 export function AuthorDashboardPage() {
   const navigate = useNavigate();
-  const { user, profile, loading, initialized } = useAuthStore();
+  const { user, profile, loading, initialized, session } = useAuthStore();
   const { stories } = useStoriesData();
   const [activeTab, setActiveTab] = useState<Tab>("overview");
+  const [submissions, setSubmissions] = useState<any[]>([]);
+  const [loadingSubmissions, setLoadingSubmissions] = useState(false);
 
   useEffect(() => {
     if (initialized && !user) void navigate({ to: "/login" });
   }, [user, initialized, navigate]);
+
+  useEffect(() => {
+    if (!session) return;
+    setLoadingSubmissions(true);
+    fetch("/api/submissions", {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    })
+      .then((r) => r.json())
+      .then((data) => setSubmissions(data.submissions || []))
+      .catch(console.error)
+      .finally(() => setLoadingSubmissions(false));
+  }, [session, activeTab]);
 
   // Determine Author's own stories
   const authorStories = useMemo(() => {
@@ -288,11 +302,104 @@ export function AuthorDashboardPage() {
             {activeTab === "pending" && (
               <div className="space-y-6 animate-fadeIn">
                 <div>
-                  <h2 className="font-display text-xl font-bold text-foreground">Pending Review</h2>
-                  <p className="text-xs text-muted-foreground mt-1">Stories currently in the editorial queue awaiting approval.</p>
+                  <h2 className="font-display text-xl font-bold text-foreground">My Submitted Stories</h2>
+                  <p className="text-xs text-muted-foreground mt-1">Track the real-time status and editorial workflow timeline of your submissions.</p>
                 </div>
-                <div className="border border-border/50 p-6 text-center text-xs text-muted-foreground">
-                  No stories in the pending queue.
+
+                <div className="space-y-6">
+                  {loadingSubmissions ? (
+                    <div className="text-center p-8 text-xs text-muted-foreground">Loading submissions...</div>
+                  ) : submissions.length === 0 ? (
+                    <div className="border border-border/50 p-8 text-center text-xs text-muted-foreground">
+                      You haven't submitted any stories yet.
+                    </div>
+                  ) : (
+                    submissions.map((sub) => {
+                      // Map state to readable status
+                      const getStatusInfo = (status: string) => {
+                        switch (status) {
+                          case "Pending":
+                            return { label: "Submitted", color: "bg-blue-100 text-blue-800 border-blue-200" };
+                          case "UnderReview":
+                            return { label: "Under Review", color: "bg-indigo-100 text-indigo-800 border-indigo-200" };
+                          case "FactChecking":
+                            return { label: "Assigned to Editor", color: "bg-amber-100 text-amber-800 border-amber-200" };
+                          case "Draft":
+                            return { label: "Editing", color: "bg-purple-100 text-purple-800 border-purple-200" };
+                          case "ChangesRequested":
+                            return { label: "Waiting for Approval", color: "bg-pink-100 text-pink-800 border-pink-200" };
+                          case "Approved":
+                            return { label: "Approved", color: "bg-emerald-100 text-emerald-800 border-emerald-200" };
+                          case "Published":
+                            return { label: "Published", color: "bg-emerald-100 text-emerald-800 border-emerald-200" };
+                          case "Rejected":
+                            return { label: "Rejected", color: "bg-red-100 text-red-800 border-red-200" };
+                          default:
+                            return { label: status, color: "bg-stone-100 text-stone-800 border-stone-200" };
+                        }
+                      };
+
+                      const statusInfo = getStatusInfo(sub.status);
+
+                      return (
+                        <div key={sub.id} className="border border-border/50 p-6 bg-card hover:border-gold/30 transition-all shadow-sm">
+                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/40 pb-4 mb-4">
+                            <div>
+                              <h3 className="font-display text-base font-bold text-foreground">{sub.title}</h3>
+                              <p className="text-[10px] text-muted-foreground mt-1">Region: {sub.stateName} · Theme: {sub.themes || "General"}</p>
+                            </div>
+                            <span className={`px-2.5 py-1 rounded text-[10px] font-bold border ${statusInfo.color} shrink-0 self-start md:self-auto`}>
+                              {statusInfo.label}
+                            </span>
+                          </div>
+
+                          {/* Interactive Status Timeline */}
+                          <div className="space-y-4">
+                            <h4 className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Workflow Timeline</h4>
+                            <div className="relative pl-6 border-l border-border/60 ml-2 space-y-4">
+                              {/* Step 1: Submission */}
+                              <div className="relative">
+                                <div className="absolute -left-[31px] top-1 size-3 rounded-full bg-emerald-500 border-4 border-white" />
+                                <p className="text-xs font-bold text-foreground">Story Submitted</p>
+                                <p className="text-[10px] text-muted-foreground mt-0.5">Submitted successfully on {new Date(sub.createdAt).toLocaleString()}</p>
+                              </div>
+
+                              {/* Step 2: Under Review */}
+                              {sub.status !== "Pending" && (
+                                <div className="relative">
+                                  <div className="absolute -left-[31px] top-1 size-3 rounded-full bg-emerald-500 border-4 border-white" />
+                                  <p className="text-xs font-bold text-foreground">Editorial Review</p>
+                                  <p className="text-[10px] text-muted-foreground mt-0.5">Review initiated on {new Date(sub.updatedAt).toLocaleString()}</p>
+                                </div>
+                              )}
+
+                              {/* Step 3: Assignment/Edit */}
+                              {(sub.status === "FactChecking" || sub.status === "Draft" || sub.status === "Published" || sub.status === "Approved") && (
+                                <div className="relative">
+                                  <div className="absolute -left-[31px] top-1 size-3 rounded-full bg-emerald-500 border-4 border-white" />
+                                  <p className="text-xs font-bold text-foreground">Assigned to Editor</p>
+                                  <p className="text-[10px] text-muted-foreground mt-0.5">Formatting, SEO tags, and image adjustments underway.</p>
+                                </div>
+                              )}
+
+                              {/* Step 4: Final Resolution */}
+                              {(sub.status === "Published" || sub.status === "Approved" || sub.status === "Rejected") && (
+                                <div className="relative">
+                                  <div className="absolute -left-[31px] top-1 size-3 rounded-full bg-emerald-500 border-4 border-white" />
+                                  <p className="text-xs font-bold text-foreground">
+                                    {sub.status === "Rejected" ? "Submission Rejected" : "Approved & Published"}
+                                  </p>
+                                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                                    Processed on {new Date(sub.updatedAt).toLocaleString()}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
             )}

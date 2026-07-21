@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { prisma } from "@/lib/repositories/prisma.server";
-import { json } from "@/routes/api/-_utils";
+import { json, authenticate } from "@/routes/api/-_utils";
 import { StoryStatus } from "@prisma/client";
 import { supabase } from "@/lib/supabase-client";
 import { extractCloudinaryPublicId, deleteFromCloudinary } from "@/lib/cloudinary.server";
@@ -72,6 +72,48 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
       },
 
       PUT: async ({ params, request }) => {
+        const user = await authenticate(request);
+        if (!user) return json({ error: "Unauthorized" }, { status: 401 });
+
+        const profile = await prisma.userProfile.findUnique({ where: { id: user.id } });
+        if (!profile) return json({ error: "Profile not found" }, { status: 403 });
+
+        const role = profile.role?.toLowerCase() || "";
+        const isAdmin = role === "admin" || role === "superadmin";
+        const isEditor = role === "editor";
+
+        if (!isAdmin && !isEditor) {
+          return json({ error: "Forbidden" }, { status: 403 });
+        }
+
+        if (isEditor) {
+          const logs = await prisma.auditLog.findMany({
+            where: {
+              action: { in: ["STORY_WORKFLOW_STATE", "SUBMISSION_WORKFLOW_STATE"] },
+            },
+            orderBy: { createdAt: "desc" },
+            take: 20,
+          });
+
+          let isAssigned = false;
+          for (const log of logs) {
+            try {
+              const details = JSON.parse(log.details);
+              if (
+                (details.storyId === params.id || details.submissionId === params.id) &&
+                (details.reviewerId === user.id || details.assignedEditorId === user.id)
+              ) {
+                isAssigned = true;
+                break;
+              }
+            } catch {}
+          }
+
+          if (!isAssigned) {
+            return json({ error: "Locked. Only the assigned Editor can edit this story." }, { status: 423 });
+          }
+        }
+
         let body: any;
         try {
           body = await request.json();
@@ -242,6 +284,48 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
       },
 
       PATCH: async ({ params, request }) => {
+        const user = await authenticate(request);
+        if (!user) return json({ error: "Unauthorized" }, { status: 401 });
+
+        const profile = await prisma.userProfile.findUnique({ where: { id: user.id } });
+        if (!profile) return json({ error: "Profile not found" }, { status: 403 });
+
+        const role = profile.role?.toLowerCase() || "";
+        const isAdmin = role === "admin" || role === "superadmin";
+        const isEditor = role === "editor";
+
+        if (!isAdmin && !isEditor) {
+          return json({ error: "Forbidden" }, { status: 403 });
+        }
+
+        if (isEditor) {
+          const logs = await prisma.auditLog.findMany({
+            where: {
+              action: { in: ["STORY_WORKFLOW_STATE", "SUBMISSION_WORKFLOW_STATE"] },
+            },
+            orderBy: { createdAt: "desc" },
+            take: 20,
+          });
+
+          let isAssigned = false;
+          for (const log of logs) {
+            try {
+              const details = JSON.parse(log.details);
+              if (
+                (details.storyId === params.id || details.submissionId === params.id) &&
+                (details.reviewerId === user.id || details.assignedEditorId === user.id)
+              ) {
+                isAssigned = true;
+                break;
+              }
+            } catch {}
+          }
+
+          if (!isAssigned) {
+            return json({ error: "Locked. Only the assigned Editor can edit this story." }, { status: 423 });
+          }
+        }
+
         let body: any;
         try {
           body = await request.json();

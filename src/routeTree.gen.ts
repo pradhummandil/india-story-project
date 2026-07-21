@@ -135,6 +135,8 @@ import { Route as ApiAuthProfileRouteImport } from './routes/api/auth/profile'
 import { Route as ApiAuthExportHistoryRouteImport } from './routes/api/auth/export-history'
 import { Route as ApiAuthDeleteAccountRouteImport } from './routes/api/auth/delete-account'
 import { Route as ApiAnalyticsTrackRouteImport } from './routes/api/analytics/track'
+import { Route as ApiAdminWebStoriesRouteImport } from './routes/api/admin/web-stories'
+import { Route as ApiAdminVideosRouteImport } from './routes/api/admin/videos'
 import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
 import { Route as ApiAdminThemesRouteImport } from './routes/api/admin/themes'
 import { Route as ApiAdminSubmissionsRouteImport } from './routes/api/admin/submissions'
@@ -147,6 +149,7 @@ import { Route as ApiAdminMediaRouteImport } from './routes/api/admin/media'
 import { Route as ApiAdminContactRouteImport } from './routes/api/admin/contact'
 import { Route as ApiAdminCommentsRouteImport } from './routes/api/admin/comments'
 import { Route as ApiAdminAuthorsRouteImport } from './routes/api/admin/authors'
+import { Route as ApiAdminAnnouncementsRouteImport } from './routes/api/admin/announcements'
 import { Route as ApiAdminAnalyticsRouteImport } from './routes/api/admin/analytics'
 import { Route as ApiAdminAchievementsRouteImport } from './routes/api/admin/achievements'
 import { Route as AdminStoriesNewRouteImport } from './routes/admin/stories/new'
@@ -165,6 +168,7 @@ import { Route as ApiAdminStoriesIdRouteImport } from './routes/api/admin/storie
 import { Route as ApiAdminStatesIdRouteImport } from './routes/api/admin/states.$id'
 import { Route as ApiAdminNewsroomWorkflowRouteImport } from './routes/api/admin/newsroom/workflow'
 import { Route as ApiAdminNewsroomRevisionsRouteImport } from './routes/api/admin/newsroom/revisions'
+import { Route as ApiAdminNewsroomNotificationsRouteImport } from './routes/api/admin/newsroom/notifications'
 import { Route as ApiAdminNewsroomDashboardRouteImport } from './routes/api/admin/newsroom/dashboard'
 import { Route as ApiAdminNewsroomCommentsRouteImport } from './routes/api/admin/newsroom/comments'
 import { Route as ApiAdminNewsroomBulkRouteImport } from './routes/api/admin/newsroom/bulk'
@@ -844,6 +848,16 @@ const ApiAnalyticsTrackRoute = ApiAnalyticsTrackRouteImport.update({
   path: '/api/analytics/track',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminWebStoriesRoute = ApiAdminWebStoriesRouteImport.update({
+  id: '/api/admin/web-stories',
+  path: '/api/admin/web-stories',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminVideosRoute = ApiAdminVideosRouteImport.update({
+  id: '/api/admin/videos',
+  path: '/api/admin/videos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminUsersRoute = ApiAdminUsersRouteImport.update({
   id: '/api/admin/users',
   path: '/api/admin/users',
@@ -902,6 +916,11 @@ const ApiAdminCommentsRoute = ApiAdminCommentsRouteImport.update({
 const ApiAdminAuthorsRoute = ApiAdminAuthorsRouteImport.update({
   id: '/api/admin/authors',
   path: '/api/admin/authors',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminAnnouncementsRoute = ApiAdminAnnouncementsRouteImport.update({
+  id: '/api/admin/announcements',
+  path: '/api/admin/announcements',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAdminAnalyticsRoute = ApiAdminAnalyticsRouteImport.update({
@@ -1000,6 +1019,12 @@ const ApiAdminNewsroomRevisionsRoute =
   ApiAdminNewsroomRevisionsRouteImport.update({
     id: '/api/admin/newsroom/revisions',
     path: '/api/admin/newsroom/revisions',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminNewsroomNotificationsRoute =
+  ApiAdminNewsroomNotificationsRouteImport.update({
+    id: '/api/admin/newsroom/notifications',
+    path: '/api/admin/newsroom/notifications',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiAdminNewsroomDashboardRoute =
@@ -1171,6 +1196,7 @@ export interface FileRoutesByFullPath {
   '/admin/stories/new': typeof AdminStoriesNewRoute
   '/api/admin/achievements': typeof ApiAdminAchievementsRoute
   '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
+  '/api/admin/announcements': typeof ApiAdminAnnouncementsRoute
   '/api/admin/authors': typeof ApiAdminAuthorsRouteWithChildren
   '/api/admin/comments': typeof ApiAdminCommentsRoute
   '/api/admin/contact': typeof ApiAdminContactRoute
@@ -1183,6 +1209,8 @@ export interface FileRoutesByFullPath {
   '/api/admin/submissions': typeof ApiAdminSubmissionsRouteWithChildren
   '/api/admin/themes': typeof ApiAdminThemesRouteWithChildren
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
+  '/api/admin/videos': typeof ApiAdminVideosRoute
+  '/api/admin/web-stories': typeof ApiAdminWebStoriesRoute
   '/api/analytics/track': typeof ApiAnalyticsTrackRoute
   '/api/auth/delete-account': typeof ApiAuthDeleteAccountRoute
   '/api/auth/export-history': typeof ApiAuthExportHistoryRoute
@@ -1240,6 +1268,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/newsroom/bulk': typeof ApiAdminNewsroomBulkRoute
   '/api/admin/newsroom/comments': typeof ApiAdminNewsroomCommentsRoute
   '/api/admin/newsroom/dashboard': typeof ApiAdminNewsroomDashboardRoute
+  '/api/admin/newsroom/notifications': typeof ApiAdminNewsroomNotificationsRoute
   '/api/admin/newsroom/revisions': typeof ApiAdminNewsroomRevisionsRoute
   '/api/admin/newsroom/workflow': typeof ApiAdminNewsroomWorkflowRoute
   '/api/admin/states/$id': typeof ApiAdminStatesIdRoute
@@ -1340,6 +1369,7 @@ export interface FileRoutesByTo {
   '/admin/stories/new': typeof AdminStoriesNewRoute
   '/api/admin/achievements': typeof ApiAdminAchievementsRoute
   '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
+  '/api/admin/announcements': typeof ApiAdminAnnouncementsRoute
   '/api/admin/authors': typeof ApiAdminAuthorsRouteWithChildren
   '/api/admin/comments': typeof ApiAdminCommentsRoute
   '/api/admin/contact': typeof ApiAdminContactRoute
@@ -1352,6 +1382,8 @@ export interface FileRoutesByTo {
   '/api/admin/submissions': typeof ApiAdminSubmissionsRouteWithChildren
   '/api/admin/themes': typeof ApiAdminThemesRouteWithChildren
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
+  '/api/admin/videos': typeof ApiAdminVideosRoute
+  '/api/admin/web-stories': typeof ApiAdminWebStoriesRoute
   '/api/analytics/track': typeof ApiAnalyticsTrackRoute
   '/api/auth/delete-account': typeof ApiAuthDeleteAccountRoute
   '/api/auth/export-history': typeof ApiAuthExportHistoryRoute
@@ -1409,6 +1441,7 @@ export interface FileRoutesByTo {
   '/api/admin/newsroom/bulk': typeof ApiAdminNewsroomBulkRoute
   '/api/admin/newsroom/comments': typeof ApiAdminNewsroomCommentsRoute
   '/api/admin/newsroom/dashboard': typeof ApiAdminNewsroomDashboardRoute
+  '/api/admin/newsroom/notifications': typeof ApiAdminNewsroomNotificationsRoute
   '/api/admin/newsroom/revisions': typeof ApiAdminNewsroomRevisionsRoute
   '/api/admin/newsroom/workflow': typeof ApiAdminNewsroomWorkflowRoute
   '/api/admin/states/$id': typeof ApiAdminStatesIdRoute
@@ -1513,6 +1546,7 @@ export interface FileRoutesById {
   '/admin/stories/new': typeof AdminStoriesNewRoute
   '/api/admin/achievements': typeof ApiAdminAchievementsRoute
   '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
+  '/api/admin/announcements': typeof ApiAdminAnnouncementsRoute
   '/api/admin/authors': typeof ApiAdminAuthorsRouteWithChildren
   '/api/admin/comments': typeof ApiAdminCommentsRoute
   '/api/admin/contact': typeof ApiAdminContactRoute
@@ -1525,6 +1559,8 @@ export interface FileRoutesById {
   '/api/admin/submissions': typeof ApiAdminSubmissionsRouteWithChildren
   '/api/admin/themes': typeof ApiAdminThemesRouteWithChildren
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
+  '/api/admin/videos': typeof ApiAdminVideosRoute
+  '/api/admin/web-stories': typeof ApiAdminWebStoriesRoute
   '/api/analytics/track': typeof ApiAnalyticsTrackRoute
   '/api/auth/delete-account': typeof ApiAuthDeleteAccountRoute
   '/api/auth/export-history': typeof ApiAuthExportHistoryRoute
@@ -1582,6 +1618,7 @@ export interface FileRoutesById {
   '/api/admin/newsroom/bulk': typeof ApiAdminNewsroomBulkRoute
   '/api/admin/newsroom/comments': typeof ApiAdminNewsroomCommentsRoute
   '/api/admin/newsroom/dashboard': typeof ApiAdminNewsroomDashboardRoute
+  '/api/admin/newsroom/notifications': typeof ApiAdminNewsroomNotificationsRoute
   '/api/admin/newsroom/revisions': typeof ApiAdminNewsroomRevisionsRoute
   '/api/admin/newsroom/workflow': typeof ApiAdminNewsroomWorkflowRoute
   '/api/admin/states/$id': typeof ApiAdminStatesIdRoute
@@ -1687,6 +1724,7 @@ export interface FileRouteTypes {
     | '/admin/stories/new'
     | '/api/admin/achievements'
     | '/api/admin/analytics'
+    | '/api/admin/announcements'
     | '/api/admin/authors'
     | '/api/admin/comments'
     | '/api/admin/contact'
@@ -1699,6 +1737,8 @@ export interface FileRouteTypes {
     | '/api/admin/submissions'
     | '/api/admin/themes'
     | '/api/admin/users'
+    | '/api/admin/videos'
+    | '/api/admin/web-stories'
     | '/api/analytics/track'
     | '/api/auth/delete-account'
     | '/api/auth/export-history'
@@ -1756,6 +1796,7 @@ export interface FileRouteTypes {
     | '/api/admin/newsroom/bulk'
     | '/api/admin/newsroom/comments'
     | '/api/admin/newsroom/dashboard'
+    | '/api/admin/newsroom/notifications'
     | '/api/admin/newsroom/revisions'
     | '/api/admin/newsroom/workflow'
     | '/api/admin/states/$id'
@@ -1856,6 +1897,7 @@ export interface FileRouteTypes {
     | '/admin/stories/new'
     | '/api/admin/achievements'
     | '/api/admin/analytics'
+    | '/api/admin/announcements'
     | '/api/admin/authors'
     | '/api/admin/comments'
     | '/api/admin/contact'
@@ -1868,6 +1910,8 @@ export interface FileRouteTypes {
     | '/api/admin/submissions'
     | '/api/admin/themes'
     | '/api/admin/users'
+    | '/api/admin/videos'
+    | '/api/admin/web-stories'
     | '/api/analytics/track'
     | '/api/auth/delete-account'
     | '/api/auth/export-history'
@@ -1925,6 +1969,7 @@ export interface FileRouteTypes {
     | '/api/admin/newsroom/bulk'
     | '/api/admin/newsroom/comments'
     | '/api/admin/newsroom/dashboard'
+    | '/api/admin/newsroom/notifications'
     | '/api/admin/newsroom/revisions'
     | '/api/admin/newsroom/workflow'
     | '/api/admin/states/$id'
@@ -2028,6 +2073,7 @@ export interface FileRouteTypes {
     | '/admin/stories/new'
     | '/api/admin/achievements'
     | '/api/admin/analytics'
+    | '/api/admin/announcements'
     | '/api/admin/authors'
     | '/api/admin/comments'
     | '/api/admin/contact'
@@ -2040,6 +2086,8 @@ export interface FileRouteTypes {
     | '/api/admin/submissions'
     | '/api/admin/themes'
     | '/api/admin/users'
+    | '/api/admin/videos'
+    | '/api/admin/web-stories'
     | '/api/analytics/track'
     | '/api/auth/delete-account'
     | '/api/auth/export-history'
@@ -2097,6 +2145,7 @@ export interface FileRouteTypes {
     | '/api/admin/newsroom/bulk'
     | '/api/admin/newsroom/comments'
     | '/api/admin/newsroom/dashboard'
+    | '/api/admin/newsroom/notifications'
     | '/api/admin/newsroom/revisions'
     | '/api/admin/newsroom/workflow'
     | '/api/admin/states/$id'
@@ -2185,6 +2234,7 @@ export interface RootRouteChildren {
   WebStoriesIndexRoute: typeof WebStoriesIndexRoute
   ApiAdminAchievementsRoute: typeof ApiAdminAchievementsRoute
   ApiAdminAnalyticsRoute: typeof ApiAdminAnalyticsRoute
+  ApiAdminAnnouncementsRoute: typeof ApiAdminAnnouncementsRoute
   ApiAdminAuthorsRoute: typeof ApiAdminAuthorsRouteWithChildren
   ApiAdminCommentsRoute: typeof ApiAdminCommentsRoute
   ApiAdminContactRoute: typeof ApiAdminContactRoute
@@ -2197,6 +2247,8 @@ export interface RootRouteChildren {
   ApiAdminSubmissionsRoute: typeof ApiAdminSubmissionsRouteWithChildren
   ApiAdminThemesRoute: typeof ApiAdminThemesRouteWithChildren
   ApiAdminUsersRoute: typeof ApiAdminUsersRouteWithChildren
+  ApiAdminVideosRoute: typeof ApiAdminVideosRoute
+  ApiAdminWebStoriesRoute: typeof ApiAdminWebStoriesRoute
   ApiAnalyticsTrackRoute: typeof ApiAnalyticsTrackRoute
   ApiAuthDeleteAccountRoute: typeof ApiAuthDeleteAccountRoute
   ApiAuthExportHistoryRoute: typeof ApiAuthExportHistoryRoute
@@ -2213,6 +2265,7 @@ export interface RootRouteChildren {
   ApiAdminNewsroomBulkRoute: typeof ApiAdminNewsroomBulkRoute
   ApiAdminNewsroomCommentsRoute: typeof ApiAdminNewsroomCommentsRoute
   ApiAdminNewsroomDashboardRoute: typeof ApiAdminNewsroomDashboardRoute
+  ApiAdminNewsroomNotificationsRoute: typeof ApiAdminNewsroomNotificationsRoute
   ApiAdminNewsroomRevisionsRoute: typeof ApiAdminNewsroomRevisionsRoute
   ApiAdminNewsroomWorkflowRoute: typeof ApiAdminNewsroomWorkflowRoute
   ApiPodcastFeedXmlRoute: typeof ApiPodcastFeedXmlRoute
@@ -3102,6 +3155,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAnalyticsTrackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/web-stories': {
+      id: '/api/admin/web-stories'
+      path: '/api/admin/web-stories'
+      fullPath: '/api/admin/web-stories'
+      preLoaderRoute: typeof ApiAdminWebStoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/videos': {
+      id: '/api/admin/videos'
+      path: '/api/admin/videos'
+      fullPath: '/api/admin/videos'
+      preLoaderRoute: typeof ApiAdminVideosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin/users': {
       id: '/api/admin/users'
       path: '/api/admin/users'
@@ -3184,6 +3251,13 @@ declare module '@tanstack/react-router' {
       path: '/api/admin/authors'
       fullPath: '/api/admin/authors'
       preLoaderRoute: typeof ApiAdminAuthorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/announcements': {
+      id: '/api/admin/announcements'
+      path: '/api/admin/announcements'
+      fullPath: '/api/admin/announcements'
+      preLoaderRoute: typeof ApiAdminAnnouncementsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/admin/analytics': {
@@ -3310,6 +3384,13 @@ declare module '@tanstack/react-router' {
       path: '/api/admin/newsroom/revisions'
       fullPath: '/api/admin/newsroom/revisions'
       preLoaderRoute: typeof ApiAdminNewsroomRevisionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/newsroom/notifications': {
+      id: '/api/admin/newsroom/notifications'
+      path: '/api/admin/newsroom/notifications'
+      fullPath: '/api/admin/newsroom/notifications'
+      preLoaderRoute: typeof ApiAdminNewsroomNotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/admin/newsroom/dashboard': {
@@ -3879,6 +3960,7 @@ const rootRouteChildren: RootRouteChildren = {
   WebStoriesIndexRoute: WebStoriesIndexRoute,
   ApiAdminAchievementsRoute: ApiAdminAchievementsRoute,
   ApiAdminAnalyticsRoute: ApiAdminAnalyticsRoute,
+  ApiAdminAnnouncementsRoute: ApiAdminAnnouncementsRoute,
   ApiAdminAuthorsRoute: ApiAdminAuthorsRouteWithChildren,
   ApiAdminCommentsRoute: ApiAdminCommentsRoute,
   ApiAdminContactRoute: ApiAdminContactRoute,
@@ -3891,6 +3973,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminSubmissionsRoute: ApiAdminSubmissionsRouteWithChildren,
   ApiAdminThemesRoute: ApiAdminThemesRouteWithChildren,
   ApiAdminUsersRoute: ApiAdminUsersRouteWithChildren,
+  ApiAdminVideosRoute: ApiAdminVideosRoute,
+  ApiAdminWebStoriesRoute: ApiAdminWebStoriesRoute,
   ApiAnalyticsTrackRoute: ApiAnalyticsTrackRoute,
   ApiAuthDeleteAccountRoute: ApiAuthDeleteAccountRoute,
   ApiAuthExportHistoryRoute: ApiAuthExportHistoryRoute,
@@ -3907,6 +3991,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminNewsroomBulkRoute: ApiAdminNewsroomBulkRoute,
   ApiAdminNewsroomCommentsRoute: ApiAdminNewsroomCommentsRoute,
   ApiAdminNewsroomDashboardRoute: ApiAdminNewsroomDashboardRoute,
+  ApiAdminNewsroomNotificationsRoute: ApiAdminNewsroomNotificationsRoute,
   ApiAdminNewsroomRevisionsRoute: ApiAdminNewsroomRevisionsRoute,
   ApiAdminNewsroomWorkflowRoute: ApiAdminNewsroomWorkflowRoute,
   ApiPodcastFeedXmlRoute: ApiPodcastFeedXmlRoute,

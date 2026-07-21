@@ -1,6 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { json, verifyAdmin } from "@/routes/api/-_utils";
 import { prisma } from "@/lib/repositories/prisma.server";
+import {
+  sendSubmissionRejectionEmail,
+  sendSubmissionApprovedEmail,
+  sendSubmissionPublishedEmail
+} from "@/lib/email-service.server";
 
 function slugify(text: string) {
   return text
@@ -23,6 +28,7 @@ export const Route = createFileRoute("/api/admin/submissions/action")({
             submissionId,
             action,
             adminNotes,
+            editorId,
             featured = false,
             homepageSlideshow = false,
             slideshowOrder = 0,
@@ -33,8 +39,10 @@ export const Route = createFileRoute("/api/admin/submissions/action")({
           }
 
           let finalAction = action;
-          if (action === "Approve" || action === "Approved") {
+          if (action === "Approve" || action === "Approved" || action === "Approve directly") {
             finalAction = "Published";
+          } else if (action === "Assign" || action === "AssignToEditor" || action === "Assign to Editor") {
+            finalAction = "FactChecking";
           }
 
           const VALID_ACTIONS = [
@@ -221,6 +229,61 @@ export const Route = createFileRoute("/api/admin/submissions/action")({
               console.error("[action] stats update error:", statsErr);
             }
           }
+
+          // Trigger Workflow Emails & Notifications asynchronously
+          const submitterEmail = submission.email || submission.user?.email;
+          const authorName = submission.authorName || submission.user?.name || "Contributor";
+
+          (async () => {
+            try {
+              if (finalAction === "Published" && submitterEmail) {
+                const createdStory = await prisma.story.findFirst({
+                  where: { title: submission.title },
+                  orderBy: { createdAt: "desc" },
+                });
+                const slug = createdStory?.slug || submissionId;
+                await sendSubmissionPublishedEmail(submitterEmail, authorName, submission.title, slug);
+              } else if (finalAction === "Rejected" && submitterEmail) {
+                await sendSubmissionRejectionEmail(submitterEmail, authorName, submission.title);
+              } else if (finalAction === "FactChecking") {
+                if (editorId) {
+                  await prisma.auditLog.create({
+                    data: {
+                      userId: editorId,
+                      action: "SUBMISSION_WORKFLOW_STATE",
+                      details: JSON.stringify({
+                        submissionId,
+                        assignedEditorId: editorId,
+                        assignedAt: new Date().toISOString(),
+                      }),
+                    },
+                  });
+
+                  await prisma.auditLog.create({
+                    data: {
+                      userId: editorId,
+                      action: "WORKFLOW_NOTIFICATION",
+                      details: JSON.stringify({
+                        storyId: submissionId,
+                        storyTitle: submission.title,
+                        senderName: "Administrator",
+                        message: `New story "${submission.title}" has been approved by Admin and assigned to you.`,
+                        type: "story_assignment",
+                        priority: "High",
+                        read: false,
+                      }),
+                    },
+                  });
+                }
+
+                if (submitterEmail) {
+                  await sendSubmissionApprovedEmail(submitterEmail, authorName, submission.title);
+                }
+              }
+            } catch (err) {
+              console.error("[Submissions Action Flow] Error in async triggers:", err);
+            }
+          })();
 
           return json({ success: true, submission: updatedSubmission });
         } catch (e: any) {

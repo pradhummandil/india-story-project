@@ -7,6 +7,7 @@ import {
   sanitizeInput,
 } from "@/routes/api/-_utils";
 import { prisma } from "@/lib/repositories/prisma.server";
+import { sendSubmissionReceiptEmail } from "@/lib/email-service.server";
 
 export const Route = createFileRoute("/api/submissions")({
   server: {
@@ -142,6 +143,51 @@ export const Route = createFileRoute("/api/submissions")({
                 ...dataPayload,
               },
             });
+          }
+
+          if (status !== "Draft") {
+            (async () => {
+              try {
+                const staff = await prisma.userProfile.findMany({
+                  where: {
+                    role: { in: ["Admin", "SuperAdmin", "Editor"] },
+                  },
+                  select: { id: true },
+                });
+
+                for (const member of staff) {
+                  await prisma.auditLog.create({
+                    data: {
+                      userId: member.id,
+                      action: "WORKFLOW_NOTIFICATION",
+                      details: JSON.stringify({
+                        storyId: submission.id,
+                        storyTitle: submission.title,
+                        senderName: dataPayload.authorName,
+                        message: `New story "${submission.title}" submitted by ${dataPayload.authorName} from ${dataPayload.stateName}.`,
+                        type: "user_story_submission",
+                        priority: "High",
+                        stateName: dataPayload.stateName,
+                        themes: dataPayload.themes,
+                        submittedAt: new Date().toISOString(),
+                        read: false,
+                      }),
+                    },
+                  });
+                }
+
+                const emailAddress = dataPayload.email || user.email;
+                if (emailAddress) {
+                  await sendSubmissionReceiptEmail(
+                    emailAddress,
+                    dataPayload.authorName || "Contributor",
+                    submission.title,
+                  );
+                }
+              } catch (err) {
+                console.error("[Submissions Flow] Error in async notifications:", err);
+              }
+            })();
           }
 
           // Award +20 XP only for non-draft submissions

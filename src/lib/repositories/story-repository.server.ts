@@ -29,6 +29,7 @@ export type StoryCardCompatible = {
   homepageSlideshow?: boolean;
   slideshowOrder?: number;
   seoKeywords?: string | null;
+  authorId?: string;
 };
 
 // Projections: Select specific columns to reduce egress (exclude content/contentHi/themes/tags in lists)
@@ -132,6 +133,7 @@ function toStoryCardCompatible(story: any): StoryCardCompatible {
     homepageSlideshow: story.homepageSlideshow,
     slideshowOrder: story.slideshowOrder,
     seoKeywords: story.seoKeywords,
+    authorId: story.authorId,
   };
 }
 

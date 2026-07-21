@@ -33,6 +33,7 @@ export interface Story {
   homepageSlideshow?: boolean;
   slideshowOrder?: number;
   seoKeywords?: string | null;
+  authorId?: string;
 }
 
 export const StoryCard = React.memo(function StoryCard({

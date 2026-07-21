@@ -354,3 +354,90 @@ export async function sendNewsletterEmail(
 
   return sendEmail({ to: toEmail, subject, html });
 }
+
+// ─── Submitter Workflow Emails ────────────────────────────────────────────────
+
+export async function sendSubmissionReceiptEmail(
+  toEmail: string,
+  authorName: string,
+  storyTitle: string,
+): Promise<boolean> {
+  const subject = "We received your story ❤️";
+  const html = wrapHtmlTemplate(
+    subject,
+    `
+    <h1>Namaste ${authorName},</h1>
+    <p>Thank you for sharing your story <strong>"${storyTitle}"</strong> with us! We have received it successfully.</p>
+    <p>Our editorial team will carefully review it. If it is approved, one of our editors will polish formatting, SEO, images, and facts before publishing.</p>
+    <p>Once your story goes live on the India Story Project, you will receive another email with the direct link to the published article.</p>
+    <p>Thank you for contributing to documenting India's stories!</p>
+    <div class="button-container">
+      <a href="${APP_URL}/dashboard" class="button">View Dashboard Status</a>
+    </div>
+    `,
+  );
+  return sendEmail({ to: toEmail, subject, html });
+}
+
+export async function sendSubmissionRejectionEmail(
+  toEmail: string,
+  authorName: string,
+  storyTitle: string,
+): Promise<boolean> {
+  const subject = "Update about your submitted story";
+  const html = wrapHtmlTemplate(
+    subject,
+    `
+    <h1>Namaste ${authorName},</h1>
+    <p>Thank you sincerely for submitting your story <strong>"${storyTitle}"</strong> to the India Story Project.</p>
+    <p>Unfortunately, our editorial panel did not approve the story for publication this time. We sincerely appreciate the time and effort you put into writing it.</p>
+    <p>We highly encourage you to submit more stories in the future. We look forward to hearing more from you!</p>
+    <div class="button-container">
+      <a href="${APP_URL}/share-story" class="button">Submit Another Story</a>
+    </div>
+    `,
+  );
+  return sendEmail({ to: toEmail, subject, html });
+}
+
+export async function sendSubmissionApprovedEmail(
+  toEmail: string,
+  authorName: string,
+  storyTitle: string,
+): Promise<boolean> {
+  const subject = "🎉 Great news! Your story has been approved.";
+  const html = wrapHtmlTemplate(
+    subject,
+    `
+    <h1>Namaste ${authorName},</h1>
+    <p>Congratulations! Your story submission <strong>"${storyTitle}"</strong> has successfully passed our first review!</p>
+    <p>It has been approved by our administrators and assigned to one of our editors, who is currently polishing the formatting, SEO tags, images, and readability.</p>
+    <p>You will receive another email immediately when your article is published and live on the portal.</p>
+    <p>Thank you for being a vital part of the India Story Project!</p>
+    `,
+  );
+  return sendEmail({ to: toEmail, subject, html });
+}
+
+export async function sendSubmissionPublishedEmail(
+  toEmail: string,
+  authorName: string,
+  storyTitle: string,
+  storySlug: string,
+): Promise<boolean> {
+  const subject = "🚀 Your story is now live on India Story Project!";
+  const link = `${APP_URL}/stories/${storySlug}`;
+  const html = wrapHtmlTemplate(
+    subject,
+    `
+    <h1>Namaste ${authorName},</h1>
+    <p>Exciting news! Your story <strong>"${storyTitle}"</strong> is now live on the India Story Project!</p>
+    <p>Celebrate the publication of your story and share it with your friends, family, and community to inspire others!</p>
+    <div class="button-container">
+      <a href="${link}" class="button">Read Live Story</a>
+    </div>
+    <p>Thank you for helping us document and preserve the stories that shape modern India. We invite you to submit more stories whenever inspiration strikes!</p>
+    `,
+  );
+  return sendEmail({ to: toEmail, subject, html });
+}
