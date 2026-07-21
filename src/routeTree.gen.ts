@@ -15,6 +15,7 @@ import { Route as StoriesRouteImport } from './routes/stories'
 import { Route as SponsorshipRouteImport } from './routes/sponsorship'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ShareStoryRouteImport } from './routes/share-story'
+import { Route as SearchRouteImport } from './routes/search'
 import { Route as RssRouteImport } from './routes/rss'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProfileRouteImport } from './routes/profile'
@@ -207,6 +208,11 @@ const SignupRoute = SignupRouteImport.update({
 const ShareStoryRoute = ShareStoryRouteImport.update({
   id: '/share-story',
   path: '/share-story',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RssRoute = RssRouteImport.update({
@@ -1108,6 +1114,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/rss': typeof RssRoute
+  '/search': typeof SearchRoute
   '/share-story': typeof ShareStoryRoute
   '/signup': typeof SignupRoute
   '/sponsorship': typeof SponsorshipRoute
@@ -1277,6 +1284,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/rss': typeof RssRoute
+  '/search': typeof SearchRoute
   '/share-story': typeof ShareStoryRoute
   '/signup': typeof SignupRoute
   '/sponsorship': typeof SponsorshipRoute
@@ -1448,6 +1456,7 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/rss': typeof RssRoute
+  '/search': typeof SearchRoute
   '/share-story': typeof ShareStoryRoute
   '/signup': typeof SignupRoute
   '/sponsorship': typeof SponsorshipRoute
@@ -1621,6 +1630,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/reset-password'
     | '/rss'
+    | '/search'
     | '/share-story'
     | '/signup'
     | '/sponsorship'
@@ -1790,6 +1800,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/reset-password'
     | '/rss'
+    | '/search'
     | '/share-story'
     | '/signup'
     | '/sponsorship'
@@ -1960,6 +1971,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/reset-password'
     | '/rss'
+    | '/search'
     | '/share-story'
     | '/signup'
     | '/sponsorship'
@@ -2132,6 +2144,7 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   RssRoute: typeof RssRoute
+  SearchRoute: typeof SearchRoute
   ShareStoryRoute: typeof ShareStoryRoute
   SignupRoute: typeof SignupRoute
   SponsorshipRoute: typeof SponsorshipRoute
@@ -2247,6 +2260,13 @@ declare module '@tanstack/react-router' {
       path: '/share-story'
       fullPath: '/share-story'
       preLoaderRoute: typeof ShareStoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/rss': {
@@ -3818,6 +3838,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   RssRoute: RssRoute,
+  SearchRoute: SearchRoute,
   ShareStoryRoute: ShareStoryRoute,
   SignupRoute: SignupRoute,
   SponsorshipRoute: SponsorshipRoute,
