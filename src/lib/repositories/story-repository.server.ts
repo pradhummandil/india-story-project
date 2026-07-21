@@ -234,54 +234,135 @@ export class StoryRepository {
     sortBy?: string;
     page: number;
     pageSize: number;
+    district?: string;
+    language?: string;
+    readTime?: string;
+    era?: string;
+    collection?: string;
   }): Promise<{ stories: StoryCardCompatible[]; total: number }> {
-    const where: any = { status: StoryStatus.Published };
+    const andConditions: any[] = [{ status: StoryStatus.Published }];
 
     if (options.theme && options.theme.toLowerCase() !== "all") {
       const themeList = options.theme.split(/[ ,+]+/).filter(Boolean);
       if (themeList.length > 0) {
-        where.themes = {
-          some: {
-            theme: {
-              OR: [
-                { slug: { in: themeList, mode: "insensitive" } },
-                { name: { in: themeList, mode: "insensitive" } },
-              ],
+        andConditions.push({
+          themes: {
+            some: {
+              theme: {
+                OR: [
+                  { slug: { in: themeList, mode: "insensitive" } },
+                  { name: { in: themeList, mode: "insensitive" } },
+                ],
+              },
             },
           },
-        };
+        });
       }
     }
     if (options.region) {
-      where.state = {
-        OR: [
-          { slug: { equals: options.region, mode: "insensitive" } },
-          { name: { equals: options.region, mode: "insensitive" } },
-        ],
-      };
+      andConditions.push({
+        state: {
+          OR: [
+            { slug: { equals: options.region, mode: "insensitive" } },
+            { name: { equals: options.region, mode: "insensitive" } },
+          ],
+        },
+      });
     }
     if (options.author) {
-      where.author = { name: { equals: options.author, mode: "insensitive" } };
+      andConditions.push({
+        author: { name: { equals: options.author, mode: "insensitive" } },
+      });
     }
     if (options.tag) {
-      where.tags = {
-        some: {
-          tag: {
-            name: { equals: options.tag, mode: "insensitive" },
+      andConditions.push({
+        tags: {
+          some: {
+            tag: {
+              name: { equals: options.tag, mode: "insensitive" },
+            },
           },
         },
-      };
+      });
     }
     if (options.query) {
       const q = options.query;
-      where.OR = [
-        { title: { contains: q, mode: "insensitive" } },
-        { excerpt: { contains: q, mode: "insensitive" } },
-        { content: { contains: q, mode: "insensitive" } },
-        { themes: { some: { theme: { name: { contains: q, mode: "insensitive" } } } } },
-        { state: { name: { contains: q, mode: "insensitive" } } },
-      ];
+      andConditions.push({
+        OR: [
+          { title: { contains: q, mode: "insensitive" } },
+          { excerpt: { contains: q, mode: "insensitive" } },
+          { content: { contains: q, mode: "insensitive" } },
+          { themes: { some: { theme: { name: { contains: q, mode: "insensitive" } } } } },
+          { state: { name: { contains: q, mode: "insensitive" } } },
+        ],
+      });
     }
+    if (options.district) {
+      const d = options.district;
+      andConditions.push({
+        OR: [
+          { city: { name: { contains: d, mode: "insensitive" } } },
+          { state: { name: { contains: d, mode: "insensitive" } } },
+        ],
+      });
+    }
+    if (options.language && options.language !== "all") {
+      if (options.language === "hi") {
+        andConditions.push({ titleHi: { not: null } });
+      } else if (options.language === "en") {
+        andConditions.push({ title: { not: "" } });
+      }
+    }
+    if (options.readTime && options.readTime !== "all") {
+      if (options.readTime === "short") {
+        andConditions.push({ readingTime: { lte: 3 } });
+      } else if (options.readTime === "medium") {
+        andConditions.push({ readingTime: { gte: 4, lte: 6 } });
+      } else if (options.readTime === "long") {
+        andConditions.push({ readingTime: { gt: 6 } });
+      }
+    }
+    if (options.era) {
+      const eraKeywords: Record<string, string[]> = {
+        ancient: ["ancient", "harappa", "vedic", "mauryan", "gupta", "chola", "temple", "dynasty"],
+        medieval: ["medieval", "delhi sultanate", "mughal", "maratha", "rajput", "vijayanagara"],
+        freedom: ["freedom", "independence", "gandhi", "british", "satyagraha", "revolution"],
+        modern: ["modern", "nehru", "post-independence", "1950", "1960", "1970", "1980"],
+        contemporary: ["contemporary", "today", "digital", "startups", "it hub", "now"],
+      };
+      const words = eraKeywords[options.era.toLowerCase()] || [];
+      if (words.length > 0) {
+        andConditions.push({
+          OR: [
+            ...words.map((w) => ({ title: { contains: w, mode: "insensitive" as const } })),
+            ...words.map((w) => ({ excerpt: { contains: w, mode: "insensitive" as const } })),
+          ],
+        });
+      }
+    }
+    if (options.collection) {
+      const collKeywords: Record<string, string[]> = {
+        "freedom fighters": ["freedom", "fighter", "independence"],
+        "unesco heritage": ["unesco", "heritage", "monument"],
+        "indian festivals": ["festival", "festivals", "celebration"],
+        "ancient temples": ["temple", "temples", "shrines"],
+        "royal kingdoms": ["royal", "kingdom", "palace", "king"],
+        "hidden villages": ["village", "villages", "tribe"],
+        "folk tales": ["folk", "folklore", "tale", "legend"],
+        "indian cuisine": ["cuisine", "food", "dish", "dishes"],
+      };
+      const words = collKeywords[options.collection.toLowerCase()] || [];
+      if (words.length > 0) {
+        andConditions.push({
+          OR: [
+            ...words.map((w) => ({ title: { contains: w, mode: "insensitive" as const } })),
+            ...words.map((w) => ({ excerpt: { contains: w, mode: "insensitive" as const } })),
+          ],
+        });
+      }
+    }
+
+    const where = { AND: andConditions };
 
     let orderBy: any = [{ publishedAt: "desc" }, { createdAt: "desc" }];
     if (options.sortBy === "views") {

@@ -15,6 +15,11 @@ export type StoryListFilters = {
   author?: string;
   tag?: string;
   sortBy?: string;
+  district?: string;
+  language?: string;
+  readTime?: string;
+  era?: string;
+  collection?: string;
 };
 
 export type StoryPagination = {
@@ -67,6 +72,11 @@ export class StoryService {
       sortBy: options.sortBy,
       page,
       pageSize,
+      district: options.district,
+      language: options.language,
+      readTime: options.readTime,
+      era: options.era,
+      collection: options.collection,
     });
 
     return {

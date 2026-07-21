@@ -33,6 +33,11 @@ export const Route = createFileRoute("/api/stories")({
         const author = url.searchParams.get("author") ?? undefined;
         const tag = url.searchParams.get("tag") ?? undefined;
         const sortBy = url.searchParams.get("sortBy") ?? undefined;
+        const district = url.searchParams.get("district") ?? undefined;
+        const language = url.searchParams.get("language") ?? undefined;
+        const readTime = url.searchParams.get("readTime") ?? undefined;
+        const era = url.searchParams.get("era") ?? undefined;
+        const collection = url.searchParams.get("collection") ?? undefined;
         const page = readPositiveInt(url.searchParams.get("page"), 1);
         const pageSize = readPositiveInt(url.searchParams.get("pageSize"), 12);
 
@@ -53,6 +58,11 @@ export const Route = createFileRoute("/api/stories")({
               author,
               tag,
               sortBy,
+              district,
+              language,
+              readTime,
+              era,
+              collection,
               page,
               pageSize,
             }),
