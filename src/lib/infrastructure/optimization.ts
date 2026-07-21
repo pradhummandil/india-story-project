@@ -2,7 +2,7 @@
 // Resolves compressed images, video stream parameters, and lazy loading configurations.
 
 export const optimizationService = {
-  // Image Compression & Optimization (Unsplash CDN resizing parameters)
+  // Image Compression & Optimization (CDN resizing and format parameters)
   optimizeImage: (url: string, width = 800, quality = 80): string => {
     if (!url) return "/Logo-ISP.jpg";
     return url;
