@@ -1,20 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { storyService } from "@/lib/services/story-service.server";
-import { fetchStoriesBackup } from "@/routes/api/-_utils";
-
-// Server-side query cache
-const storiesCache = new Map<string, { data: any; expiry: number }>();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
-
-function json(data: unknown, init?: ResponseInit) {
-  return new Response(JSON.stringify(data), {
-    ...init,
-    headers: {
-      "content-type": "application/json",
-      ...(init?.headers ?? {}),
-    },
-  });
-}
+import { json } from "@/routes/api/-_utils";
 
 function readPositiveInt(value: string | null, fallback: number) {
   const parsed = Number.parseInt(value ?? "", 10);
@@ -22,7 +8,7 @@ function readPositiveInt(value: string | null, fallback: number) {
 }
 
 // Helper to run promises with a timeout
-async function withTimeout<T>(promise: Promise<T>, timeoutMs = 1500): Promise<T> {
+async function withTimeout<T>(promise: Promise<T>, timeoutMs = 5000): Promise<T> {
   let timeoutId: ReturnType<typeof setTimeout>;
   const timeoutPromise = new Promise<never>((_, reject) => {
     timeoutId = setTimeout(() => {
@@ -38,6 +24,7 @@ export const Route = createFileRoute("/api/stories")({
   server: {
     handlers: {
       GET: async ({ request }) => {
+        console.time("total response time");
         const url = new URL(request.url);
         const query = url.searchParams.get("query") ?? undefined;
         const theme =
@@ -50,6 +37,7 @@ export const Route = createFileRoute("/api/stories")({
         const pageSize = readPositiveInt(url.searchParams.get("pageSize"), 12);
 
         try {
+          console.time("story query time");
           const payload = await withTimeout(
             storyService.getPublishedStories({
               query,
@@ -63,6 +51,11 @@ export const Route = createFileRoute("/api/stories")({
             }),
             5000,
           );
+          console.timeEnd("story query time");
+
+          console.time("serialization time");
+          const body = JSON.stringify(payload);
+          console.timeEnd("serialization time");
 
           console.log(
             JSON.stringify({
@@ -72,8 +65,15 @@ export const Route = createFileRoute("/api/stories")({
             })
           );
 
-          return json(payload);
+          console.timeEnd("total response time");
+
+          return new Response(body, {
+            headers: {
+              "content-type": "application/json",
+            },
+          });
         } catch (error: any) {
+          console.timeEnd("total response time");
           console.error("[stories API] Database query failed:", error?.name, error?.message);
           return json(
             { error: "Database query failed or timed out", details: error?.message },

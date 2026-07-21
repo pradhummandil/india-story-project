@@ -32,7 +32,7 @@ export type StoryCardCompatible = {
   seoKeywords?: string | null;
 };
 
-// Projections: Select specific columns to reduce egress (exclude content/contentHi in lists)
+// Projections: Select specific columns to reduce egress (exclude content/contentHi/themes/tags in lists)
 const storyCardSelect = {
   id: true,
   slug: true,
@@ -54,22 +54,7 @@ const storyCardSelect = {
   authorId: true,
   state: { select: { id: true, name: true, slug: true } },
   author: { select: { id: true, name: true, bio: true, avatar: true } },
-  tags: {
-    select: {
-      tag: {
-        select: {
-          name: true,
-        },
-      },
-    },
-  },
-  themes: {
-    select: {
-      theme: { select: { id: true, name: true, slug: true } },
-    },
-  },
   images: {
-    // Prefer a hero image if present; otherwise lowest sortOrder.
     orderBy: [{ heroImage: "desc" as any }, { sortOrder: "asc" as any }],
     select: { id: true, imageUrl: true, caption: true, heroImage: true },
     take: 1,
@@ -129,7 +114,7 @@ function toStoryCardCompatible(story: any): StoryCardCompatible {
     slug: story.slug,
     title: story.title,
     excerpt: story.excerpt,
-    themes: story.themes?.map((t: any) => t.theme?.name).filter(Boolean) ?? [],
+    themes: story.themeNames ?? story.themes?.map((t: any) => t.theme?.name).filter(Boolean) ?? [],
     region: story.state?.name ?? "India",
     readTime: formatReadTime(story.readingTime),
     image: image?.imageUrl,
@@ -142,7 +127,7 @@ function toStoryCardCompatible(story: any): StoryCardCompatible {
     authorName: story.author?.name,
     authorBio: story.author?.bio,
     authorAvatar: story.author?.avatar,
-    tags: story.tags?.map((t: any) => t.tag.name) ?? [],
+    tags: story.tagNames ?? story.tags?.map((t: any) => t.tag.name) ?? [],
     publishedAt: story.publishedAt,
     createdAt: story.createdAt,
     viewCount: story.viewCount,
@@ -152,6 +137,62 @@ function toStoryCardCompatible(story: any): StoryCardCompatible {
     slideshowOrder: story.slideshowOrder,
     seoKeywords: story.seoKeywords,
   };
+}
+
+async function populateThemesAndTagsForStories(stories: any[]) {
+  if (stories.length === 0) return;
+  const storyIds = stories.map((s) => s.id);
+
+  console.time("theme query time");
+  const [storyThemes, storyTags] = await Promise.all([
+    prisma.storyTheme.findMany({
+      where: { storyId: { in: storyIds } },
+      select: {
+        storyId: true,
+        theme: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    }),
+    prisma.storyTag.findMany({
+      where: { storyId: { in: storyIds } },
+      select: {
+        storyId: true,
+        tag: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    }),
+  ]);
+  console.timeEnd("theme query time");
+
+  // Group by storyId
+  const themesMap = new Map<string, string[]>();
+  for (const st of storyThemes) {
+    if (st.theme?.name) {
+      const list = themesMap.get(st.storyId) || [];
+      list.push(st.theme.name);
+      themesMap.set(st.storyId, list);
+    }
+  }
+
+  const tagsMap = new Map<string, string[]>();
+  for (const st of storyTags) {
+    if (st.tag?.name) {
+      const list = tagsMap.get(st.storyId) || [];
+      list.push(st.tag.name);
+      tagsMap.set(st.storyId, list);
+    }
+  }
+
+  for (const s of stories) {
+    s.themeNames = themesMap.get(s.id) || [];
+    s.tagNames = tagsMap.get(s.id) || [];
+  }
 }
 
 export class StoryRepository {
@@ -180,6 +221,8 @@ export class StoryRepository {
       select: storyCardSelect,
       ...(limit ? { take: limit } : {}),
     });
+
+    await populateThemesAndTagsForStories(stories);
 
     return stories.map(toStoryCardCompatible);
   }
@@ -264,6 +307,8 @@ export class StoryRepository {
       this.db.story.count({ where }),
     ]);
 
+    await populateThemesAndTagsForStories(stories);
+
     const mappedStories = stories.map(toStoryCardCompatible);
 
     return {
@@ -284,6 +329,8 @@ export class StoryRepository {
       select: storyCardSelect,
     });
 
+    await populateThemesAndTagsForStories(stories);
+
     return stories.map(toStoryCardCompatible);
   }
 
@@ -296,6 +343,10 @@ export class StoryRepository {
       orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
       select: storyCardSelect,
     });
+
+    if (story) {
+      await populateThemesAndTagsForStories([story]);
+    }
 
     return story ? toStoryCardCompatible(story) : null;
   }
