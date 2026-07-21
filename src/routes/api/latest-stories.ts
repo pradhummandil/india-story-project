@@ -10,7 +10,7 @@ const cache = {
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
 
 // Helper to run promises with a timeout
-async function withTimeout<T>(promise: Promise<T>, timeoutMs = 1500): Promise<T> {
+async function withTimeout<T>(promise: Promise<T>, timeoutMs = 10000): Promise<T> {
   let timeoutId: ReturnType<typeof setTimeout>;
   const timeoutPromise = new Promise<never>((_, reject) => {
     timeoutId = setTimeout(() => {
@@ -38,7 +38,7 @@ export const Route = createFileRoute("/api/latest-stories")({
         }
 
         try {
-          const stories = await withTimeout(storyRepository.listPublished(6), 1500);
+          const stories = await withTimeout(storyRepository.listPublished(6));
           cache.stories = stories;
           cache.expiry = now + CACHE_TTL;
           return json({ stories }, cacheHeaders);

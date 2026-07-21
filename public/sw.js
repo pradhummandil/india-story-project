@@ -32,6 +32,12 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
+  // Exclude API routes and force NetworkOnly to prevent caching 500 or stale API responses
+  if (event.request.url.includes("/api/")) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   if (event.request.mode === "navigate") {
     event.respondWith(
       fetch(event.request).catch(() => {

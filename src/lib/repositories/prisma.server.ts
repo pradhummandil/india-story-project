@@ -6,6 +6,7 @@ const globalForPrisma = globalThis as typeof globalThis & {
   indiaStoryPrisma?: PrismaClientInstance;
 };
 
+console.time("Prisma Client Init");
 const prismaClient =
   globalForPrisma.indiaStoryPrisma ??
   new PrismaClient({
@@ -16,6 +17,7 @@ const prismaClient =
       { emit: "event", level: "error" },
     ],
   });
+console.timeEnd("Prisma Client Init");
 
 prismaClient.$on("query", (e: any) => {
   const isSlow = e.duration > 200;

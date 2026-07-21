@@ -11,7 +11,7 @@ const cache = {
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
 
 // Helper to run promises with a timeout
-async function withTimeout<T>(promise: Promise<T>, timeoutMs = 1500): Promise<T> {
+async function withTimeout<T>(promise: Promise<T>, timeoutMs = 10000): Promise<T> {
   let timeoutId: ReturnType<typeof setTimeout>;
   const timeoutPromise = new Promise<never>((_, reject) => {
     timeoutId = setTimeout(() => {
@@ -54,8 +54,7 @@ export const Route = createFileRoute("/api/trending")({
                 state: true,
                 images: true,
               },
-            }),
-            1500
+            })
           );
           const mapped = stories.map(toStoryCardCompatible);
           cache.stories = mapped;

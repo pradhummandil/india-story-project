@@ -163,16 +163,40 @@ function normalizeThemes(payload: ThemePayload): readonly string[] {
   return unique;
 }
 
-async function fetchAllStories(): Promise<Story[]> {
-  const stories: Story[] = [];
+async function fetchAllStories(existingStories: Story[] = []): Promise<Story[]> {
+  const stories: Story[] = [...existingStories];
   const pageSize = 12;
+  const startPage =
+    existingStories.length > 0 ? Math.floor(existingStories.length / pageSize) + 1 : 1;
 
-  for (let page = 1; ; page += 1) {
+  const isServer = typeof window === "undefined";
+  const requestType = isServer
+    ? "SSR request"
+    : existingStories.length > 0
+      ? "Background request"
+      : "Hydration request";
+
+  for (let page = startPage; ; page += 1) {
+    console.log(`[${requestType}] fetching /api/stories page=${page} pageSize=${pageSize}`);
+    console.log({
+      caller: "stories-api.ts:fetchAllStories",
+      page,
+      pageSize,
+      stack: new Error().stack,
+    });
+
     const payload = (await requestJson(
       `/api/stories?page=${page}&pageSize=${pageSize}`,
     )) as StoryListResponse;
     const pageStories = Array.isArray(payload.stories) ? payload.stories : [];
-    stories.push(...pageStories.map((story) => mapStory(story as Record<string, unknown>)));
+    
+    // Simple deduplication based on slug/id
+    for (const raw of pageStories) {
+      const mapped = mapStory(raw as Record<string, unknown>);
+      if (!stories.some((s) => s.id === mapped.id || s.slug === mapped.slug)) {
+        stories.push(mapped);
+      }
+    }
 
     if (page >= (payload.pageCount ?? 1) || pageStories.length === 0) {
       break;
@@ -182,9 +206,9 @@ async function fetchAllStories(): Promise<Story[]> {
   return stories;
 }
 
-export async function fetchStoriesCatalogue(): Promise<StoriesCatalogueResponse> {
+export async function fetchStoriesCatalogue(existingStories: Story[] = []): Promise<StoriesCatalogueResponse> {
   const [stories, themesPayload] = await Promise.all([
-    fetchAllStories(),
+    fetchAllStories(existingStories),
     requestJson("/api/themes").catch(() => []),
   ]);
 

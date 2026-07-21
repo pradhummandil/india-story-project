@@ -218,7 +218,7 @@ export async function loadStoriesData(force = false): Promise<void> {
 
   loadPromise = (async () => {
     try {
-      const catalogue = await fetchStoriesCatalogue();
+      const catalogue = await fetchStoriesCatalogue(stories);
       replaceData(catalogue.stories, catalogue.themes);
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : "Unable to load stories";

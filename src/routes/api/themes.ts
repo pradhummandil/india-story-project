@@ -10,7 +10,7 @@ const cache = {
 const CACHE_TTL = 15 * 60 * 1000; // 15 minutes cache
 
 // Helper to run promises with a timeout
-async function withTimeout<T>(promise: Promise<T>, timeoutMs = 1500): Promise<T> {
+async function withTimeout<T>(promise: Promise<T>, timeoutMs = 10000): Promise<T> {
   let timeoutId: ReturnType<typeof setTimeout>;
   const timeoutPromise = new Promise<never>((_, reject) => {
     timeoutId = setTimeout(() => {
@@ -38,7 +38,7 @@ export const Route = createFileRoute("/api/themes")({
         }
 
         try {
-          const themes = await withTimeout(themeService.getThemes(), 1500);
+          const themes = await withTimeout(themeService.getThemes());
           if (themes && themes.length > 0) {
             cache.themes = themes;
             cache.expiry = now + CACHE_TTL;
