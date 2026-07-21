@@ -213,10 +213,8 @@ function ProfilePage() {
   const hasInitializedForm = useRef(false);
 
   useEffect(() => {
-    if (user?.user_metadata?.avatar_url) {
-      setAvatarUrl(user.user_metadata.avatar_url);
-    }
-  }, [user]);
+    setAvatarUrl(profile?.avatarUrl || null);
+  }, [profile]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

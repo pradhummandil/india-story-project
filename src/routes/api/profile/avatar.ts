@@ -86,14 +86,11 @@ export const Route = createFileRoute("/api/profile/avatar")({
             optimizedUrl = optimizedUrl.replace("/upload/", "/upload/c_fill,g_face,w_300,h_300,q_auto,f_auto/");
           }
 
-          // Add cache-busting timestamp
-          const cacheBustedUrl = `${optimizedUrl}?t=${Date.now()}`;
-
           // Update database
           await db.profile.update({
             where: { id: user.id },
             data: {
-              avatarUrl: cacheBustedUrl,
+              avatarUrl: optimizedUrl,
               avatarPublicId: uploadResult.publicId,
             },
           });
@@ -101,7 +98,7 @@ export const Route = createFileRoute("/api/profile/avatar")({
           await db.userProfile.update({
             where: { id: user.id },
             data: {
-              avatarUrl: cacheBustedUrl,
+              avatarUrl: optimizedUrl,
               avatarPublicId: uploadResult.publicId,
             },
           });
@@ -114,7 +111,7 @@ export const Route = createFileRoute("/api/profile/avatar")({
             if (hasAuthor) {
               await db.author.update({
                 where: { id: user.id },
-                data: { avatar: cacheBustedUrl },
+                data: { avatar: optimizedUrl },
               });
             }
           } catch (authorErr) {
@@ -124,14 +121,14 @@ export const Route = createFileRoute("/api/profile/avatar")({
           // Update Supabase auth user metadata
           try {
             await supabase.auth.updateUser({
-              data: { avatar_url: cacheBustedUrl },
+              data: { avatar_url: optimizedUrl },
             });
           } catch (metaError) {
             console.error("[Avatar Upload] Failed to update user metadata in Supabase:", metaError);
           }
 
           return json({
-            avatarUrl: cacheBustedUrl,
+            avatarUrl: optimizedUrl,
             avatarPublicId: uploadResult.publicId,
             success: true,
           });

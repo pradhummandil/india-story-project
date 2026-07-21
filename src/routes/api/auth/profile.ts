@@ -38,18 +38,45 @@ export const Route = createFileRoute("/api/auth/profile")({
             // ignore empty body
           }
 
+          // Load existing profile from database to preserve its values
+          const existingProfile = await db.profile.findUnique({
+            where: { id: user.id },
+          });
+          const existingUserProfile = await db.userProfile.findUnique({
+            where: { id: user.id },
+          });
+
           const rawName =
             body.name ||
+            existingProfile?.fullName ||
             user.user_metadata?.name ||
             user.user_metadata?.full_name ||
             email.split("@")[0];
           const fullName = sanitizeInput(String(rawName)).substring(0, 100);
-          const avatarUrl = body.avatarUrl ? sanitizeInput(String(body.avatarUrl)).substring(0, 2048) : (user.user_metadata?.avatar_url || null);
-          const bio = body.bio ? sanitizeInput(String(body.bio)).substring(0, 500) : (user.user_metadata?.bio || null);
-          const website = body.website ? sanitizeInput(String(body.website)).substring(0, 200) : (user.user_metadata?.website || null);
-          const twitter = body.twitter ? sanitizeInput(String(body.twitter)).substring(0, 100) : (user.user_metadata?.twitter || null);
-          const instagram = body.instagram ? sanitizeInput(String(body.instagram)).substring(0, 100) : (user.user_metadata?.instagram || null);
-          const linkedin = body.linkedin ? sanitizeInput(String(body.linkedin)).substring(0, 100) : (user.user_metadata?.linkedin || null);
+
+          const avatarUrl = body.avatarUrl !== undefined 
+            ? (body.avatarUrl ? sanitizeInput(String(body.avatarUrl)).substring(0, 2048) : null)
+            : (existingProfile?.avatarUrl || user.user_metadata?.avatar_url || null);
+
+          const bio = body.bio !== undefined
+            ? (body.bio ? sanitizeInput(String(body.bio)).substring(0, 500) : null)
+            : (existingUserProfile?.bio || user.user_metadata?.bio || null);
+
+          const website = body.website !== undefined
+            ? (body.website ? sanitizeInput(String(body.website)).substring(0, 200) : null)
+            : (existingUserProfile?.website || user.user_metadata?.website || null);
+
+          const twitter = body.twitter !== undefined
+            ? (body.twitter ? sanitizeInput(String(body.twitter)).substring(0, 100) : null)
+            : (existingUserProfile?.twitter || user.user_metadata?.twitter || null);
+
+          const instagram = body.instagram !== undefined
+            ? (body.instagram ? sanitizeInput(String(body.instagram)).substring(0, 100) : null)
+            : (existingUserProfile?.instagram || user.user_metadata?.instagram || null);
+
+          const linkedin = body.linkedin !== undefined
+            ? (body.linkedin ? sanitizeInput(String(body.linkedin)).substring(0, 100) : null)
+            : (existingUserProfile?.linkedin || user.user_metadata?.linkedin || null);
 
           // Support theme & language/accessibility preferences directly in columns
           const favoriteTheme = body.favoriteTheme || null;

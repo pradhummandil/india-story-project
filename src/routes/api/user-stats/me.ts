@@ -22,17 +22,20 @@ export const Route = createFileRoute("/api/user-stats/me")({
         }
 
         try {
-          // Lazily create UserProfile if missing
+           // Lazily create UserProfile if missing
           let userProfile = await prisma.userProfile.findUnique({
             where: { id: user.id },
           });
           if (!userProfile) {
+            const existingProfile = await prisma.profile.findUnique({
+              where: { id: user.id },
+            });
             userProfile = await prisma.userProfile.create({
               data: {
                 id: user.id,
                 email: user.email ?? "",
-                name: user.user_metadata?.name || user.email?.split("@")[0] || "Contributor",
-                avatarUrl: user.user_metadata?.avatar_url || null,
+                name: existingProfile?.fullName || user.user_metadata?.name || user.email?.split("@")[0] || "Contributor",
+                avatarUrl: existingProfile?.avatarUrl || user.user_metadata?.avatar_url || null,
                 bio: user.user_metadata?.bio || null,
                 website: user.user_metadata?.website || null,
                 twitter: user.user_metadata?.twitter || null,

@@ -90,12 +90,15 @@ export const Route = createFileRoute("/api/submissions")({
           // Create UserProfile record if missing
           let userProfile = await prisma.userProfile.findUnique({ where: { id: user.id } });
           if (!userProfile) {
+            const existingProfile = await prisma.profile.findUnique({
+              where: { id: user.id },
+            });
             userProfile = await prisma.userProfile.create({
               data: {
                 id: user.id,
                 email: user.email ?? "",
-                name: user.user_metadata?.name || user.email?.split("@")[0] || "Contributor",
-                avatarUrl: user.user_metadata?.avatar_url || null,
+                name: existingProfile?.fullName || user.user_metadata?.name || user.email?.split("@")[0] || "Contributor",
+                avatarUrl: existingProfile?.avatarUrl || user.user_metadata?.avatar_url || null,
               },
             });
           }
