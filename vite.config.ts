@@ -18,7 +18,7 @@ export default defineConfig({
               if (id.includes("recharts") || id.includes("d3")) {
                 return "vendor-recharts";
               }
-              if (id.includes("framer-motion") || id.includes("gsap")) {
+              if (id.includes("gsap")) {
                 return "vendor-animations";
               }
               if (id.includes("@supabase") || id.includes("supabase-js")) {
@@ -33,7 +33,7 @@ export default defineConfig({
               if (id.includes("three") || id.includes("@react-three")) {
                 return "vendor-three";
               }
-              if (id.includes("react") || id.includes("react-dom") || id.includes("scheduler")) {
+              if (id.includes("react") || id.includes("react-dom") || id.includes("scheduler") || id.includes("framer-motion")) {
                 return "vendor-react-core";
               }
               return "vendor";

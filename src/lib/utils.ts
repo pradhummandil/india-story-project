@@ -34,10 +34,6 @@ export function getOptimizedImageUrl(url: string | undefined | null, width = 600
     // Add format=webp for modern format support on Supabase storage if it supports it
     return `${url}?width=${width}&quality=80&resize=contain&format=webp`;
   }
-  if (url.includes("images.unsplash.com")) {
-    const cleanUrl = url.split("?")[0];
-    return `${cleanUrl}?w=${width}&auto=format&fit=crop&q=80`;
-  }
   if (url.includes("res.cloudinary.com")) {
     // Make sure we include f_auto, q_auto, dpr_auto and the requested width
     return url.replace("/upload/", `/upload/f_auto,q_auto,dpr_auto,w_${width}/`);

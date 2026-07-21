@@ -58,7 +58,7 @@ function addSecurityHeaders(response: Response): Response {
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://*.vercel-scripts.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
-    "img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com https://*.supabase.co",
+    "img-src 'self' data: blob: https://res.cloudinary.com https://*.supabase.co",
     "connect-src 'self' https://*.supabase.co https://va.vercel-insights.com https://va.vercel-scripts.com https://*.vercel-insights.com",
     "frame-ancestors 'none'",
     "object-src 'none'",

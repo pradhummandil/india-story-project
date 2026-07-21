@@ -514,7 +514,7 @@ export default function NewStoryPage() {
                 <Input
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://images.unsplash.com/..."
+                  placeholder="https://example.com/image.jpg"
                   className="h-9 bg-black/20 border-white/10 text-white text-xs font-sans"
                 />
               </div>

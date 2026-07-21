@@ -4,8 +4,7 @@ import { themeService } from "../services/theme-service.server";
 import { prisma } from "../repositories/prisma.server";
 import { storyRepository } from "../repositories/story-repository.server";
 
-const FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1524492449929-c42ab9ec4449?auto=format&fit=crop&q=80&w=1920";
+const DEFAULT_LCP_HERO_IMAGE = "/Logo-ISP.jpg";
 
 export const getInitialStoriesAndCategories = createServerFn({ method: "GET" }).handler(
   async () => {

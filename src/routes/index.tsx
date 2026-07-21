@@ -46,13 +46,11 @@ export const Route = createFileRoute("/")({
 });
 
 // Category curated illustrations
-// Category curated illustrations
 const CATEGORY_MEDIAS = [
   {
     id: "Culture",
     title: { en: "Culture", hi: "संस्कृति" },
-    image:
-      "https://images.unsplash.com/photo-1514222134-b57cbb8ce073?auto=format&fit=crop&q=80&w=800",
+    image: "/Logo-ISP.jpg",
     desc: {
       en: "Stories celebrating heritage, art, and identity",
       hi: "विरासत, कला और पहचान का जश्न मनाती कहानियां",
@@ -61,8 +59,7 @@ const CATEGORY_MEDIAS = [
   {
     id: "History",
     title: { en: "History", hi: "इतिहास" },
-    image:
-      "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&q=80&w=800",
+    image: "/Logo-ISP.jpg",
     desc: {
       en: "Deep dives into India's historic landscape",
       hi: "भारत के ऐतिहासिक परिदृश्य की गहरी खोज",
@@ -71,8 +68,7 @@ const CATEGORY_MEDIAS = [
   {
     id: "Food",
     title: { en: "Food", hi: "व्यंजन" },
-    image:
-      "https://images.unsplash.com/photo-1585938338392-50a59970d8ee?auto=format&fit=crop&q=80&w=800",
+    image: "/Logo-ISP.jpg",
     desc: {
       en: "Tracing culinary history across regions",
       hi: "विभिन्न क्षेत्रों में पाक कला के इतिहास का पता लगाना",
@@ -81,18 +77,16 @@ const CATEGORY_MEDIAS = [
   {
     id: "Festival",
     title: { en: "Festival", hi: "त्योहार" },
-    image:
-      "https://images.unsplash.com/photo-1506461883276-594a12b11cc3?auto=format&fit=crop&q=80&w=800",
+    image: "/Logo-ISP.jpg",
     desc: {
       en: "The colorful celebrations of change and unity",
-      hi: "बदलाव और एकता के रंगीन उत्सव",
+      hi: "बदलाव AND एकता के रंगीन उत्सव",
     },
   },
   {
     id: "Innovation",
     title: { en: "Innovation", hi: "नवाचार" },
-    image:
-      "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&q=80&w=800",
+    image: "/Logo-ISP.jpg",
     desc: {
       en: "Stories of ideas becoming real change",
       hi: "वास्तविक बदलाव बनते विचारों की कहानियां",
@@ -101,15 +95,13 @@ const CATEGORY_MEDIAS = [
   {
     id: "Science",
     title: { en: "Science", hi: "विज्ञान" },
-    image:
-      "https://images.unsplash.com/photo-1507668077129-56e32842fceb?auto=format&fit=crop&q=80&w=800",
+    image: "/Logo-ISP.jpg",
     desc: { en: "Discoveries that push boundaries", hi: "सीमाओं को पार करने वाली खोजें" },
   },
   {
     id: "Environment",
     title: { en: "Environment", hi: "पर्यावरण" },
-    image:
-      "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&q=80&w=800",
+    image: "/Logo-ISP.jpg",
     desc: {
       en: "Stories exploring climate and sustainable futures",
       hi: "जलवायु और सतत भविष्य की खोज करती कहानियां",
@@ -118,8 +110,7 @@ const CATEGORY_MEDIAS = [
   {
     id: "Freedom",
     title: { en: "Freedom", hi: "स्वतंत्रता" },
-    image:
-      "https://images.unsplash.com/photo-1532375810709-75b1da00537c?auto=format&fit=crop&q=80&w=800",
+    image: "/Logo-ISP.jpg",
     desc: {
       en: "Chronicles of struggles and independent paths",
       hi: "संघर्षों और स्वतंत्र रास्तों के इतिहास",
@@ -230,7 +221,7 @@ function Home() {
         image:
           cat.image ||
           firstStoryImage ||
-          "https://images.unsplash.com/photo-1524492449949-8f2414161295?w=800",
+          "/Logo-ISP.jpg",
       };
     });
   }, [dbStories]);

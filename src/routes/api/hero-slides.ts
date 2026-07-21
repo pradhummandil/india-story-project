@@ -2,8 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { json, fetchStoriesBackup } from "@/routes/api/-_utils";
 import { prisma } from "@/lib/repositories/prisma.server";
 
-const FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1600&auto=format&fit=crop";
+const FALLBACK_IMAGE = "/Logo-ISP.jpg";
 
 // Server-side in-memory cache
 const cache = {

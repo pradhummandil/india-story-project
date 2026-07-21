@@ -315,7 +315,7 @@ export default function AdminSlideshowPage() {
               {slides.map((slide, index) => {
                 const imageUrl =
                   slide.images?.[0]?.imageUrl ||
-                  "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=300&q=80";
+                  "/Logo-ISP.jpg";
                 return (
                   <div
                     key={slide.id}

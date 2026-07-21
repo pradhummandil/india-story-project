@@ -36,11 +36,11 @@ type HeroSlide = {
 const SLIDE_DURATION = 8000;
 
 const FALLBACK_IMAGES = [
-  "https://images.unsplash.com/photo-1524492449929-c42ab9ec4449?auto=format&fit=crop&q=80&w=1920",
-  "https://images.unsplash.com/photo-1506461883276-594a12b11cc3?auto=format&fit=crop&q=80&w=1920",
-  "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&q=80&w=1920",
-  "https://images.unsplash.com/photo-1532375810709-75b1da00537c?auto=format&fit=crop&q=80&w=1920",
-  "https://images.unsplash.com/photo-1585938338392-50a59970d8ee?auto=format&fit=crop&q=80&w=1920",
+  "/Logo-ISP.jpg",
+  "/Logo-ISP.jpg",
+  "/Logo-ISP.jpg",
+  "/Logo-ISP.jpg",
+  "/Logo-ISP.jpg",
 ];
 
 export function CinematicHero() {

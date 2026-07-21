@@ -67,7 +67,7 @@ export function ShareStoryWizard() {
           themes: selectedThemes.join(", "),
           stateName: region,
           imageUrl:
-            media > 0 ? "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800" : null,
+            media > 0 ? "/Logo-ISP.jpg" : null,
         }),
       });
       if (res.ok) {
