@@ -4,7 +4,7 @@ import { themeService } from "../services/theme-service.server";
 import { prisma } from "../repositories/prisma.server";
 import { storyRepository } from "../repositories/story-repository.server";
 
-const DEFAULT_LCP_HERO_IMAGE = "/Logo-ISP.jpg";
+const FALLBACK_IMAGE = "/Logo-ISP.jpg";
 
 export const getInitialStoriesAndCategories = createServerFn({ method: "GET" }).handler(
   async () => {
@@ -92,13 +92,7 @@ export const getInitialStoriesAndCategories = createServerFn({ method: "GET" }).
       };
     } catch (err) {
       console.error("Failed to load initial stories in server function:", err);
-      return {
-        stories: [],
-        themes: ["All", "Heritage"],
-        categories: ["All", "Heritage"],
-        heroSlides: [],
-        heroOfTheDay: null,
-      };
+      throw err;
     }
   },
 );

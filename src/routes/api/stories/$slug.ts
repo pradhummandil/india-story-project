@@ -1,42 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { storyService } from "@/lib/services/story-service.server";
-import { invalidQueryResponse, json, fetchStoriesBackup } from "@/routes/api/-_utils";
+import { invalidQueryResponse, json } from "@/routes/api/-_utils";
 import { prisma } from "@/lib/repositories/prisma.server";
 
 export const Route = createFileRoute("/api/stories/$slug")({
   server: {
     handlers: {
-      GET: async ({ params, request }) => {
+      GET: async ({ params }) => {
         const slug = params.slug?.trim();
         if (!slug) {
           return invalidQueryResponse("A story slug is required");
         }
 
-        let story = await storyService.getStoryBySlug(slug);
-        if (!story) {
-          try {
-            const fallbackJson = await fetchStoriesBackup(request);
-            const fallbackStory = fallbackJson.stories.find((s: any) => s.slug === slug) as any;
-            if (fallbackStory) {
-              story = {
-                id: fallbackStory.id || fallbackStory.slug,
-                slug: fallbackStory.slug,
-                title: fallbackStory.title,
-                excerpt: fallbackStory.excerpt,
-                content: fallbackStory.content,
-                themes: fallbackStory.themes || [fallbackStory.category || "All"],
-                region: fallbackStory.region || "India",
-                readTime: fallbackStory.readTime || "4 min read",
-                image: fallbackStory.image,
-                imageAlt: fallbackStory.imageAlt,
-                url: fallbackStory.url || fallbackStory.slug,
-              } as any;
-            }
-          } catch (e) {
-            console.error("Failed to load fallback story by slug from JSON:", e);
-          }
-        }
+        const story = await storyService.getStoryBySlug(slug);
 
         if (!story) {
           return json({ error: "Story not found" }, { status: 404 });

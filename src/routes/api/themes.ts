@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { themeService } from "@/lib/services/theme-service.server";
-import { json, fetchStoriesBackup } from "@/routes/api/-_utils";
+import { json } from "@/routes/api/-_utils";
 
 // Server-side in-memory cache
 const cache = {
@@ -31,7 +31,7 @@ const cacheHeaders = {
 export const Route = createFileRoute("/api/themes")({
   server: {
     handlers: {
-      GET: async ({ request }) => {
+      GET: async () => {
         const now = Date.now();
         if (cache.themes && now < cache.expiry) {
           return json(cache.themes, cacheHeaders);
@@ -46,24 +46,8 @@ export const Route = createFileRoute("/api/themes")({
           }
           throw new Error("No themes found in database");
         } catch (error: any) {
-          console.warn("[themes API] Timeout or error - using fallback:", error.message);
-          try {
-            const fallbackJson = await fetchStoriesBackup(request);
-            const themesList = fallbackJson.themes || fallbackJson.categories || [
-              "Heritage", "Innovation", "Sustainability", "Science", "Culture", "Environment", "Festival", "Food"
-            ];
-            const mapped = themesList.map((t: string) => ({
-              id: t,
-              name: t,
-              slug: t.toLowerCase()
-            }));
-            return json(mapped, cacheHeaders);
-          } catch (e) {
-            return json([
-              { id: "Heritage", name: "Heritage", slug: "heritage" },
-              { id: "Innovation", name: "Innovation", slug: "innovation" }
-            ], cacheHeaders);
-          }
+          console.error("[themes API] Timeout or error:", error.message);
+          return json([], cacheHeaders);
         }
       },
     },

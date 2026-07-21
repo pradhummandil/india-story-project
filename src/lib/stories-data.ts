@@ -122,15 +122,7 @@ function normalizeStory(raw: Record<string, unknown>): Story {
 }
 
 let initialStories: Story[] = [];
-let initialThemes: string[] = [
-  "All",
-  "Heritage",
-  "Innovation",
-  "Sustainability",
-  "Science",
-  "Culture",
-  "Environment",
-];
+let initialThemes: string[] = [];
 
 if (
   typeof window !== "undefined" &&

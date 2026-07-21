@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { json, fetchStoriesBackup } from "@/routes/api/-_utils";
+import { json } from "@/routes/api/-_utils";
 import { storyRepository } from "@/lib/repositories/story-repository.server";
 
 // Server-side in-memory cache
@@ -31,7 +31,7 @@ const cacheHeaders = {
 export const Route = createFileRoute("/api/hero-of-the-day")({
   server: {
     handlers: {
-      GET: async ({ request }) => {
+      GET: async () => {
         const now = Date.now();
         if (cache.story && now < cache.expiry) {
           return json({ story: cache.story }, cacheHeaders);
@@ -46,31 +46,7 @@ export const Route = createFileRoute("/api/hero-of-the-day")({
           }
           throw new Error("No hero story found in database");
         } catch (error: any) {
-          console.warn("[hero-of-the-day] GET error or timeout - using JSON fallback:", error.message);
-          try {
-            const fallbackJson = await fetchStoriesBackup(request);
-            const fallbackStories = fallbackJson.stories || [];
-            const heroStory = fallbackStories.find((s: any) => s.heroOfTheDay) || fallbackStories[0] || null;
-
-            if (heroStory) {
-              const themes = Array.isArray(heroStory.themes) ? heroStory.themes : [heroStory.category || heroStory.theme].filter(Boolean);
-              const mapped = {
-                id: heroStory.id,
-                slug: heroStory.slug,
-                title: heroStory.title,
-                excerpt: heroStory.excerpt,
-                themes,
-                region: heroStory.region || "India",
-                readTime: heroStory.readTime || "4 min read",
-                image: heroStory.image,
-                publishedAt: heroStory.publishedAt,
-                createdAt: heroStory.createdAt,
-              };
-              return json({ story: mapped }, cacheHeaders);
-            }
-          } catch (e) {
-            console.error("JSON fallback failed:", e);
-          }
+          console.warn("[hero-of-the-day] GET error or timeout:", error.message);
           return json({ story: null }, cacheHeaders);
         }
       },

@@ -38,13 +38,6 @@ export const Route = createFileRoute("/api/stories")({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        const cacheKey = request.url;
-        const now = Date.now();
-        const cached = storiesCache.get(cacheKey);
-        if (cached && now < cached.expiry) {
-          return json(cached.data);
-        }
-
         const url = new URL(request.url);
         const query = url.searchParams.get("query") ?? undefined;
         const theme =
@@ -56,11 +49,8 @@ export const Route = createFileRoute("/api/stories")({
         const page = readPositiveInt(url.searchParams.get("page"), 1);
         const pageSize = readPositiveInt(url.searchParams.get("pageSize"), 12);
 
-        let payload: any = null;
-        let shouldFallbackToJson = false;
-
         try {
-          payload = await withTimeout(
+          const payload = await withTimeout(
             storyService.getPublishedStories({
               query,
               theme,
@@ -73,77 +63,23 @@ export const Route = createFileRoute("/api/stories")({
             }),
             5000,
           );
+
+          console.log(
+            JSON.stringify({
+              source: "database",
+              totalStories: payload.total,
+              timestamp: new Date().toISOString(),
+            })
+          );
+
+          return json(payload);
         } catch (error: any) {
-          // Only fallback when Prisma throws / DB unavailable / query timed out.
-          shouldFallbackToJson = true;
-          console.warn(
-            "[stories API] DB unavailable; falling back to JSON backup.",
-            error?.name,
-            error?.message,
+          console.error("[stories API] Database query failed:", error?.name, error?.message);
+          return json(
+            { error: "Database query failed or timed out", details: error?.message },
+            { status: 500 }
           );
         }
-
-        // JSON fallback is ONLY allowed on genuine DB unavailability.
-        // Never fallback because total===0 or because this specific page has no rows.
-        if ((!payload || typeof payload !== "object") && shouldFallbackToJson) {
-          try {
-            const fallbackJson = await fetchStoriesBackup(request);
-
-            let fallbackStories = fallbackJson.stories || [];
-
-            // Apply filters manually to the fallback stories
-            if (theme && theme.toLowerCase() !== "all") {
-              const filterThemes = theme.split(/[ ,+]+/).filter(Boolean);
-              fallbackStories = fallbackStories.filter((s: any) => {
-                const sThemes = Array.isArray(s.themes) ? s.themes : [s.category || s.theme];
-                return sThemes.some((t: string) =>
-                  filterThemes.some((ft: string) => t?.toLowerCase() === ft.toLowerCase()),
-                );
-              });
-            }
-            if (region) {
-              fallbackStories = fallbackStories.filter(
-                (s: any) => s.region?.toLowerCase() === region.toLowerCase(),
-              );
-            }
-            if (query) {
-              const q = query.toLowerCase();
-              fallbackStories = fallbackStories.filter(
-                (s: any) =>
-                  s.title?.toLowerCase().includes(q) ||
-                  s.excerpt?.toLowerCase().includes(q) ||
-                  s.category?.toLowerCase().includes(q) ||
-                  s.region?.toLowerCase().includes(q) ||
-                  (s.content && s.content.toLowerCase().includes(q)),
-              );
-            }
-
-            const total = fallbackStories.length;
-            const start = (page - 1) * pageSize;
-            const sliced = fallbackStories.slice(start, start + pageSize);
-            const mapped = sliced.map((s: any) => {
-              const { content, contentHi, ...rest } = s;
-              return rest;
-            });
-            payload = {
-              stories: mapped,
-              total,
-              page,
-              pageSize,
-              pageCount: Math.ceil(total / pageSize),
-            };
-          } catch (e) {
-            console.error("Failed to load fallback stories from JSON:", e);
-            payload = { stories: [], total: 0, page, pageSize, pageCount: 0 };
-          }
-        }
-
-        // Cache successful response
-        if (payload) {
-          storiesCache.set(cacheKey, { data: payload, expiry: now + CACHE_TTL });
-        }
-
-        return json(payload);
       },
     },
   },

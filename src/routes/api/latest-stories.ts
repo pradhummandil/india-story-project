@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { json, fetchStoriesBackup } from "@/routes/api/-_utils";
+import { json } from "@/routes/api/-_utils";
 import { storyRepository } from "@/lib/repositories/story-repository.server";
 
 // Server-side in-memory cache
@@ -31,7 +31,7 @@ const cacheHeaders = {
 export const Route = createFileRoute("/api/latest-stories")({
   server: {
     handlers: {
-      GET: async ({ request }) => {
+      GET: async () => {
         const now = Date.now();
         if (cache.stories && now < cache.expiry) {
           return json({ stories: cache.stories }, cacheHeaders);
@@ -43,40 +43,8 @@ export const Route = createFileRoute("/api/latest-stories")({
           cache.expiry = now + CACHE_TTL;
           return json({ stories }, cacheHeaders);
         } catch (error: any) {
-          console.warn("[latest-stories] GET error or timeout - using JSON fallback:", error.message);
-          try {
-            const fallbackJson = await fetchStoriesBackup(request);
-            const fallbackStories = fallbackJson.stories || [];
-
-            // Sort by publishedAt or createdAt descending
-            const sorted = [...fallbackStories]
-              .sort(
-                (a: any, b: any) =>
-                  new Date(b.publishedAt || b.createdAt || 0).getTime() -
-                  new Date(a.publishedAt || a.createdAt || 0).getTime()
-              )
-              .slice(0, 6);
-
-            const mapped = sorted.map((s: any) => {
-              const themes = Array.isArray(s.themes) ? s.themes : [s.category || s.theme].filter(Boolean);
-              return {
-                id: s.id,
-                slug: s.slug,
-                title: s.title,
-                excerpt: s.excerpt,
-                themes,
-                region: s.region || "India",
-                readTime: s.readTime || "3 min read",
-                image: s.image,
-                publishedAt: s.publishedAt,
-                createdAt: s.createdAt,
-              };
-            });
-
-            return json({ stories: mapped }, cacheHeaders);
-          } catch (e) {
-            return json({ stories: [] }, cacheHeaders);
-          }
+          console.error("[latest-stories] GET error or timeout:", error.message);
+          return json({ stories: [] }, cacheHeaders);
         }
       },
     },

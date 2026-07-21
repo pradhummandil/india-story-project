@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { json, fetchStoriesBackup } from "@/routes/api/-_utils";
+import { json } from "@/routes/api/-_utils";
 import { prisma } from "@/lib/repositories/prisma.server";
 
 const FALLBACK_IMAGE = "/Logo-ISP.jpg";
@@ -20,7 +20,7 @@ const cacheHeaders = {
 export const Route = createFileRoute("/api/hero-slides")({
   server: {
     handlers: {
-      GET: async ({ request }) => {
+      GET: async () => {
         const now = Date.now();
         if (cache.slides && now < cache.expiry) {
           return json({ slides: cache.slides }, cacheHeaders);
@@ -90,43 +90,8 @@ export const Route = createFileRoute("/api/hero-slides")({
 
           return json({ slides }, cacheHeaders);
         } catch (error: any) {
-          console.error("[hero-slides]", error);
-          console.error("FULL HERO SLIDES ERROR");
-          console.error(error);
-          console.error(error.stack);
-
-          try {
-            const fallbackJson = await fetchStoriesBackup(request);
-
-            // Fallback must still respect slideshow-only eligibility.
-            const fallbackStories = (fallbackJson.stories || [])
-              .filter(
-                (s: any) =>
-                  s.homepageSlideshow === true && s.status === "Published" && s.deleted === false,
-              )
-              .slice(0, 5);
-
-            const slides = fallbackStories.map((s: any) => ({
-              id: s.id,
-              storyId: s.id,
-              slug: s.slug,
-              title: s.title,
-              excerpt: s.excerpt,
-              titleHi: s.titleHi ?? null,
-              excerptHi: s.excerptHi ?? null,
-              themes: Array.isArray(s.themes) ? s.themes : [s.category || s.theme].filter(Boolean),
-              state: s.region ?? "India",
-              author: s.authorName ?? "India Story Project",
-              readingTime: s.readTime ?? "4 min read",
-              image: s.image || FALLBACK_IMAGE,
-              caption: null,
-            }));
-
-            return json({ slides }, cacheHeaders);
-          } catch (e) {
-            console.error("Fallback JSON failed", e);
-            return json({ slides: [] }, cacheHeaders);
-          }
+          console.error("[hero-slides] Failed to load hero slides:", error);
+          return json({ slides: [] }, cacheHeaders);
         }
       },
     },
