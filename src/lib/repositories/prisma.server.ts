@@ -17,13 +17,61 @@ const prismaClient =
     ],
   });
 
-prismaClient.$on("query", (e) => {
-  console.log("[PRISMA][query]", {
-    durationMs: e.duration,
-    target: e.target,
-    sql: e.query,
-    params: e.params,
-  });
+prismaClient.$on("query", (e: any) => {
+  const isSlow = e.duration > 200;
+  
+  // Record in-memory metrics
+  try {
+    const { recordDbMetric } = require("../metrics");
+    recordDbMetric(e.query, e.duration);
+  } catch (err) {
+    // Prevent metrics capture from disrupting query database flow
+  }
+
+  console.log(
+    JSON.stringify({
+      timestamp: new Date().toISOString(),
+      level: isSlow ? "warn" : "info",
+      service: "prisma",
+      message: isSlow ? `Slow query detected (>200ms): ${e.duration}ms` : "Query executed",
+      duration: e.duration,
+      sql: e.query,
+      params: e.params,
+    })
+  );
+});
+
+prismaClient.$on("info", (e: any) => {
+  console.log(
+    JSON.stringify({
+      timestamp: new Date().toISOString(),
+      level: "info",
+      service: "prisma",
+      message: e.message,
+    })
+  );
+});
+
+prismaClient.$on("warn", (e: any) => {
+  console.log(
+    JSON.stringify({
+      timestamp: new Date().toISOString(),
+      level: "warn",
+      service: "prisma",
+      message: e.message,
+    })
+  );
+});
+
+prismaClient.$on("error", (e: any) => {
+  console.log(
+    JSON.stringify({
+      timestamp: new Date().toISOString(),
+      level: "error",
+      service: "prisma",
+      message: e.message,
+    })
+  );
 });
 
 export const prisma = prismaClient;

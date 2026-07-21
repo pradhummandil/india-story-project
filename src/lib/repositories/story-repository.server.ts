@@ -55,8 +55,12 @@ const storyCardSelect = {
   state: { select: { id: true, name: true, slug: true } },
   author: { select: { id: true, name: true, bio: true, avatar: true } },
   tags: {
-    include: {
-      tag: true,
+    select: {
+      tag: {
+        select: {
+          name: true,
+        },
+      },
     },
   },
   themes: {
@@ -72,21 +76,44 @@ const storyCardSelect = {
   },
 };
 
-const storyDetailIncludes = {
-  state: true,
-  author: true,
+const storyDetailSelect = {
+  id: true,
+  slug: true,
+  title: true,
+  excerpt: true,
+  content: true,
+  publishedAt: true,
+  readingTime: true,
+  seoTitle: true,
+  seoDescription: true,
+  featured: true,
+  heroOfTheDay: true,
+  status: true,
+  createdAt: true,
+  updatedAt: true,
+  contentHi: true,
+  excerptHi: true,
+  titleHi: true,
+  viewCount: true,
+  deleted: true,
+  homepageSlideshow: true,
+  seoKeywords: true,
+  slideshowOrder: true,
+  state: { select: { id: true, name: true, slug: true } },
+  author: { select: { id: true, name: true, bio: true, avatar: true } },
   tags: {
-    include: {
-      tag: true,
+    select: {
+      tag: { select: { name: true } },
+    },
+  },
+  themes: {
+    select: {
+      theme: { select: { id: true, name: true, slug: true } },
     },
   },
   images: {
     orderBy: [{ heroImage: "desc" as const }, { sortOrder: "asc" as const }],
-  },
-  themes: {
-    include: {
-      theme: true,
-    },
+    select: { id: true, imageUrl: true, caption: true, heroImage: true },
   },
 };
 
@@ -138,7 +165,7 @@ export class StoryRepository {
         slug,
         status: StoryStatus.Published,
       },
-      include: storyDetailIncludes,
+      select: storyDetailSelect,
     });
 
     return story ? toStoryCardCompatible(story) : null;

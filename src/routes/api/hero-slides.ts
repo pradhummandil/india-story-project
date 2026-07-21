@@ -12,12 +12,20 @@ const cache = {
 };
 const CACHE_TTL = 10 * 60 * 1000; // 10 minutes cache
 
+const cacheHeaders = {
+  headers: {
+    "Cache-Control": "public, max-age=300, s-maxage=600, stale-while-revalidate=60",
+  },
+};
+
 export const Route = createFileRoute("/api/hero-slides")({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        // const now = Date.now();
-        // CACHE DISABLED FOR DEBUG
+        const now = Date.now();
+        if (cache.slides && now < cache.expiry) {
+          return json({ slides: cache.slides }, cacheHeaders);
+        }
         try {
           const slideSelect = {
             id: true,
@@ -78,10 +86,10 @@ export const Route = createFileRoute("/api/hero-slides")({
           });
 
           // Cache the compiled slides
-          //cache.slides = slides;
-          //cache.expiry = now + CACHE_TTL;
+          cache.slides = slides;
+          cache.expiry = now + CACHE_TTL;
 
-          return json({ slides });
+          return json({ slides }, cacheHeaders);
         } catch (error: any) {
           console.error("[hero-slides]", error);
           console.error("FULL HERO SLIDES ERROR");
@@ -115,10 +123,10 @@ export const Route = createFileRoute("/api/hero-slides")({
               caption: null,
             }));
 
-            return json({ slides });
+            return json({ slides }, cacheHeaders);
           } catch (e) {
             console.error("Fallback JSON failed", e);
-            return json({ slides: [] });
+            return json({ slides: [] }, cacheHeaders);
           }
         }
       },

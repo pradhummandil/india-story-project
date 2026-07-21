@@ -14,6 +14,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { stories, categories, useStoriesData } from "../lib/stories-data";
+import { getInitialStoriesAndCategories } from "../lib/api/stories.functions";
 import { CinematicLoader } from "../components/site/CinematicLoader";
 import { initAuthListener, useAuthStore } from "../lib/auth-store";
 import PodcastPlayer from "../components/audio/PodcastPlayer";
@@ -133,6 +134,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
     ],
   }),
+  loader: async () => {
+    return getInitialStoriesAndCategories();
+  },
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
@@ -140,7 +144,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
-  const initialData = { stories, categories };
+  const loaderData = Route.useLoaderData() as any;
+  const initialData = {
+    stories: loaderData?.stories || [],
+    themes: loaderData?.themes || categories,
+    categories: loaderData?.categories || categories,
+    heroSlides: loaderData?.heroSlides || [],
+    heroOfTheDay: loaderData?.heroOfTheDay || null,
+  };
   const serialized = JSON.stringify(initialData).replace(/</g, "\\u003c");
 
   return (

@@ -1,16 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { prisma } from "@/lib/repositories/prisma.server";
-import { json } from "@/routes/api/-_utils";
-import { GoogleGenAI } from "@google/genai";
+import { json, sanitizeInput, checkRateLimit, getClientIp } from "@/routes/api/-_utils";
 
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        try {
-          const { message, lang } = await request.json();
+        const ip = getClientIp(request);
+        const { allowed } = checkRateLimit(ip, 15, 60 * 1000); // 15 requests per minute limit
+        if (!allowed) {
+          return json({ error: "Too many requests. Please try again later." }, { status: 429 });
+        }
 
-          if (!message?.trim()) {
+        try {
+          const body = await request.json();
+          const message = sanitizeInput(String(body.message || ""));
+          const lang = body.lang;
+          const { GoogleGenAI } = await import("@google/genai");
+
+          if (!message.trim()) {
             return json({ error: "Message is required" }, { status: 400 });
           }
 

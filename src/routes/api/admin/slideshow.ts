@@ -70,11 +70,10 @@ export const Route = createFileRoute("/api/admin/slideshow")({
             return json({ error: "storyIds must be an array" }, { status: 400 });
           }
 
-          /// Step 1: Clear all previous slideshow stories
           await prisma.story.updateMany({
             data: {
               homepageSlideshow: false,
-              slideshowOrder: null,
+              slideshowOrder: 0,
             },
           });
 

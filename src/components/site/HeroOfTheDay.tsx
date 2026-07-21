@@ -82,6 +82,10 @@ export function HeroOfTheDay() {
 
   useEffect(() => {
     const fetchHero = async () => {
+      if (typeof window !== "undefined" && (window as any).__STORIES_DATA__?.heroOfTheDay) {
+        setHero((window as any).__STORIES_DATA__.heroOfTheDay);
+        return;
+      }
       try {
         const res = await fetch("/api/hero-of-the-day");
         if (res.ok) {

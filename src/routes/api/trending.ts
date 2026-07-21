@@ -23,13 +23,19 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs = 1500): Promise<T>
   });
 }
 
+const cacheHeaders = {
+  headers: {
+    "Cache-Control": "public, max-age=300, s-maxage=600, stale-while-revalidate=60",
+  },
+};
+
 export const Route = createFileRoute("/api/trending")({
   server: {
     handlers: {
       GET: async ({ request }) => {
         const now = Date.now();
         if (cache.stories && now < cache.expiry) {
-          return json({ stories: cache.stories });
+          return json({ stories: cache.stories }, cacheHeaders);
         }
 
         try {
@@ -54,7 +60,7 @@ export const Route = createFileRoute("/api/trending")({
           const mapped = stories.map(toStoryCardCompatible);
           cache.stories = mapped;
           cache.expiry = now + CACHE_TTL;
-          return json({ stories: mapped });
+          return json({ stories: mapped }, cacheHeaders);
         } catch (error: any) {
           console.warn("[trending] GET error or timeout - using JSON fallback:", error.message);
           try {
@@ -82,9 +88,9 @@ export const Route = createFileRoute("/api/trending")({
               };
             });
 
-            return json({ stories: mapped });
+            return json({ stories: mapped }, cacheHeaders);
           } catch (e) {
-            return json({ stories: [] });
+            return json({ stories: [] }, cacheHeaders);
           }
         }
       },

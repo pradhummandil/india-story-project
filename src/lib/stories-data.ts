@@ -158,7 +158,7 @@ export const categories: string[] = themes;
 
 const listeners = new Set<() => void>();
 let loadPromise: Promise<void> | null = null;
-let hasLoadedRemote = initialStories.length > 0;
+let hasLoadedRemote = false;
 let error: string | null = null;
 
 let cachedSnapshot: StoriesDataState | null = null;
@@ -220,7 +220,7 @@ function subscribe(listener: () => void) {
 }
 
 export async function loadStoriesData(force = false): Promise<void> {
-  if (!force && (hasLoadedRemote || stories.length > 0 || loadPromise)) {
+  if (!force && (hasLoadedRemote || loadPromise)) {
     return loadPromise ?? Promise.resolve();
   }
 

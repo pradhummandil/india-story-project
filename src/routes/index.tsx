@@ -28,7 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useStoriesData, loadStoriesData } from "@/lib/stories-data";
 import { useI18nStore, translateStory, getCommonText } from "@/lib/i18n";
-import { getStoryAuthor } from "@/lib/utils";
+import { getStoryAuthor, getOptimizedImageUrl, getResponsiveSrcSet } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -346,8 +346,14 @@ function Home() {
                   <div className="w-full lg:w-3/5 aspect-[16/10] overflow-hidden border border-border/40 bg-muted">
                     {featuredStory.image ? (
                       <img
-                        src={featuredStory.image}
+                        src={getOptimizedImageUrl(featuredStory.image, 1000)}
+                        srcSet={getResponsiveSrcSet(featuredStory.image, [480, 800, 1200])}
+                        sizes="(max-width: 1024px) 100vw, 60vw"
                         alt={featuredStory.imageAlt ?? featuredStory.title}
+                        loading="lazy"
+                        decoding="async"
+                        width="800"
+                        height="500"
                         className="w-full h-full object-cover filter saturate-[0.85] hover:scale-102 transition-transform duration-[1s]"
                       />
                     ) : (
@@ -444,9 +450,14 @@ function Home() {
                       <div className="w-full sm:w-2/5 aspect-[4/3] sm:aspect-square overflow-hidden bg-muted border border-border/30 shrink-0">
                         {s.image ? (
                           <img
-                            src={s.image}
+                            src={getOptimizedImageUrl(s.image, 400)}
+                            srcSet={getResponsiveSrcSet(s.image, [240, 400, 600])}
+                            sizes="(max-width: 640px) 40vw, 20vw"
                             alt={s.imageAlt ?? s.title}
                             loading="lazy"
+                            decoding="async"
+                            width="300"
+                            height="225"
                             className="w-full h-full object-cover filter saturate-[0.8] hover:scale-103 transition-transform duration-500"
                           />
                         ) : (
@@ -513,9 +524,14 @@ function Home() {
                   >
                     {/* Background Category Image */}
                     <img
-                      src={cat.image}
+                      src={getOptimizedImageUrl(cat.image, 400)}
+                      srcSet={getResponsiveSrcSet(cat.image, [240, 400, 600])}
+                      sizes="(max-width: 640px) 50vw, 25vw"
                       alt={displayTitle}
                       loading="lazy"
+                      decoding="async"
+                      width="300"
+                      height="400"
                       className="absolute inset-0 w-full h-full object-cover filter saturate-[0.7] brightness-[0.55] group-hover:scale-105 group-hover:brightness-[0.45] transition-all duration-[1s] ease-out"
                     />
                     {/* Gold gradient sweep */}

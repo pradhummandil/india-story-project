@@ -38,7 +38,7 @@ import { StoryCard } from "@/components/site/StoryCard";
 import type { Story } from "@/components/site/StoryCard";
 import { useI18nStore, translateStory, getCommonText } from "@/lib/i18n";
 import { stories, useStoriesData } from "@/lib/stories-data";
-import { getStoryAuthor, getOptimizedImageUrl } from "@/lib/utils";
+import { getStoryAuthor, getOptimizedImageUrl, getResponsiveSrcSet } from "@/lib/utils";
 import { useAuthStore } from "@/lib/auth-store";
 import { useAudioStore } from "@/lib/audio-store";
 
@@ -816,11 +816,26 @@ export function StoryDetail({ story }: { story: Story }) {
         <div className="relative h-[80vh] w-full overflow-hidden bg-black">
           {story.image ? (
             <>
+              <link
+                rel="preload"
+                as="image"
+                href={getOptimizedImageUrl(story.image, 1200)}
+                imageSrcSet={getResponsiveSrcSet(story.image, [480, 800, 1200, 1600, 1920])}
+                imageSizes="100vw"
+                fetchPriority="high"
+              />
               <motion.img
                 src={getOptimizedImageUrl(story.image, 1200)}
+                srcSet={getResponsiveSrcSet(story.image, [480, 800, 1200, 1600, 1920])}
+                sizes="100vw"
                 alt={story.imageAlt ?? story.title}
                 initial={{ scale: 1.05 }}
                 animate={{ scale: 1 }}
+                loading="eager"
+                fetchPriority="high"
+                decoding="sync"
+                width="1920"
+                height="1080"
                 className="absolute inset-0 w-full h-full object-cover filter brightness-[0.45] saturate-[0.8]"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background via-black/10 to-black/50 z-10" />
@@ -1151,8 +1166,12 @@ export function StoryDetail({ story }: { story: Story }) {
               <div className="mt-16 pt-12 border-t border-border/50 flex items-start gap-6">
                 {story.authorAvatar ? (
                   <img
-                    src={story.authorAvatar}
+                    src={getOptimizedImageUrl(story.authorAvatar, 128)}
                     alt={story.authorName || authorName}
+                    loading="lazy"
+                    decoding="async"
+                    width="64"
+                    height="64"
                     className="size-16 rounded-full object-cover border shrink-0"
                   />
                 ) : (

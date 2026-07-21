@@ -15,7 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useStoriesData } from "@/lib/stories-data";
 import { useI18nStore, translateStory } from "@/lib/i18n";
-import { getStoryAuthor } from "@/lib/utils";
+import { getStoryAuthor, getOptimizedImageUrl, getResponsiveSrcSet } from "@/lib/utils";
 
 type HeroSlide = {
   id: string;
@@ -55,6 +55,11 @@ export function CinematicHero() {
 
   useEffect(() => {
     const buildSlides = async () => {
+      if (typeof window !== "undefined" && (window as any).__STORIES_DATA__?.heroSlides?.length > 0) {
+        setSlides((window as any).__STORIES_DATA__.heroSlides);
+        setLoaded(true);
+        return;
+      }
       try {
         const res = await fetch("/api/hero-slides");
         if (res.ok) {
@@ -158,10 +163,16 @@ export function CinematicHero() {
           transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
         >
           <img
-            src={slide.image}
+            src={getOptimizedImageUrl(slide.image, 1920)}
+            srcSet={getResponsiveSrcSet(slide.image, [640, 1024, 1920])}
+            sizes="100vw"
             alt={title}
             className="w-full h-full object-cover filter saturate-[0.88] brightness-[0.72]"
             loading="eager"
+            fetchPriority="high"
+            decoding="sync"
+            width="1920"
+            height="1080"
           />
           {/* Cinematic gradients */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/20 to-black/90 z-10" />

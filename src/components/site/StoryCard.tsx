@@ -4,7 +4,7 @@ import { ArrowUpRight, Clock, MapPin, User } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useJourney } from "@/lib/journey-store";
 import { useI18nStore, translateStory, getCommonText } from "@/lib/i18n";
-import { getStoryAuthor, getOptimizedImageUrl } from "@/lib/utils";
+import { getStoryAuthor, getOptimizedImageUrl, getResponsiveSrcSet } from "@/lib/utils";
 
 export interface Story {
   id: string;
@@ -129,9 +129,13 @@ export const StoryCard = React.memo(function StoryCard({
             {story.image ? (
               <img
                 src={getOptimizedImageUrl(story.image, 600)}
+                srcSet={getResponsiveSrcSet(story.image, [320, 480, 640, 800])}
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 alt={story.imageAlt ?? story.title}
                 loading="lazy"
                 decoding="async"
+                width="400"
+                height="300"
                 className="absolute inset-0 w-full h-full object-cover filter saturate-[0.8] brightness-[0.95] group-hover:scale-105 group-hover:saturate-100 group-hover:brightness-100 transition-all duration-[1.2s] ease-out"
               />
             ) : (

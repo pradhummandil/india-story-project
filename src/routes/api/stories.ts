@@ -120,8 +120,13 @@ export const Route = createFileRoute("/api/stories")({
 
             const total = fallbackStories.length;
             const start = (page - 1) * pageSize;
+            const sliced = fallbackStories.slice(start, start + pageSize);
+            const mapped = sliced.map((s: any) => {
+              const { content, contentHi, ...rest } = s;
+              return rest;
+            });
             payload = {
-              stories: fallbackStories.slice(start, start + pageSize) as any[],
+              stories: mapped,
               total,
               page,
               pageSize,

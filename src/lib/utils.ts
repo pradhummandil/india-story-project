@@ -31,14 +31,23 @@ export function getStoryAuthor(slug: string): string {
 export function getOptimizedImageUrl(url: string | undefined | null, width = 600): string {
   if (!url) return "";
   if (url.includes("supabase.co/storage/v1/object/public")) {
-    return `${url}?width=${width}&quality=85&resize=contain`;
+    // Add format=webp for modern format support on Supabase storage if it supports it
+    return `${url}?width=${width}&quality=80&resize=contain&format=webp`;
   }
   if (url.includes("images.unsplash.com")) {
     const cleanUrl = url.split("?")[0];
     return `${cleanUrl}?w=${width}&auto=format&fit=crop&q=80`;
   }
   if (url.includes("res.cloudinary.com")) {
-    return url.replace("/upload/", `/upload/q_auto,f_auto,w_${width}/`);
+    // Make sure we include f_auto, q_auto, dpr_auto and the requested width
+    return url.replace("/upload/", `/upload/f_auto,q_auto,dpr_auto,w_${width}/`);
   }
   return url;
+}
+
+export function getResponsiveSrcSet(url: string | undefined | null, widths = [320, 640, 960, 1280, 1920]): string {
+  if (!url) return "";
+  return widths
+    .map((w) => `${getOptimizedImageUrl(url, w)} ${w}w`)
+    .join(", ");
 }

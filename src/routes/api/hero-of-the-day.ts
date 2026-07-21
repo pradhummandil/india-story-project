@@ -22,13 +22,19 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs = 1500): Promise<T>
   });
 }
 
+const cacheHeaders = {
+  headers: {
+    "Cache-Control": "public, max-age=300, s-maxage=600, stale-while-revalidate=60",
+  },
+};
+
 export const Route = createFileRoute("/api/hero-of-the-day")({
   server: {
     handlers: {
       GET: async ({ request }) => {
         const now = Date.now();
         if (cache.story && now < cache.expiry) {
-          return json({ story: cache.story });
+          return json({ story: cache.story }, cacheHeaders);
         }
 
         try {
@@ -36,7 +42,7 @@ export const Route = createFileRoute("/api/hero-of-the-day")({
           if (story) {
             cache.story = story;
             cache.expiry = now + CACHE_TTL;
-            return json({ story });
+            return json({ story }, cacheHeaders);
           }
           throw new Error("No hero story found in database");
         } catch (error: any) {
@@ -60,12 +66,12 @@ export const Route = createFileRoute("/api/hero-of-the-day")({
                 publishedAt: heroStory.publishedAt,
                 createdAt: heroStory.createdAt,
               };
-              return json({ story: mapped });
+              return json({ story: mapped }, cacheHeaders);
             }
           } catch (e) {
             console.error("JSON fallback failed:", e);
           }
-          return json({ story: null });
+          return json({ story: null }, cacheHeaders);
         }
       },
     },

@@ -72,6 +72,7 @@ import { Route as ApiLikesRouteImport } from './routes/api/likes'
 import { Route as ApiLatestStoriesRouteImport } from './routes/api/latest-stories'
 import { Route as ApiHeroSlidesRouteImport } from './routes/api/hero-slides'
 import { Route as ApiHeroOfTheDayRouteImport } from './routes/api/hero-of-the-day'
+import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiFeaturedRouteImport } from './routes/api/featured'
 import { Route as ApiContactRouteImport } from './routes/api/contact'
 import { Route as ApiCommunityRouteImport } from './routes/api/community'
@@ -257,7 +258,7 @@ const ImpactRoute = ImpactRouteImport.update({
   id: '/impact',
   path: '/impact',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/impact.lazy').then((d) => d.Route))
 const GrievanceRoute = GrievanceRouteImport.update({
   id: '/grievance',
   path: '/grievance',
@@ -317,7 +318,7 @@ const AdvertiseRoute = AdvertiseRouteImport.update({
   id: '/advertise',
   path: '/advertise',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/advertise.lazy').then((d) => d.Route))
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -367,7 +368,7 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AdminRoute,
-} as any)
+} as any).lazy(() => import('./routes/admin/index.lazy').then((d) => d.Route))
 const WebStoriesSlugRoute = WebStoriesSlugRouteImport.update({
   id: '/web-stories/$slug',
   path: '/web-stories/$slug',
@@ -493,6 +494,11 @@ const ApiHeroOfTheDayRoute = ApiHeroOfTheDayRouteImport.update({
   path: '/api/hero-of-the-day',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiHealthRoute = ApiHealthRouteImport.update({
+  id: '/api/health',
+  path: '/api/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiFeaturedRoute = ApiFeaturedRouteImport.update({
   id: '/api/featured',
   path: '/api/featured',
@@ -542,72 +548,98 @@ const AdminSlideshowRoute = AdminSlideshowRouteImport.update({
   id: '/slideshow',
   path: '/slideshow',
   getParentRoute: () => AdminRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/admin/slideshow.lazy').then((d) => d.Route),
+)
 const AdminNewsletterRoute = AdminNewsletterRouteImport.update({
   id: '/newsletter',
   path: '/newsletter',
   getParentRoute: () => AdminRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/admin/newsletter.lazy').then((d) => d.Route),
+)
 const AdminLeaderboardRoute = AdminLeaderboardRouteImport.update({
   id: '/leaderboard',
   path: '/leaderboard',
   getParentRoute: () => AdminRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/admin/leaderboard.lazy').then((d) => d.Route),
+)
 const AdminInfrastructureRoute = AdminInfrastructureRouteImport.update({
   id: '/infrastructure',
   path: '/infrastructure',
   getParentRoute: () => AdminRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/admin/infrastructure.lazy').then((d) => d.Route),
+)
 const AdminContactRoute = AdminContactRouteImport.update({
   id: '/contact',
   path: '/contact',
   getParentRoute: () => AdminRoute,
-} as any)
+} as any).lazy(() => import('./routes/admin/contact.lazy').then((d) => d.Route))
 const AdminCommentsRoute = AdminCommentsRouteImport.update({
   id: '/comments',
   path: '/comments',
   getParentRoute: () => AdminRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/admin/comments.lazy').then((d) => d.Route),
+)
 const AdminAchievementsRoute = AdminAchievementsRouteImport.update({
   id: '/achievements',
   path: '/achievements',
   getParentRoute: () => AdminRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/admin/achievements.lazy').then((d) => d.Route),
+)
 const AdminUsersIndexRoute = AdminUsersIndexRouteImport.update({
   id: '/users/',
   path: '/users/',
   getParentRoute: () => AdminRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/admin/users/index.lazy').then((d) => d.Route),
+)
 const AdminThemesIndexRoute = AdminThemesIndexRouteImport.update({
   id: '/themes/',
   path: '/themes/',
   getParentRoute: () => AdminRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/admin/themes/index.lazy').then((d) => d.Route),
+)
 const AdminStoriesIndexRoute = AdminStoriesIndexRouteImport.update({
   id: '/stories/',
   path: '/stories/',
   getParentRoute: () => AdminRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/admin/stories/index.lazy').then((d) => d.Route),
+)
 const AdminStatesIndexRoute = AdminStatesIndexRouteImport.update({
   id: '/states/',
   path: '/states/',
   getParentRoute: () => AdminRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/admin/states/index.lazy').then((d) => d.Route),
+)
 const AdminSettingsIndexRoute = AdminSettingsIndexRouteImport.update({
   id: '/settings/',
   path: '/settings/',
   getParentRoute: () => AdminRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/admin/settings/index.lazy').then((d) => d.Route),
+)
 const AdminNewsroomIndexRoute = AdminNewsroomIndexRouteImport.update({
   id: '/newsroom/',
   path: '/newsroom/',
   getParentRoute: () => AdminRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/admin/newsroom.index.lazy').then((d) => d.Route),
+)
 const AdminMediaIndexRoute = AdminMediaIndexRouteImport.update({
   id: '/media/',
   path: '/media/',
   getParentRoute: () => AdminRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/admin/media/index.lazy').then((d) => d.Route),
+)
 const AdminCommunityIndexRoute = AdminCommunityIndexRouteImport.update({
   id: '/community/',
   path: '/community/',
@@ -617,22 +649,30 @@ const AdminCategoriesIndexRoute = AdminCategoriesIndexRouteImport.update({
   id: '/categories/',
   path: '/categories/',
   getParentRoute: () => AdminRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/admin/categories/index.lazy').then((d) => d.Route),
+)
 const AdminAuthorsIndexRoute = AdminAuthorsIndexRouteImport.update({
   id: '/authors/',
   path: '/authors/',
   getParentRoute: () => AdminRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/admin/authors/index.lazy').then((d) => d.Route),
+)
 const AdminAnalyticsIndexRoute = AdminAnalyticsIndexRouteImport.update({
   id: '/analytics/',
   path: '/analytics/',
   getParentRoute: () => AdminRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/admin/analytics/index.lazy').then((d) => d.Route),
+)
 const StoriesSlugInteractiveRoute = StoriesSlugInteractiveRouteImport.update({
   id: '/interactive',
   path: '/interactive',
   getParentRoute: () => StoriesSlugRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/stories.$slug.interactive.lazy').then((d) => d.Route),
+)
 const CommunityTopicsIdRoute = CommunityTopicsIdRouteImport.update({
   id: '/topics/$id',
   path: '/topics/$id',
@@ -872,7 +912,9 @@ const AdminStoriesNewRoute = AdminStoriesNewRouteImport.update({
   id: '/stories/new',
   path: '/stories/new',
   getParentRoute: () => AdminRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/admin/stories/new.lazy').then((d) => d.Route),
+)
 const ApiStoriesSlugAudioRoute = ApiStoriesSlugAudioRouteImport.update({
   id: '/audio',
   path: '/audio',
@@ -1010,12 +1052,16 @@ const AdminStoriesIdEditRoute = AdminStoriesIdEditRouteImport.update({
   id: '/stories/$id/edit',
   path: '/stories/$id/edit',
   getParentRoute: () => AdminRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/admin/stories/$id.edit.lazy').then((d) => d.Route),
+)
 const AdminNewsroomStoryIdRoute = AdminNewsroomStoryIdRouteImport.update({
   id: '/newsroom/story/$id',
   path: '/newsroom/story/$id',
   getParentRoute: () => AdminRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/admin/newsroom.story.$id.lazy').then((d) => d.Route),
+)
 const ApiCommunityTopicsIdPostsRoute =
   ApiCommunityTopicsIdPostsRouteImport.update({
     id: '/posts',
@@ -1084,6 +1130,7 @@ export interface FileRoutesByFullPath {
   '/api/community': typeof ApiCommunityRouteWithChildren
   '/api/contact': typeof ApiContactRoute
   '/api/featured': typeof ApiFeaturedRoute
+  '/api/health': typeof ApiHealthRoute
   '/api/hero-of-the-day': typeof ApiHeroOfTheDayRoute
   '/api/hero-slides': typeof ApiHeroSlidesRoute
   '/api/latest-stories': typeof ApiLatestStoriesRoute
@@ -1251,6 +1298,7 @@ export interface FileRoutesByTo {
   '/api/community': typeof ApiCommunityRouteWithChildren
   '/api/contact': typeof ApiContactRoute
   '/api/featured': typeof ApiFeaturedRoute
+  '/api/health': typeof ApiHealthRoute
   '/api/hero-of-the-day': typeof ApiHeroOfTheDayRoute
   '/api/hero-slides': typeof ApiHeroSlidesRoute
   '/api/latest-stories': typeof ApiLatestStoriesRoute
@@ -1422,6 +1470,7 @@ export interface FileRoutesById {
   '/api/community': typeof ApiCommunityRouteWithChildren
   '/api/contact': typeof ApiContactRoute
   '/api/featured': typeof ApiFeaturedRoute
+  '/api/health': typeof ApiHealthRoute
   '/api/hero-of-the-day': typeof ApiHeroOfTheDayRoute
   '/api/hero-slides': typeof ApiHeroSlidesRoute
   '/api/latest-stories': typeof ApiLatestStoriesRoute
@@ -1594,6 +1643,7 @@ export interface FileRouteTypes {
     | '/api/community'
     | '/api/contact'
     | '/api/featured'
+    | '/api/health'
     | '/api/hero-of-the-day'
     | '/api/hero-slides'
     | '/api/latest-stories'
@@ -1761,6 +1811,7 @@ export interface FileRouteTypes {
     | '/api/community'
     | '/api/contact'
     | '/api/featured'
+    | '/api/health'
     | '/api/hero-of-the-day'
     | '/api/hero-slides'
     | '/api/latest-stories'
@@ -1931,6 +1982,7 @@ export interface FileRouteTypes {
     | '/api/community'
     | '/api/contact'
     | '/api/featured'
+    | '/api/health'
     | '/api/hero-of-the-day'
     | '/api/hero-slides'
     | '/api/latest-stories'
@@ -2095,6 +2147,7 @@ export interface RootRouteChildren {
   ApiCommunityRoute: typeof ApiCommunityRouteWithChildren
   ApiContactRoute: typeof ApiContactRoute
   ApiFeaturedRoute: typeof ApiFeaturedRoute
+  ApiHealthRoute: typeof ApiHealthRoute
   ApiHeroOfTheDayRoute: typeof ApiHeroOfTheDayRoute
   ApiHeroSlidesRoute: typeof ApiHeroSlidesRoute
   ApiLatestStoriesRoute: typeof ApiLatestStoriesRoute
@@ -2594,6 +2647,13 @@ declare module '@tanstack/react-router' {
       path: '/api/hero-of-the-day'
       fullPath: '/api/hero-of-the-day'
       preLoaderRoute: typeof ApiHeroOfTheDayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/health': {
+      id: '/api/health'
+      path: '/api/health'
+      fullPath: '/api/health'
+      preLoaderRoute: typeof ApiHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/featured': {
@@ -3772,6 +3832,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCommunityRoute: ApiCommunityRouteWithChildren,
   ApiContactRoute: ApiContactRoute,
   ApiFeaturedRoute: ApiFeaturedRoute,
+  ApiHealthRoute: ApiHealthRoute,
   ApiHeroOfTheDayRoute: ApiHeroOfTheDayRoute,
   ApiHeroSlidesRoute: ApiHeroSlidesRoute,
   ApiLatestStoriesRoute: ApiLatestStoriesRoute,

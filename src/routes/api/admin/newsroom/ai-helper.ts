@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { prisma } from "@/lib/repositories/prisma.server";
 import { json, authenticate } from "@/routes/api/-_utils";
-import { GoogleGenAI } from "@google/genai";
 
 const db = prisma as any;
 
@@ -15,6 +14,7 @@ export const Route = createFileRoute("/api/admin/newsroom/ai-helper")({
       POST: async ({ request }) => {
         const user = await authenticate(request);
         if (!user) return json({ error: "Unauthorized" }, { status: 401 });
+        const { GoogleGenAI } = await import("@google/genai");
 
         let body: any;
         try {

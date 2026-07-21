@@ -22,13 +22,19 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs = 1500): Promise<T>
   });
 }
 
+const cacheHeaders = {
+  headers: {
+    "Cache-Control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=600",
+  },
+};
+
 export const Route = createFileRoute("/api/themes")({
   server: {
     handlers: {
       GET: async ({ request }) => {
         const now = Date.now();
         if (cache.themes && now < cache.expiry) {
-          return json(cache.themes);
+          return json(cache.themes, cacheHeaders);
         }
 
         try {
@@ -36,7 +42,7 @@ export const Route = createFileRoute("/api/themes")({
           if (themes && themes.length > 0) {
             cache.themes = themes;
             cache.expiry = now + CACHE_TTL;
-            return json(themes);
+            return json(themes, cacheHeaders);
           }
           throw new Error("No themes found in database");
         } catch (error: any) {
@@ -51,12 +57,12 @@ export const Route = createFileRoute("/api/themes")({
               name: t,
               slug: t.toLowerCase()
             }));
-            return json(mapped);
+            return json(mapped, cacheHeaders);
           } catch (e) {
             return json([
               { id: "Heritage", name: "Heritage", slug: "heritage" },
               { id: "Innovation", name: "Innovation", slug: "innovation" }
-            ]);
+            ], cacheHeaders);
           }
         }
       },
