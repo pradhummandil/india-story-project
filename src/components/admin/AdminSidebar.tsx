@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect } from "react";
 import {
   LayoutDashboard,
   BookOpen,
@@ -9,8 +9,8 @@ import {
   Image,
   BarChart3,
   Settings,
-  Menu,
   X,
+  ChevronLeft,
   ChevronRight,
   LogOut,
   MessageSquare,
@@ -20,7 +20,6 @@ import {
   Layers,
   Compass,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/lib/auth-store";
 
 const NAV_ITEMS = [
@@ -44,13 +43,19 @@ const NAV_ITEMS = [
   { to: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
+interface AdminSidebarProps {
+  collapsed: boolean;
+  onToggle: () => void;
+  mobileOpen: boolean;
+  onMobileClose: () => void;
+}
+
 export function AdminSidebar({
   collapsed,
   onToggle,
-}: {
-  collapsed: boolean;
-  onToggle: () => void;
-}) {
+  mobileOpen,
+  onMobileClose,
+}: AdminSidebarProps) {
   const { location } = useRouterState();
   const { profile, signOut } = useAuthStore();
   const role = profile?.role?.toLowerCase();
@@ -67,55 +72,58 @@ export function AdminSidebar({
     return location.pathname.startsWith(item.to);
   };
 
-  return (
-    <aside
-      className={`fixed top-0 left-0 h-screen bg-[#0A0A0A] border-r border-white/10 z-40 flex flex-col transition-all duration-300 ${
-        collapsed ? "w-16" : "w-64"
-      }`}
-    >
-      {/* Logo */}
-      <div className="h-16 flex items-center justify-between px-4 border-b border-white/10">
-        {!collapsed && (
-          <Link to="/" className="flex items-center gap-2">
-            <img
-              src="/Logo-ISP.jpg"
-              alt="ISP"
-              className="size-7 rounded-full border border-white/20"
-            />
-            <span className="font-display text-base font-bold text-white">
-              <span className="text-primary">India</span> Story
+  // Close mobile drawer on route change
+  useEffect(() => {
+    onMobileClose();
+  }, [location.pathname]);
+
+  const sidebarContent = (
+    <div className="flex flex-col h-full bg-[#0A0A0A]/95 backdrop-blur-md border-r border-white/5 select-none">
+      {/* Brand logo & collapse trigger */}
+      <div className="h-16 flex items-center justify-between px-4 border-b border-white/5">
+        <Link to="/" className="flex items-center gap-2.5 transition-transform duration-200 hover:scale-[1.02]">
+          <img
+            src="/Logo-ISP.jpg"
+            alt="ISP Logo"
+            className="size-7 rounded-full border border-white/10 shadow-lg shadow-black/40"
+          />
+          {(!collapsed || mobileOpen) && (
+            <span className="font-display text-base font-bold text-white tracking-wide">
+              <span className="text-[#C8A96A]">India</span> Story
             </span>
-          </Link>
-        )}
-        {collapsed && (
-          <Link to="/" className="mx-auto">
-            <img
-              src="/Logo-ISP.jpg"
-              alt="ISP"
-              className="size-7 rounded-full border border-white/20"
-            />
-          </Link>
-        )}
+          )}
+        </Link>
+        
+        {/* Desktop Collapse Trigger */}
         <button
           onClick={onToggle}
-          className="text-white/40 hover:text-white transition-colors ml-auto flex-shrink-0"
+          className="hidden lg:flex size-7 items-center justify-center rounded-md text-white/40 hover:text-white hover:bg-white/5 border border-white/5 transition-all cursor-pointer ml-auto"
           aria-label="Toggle sidebar"
         >
-          {collapsed ? <ChevronRight className="size-4" /> : <Menu className="size-4" />}
+          {collapsed ? <ChevronRight className="size-4" /> : <ChevronLeft className="size-4" />}
+        </button>
+
+        {/* Mobile Close Trigger */}
+        <button
+          onClick={onMobileClose}
+          className="lg:hidden flex size-7 items-center justify-center rounded-md text-white/40 hover:text-white hover:bg-white/5 transition-all cursor-pointer ml-auto"
+          aria-label="Close sidebar"
+        >
+          <X className="size-4" />
         </button>
       </div>
 
-      {/* Nav label */}
-      {!collapsed && (
+      {/* Nav Label Header */}
+      {(!collapsed || mobileOpen) && (
         <div className="px-4 pt-6 pb-2">
-          <span className="text-[10px] font-sans font-bold uppercase tracking-[0.25em] text-white/30">
-            Admin Panel
+          <span className="text-[10px] font-sans font-black uppercase tracking-[0.2em] text-white/20 select-none">
+            Main Management
           </span>
         </div>
       )}
 
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
+      {/* Nav Link Container */}
+      <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-1 scrollbar-thin scrollbar-thumb-white/5">
         {filteredNavItems.map((item) => {
           const active = isActive(item);
           const Icon = item.icon;
@@ -123,32 +131,66 @@ export function AdminSidebar({
             <Link
               key={item.to}
               to={item.to}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-sm transition-all duration-200 group ${
-                active ? "bg-primary text-white" : "text-white/50 hover:text-white hover:bg-white/5"
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative ${
+                active
+                  ? "bg-[#C8A96A] text-black font-semibold shadow-md shadow-[#C8A96A]/10"
+                  : "text-white/50 hover:text-white hover:bg-white/5"
               }`}
-              title={collapsed ? item.label : undefined}
+              title={collapsed && !mobileOpen ? item.label : undefined}
             >
-              <Icon className="size-4 flex-shrink-0" />
-              {!collapsed && (
-                <span className="text-sm font-sans font-medium truncate">{item.label}</span>
+              <Icon className={`size-4.5 flex-shrink-0 transition-transform duration-200 group-hover:scale-105 ${active ? "text-black" : "text-white/40 group-hover:text-white"}`} />
+              {(!collapsed || mobileOpen) && (
+                <span className="text-sm font-sans font-medium tracking-wide truncate">{item.label}</span>
               )}
-              {active && !collapsed && <ChevronRight className="size-3 ml-auto opacity-60" />}
+              {active && (!collapsed || mobileOpen) && (
+                <div className="size-1.5 rounded-full bg-black ml-auto shrink-0" />
+              )}
             </Link>
           );
         })}
       </nav>
 
-      {/* Bottom: Sign out */}
-      <div className="px-2 py-4 border-t border-white/10">
+      {/* Sign Out Trigger */}
+      <div className="px-3 py-4 border-t border-white/5">
         <button
           onClick={() => void signOut()}
-          className={`flex items-center gap-3 px-3 py-2.5 w-full rounded-sm text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200`}
-          title={collapsed ? "Sign Out" : undefined}
+          className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-white/40 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/10 transition-all duration-200 cursor-pointer"
+          title={collapsed && !mobileOpen ? "Sign Out" : undefined}
         >
-          <LogOut className="size-4 flex-shrink-0" />
-          {!collapsed && <span className="text-sm font-sans font-medium">Sign Out</span>}
+          <LogOut className="size-4.5 flex-shrink-0" />
+          {(!collapsed || mobileOpen) && <span className="text-sm font-sans font-medium">Sign Out</span>}
         </button>
       </div>
-    </aside>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Mobile Sidebar Navigation Drawer Overlay */}
+      <div
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-opacity duration-300 lg:hidden ${
+          mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={onMobileClose}
+      />
+      
+      {/* Mobile Drawer wrapper */}
+      <div
+        className={`fixed top-0 bottom-0 left-0 z-50 w-64 lg:hidden transition-transform duration-300 transform ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {sidebarContent}
+      </div>
+
+      {/* Desktop Persistent Sidebar */}
+      <aside
+        className={`fixed top-0 bottom-0 left-0 z-40 hidden lg:block transition-all duration-300 ${
+          collapsed ? "w-16" : "w-64"
+        }`}
+      >
+        {sidebarContent}
+      </aside>
+    </>
   );
 }

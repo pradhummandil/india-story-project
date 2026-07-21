@@ -48,8 +48,8 @@ export function Navbar() {
 
   const isTransparent = location.pathname === "/" && !scrolled;
   const isAdmin = user?.app_metadata?.role === "Admin" || user?.app_metadata?.role === "SuperAdmin";
-  const avatarUrl = user?.user_metadata?.avatar_url as string | undefined;
-  const displayName = (user?.user_metadata?.name as string) || user?.email?.split("@")[0] || "User";
+  const avatarUrl = (profile?.avatarUrl) as string | undefined;
+  const displayName = (profile?.fullName) || user?.email?.split("@")[0] || "User";
   const role = profile?.role?.toLowerCase();
 
   return (

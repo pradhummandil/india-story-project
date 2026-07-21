@@ -293,6 +293,7 @@ function ProfilePage() {
             setUploadingAvatar(false);
             setUploadProgress(100);
             setSuccessMessage("Avatar updated successfully.");
+            await useAuthStore.getState().refreshProfile();
             refetchData();
           } else {
             setUploadError("Upload succeeded but URL was missing.");
@@ -339,6 +340,7 @@ function ProfilePage() {
       if (res.ok) {
         setAvatarUrl(null);
         setSuccessMessage("Avatar removed successfully.");
+        await useAuthStore.getState().refreshProfile();
         refetchData();
       } else {
         const errJson = await res.json();

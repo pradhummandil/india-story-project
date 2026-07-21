@@ -86,11 +86,14 @@ export const Route = createFileRoute("/api/profile/avatar")({
             optimizedUrl = optimizedUrl.replace("/upload/", "/upload/c_fill,g_face,w_300,h_300,q_auto,f_auto/");
           }
 
+          // Add cache-busting timestamp
+          const cacheBustedUrl = `${optimizedUrl}?t=${Date.now()}`;
+
           // Update database
           await db.profile.update({
             where: { id: user.id },
             data: {
-              avatarUrl: optimizedUrl,
+              avatarUrl: cacheBustedUrl,
               avatarPublicId: uploadResult.publicId,
             },
           });
@@ -98,22 +101,37 @@ export const Route = createFileRoute("/api/profile/avatar")({
           await db.userProfile.update({
             where: { id: user.id },
             data: {
-              avatarUrl: optimizedUrl,
+              avatarUrl: cacheBustedUrl,
               avatarPublicId: uploadResult.publicId,
             },
           });
 
+          // Keep corresponding Author avatar in sync if Author record exists
+          try {
+            const hasAuthor = await db.author.findUnique({
+              where: { id: user.id },
+            });
+            if (hasAuthor) {
+              await db.author.update({
+                where: { id: user.id },
+                data: { avatar: cacheBustedUrl },
+              });
+            }
+          } catch (authorErr) {
+            console.error("[Avatar Upload] Author sync error:", authorErr);
+          }
+
           // Update Supabase auth user metadata
           try {
             await supabase.auth.updateUser({
-              data: { avatar_url: optimizedUrl },
+              data: { avatar_url: cacheBustedUrl },
             });
           } catch (metaError) {
             console.error("[Avatar Upload] Failed to update user metadata in Supabase:", metaError);
           }
 
           return json({
-            avatarUrl: optimizedUrl,
+            avatarUrl: cacheBustedUrl,
             avatarPublicId: uploadResult.publicId,
             success: true,
           });
@@ -146,7 +164,7 @@ export const Route = createFileRoute("/api/profile/avatar")({
             await deleteFromCloudinary(publicId);
           }
 
-          // Clear DB entries
+           // Clear DB entries
           await db.profile.update({
             where: { id: user.id },
             data: {
@@ -162,6 +180,21 @@ export const Route = createFileRoute("/api/profile/avatar")({
               avatarPublicId: null,
             },
           });
+
+          // Keep corresponding Author avatar in sync if Author record exists
+          try {
+            const hasAuthor = await db.author.findUnique({
+              where: { id: user.id },
+            });
+            if (hasAuthor) {
+              await db.author.update({
+                where: { id: user.id },
+                data: { avatar: null },
+              });
+            }
+          } catch (authorErr) {
+            console.error("[Avatar Delete] Author sync error:", authorErr);
+          }
 
           // Reset Supabase user metadata avatar_url
           try {

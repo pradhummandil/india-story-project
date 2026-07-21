@@ -20,6 +20,7 @@ export type AuthState = {
   initialized: boolean;
   signOut: () => Promise<void>;
   setSession: (session: Session | null) => Promise<void>;
+  refreshProfile: () => Promise<void>;
 };
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -75,6 +76,27 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ loading: true });
     await supabase.auth.signOut().catch((err) => console.error("SignOut error:", err));
     set({ user: null, session: null, profile: null, loading: false });
+  },
+
+  refreshProfile: async () => {
+    const currentState = useAuthStore.getState();
+    const session = currentState.session;
+    if (!session) return;
+    try {
+      const res = await fetch("/api/auth/profile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+      if (res.ok) {
+        const { profile } = await res.json();
+        set({ profile });
+      }
+    } catch (e) {
+      console.error("Failed to refresh profile in auth store:", e);
+    }
   },
 }));
 
