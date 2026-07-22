@@ -13,9 +13,8 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useStoriesData } from "@/lib/stories-data";
 import { useI18nStore, translateStory } from "@/lib/i18n";
-import { getStoryAuthor, getOptimizedImageUrl, getResponsiveSrcSet } from "@/lib/utils";
+import { getOptimizedImageUrl, getResponsiveSrcSet } from "@/lib/utils";
 
 type HeroSlide = {
   id: string;
@@ -23,14 +22,14 @@ type HeroSlide = {
   slug: string;
   title: string;
   excerpt: string;
-  titleHi?: string;
-  excerptHi?: string;
+  titleHi?: string | undefined;
+  excerptHi?: string | undefined;
   themes?: string[];
-  state: string;
-  author: string;
-  readingTime?: string | number;
+  state?: string | null;
+  author?: string | null;
+  readingTime?: string | number | undefined;
   image: string;
-  caption?: string;
+  caption?: string | undefined;
 };
 
 const SLIDE_DURATION = 8000;
@@ -43,7 +42,15 @@ const FALLBACK_IMAGES = [
   "/Logo-ISP.jpg",
 ];
 
-export function CinematicHero() {
+export function CinematicHero({
+  heroSlides: propSlides,
+  todayPublicationCount = 0,
+  latestStoriesTitles = [],
+}: {
+  heroSlides?: HeroSlide[];
+  todayPublicationCount?: number;
+  latestStoriesTitles?: string[];
+}) {
   const lang = useI18nStore((s) => s.lang);
 
   const [slides, setSlides] = useState<HeroSlide[]>([]);
@@ -55,11 +62,19 @@ export function CinematicHero() {
 
   useEffect(() => {
     const buildSlides = async () => {
+      // 1. Prefer slides from TanStack loader (passed as prop) — no HTTP fetch needed
+      if (propSlides && propSlides.length > 0) {
+        setSlides(propSlides);
+        setLoaded(true);
+        return;
+      }
+      // 2. Use SSR-injected global (if present)
       if (typeof window !== "undefined" && (window as any).__STORIES_DATA__?.heroSlides?.length > 0) {
         setSlides((window as any).__STORIES_DATA__.heroSlides);
         setLoaded(true);
         return;
       }
+      // 3. Fall back to API fetch
       try {
         const res = await fetch("/api/hero-slides");
         if (res.ok) {
@@ -87,7 +102,7 @@ export function CinematicHero() {
     return () => {
       channel.close();
     };
-  }, []);
+  }, [propSlides]);
 
   function buildFallbackSlides(): HeroSlide[] {
     return FALLBACK_IMAGES.map((img, i) => ({
@@ -180,6 +195,80 @@ export function CinematicHero() {
         </motion.div>
       </AnimatePresence>
 
+      {/* ── Floating Ambient Particles ── */}
+      <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden opacity-25">
+        {[...Array(12)].map((_, i) => {
+          const size = Math.random() * 5 + 2;
+          const delay = Math.random() * 6;
+          const duration = Math.random() * 10 + 10;
+          const left = Math.random() * 100;
+          return (
+            <motion.div
+              key={i}
+              className="absolute bottom-[-10px] rounded-full bg-gold/30 blur-[1px]"
+              style={{
+                width: size,
+                height: size,
+                left: `${left}%`,
+              }}
+              animate={{
+                y: ["0vh", "-110vh"],
+                x: ["0px", `${Math.random() * 30 - 15}px`, "0px"],
+                opacity: [0, 0.8, 0.8, 0],
+              }}
+              transition={{
+                duration: duration,
+                repeat: Infinity,
+                delay: delay,
+                ease: "linear",
+              }}
+            />
+          );
+        })}
+      </div>
+
+      {/* ── Live Publication Ticker ── */}
+      <div className="absolute top-24 left-0 right-0 z-30 bg-black/45 backdrop-blur-md border-y border-white/5 py-2.5 overflow-hidden hidden sm:block">
+        <div className="max-w-6xl mx-auto px-6 md:px-12 flex items-center justify-between gap-8 text-[9px] uppercase font-sans font-bold tracking-widest text-white/80">
+          <div className="flex items-center gap-2 text-gold shrink-0">
+            <span className="relative flex size-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full size-2 bg-red-500"></span>
+            </span>
+            <span>Live Feed:</span>
+          </div>
+          <div className="flex-1 overflow-hidden relative h-4">
+            <motion.div
+              className="flex gap-12 whitespace-nowrap absolute"
+              animate={{ x: ["0%", "-50%"] }}
+              transition={{
+                repeat: Infinity,
+                duration: 35,
+                ease: "linear",
+              }}
+            >
+              {(latestStoriesTitles.length > 0
+                ? [...latestStoriesTitles, ...latestStoriesTitles]
+                : [
+                    "Experience India's stories of changemakers & heroes",
+                    "Explore historic dispatches, travel routes, and timelines",
+                    "Experience India's stories of changemakers & heroes",
+                    "Explore historic dispatches, travel routes, and timelines",
+                  ]
+              ).map((t, idx) => (
+                <span key={idx} className="flex items-center gap-2">
+                  <span className="text-red-500">•</span>
+                  {t}
+                </span>
+              ))}
+            </motion.div>
+          </div>
+          <div className="shrink-0 bg-gold/10 text-gold border border-gold/20 px-3 py-0.5 rounded-full text-[8px] tracking-widest">
+            Today's Dispatch: {todayPublicationCount} {todayPublicationCount === 1 ? "Story" : "Stories"}
+          </div>
+        </div>
+      </div>
+
       {/* ── Slide progress bar ── */}
       <div className="absolute bottom-0 left-0 right-0 z-30 h-[2px] bg-white/10">
         {isPlaying && (
@@ -213,10 +302,12 @@ export function CinematicHero() {
                 {t}
               </span>
             ))}
-            <span className="flex items-center gap-1 text-white/70">
-              <MapPin className="size-3" />
-              {slide.state}
-            </span>
+            {slide.state && (
+              <span className="flex items-center gap-1 text-white/70">
+                <MapPin className="size-3" />
+                {slide.state}
+              </span>
+            )}
             <span className="flex items-center gap-1 text-white/60">
               <Clock className="size-3" />
               {readTime}
@@ -230,7 +321,9 @@ export function CinematicHero() {
 
           {/* Author */}
           <p className="text-[10px] sm:text-xs uppercase tracking-[0.28em] text-white/75 font-sans font-semibold">
-            {lang === "en" ? `By ${slide.author}` : `लेखक: ${slide.author}`}
+            {lang === "en"
+              ? `By ${slide.author || "ISP Editorial"}`
+              : `लेखक: ${slide.author || "आईएसपी एडिटोरियल"}`}
           </p>
 
           {/* Excerpt */}
@@ -327,5 +420,6 @@ export function CinematicHero() {
   );
 }
 
-// Keep backward-compatible named export
+// Keep backward-compatible named exports
 export { CinematicHero as Hero };
+export type { HeroSlide };

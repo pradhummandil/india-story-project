@@ -164,9 +164,9 @@ export const Route = createFileRoute("/api/explore")({
           });
           const latest = latestStoriesRaw.map(toStoryCardCompatible);
 
-          // 6. Hidden Gems (Random stories with low views <= 120)
+          // 6. Hidden Gems (Random stories with low views <= 200)
           const hiddenGemsRaw = await prisma.story.findMany({
-            where: { status: StoryStatus.Published, viewCount: { lte: 120 } },
+            where: { status: StoryStatus.Published, viewCount: { lte: 200 } },
             take: 20,
             select: {
               ...storyCardSelect,
@@ -264,6 +264,185 @@ export const Route = createFileRoute("/api/explore")({
             }
           }
 
+          // 10. Reading / Story Challenges
+          let challenges = await prisma.storyChallenge.findMany({
+            where: { isActive: true },
+            take: 4,
+            include: {
+              entries: {
+                take: 3,
+                include: {
+                  story: {
+                    select: { title: true, slug: true }
+                  }
+                }
+              }
+            }
+          });
+
+          if (challenges.length === 0) {
+            const defaultAuthor = await prisma.author.findFirst();
+            const authorId = defaultAuthor?.id || "";
+            challenges = [
+              {
+                id: "c1",
+                title: "Monsoon Chronicles",
+                slug: "monsoon-chronicles",
+                description: "Write and share stories about the magic of Indian Monsoons — from local tea stalls to rain-soaked heritage streets.",
+                rules: "Story must be set in India during the monsoon season. Minimum 500 words. Must contain at least 2 original photographs.",
+                theme: "Nature",
+                prize: "Featured Showcase & 500 XP",
+                startAt: new Date(),
+                endAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+                isActive: true,
+                isFeatured: true,
+                createdBy: authorId,
+                entries: []
+              },
+              {
+                id: "c2",
+                title: "Himalayan Tales",
+                slug: "himalayan-tales",
+                description: "Document stories of the people, high-altitude villages, and conservation efforts in the Indian Himalayan region.",
+                rules: "Must focus on regions of Himachal, Uttarakhand, Ladakh, or Sikkim. Focus on local conservation.",
+                theme: "Environment",
+                prize: "ISP Print Edition feature & 1000 XP",
+                startAt: new Date(),
+                endAt: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+                isActive: true,
+                isFeatured: false,
+                createdBy: authorId,
+                entries: []
+              }
+            ] as any;
+          }
+
+          // 11. Curated collections with real DB stories
+          const collectionsKeys = [
+            { name: "UNESCO Heritage", keywords: ["heritage", "unesco", "monument", "temple", "architecture"] },
+            { name: "Freedom Fighters", keywords: ["freedom", "independence", "fighter", "struggle", "history"] },
+            { name: "Indian Cuisine", keywords: ["food", "cuisine", "recipe", "spices", "cooking", "taste"] },
+            { name: "Ancient Temples", keywords: ["temple", "spiritual", "shrine", "mythology", "sacred"] },
+          ];
+
+          const collections = await Promise.all(collectionsKeys.map(async (col) => {
+            const stories = await prisma.story.findMany({
+              where: {
+                status: StoryStatus.Published,
+                OR: col.keywords.map((kw) => ({
+                  OR: [
+                    { title: { contains: kw, mode: "insensitive" } },
+                    { excerpt: { contains: kw, mode: "insensitive" } },
+                    { content: { contains: kw, mode: "insensitive" } },
+                  ]
+                }))
+              },
+              take: 3,
+              select: storyCardSelect,
+            });
+
+            const normalizedStories = stories.map(toStoryCardCompatible);
+            const repImage = normalizedStories.find(s => s.image)?.image || "/Logo-ISP.jpg";
+
+            return {
+              name: col.name,
+              slug: col.name.toLowerCase().replace(/\s+/g, "-"),
+              description: `A curated trail of stories exploring ${col.name.toLowerCase()} across different eras and states.`,
+              stories: normalizedStories,
+              image: repImage,
+            };
+          }));
+
+          // 12. Historical Era Timeline
+          const eras = [
+            { name: "Ancient India", desc: "Pre-1200 CE: From the Indus Valley to classical kingdoms", keywords: ["ancient", "mauryan", "gupta", "chola", "harappa", "mythology", "vedic"] },
+            { name: "Medieval Kingdoms", desc: "1200–1757 CE: Era of empires, poetry, and architecture", keywords: ["mughal", "sultanate", "rajput", "maratha", "vijayanagar", "medieval", "akbar"] },
+            { name: "Colonial & Freedom", desc: "1757–1947 CE: The long walk to independence", keywords: ["british", "colonial", "gandhi", "freedom", "independence", "rebellion", "raj"] },
+            { name: "Modern Renaissance", desc: "2000 CE–Present: Innovation, culture, and new stories", keywords: ["startup", "innovation", "modern", "digital", "contemporary", "change"] },
+          ];
+
+          const historicalTimeline = await Promise.all(eras.map(async (era) => {
+            const stories = await prisma.story.findMany({
+              where: {
+                status: StoryStatus.Published,
+                OR: era.keywords.map((kw) => ({
+                  OR: [
+                    { title: { contains: kw, mode: "insensitive" } },
+                    { excerpt: { contains: kw, mode: "insensitive" } },
+                  ]
+                }))
+              },
+              take: 4,
+              select: storyCardSelect,
+            });
+
+            return {
+              era: era.name,
+              desc: era.desc,
+              stories: stories.map(toStoryCardCompatible),
+            };
+          }));
+
+          // 13. Festival Calendar
+          const festivalStoriesRaw = await prisma.story.findMany({
+            where: {
+              status: StoryStatus.Published,
+              OR: [
+                { title: { contains: "festival", mode: "insensitive" } },
+                { title: { contains: "diwali", mode: "insensitive" } },
+                { title: { contains: "holi", mode: "insensitive" } },
+                { title: { contains: "eid", mode: "insensitive" } },
+                { title: { contains: "dussehra", mode: "insensitive" } },
+                { title: { contains: "pongal", mode: "insensitive" } },
+                { title: { contains: "onam", mode: "insensitive" } },
+                { title: { contains: "durga", mode: "insensitive" } },
+                { excerpt: { contains: "festival", mode: "insensitive" } },
+              ]
+            },
+            take: 6,
+            select: storyCardSelect,
+          });
+          const festivalStories = festivalStoriesRaw.map(toStoryCardCompatible);
+
+          // 14. Travel Routes (Chained states)
+          const trailsKeys = [
+            { name: "Golden Triangle Trail", states: ["Delhi", "Uttar Pradesh", "Rajasthan"], desc: "Architectural wonders and royal history spanning northern India." },
+            { name: "Southern Heritage Trail", states: ["Karnataka", "Tamil Nadu", "Kerala"], desc: "Temples, spice routes, and coastal folklore of the south." },
+            { name: "Himalayan Pathways", states: ["Himachal Pradesh", "Uttarakhand", "Jammu and Kashmir", "Ladakh", "Sikkim"], desc: "High mountain dispatches, conservation heroes, and pristine valleys." }
+          ];
+
+          const travelRoutes = await Promise.all(trailsKeys.map(async (trail) => {
+            const stories = await prisma.story.findMany({
+              where: {
+                status: StoryStatus.Published,
+                state: {
+                  name: { in: trail.states }
+                }
+              },
+              take: 3,
+              select: storyCardSelect,
+            });
+
+            return {
+              name: trail.name,
+              desc: trail.desc,
+              states: trail.states,
+              stories: stories.map(toStoryCardCompatible),
+            };
+          }));
+
+          // 15. Most Loved Stories
+          const mostLovedRaw = await prisma.story.findMany({
+            where: { status: StoryStatus.Published },
+            orderBy: [
+              { likes: { _count: "desc" } },
+              { bookmarks: { _count: "desc" } },
+            ],
+            take: 6,
+            select: storyCardSelect,
+          });
+          const mostLoved = mostLovedRaw.map(toStoryCardCompatible);
+
           return json({
             stats,
             themes,
@@ -274,10 +453,16 @@ export const Route = createFileRoute("/api/explore")({
             authors,
             continueReading,
             recommended,
+            challenges,
+            collections,
+            historicalTimeline,
+            festivalStories,
+            travelRoutes,
+            mostLoved,
           });
         } catch (e: any) {
           console.error("Explore API error:", e);
-          return json({ error: e.message || "Failed to aggregation explore modules" }, { status: 500 });
+          return json({ error: e.message || "Failed to aggregate explore modules" }, { status: 500 });
         }
       },
     },

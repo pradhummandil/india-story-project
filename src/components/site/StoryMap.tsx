@@ -25,9 +25,9 @@ function MiniStoryCard({ story }: { story: Story }) {
     <Link
       to="/stories/$slug"
       params={{ slug: story.slug }}
-      className="flex gap-4 p-3 bg-background hover:bg-muted border border-border/40 hover:border-gold/30 transition-all duration-300 group rounded-none"
+      className="flex gap-4 p-3 bg-background hover:bg-muted border border-border/40 hover:border-gold/30 transition-all duration-300 group rounded-xl"
     >
-      <div className="size-20 shrink-0 overflow-hidden bg-muted border border-border/20">
+      <div className="size-20 shrink-0 overflow-hidden bg-muted border border-border/20 rounded-lg">
         {story.image ? (
           <img
             src={story.image}
@@ -35,7 +35,7 @@ function MiniStoryCard({ story }: { story: Story }) {
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-red-950/30 to-stone-900 flex items-center justify-center font-display italic text-gold/30">
+          <div className="w-full h-full bg-gradient-to-br from-red-950/30 to-stone-900 flex items-center justify-center font-display italic text-gold/30 rounded-lg">
             ISP
           </div>
         )}
@@ -63,36 +63,36 @@ export function StoryMap({ stateCounts = {} }: { stateCounts?: Record<string, nu
 
   const [mounted, setMounted] = useState(false);
   const [active, setActive] = useState<Hotspot | null>(null);
-  const [drawerState, setDrawerState] = useState<Hotspot | null>(null);
+  const [selectedState, setSelectedState] = useState<Hotspot | null>(null);
   const [hoveredPath, setHoveredPath] = useState<string | null>(null);
 
-  // Dynamic drawer stories loading state
-  const [drawerStories, setDrawerStories] = useState<Story[]>([]);
+  // Dynamic selected state stories loading state
+  const [selectedStories, setSelectedStories] = useState<Story[]>([]);
   const [loadingStories, setLoadingStories] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Fetch stories on-demand when drawer opens with AbortController to prevent race conditions
+  // Fetch stories on-demand when selectedState changes with AbortController to prevent race conditions
   useEffect(() => {
-    if (!drawerState) {
-      setDrawerStories([]);
+    if (!selectedState) {
+      setSelectedStories([]);
       return;
     }
 
     const abortController = new AbortController();
     setLoadingStories(true);
 
-    fetch(`/api/stories?region=${encodeURIComponent(drawerState.state)}&pageSize=6`, {
+    fetch(`/api/stories?region=${encodeURIComponent(selectedState.state)}&pageSize=6`, {
       signal: abortController.signal,
     })
       .then((res) => res.json())
       .then((data) => {
         if (data && Array.isArray(data.stories)) {
-          setDrawerStories(data.stories.map((s: any) => translateStory(s, lang)));
+          setSelectedStories(data.stories.map((s: any) => translateStory(s, lang)));
         } else {
-          setDrawerStories([]);
+          setSelectedStories([]);
         }
       })
       .catch((err) => {
@@ -101,7 +101,7 @@ export function StoryMap({ stateCounts = {} }: { stateCounts?: Record<string, nu
           return;
         }
         console.error("Failed to fetch state stories:", err);
-        setDrawerStories([]);
+        setSelectedStories([]);
       })
       .finally(() => {
         if (!abortController.signal.aborted) {
@@ -112,7 +112,7 @@ export function StoryMap({ stateCounts = {} }: { stateCounts?: Record<string, nu
     return () => {
       abortController.abort();
     };
-  }, [drawerState, lang]);
+  }, [selectedState, lang]);
 
   // Map state coordinate centers
   const hotspots = useMemo<Hotspot[]>(() => {
@@ -155,9 +155,9 @@ export function StoryMap({ stateCounts = {} }: { stateCounts?: Record<string, nu
         <div className="w-12 h-[1px] bg-primary mx-auto mt-4" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-        {/* Map visualization (7/12 cols) */}
-        <div className="lg:col-span-7 relative bg-gradient-to-b from-card/10 to-card/40 border border-border/40 p-4 md:p-8 flex items-center justify-center overflow-hidden aspect-[9/10] sm:aspect-square md:aspect-[4/3] lg:aspect-[9/10]">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+        {/* Left Column: Map visualization */}
+        <div className="w-full relative bg-gradient-to-b from-card/10 to-card/40 border border-border/40 p-4 md:p-8 flex items-center justify-center overflow-hidden aspect-[9/10] sm:aspect-square md:aspect-[4/3] lg:aspect-[9/10]">
           {/* Map Vector Graphic */}
           <svg
             viewBox="0 0 800 900"
@@ -165,7 +165,7 @@ export function StoryMap({ stateCounts = {} }: { stateCounts?: Record<string, nu
           >
             <defs>
               <filter id="markerGlow" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="6" result="blur" />
+                <feGaussianBlur stdDeviation="3.5" result="blur" />
                 <feComposite in="SourceGraphic" in2="blur" operator="over" />
               </filter>
             </defs>
@@ -192,15 +192,21 @@ export function StoryMap({ stateCounts = {} }: { stateCounts?: Record<string, nu
                   onMouseEnter={() => setHoveredPath(item.id)}
                   onMouseLeave={() => setHoveredPath(null)}
                   onClick={() => {
-                    const hs = hotspots.find((h) => h.state === item.name);
-                    if (hs) setDrawerState(hs);
+                    const hs = hotspots.find((h) => h.state === item.name) || {
+                      id: item.name,
+                      state: item.name,
+                      count: 0,
+                      x: 0,
+                      y: 0,
+                    };
+                    setSelectedState(hs);
                   }}
                 />
               );
             })}
 
             {/* Interactive hotspot pins */}
-            {hotspots.map((h, i) => {
+            {hotspots.map((h) => {
               const isHovered = active?.id === h.id;
 
               return (
@@ -209,7 +215,7 @@ export function StoryMap({ stateCounts = {} }: { stateCounts?: Record<string, nu
                   className="cursor-pointer select-none"
                   onMouseEnter={() => setActive(h)}
                   onMouseLeave={() => setActive((cur) => (cur?.id === h.id ? null : cur))}
-                  onClick={() => setDrawerState(h)}
+                  onClick={() => setSelectedState(h)}
                 >
                   {/* Pulse Ring */}
                   <motion.circle
@@ -218,23 +224,8 @@ export function StoryMap({ stateCounts = {} }: { stateCounts?: Record<string, nu
                     r="8"
                     fill="oklch(0.82 0.14 75)"
                     opacity="0.45"
-                    animate={{ r: [8, 22, 8], opacity: [0.6, 0, 0.6] }}
-                    transition={{
-                      duration: 2.2,
-                      repeat: Infinity,
-                      delay: i * 0.25,
-                      ease: "easeOut",
-                    }}
-                  />
-                  {/* Hover Halo */}
-                  <motion.circle
-                    cx={h.x}
-                    cy={h.y}
-                    r="15"
-                    fill="oklch(0.82 0.14 75)"
-                    opacity={isHovered ? 0.22 : 0}
-                    animate={{ opacity: isHovered ? 0.22 : 0 }}
-                    transition={{ duration: 0.2 }}
+                    animate={{ scale: [1, 2.2, 1], opacity: [0.6, 0, 0.6] }}
+                    transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }}
                   />
                   {/* Outer circle dot */}
                   <circle
@@ -283,185 +274,183 @@ export function StoryMap({ stateCounts = {} }: { stateCounts?: Record<string, nu
           </AnimatePresence>
         </div>
 
-        {/* Sidebar list selection (5/12 cols) */}
-        <div className="lg:col-span-5 flex flex-col justify-center space-y-6">
-          <div>
-            <h3 className="font-display text-2xl md:text-3xl font-bold mb-4">
-              {lang === "en" ? "India's Cultural Landscape" : "भारत का सांस्कृतिक परिदृश्य"}
-            </h3>
-            <p className="text-muted-foreground text-sm leading-relaxed font-sans">
-              {lang === "en"
-                ? "Every state contains unique stories of innovators and changemakers. Click on active states on the map or select from the list below to discover stories from that region."
-                : "प्रत्येक राज्य में नवप्रवर्तकों और बदलाव लाने वालों की अनूठी कहानियां हैं। उस क्षेत्र की कहानियों को खोजने के लिए मानचित्र पर सक्रिय राज्यों पर क्लिक करें या नीचे दी गई सूची से चयन करें।"}
-            </p>
-          </div>
+        {/* Right Column: Stories Panel */}
+        <div className="h-[600px] bg-neutral-900 border border-neutral-800 rounded-2xl p-6 overflow-hidden flex flex-col shadow-elegant">
+          <AnimatePresence mode="wait">
+            {!selectedState ? (
+              <motion.div
+                key="list-selection"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                transition={{ duration: 0.2 }}
+                className="flex flex-col h-full overflow-hidden"
+              >
+                <div className="mb-4 shrink-0">
+                  <h3 className="font-display text-2xl font-bold mb-2 text-foreground">
+                    {lang === "en" ? "India's Cultural Landscape" : "भारत का सांस्कृतिक परिदृश्य"}
+                  </h3>
+                  <p className="text-muted-foreground text-xs leading-relaxed font-sans">
+                    {lang === "en"
+                      ? "Every state contains unique stories of innovators and changemakers. Click on active states on the map or select from the list below to discover stories from that region."
+                      : "प्रत्येक राज्य में नवप्रवर्तकों और बदलाव लाने वालों की अनूठी कहानियां हैं। उस क्षेत्र की कहानियों को खोजने के लिए मानचित्र पर सक्रिय राज्यों पर क्लिक करें या नीचे दी गई सूची से चयन करें।"}
+                  </p>
+                </div>
 
-          <div className="max-h-[300px] overflow-y-auto border border-border/40 p-2 space-y-1 pr-1 scrollbar-thin bg-card/10">
-            {hotspots.map((h) => {
-              const isActive = drawerState?.id === h.id;
-              return (
-                <motion.button
-                  key={h.id}
-                  onClick={() => setDrawerState(h)}
-                  className={`w-full text-left px-4 py-3 border transition-all duration-300 flex items-center justify-between font-sans ${
-                    isActive
-                      ? "bg-primary/5 border-gold/30 text-white"
-                      : "bg-transparent border-transparent hover:bg-card/40 text-muted-foreground hover:text-foreground"
-                  }`}
-                  whileTap={{ scale: 0.99 }}
-                >
-                  <span className="text-xs font-semibold tracking-wider uppercase">{h.state}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-gold bg-primary/5 px-2 py-0.5 border border-primary/10">
-                      {h.count}
+                <div className="flex-1 overflow-y-auto border border-border/40 p-2 space-y-1.5 pr-1 scrollbar-thin bg-card/5 rounded-xl">
+                  {hotspots.map((h) => {
+                    return (
+                      <motion.button
+                        key={h.id}
+                        onClick={() => setSelectedState(h)}
+                        className="w-full text-left px-4 py-3 border border-transparent hover:border-gold/30 hover:bg-card/45 transition-all duration-300 flex items-center justify-between font-sans text-muted-foreground hover:text-foreground rounded-xl"
+                        whileTap={{ scale: 0.99 }}
+                      >
+                        <span className="text-xs font-semibold tracking-wider uppercase">{h.state}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold text-gold bg-primary/5 px-2 py-0.5 border border-primary/10 rounded">
+                            {h.count}
+                          </span>
+                          <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
+                        </div>
+                      </motion.button>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-border/30 shrink-0">
+                  <Button
+                    asChild
+                    size="lg"
+                    className="w-full bg-primary hover:bg-primary/95 text-primary-foreground border-0 shadow-sm uppercase tracking-widest text-xs font-bold rounded-full h-12"
+                  >
+                    <Link to="/stories">
+                      {lang === "en" ? "Browse Story Archive" : "सभी कहानियाँ देखें"}
+                      <ArrowRight className="size-4 ml-2" />
+                    </Link>
+                  </Button>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="state-stories"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.2 }}
+                className="flex flex-col h-full overflow-hidden"
+              >
+                {/* Panel Header */}
+                <div className="flex items-center justify-between border-b border-border/30 pb-4 mb-4 shrink-0">
+                  <div>
+                    <span className="text-xs uppercase tracking-widest text-gold font-sans font-bold">
+                      {lang === "en" ? "Explore State" : "राज्य अन्वेषण"}
                     </span>
-                    <ArrowRight
-                      className={`size-4 shrink-0 transition-all ${
-                        isActive ? "text-gold translate-x-1" : "text-muted-foreground"
-                      }`}
-                    />
+                    <h3 className="font-display text-2xl font-bold mt-1 text-foreground">
+                      {selectedState.state}
+                    </h3>
                   </div>
-                </motion.button>
-              );
-            })}
-          </div>
+                  <button
+                    onClick={() => setSelectedState(null)}
+                    className="p-2 hover:bg-muted text-muted-foreground hover:text-foreground rounded-full transition-colors"
+                    title={lang === "en" ? "Back to list" : "सूची पर वापस जाएं"}
+                  >
+                    <X className="size-5" />
+                  </button>
+                </div>
 
-          <div className="mt-4">
-            <Button
-              asChild
-              size="lg"
-              className="w-full sm:w-auto bg-primary hover:bg-primary/95 text-primary-foreground border-0 shadow-sm uppercase tracking-widest text-xs font-bold rounded-full h-12"
-            >
-              <Link to="/stories">
-                {lang === "en" ? "Browse Story Archive" : "सभी कहानियाँ देखें"}
-                <ArrowRight className="size-4 ml-2" />
-              </Link>
-            </Button>
-          </div>
+                {/* Scrollable Story List wrapper */}
+                <div className="flex-1 overflow-y-auto space-y-4 pr-1 scrollbar-thin">
+                  <p className="text-xs text-muted-foreground font-sans uppercase font-bold tracking-wider mb-1">
+                    {selectedState.count} {lang === "en" ? "Stories Found" : "कहानियाँ मिलीं"}
+                  </p>
+
+                  {loadingStories ? (
+                    <div className="space-y-4">
+                      {[1, 2, 3].map((n) => (
+                        <div key={n} className="flex gap-4 p-3 border border-border/20 animate-pulse bg-card/40 rounded-xl">
+                          <div className="size-20 bg-muted/70 shrink-0 rounded-lg" />
+                          <div className="flex flex-col justify-between py-1 flex-1 space-y-2">
+                            <div>
+                              <div className="h-2.5 w-16 bg-muted/60 rounded" />
+                              <div className="h-4 w-5/6 bg-muted/70 rounded mt-2" />
+                              <div className="h-4 w-2/3 bg-muted/70 rounded mt-1.5" />
+                            </div>
+                            <div className="h-2 w-12 bg-muted/60 rounded mt-2" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : selectedStories.length > 0 ? (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                      className="space-y-3"
+                    >
+                      {selectedStories.map((st) => (
+                        <MiniStoryCard key={st.id} story={st} />
+                      ))}
+                    </motion.div>
+                  ) : (
+                    <div className="text-center py-8 px-4 border border-dashed border-border/40 bg-card/10 space-y-4 rounded-xl">
+                      <div className="mx-auto size-10 rounded-full bg-primary/5 flex items-center justify-center border border-primary/10">
+                        <Sparkles className="size-5 text-gold animate-pulse" />
+                      </div>
+                      <div className="space-y-1">
+                        <h4 className="font-display font-bold text-sm text-foreground">
+                          {lang === "en" ? "No Stories Yet" : "कोई कहानी उपलब्ध नहीं"}
+                        </h4>
+                        <p className="text-xs text-muted-foreground font-sans leading-relaxed max-w-xs mx-auto">
+                          {lang === "en"
+                            ? "We are currently documenting stories for this region. Explore other vibrant states nearby."
+                            : "हम वर्तमान में इस क्षेत्र की कहानियों का दस्तावेजीकरण कर रहे हैं। पास के अन्य राज्यों को देखें।"}
+                        </p>
+                      </div>
+
+                      {/* Recommended active regions fallback */}
+                      {hotspots.length > 0 && (
+                        <div className="pt-2">
+                          <p className="text-[10px] uppercase font-sans font-bold tracking-widest text-gold mb-2">
+                            {lang === "en" ? "Recommended Regions" : "अनुशंसित क्षेत्र"}
+                          </p>
+                          <div className="flex flex-wrap gap-1.5 justify-center">
+                            {hotspots
+                              .filter((h) => h.state !== selectedState.state)
+                              .slice(0, 3)
+                              .map((h) => (
+                                <button
+                                  key={h.id}
+                                  onClick={() => setSelectedState(h)}
+                                  className="text-[9px] font-sans font-bold uppercase tracking-wider px-2 py-1 bg-background border border-border/50 hover:border-gold/30 hover:bg-muted text-muted-foreground hover:text-foreground transition-all duration-300 rounded"
+                                >
+                                  {h.state}
+                                </button>
+                              ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Panel Footer */}
+                <div className="mt-4 pt-4 border-t border-border/30 shrink-0">
+                  <Button
+                    asChild
+                    className="w-full bg-primary hover:bg-primary/95 text-primary-foreground font-sans uppercase tracking-widest text-xs rounded-full h-12"
+                  >
+                    <Link to="/stories" search={{ state: selectedState.state }}>
+                      {lang === "en" ? "View State Archive" : "सभी कहानियाँ देखें"}
+                      <ArrowRight className="size-4 ml-2" />
+                    </Link>
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
-
-      {/* Drawer Overlay */}
-      <AnimatePresence>
-        {drawerState && (
-          <>
-            {/* Drawer Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setDrawerState(null)}
-              className="fixed inset-0 bg-black/60 z-[90]"
-            />
-            {/* Drawer Body */}
-            <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 26, stiffness: 210 }}
-              className="fixed right-0 top-0 bottom-0 w-full sm:w-[450px] bg-card border-l border-border/50 p-6 z-[100] flex flex-col shadow-elegant overflow-y-auto"
-            >
-              {/* Drawer Header */}
-              <div className="flex items-center justify-between border-b border-border/70 pb-4 mb-6">
-                <div>
-                  <span className="text-xs uppercase tracking-widest text-gold font-sans font-bold">
-                    {lang === "en" ? "Explore State" : "राज्य अन्वेषण"}
-                  </span>
-                  <h3 className="font-display text-2xl font-bold mt-1 text-foreground">
-                    {drawerState.state}
-                  </h3>
-                </div>
-                <button
-                  onClick={() => setDrawerState(null)}
-                  className="p-2 hover:bg-muted text-muted-foreground hover:text-foreground rounded-full transition-colors"
-                >
-                  <X className="size-5" />
-                </button>
-              </div>
-
-              {/* Scrollable Story List */}
-              <div className="flex flex-col gap-4 flex-1 overflow-y-auto pr-1 scrollbar-thin">
-                <p className="text-xs text-muted-foreground font-sans uppercase font-bold tracking-wider mb-1">
-                  {drawerState.count} {lang === "en" ? "Stories Found" : "कहानियाँ मिलीं"}
-                </p>
-
-                {loadingStories ? (
-                  <div className="space-y-4">
-                    {[1, 2, 3].map((n) => (
-                      <div key={n} className="flex gap-4 p-3 border border-border/20 animate-pulse bg-card/40">
-                        <div className="size-20 bg-muted/70 shrink-0" />
-                        <div className="flex flex-col justify-between py-1 flex-1 space-y-2">
-                          <div>
-                            <div className="h-2.5 w-16 bg-muted/60 rounded" />
-                            <div className="h-4 w-5/6 bg-muted/70 rounded mt-2" />
-                            <div className="h-4 w-2/3 bg-muted/70 rounded mt-1.5" />
-                          </div>
-                          <div className="h-2 w-12 bg-muted/60 rounded mt-2" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : drawerStories.length > 0 ? (
-                  drawerStories.map((st) => (
-                    <MiniStoryCard key={st.id} story={st} />
-                  ))
-                ) : (
-                  <div className="text-center py-10 px-4 border border-dashed border-border/40 bg-card/20 space-y-5">
-                    <div className="mx-auto size-12 rounded-full bg-primary/5 flex items-center justify-center border border-primary/10">
-                      <Sparkles className="size-6 text-gold animate-pulse" />
-                    </div>
-                    <div className="space-y-2">
-                      <h4 className="font-display font-bold text-base text-foreground">
-                        {lang === "en" ? "No Stories Yet" : "कोई कहानी उपलब्ध नहीं"}
-                      </h4>
-                      <p className="text-xs text-muted-foreground font-sans leading-relaxed max-w-xs mx-auto">
-                        {lang === "en"
-                          ? "We are currently documenting stories for this region. Explore other vibrant states nearby."
-                          : "हम वर्तमान में इस क्षेत्र की कहानियों का दस्तावेजीकरण कर रहे हैं। पास के अन्य राज्यों को देखें।"}
-                      </p>
-                    </div>
-                    
-                    {/* Nearby state recommendations */}
-                    <div className="pt-2">
-                      <p className="text-[10px] uppercase font-sans font-bold tracking-widest text-gold mb-3">
-                        {lang === "en" ? "Recommended Regions" : "अनुशंसित क्षेत्र"}
-                      </p>
-                      <div className="flex flex-wrap gap-2 justify-center">
-                        {hotspots.filter(h => h.state !== drawerState.state).slice(0, 3).map((h) => (
-                          <button
-                            key={h.id}
-                            onClick={() => setDrawerState(h)}
-                            className="text-[10px] font-sans font-bold uppercase tracking-wider px-3 py-1.5 bg-background border border-border/50 hover:border-gold/30 hover:bg-muted text-muted-foreground hover:text-foreground transition-all duration-300"
-                          >
-                            {h.state} ({h.count})
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Drawer Footer Link to State Archive */}
-              <div className="mt-6 pt-4 border-t border-border/70">
-                <Button
-                  asChild
-                  className="w-full bg-primary hover:bg-primary/95 text-primary-foreground font-sans uppercase tracking-widest text-xs rounded-full h-12"
-                >
-                  <Link
-                    to="/stories"
-                    search={{ state: drawerState.state }}
-                    onClick={() => setDrawerState(null)}
-                  >
-                    {lang === "en" ? "View State Archive" : "सभी कहानियाँ देखें"}
-                    <ArrowRight className="size-4 ml-2" />
-                  </Link>
-                </Button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
     </section>
   );
 }

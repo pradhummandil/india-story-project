@@ -4,7 +4,7 @@ import { useI18nStore, getFooterText } from "@/lib/i18n";
 
 const socials = [
   { Icon: Instagram, label: "Instagram", href: "https://www.instagram.com/indiastoryproject/" },
-  { Icon: Twitter, label: "Twitter", href: "https://twitter.com" },
+  { Icon: Twitter, label: "Twitter", href: "https://x.com/indiastoryproj" },
   { Icon: Youtube, label: "YouTube", href: "https://www.youtube.com/@indiastoryproject7282" },
   { Icon: Linkedin, label: "LinkedIn", href: "https://www.linkedin.com/company/india-story-project/" },
 ];

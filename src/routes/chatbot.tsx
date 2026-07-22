@@ -269,10 +269,15 @@ function ChatbotPage() {
         headers["Authorization"] = `Bearer ${session.access_token}`;
       }
 
+      const chatHistory = messages.slice(-6).map((m) => ({
+        sender: m.sender,
+        text: m.text,
+      }));
+
       const res = await fetch("/api/chat", {
         method: "POST",
         headers,
-        body: JSON.stringify({ message: trimmed, lang }),
+        body: JSON.stringify({ message: trimmed, lang, history: chatHistory }),
         signal: controller.signal,
       });
 

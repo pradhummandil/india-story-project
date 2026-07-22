@@ -139,6 +139,7 @@ function RouteComponent() {
 
   // Mobile Bottom Sheet toggle
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [activeTimelineEra, setActiveTimelineEra] = useState(0);
 
   // Debounce search query changes
   useEffect(() => {
@@ -774,71 +775,315 @@ function RouteComponent() {
                   </section>
 
                   {/* F. Featured Collections */}
-                  <section className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <Award className="size-4.5 text-gold" />
-                      <h2 className="font-display text-lg sm:text-xl font-bold text-white">
-                        Featured Collections
-                      </h2>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-                      {[
-                        { title: "UNESCO Heritage", keyword: "unesco heritage", desc: "Discover ancient architectural wonders registered under UNESCO list." },
-                        { title: "Freedom Fighters", keyword: "freedom fighters", desc: "Heroic accounts of warriors who fought for India's independence." },
-                        { title: "Ancient Temples", keyword: "ancient temples", desc: "Spiritual pathways, architecture, and legends of mythological temples." },
-                        { title: "Indian Cuisine", keyword: "indian cuisine", desc: "Gourmet tales, traditional recipes, and spicy culinary history." },
-                        { title: "Folk Tales", keyword: "folk tales", desc: "Local folklore, rural legends, and storytelling handed down generations." },
-                        { title: "Royal Kingdoms", keyword: "royal kingdoms", desc: "Palaces, royal archives, and historical accounts of legendary kings." },
-                      ].map((item) => (
-                        <div
-                          key={item.title}
-                          onClick={() => handleCollectionSelect(item.keyword)}
-                          className="bg-neutral-900/90 border border-neutral-800 rounded-2xl p-6 hover:border-red-500/50 hover:shadow-[0_0_20px_rgba(220,38,38,0.15)] cursor-pointer shadow-lg transition-all duration-300 flex flex-col justify-between"
-                        >
-                          <div className="space-y-2">
-                            <h3 className="font-display font-bold text-base text-white hover:text-red-400 transition-colors">
-                              {item.title}
-                            </h3>
-                            <p className="text-xs text-neutral-300 font-sans leading-relaxed">
-                              {item.desc}
-                            </p>
+                  {exploreData?.collections?.length > 0 && (
+                    <section className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <Award className="size-4.5 text-gold" />
+                        <h2 className="font-display text-lg sm:text-xl font-bold text-white">
+                          Featured Collections
+                        </h2>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
+                        {exploreData.collections.map((item: any) => (
+                          <div
+                            key={item.name}
+                            onClick={() => handleCollectionSelect(item.slug)}
+                            className="group relative rounded-2xl border border-neutral-850 overflow-hidden aspect-[4/3] cursor-pointer hover:border-red-500/50 shadow-lg hover:shadow-red-500/10 transition-all duration-500"
+                          >
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent z-10" />
+                            {item.image ? (
+                              <img
+                                src={item.image}
+                                alt={item.name}
+                                className="w-full h-full object-cover absolute inset-0 group-hover:scale-105 transition-transform duration-700"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-red-950/20 to-neutral-900 absolute inset-0" />
+                            )}
+                            <div className="absolute bottom-4 left-4 right-4 z-20 space-y-1">
+                              <h3 className="font-display font-bold text-sm sm:text-base text-white tracking-wide group-hover:text-red-455 transition-colors line-clamp-1">
+                                {item.name}
+                              </h3>
+                              <p className="text-[10px] text-neutral-350 font-sans line-clamp-2 leading-tight">
+                                {item.description}
+                              </p>
+                              <div className="text-[9px] text-red-500 font-sans flex items-center gap-1.5 uppercase font-bold tracking-wider pt-1.5">
+                                Browse Collection <ChevronRight className="size-3" />
+                              </div>
+                            </div>
                           </div>
-                          <div className="mt-4 flex items-center gap-1 text-[10px] text-red-500 uppercase tracking-wider font-sans font-bold">
-                            Browse Collection <ChevronRight className="size-3" />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
+                        ))}
+                      </div>
+                    </section>
+                  )}
 
-                  {/* G. Explore Timeline */}
-                  <section className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="size-4.5 text-gold" />
-                      <h2 className="font-display text-lg sm:text-xl font-bold text-white">
-                        Explore Timeline
-                      </h2>
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                      {[
-                        { era: "Ancient India", key: "ancient" },
-                        { era: "Medieval", key: "medieval" },
-                        { era: "Freedom Movement", key: "freedom" },
-                        { era: "Modern India", key: "modern" },
-                        { era: "Contemporary", key: "contemporary" },
-                      ].map((item) => (
-                        <div
-                          key={item.era}
-                          onClick={() => handleEraSelect(item.key)}
-                          className="bg-stone-900/50 border border-border/40 hover:border-gold/30 rounded-xl p-4 text-center cursor-pointer hover:scale-[1.02] transition-all duration-300"
-                        >
-                          <h3 className="font-display font-semibold text-xs text-white">
-                            {item.era}
-                          </h3>
+                  {/* G. Interactive Historical Timeline */}
+                  {exploreData?.historicalTimeline?.length > 0 && (
+                    <section className="space-y-6 bg-neutral-900/40 border border-neutral-850 rounded-3xl p-6 sm:p-8">
+                      <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="size-5 text-gold" />
+                          <h2 className="font-display text-xl font-bold text-white">
+                            Historical Era Timeline
+                          </h2>
                         </div>
-                      ))}
-                    </div>
-                  </section>
+                        <span className="text-[10px] uppercase font-sans tracking-widest text-muted-foreground font-bold">
+                          Chronicles of India
+                        </span>
+                      </div>
+
+                      {/* Era Selector Steps */}
+                      <div className="relative flex justify-between items-center max-w-2xl mx-auto py-4">
+                        <div className="absolute left-0 right-0 h-0.5 bg-neutral-800 top-1/2 -translate-y-1/2 z-0" />
+                        <div
+                          className="absolute left-0 h-0.5 bg-primary top-1/2 -translate-y-1/2 z-0 transition-all duration-500"
+                          style={{ width: `${(activeTimelineEra / (exploreData.historicalTimeline.length - 1)) * 100}%` }}
+                        />
+                        {exploreData.historicalTimeline.map((item: any, idx: number) => {
+                          const isActive = activeTimelineEra === idx;
+                          return (
+                            <button
+                              key={item.era}
+                              onClick={() => setActiveTimelineEra(idx)}
+                              className="relative z-10 flex flex-col items-center group focus:outline-none"
+                            >
+                              <div
+                                className={`size-8 rounded-full border flex items-center justify-center font-sans text-xs font-bold transition-all duration-300 ${
+                                  isActive
+                                    ? "bg-primary border-primary text-primary-foreground scale-110 shadow-glow"
+                                    : "bg-neutral-900 border-neutral-800 text-neutral-400 group-hover:border-gold/50"
+                                }`}
+                              >
+                                {idx + 1}
+                              </div>
+                              <span
+                                className={`absolute top-10 whitespace-nowrap text-[10px] sm:text-xs font-bold tracking-wider transition-colors duration-300 ${
+                                  isActive ? "text-gold" : "text-neutral-400 group-hover:text-white"
+                                }`}
+                              >
+                                {item.era}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Timeline Stories Slider */}
+                      <div className="pt-8">
+                        <AnimatePresence mode="wait">
+                          <motion.div
+                            key={activeTimelineEra}
+                            initial={{ opacity: 0, x: 15 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -15 }}
+                            transition={{ duration: 0.3 }}
+                            className="space-y-4"
+                          >
+                            <p className="text-xs text-muted-foreground font-sans max-w-lg italic">
+                              {exploreData.historicalTimeline[activeTimelineEra]?.desc}
+                            </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                              {exploreData.historicalTimeline[activeTimelineEra]?.stories?.map((story: any) => (
+                                <Link
+                                  key={story.id}
+                                  to="/stories/$slug"
+                                  params={{ slug: story.slug }}
+                                  className="group bg-neutral-900 border border-neutral-850 hover:border-red-500/50 rounded-2xl overflow-hidden shadow-lg transition-all duration-300 flex flex-col"
+                                >
+                                  <div className="aspect-[16/10] overflow-hidden bg-neutral-950">
+                                    {story.image ? (
+                                      <img
+                                        src={story.image}
+                                        alt={story.title}
+                                        className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full bg-gradient-to-br from-red-950/20 to-neutral-900" />
+                                    )}
+                                  </div>
+                                  <div className="p-4 flex-1 flex flex-col justify-between space-y-2">
+                                    <h3 className="font-display font-bold text-xs text-neutral-100 group-hover:text-red-500 line-clamp-2 leading-snug transition-colors">
+                                      {story.title}
+                                    </h3>
+                                    <span className="text-[9px] uppercase font-bold tracking-wider text-gold font-sans block">
+                                      {story.region}
+                                    </span>
+                                  </div>
+                                </Link>
+                              ))}
+                            </div>
+                          </motion.div>
+                        </AnimatePresence>
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Active Writing Challenges */}
+                  {exploreData?.challenges?.length > 0 && (
+                    <section className="bg-gradient-to-br from-red-950/20 via-neutral-900 to-neutral-900 border border-neutral-850 rounded-3xl p-6 sm:p-8 space-y-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-4">
+                        <div className="space-y-1">
+                          <span className="text-[9px] uppercase tracking-widest text-gold bg-gold/10 px-2.5 py-0.5 rounded border border-gold/20 font-sans font-bold">
+                            Community Writing Streak
+                          </span>
+                          <h2 className="font-display text-xl font-bold text-white flex items-center gap-2">
+                            <Flame className="size-5 text-gold animate-pulse" />
+                            Active Story Challenges
+                          </h2>
+                        </div>
+                        <span className="text-xs text-muted-foreground font-sans">
+                          Join, contribute, and win badges
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {exploreData.challenges.map((challenge: any) => (
+                          <div
+                            key={challenge.id}
+                            className="bg-stone-900/60 border border-border/40 rounded-2xl p-6 flex flex-col justify-between gap-4 hover:border-gold/30 transition-all duration-300"
+                          >
+                            <div className="space-y-2">
+                              <h3 className="font-display font-bold text-base text-white">
+                                {challenge.title}
+                              </h3>
+                              <p className="text-xs text-neutral-300 font-sans leading-relaxed">
+                                {challenge.description}
+                              </p>
+                              <div className="text-[10px] text-neutral-400 font-sans space-y-1 pt-1.5">
+                                <div><span className="font-semibold text-gold">Prize:</span> {challenge.prize}</div>
+                                <div><span className="font-semibold text-gold">Rules:</span> {challenge.rules}</div>
+                                <div>
+                                  <span className="font-semibold text-gold">Ends:</span>{" "}
+                                  {new Date(challenge.endAt).toLocaleDateString()}
+                                </div>
+                              </div>
+                            </div>
+
+                            <Button
+                              asChild
+                              className="w-full bg-primary hover:bg-primary/95 text-primary-foreground font-sans uppercase tracking-widest text-xs h-10 rounded-xl"
+                            >
+                              <Link to="/share-story" search={{ challenge: challenge.slug }}>
+                                Submit Your Entry
+                              </Link>
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Festival Calendar Section */}
+                  {exploreData?.festivalStories?.length > 0 && (
+                    <section className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="size-4.5 text-gold" />
+                          <h2 className="font-display text-lg sm:text-xl font-bold text-white">
+                            Festival Calendar & Celebrations
+                          </h2>
+                        </div>
+                        <span className="text-[10px] uppercase font-sans tracking-widest text-muted-foreground font-bold">
+                          Spiritual Harmony
+                        </span>
+                      </div>
+                      <div className="flex gap-5 overflow-x-auto pb-4 scrollbar-thin snap-x snap-mandatory">
+                        {exploreData.festivalStories.map((story: any) => {
+                          const localized = translateStory(story, lang);
+                          return (
+                            <Link
+                              key={story.id}
+                              to="/stories/$slug"
+                              params={{ slug: story.slug }}
+                              className="w-72 flex-shrink-0 group snap-start bg-neutral-900 border border-neutral-850 rounded-2xl overflow-hidden hover:border-red-500/50 hover:shadow-lg transition-all duration-300"
+                            >
+                              <div className="aspect-[16/10] overflow-hidden relative bg-neutral-950">
+                                {story.image ? (
+                                  <img
+                                    src={story.image}
+                                    alt={localized.title}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-gradient-to-br from-red-950/20 to-neutral-900" />
+                                )}
+                                <span className="absolute top-2.5 left-2.5 bg-gold text-black text-[9px] uppercase font-bold tracking-widest px-2.5 py-1 font-sans shadow-md">
+                                  Festival Special
+                                </span>
+                              </div>
+                              <div className="p-4 space-y-1.5">
+                                <div className="text-[9px] uppercase tracking-wider text-red-500 font-sans font-bold">
+                                  {localized.region}
+                                </div>
+                                <h3 className="font-display font-bold text-sm text-neutral-100 line-clamp-2 leading-snug group-hover:text-red-500 transition-colors">
+                                  {localized.title}
+                                </h3>
+                              </div>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Travel Routes Section */}
+                  {exploreData?.travelRoutes?.length > 0 && (
+                    <section className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Compass className="size-4.5 text-gold" />
+                          <h2 className="font-display text-lg sm:text-xl font-bold text-white">
+                            Scenic Travel Routes & Trails
+                          </h2>
+                        </div>
+                        <span className="text-[10px] uppercase font-sans tracking-widest text-muted-foreground font-bold">
+                          Road-trip routes
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {exploreData.travelRoutes.map((route: any) => (
+                          <div
+                            key={route.name}
+                            className="bg-neutral-900 border border-neutral-850 rounded-2xl p-6 space-y-4 shadow-lg hover:border-red-500/30 transition-all duration-300 flex flex-col justify-between"
+                          >
+                            <div className="space-y-2">
+                              <h3 className="font-display font-bold text-base text-white hover:text-red-400 transition-colors">
+                                {route.name}
+                              </h3>
+                              <p className="text-xs text-neutral-305 text-neutral-300 font-sans leading-relaxed">
+                                {route.desc}
+                              </p>
+                              {/* State flow dots */}
+                              <div className="flex items-center gap-2 pt-2 text-[9px] font-sans font-bold text-gold tracking-widest uppercase">
+                                {route.states.map((st: string, idx: number) => (
+                                  <span key={st} className="flex items-center gap-2">
+                                    {st}
+                                    {idx < route.states.length - 1 && <span className="text-red-500 font-bold">→</span>}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Stories list under the trail */}
+                            <div className="space-y-2 pt-2 border-t border-white/5">
+                              <span className="text-[9px] uppercase tracking-wider font-sans font-semibold text-neutral-450">Stories on this route:</span>
+                              {route.stories.map((story: any) => (
+                                <Link
+                                  key={story.id}
+                                  to="/stories/$slug"
+                                  params={{ slug: story.slug }}
+                                  className="flex items-center justify-between text-xs text-neutral-200 hover:text-red-500 transition-colors py-0.5 group/link"
+                                >
+                                  <span className="truncate max-w-[85%]">{story.title}</span>
+                                  <ChevronRight className="size-3 text-gold opacity-0 group-hover/link:opacity-100 transition-opacity" />
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  )}
 
                   {/* H. Author Spotlight */}
                   {exploreData?.authors?.length > 0 && (
@@ -882,6 +1127,57 @@ function RouteComponent() {
                             </div>
                           </div>
                         ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {/* J. Most Loved Stories */}
+                  {exploreData?.mostLoved?.length > 0 && (
+                    <section className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Award className="size-4.5 text-gold" />
+                          <h2 className="font-display text-lg sm:text-xl font-bold text-white">
+                            Most Loved Stories
+                          </h2>
+                        </div>
+                        <span className="text-[10px] uppercase font-sans tracking-widest text-muted-foreground font-bold">
+                          Top reader ratings
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                        {exploreData.mostLoved.map((story: any) => {
+                          const localized = translateStory(story, lang);
+                          return (
+                            <Link
+                              key={story.id}
+                              to="/stories/$slug"
+                              params={{ slug: story.slug }}
+                              className="group bg-neutral-900 border border-neutral-850 hover:border-red-500/40 rounded-2xl overflow-hidden p-4 flex gap-4 transition-all duration-300 hover:shadow-lg"
+                            >
+                              <div className="size-16 shrink-0 overflow-hidden bg-neutral-950 rounded-lg">
+                                {story.image ? (
+                                  <img
+                                    src={story.image}
+                                    alt={localized.title}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-gradient-to-br from-red-950/20 to-neutral-900" />
+                                )}
+                              </div>
+                              <div className="flex flex-col justify-between flex-1 min-w-0">
+                                <h3 className="font-display font-bold text-xs text-neutral-100 group-hover:text-red-500 line-clamp-2 leading-snug transition-colors">
+                                  {localized.title}
+                                </h3>
+                                <div className="flex items-center justify-between text-[9px] text-neutral-400 font-sans">
+                                  <span>By {story.authorName || "ISP"}</span>
+                                  <span className="text-red-500">❤️ {story.likesCount} likes</span>
+                                </div>
+                              </div>
+                            </Link>
+                          );
+                        })}
                       </div>
                     </section>
                   )}

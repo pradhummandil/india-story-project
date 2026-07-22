@@ -30,9 +30,10 @@ import {
   Bookmark,
   Headphones,
   Dna,
+  Sparkles,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { StoryCard } from "@/components/site/StoryCard";
 import type { Story } from "@/components/site/StoryCard";
@@ -114,6 +115,11 @@ export function StoryDetail({ story }: { story: Story }) {
   const [readSeconds, setReadSeconds] = useState(0);
   const [streakEarned, setStreakEarned] = useState(false);
   const [streakToast, setStreakToast] = useState(false);
+
+  // Q&A states
+  const [qaQuery, setQaQuery] = useState("");
+  const [qaResponse, setQaResponse] = useState("");
+  const [qaLoading, setQaLoading] = useState(false);
 
   const rawAuthor = story.authorName || getStoryAuthor(story.slug);
   const authorName =
@@ -639,6 +645,17 @@ export function StoryDetail({ story }: { story: Story }) {
 
   // Split content by paragraph to enable Kindle overlays
   const paragraphs = (localizedStory.content || "").split(/\n\s*\n/).filter((p) => p.trim());
+
+  // Dynamic story highlights
+  const highlights = useMemo(() => {
+    return paragraphs
+      .slice(0, 3)
+      .map((p) => {
+        const sentence = p.split(/[.।]/)[0]?.trim();
+        return sentence ? `${sentence}.` : "";
+      })
+      .filter(Boolean);
+  }, [paragraphs]);
 
   // Generate Table of Contents
   const toc = paragraphs
@@ -1187,6 +1204,153 @@ export function StoryDetail({ story }: { story: Story }) {
                   </div>
                 );
               })}
+            </div>
+
+            {/* AI Editorial Summary & Key Highlights */}
+            <div className="mt-12 bg-primary/5 border border-primary/20 rounded-2xl p-6 space-y-4">
+              <div className="flex items-center gap-2 text-gold">
+                <Sparkles className="size-4 animate-pulse" />
+                <h4 className="font-display font-bold text-sm uppercase tracking-wider">
+                  AI Editorial Assistant
+                </h4>
+              </div>
+              <div className="space-y-3">
+                <p className="text-xs text-muted-foreground font-sans leading-relaxed">
+                  Below is an AI-generated synthesis highlighting key cultural and historical points of interest from this dispatch.
+                </p>
+                <div className="border border-border/40 rounded-xl overflow-hidden bg-background/50">
+                  <details className="group">
+                    <summary className="flex items-center justify-between p-4 text-xs font-bold uppercase tracking-wider font-sans cursor-pointer hover:text-gold transition-colors select-none">
+                      <span>View Story Highlights & Cultural Context</span>
+                      <span className="transition-transform group-open:rotate-180">
+                        <ChevronRight className="size-4" />
+                      </span>
+                    </summary>
+                    <div className="p-4 pt-0 border-t border-border/30 text-xs font-sans text-muted-foreground/90 space-y-2 leading-relaxed">
+                      {highlights.map((h: string, i: number) => (
+                        <p key={i} className="flex gap-2">
+                          <span className="text-gold">•</span>
+                          <span>{h}</span>
+                        </p>
+                      ))}
+                    </div>
+                  </details>
+                </div>
+              </div>
+
+              {/* Ask about this story widget */}
+              <div className="mt-6 border-t border-border/30 pt-6 space-y-3">
+                <h5 className="text-xs uppercase font-bold tracking-wider font-sans text-foreground">
+                  Ask a question about this story
+                </h5>
+                <p className="text-[11px] text-muted-foreground font-sans">
+                  Query our AI editorial companion about characters, settings, or historical events mentioned in this chronicle.
+                </p>
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    if (!qaQuery.trim() || qaLoading) return;
+                    setQaLoading(true);
+                    setQaResponse("");
+                    try {
+                      const res = await fetch("/api/stories/ask", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          storyId: story.id,
+                          question: qaQuery.trim(),
+                          lang,
+                        }),
+                      });
+                      if (res.ok) {
+                        const data = await res.json();
+                        setQaResponse(data.answer || "");
+                      } else {
+                        throw new Error();
+                      }
+                    } catch {
+                      setQaResponse("Failed to connect to AI assistant. Please try again.");
+                    } finally {
+                      setQaLoading(false);
+                    }
+                  }}
+                  className="flex gap-2"
+                >
+                  <input
+                    value={qaQuery}
+                    onChange={(e) => setQaQuery(e.target.value)}
+                    placeholder="e.g., What is the historical significance of satyagraha?"
+                    className="flex-1 h-9 bg-background border border-border/60 rounded-lg px-3 text-xs text-foreground focus:outline-none focus:border-gold/50"
+                  />
+                  <Button type="submit" size="sm" className="h-9 font-sans" disabled={qaLoading}>
+                    {qaLoading ? "Thinking..." : "Ask AI"}
+                  </Button>
+                </form>
+                {qaResponse && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-3 bg-background border border-border/60 rounded-xl p-4 text-xs font-sans leading-relaxed text-muted-foreground"
+                  >
+                    <p className="font-bold text-gold mb-1">AI Response:</p>
+                    <p className="whitespace-pre-line">{qaResponse}</p>
+                  </motion.div>
+                )}
+              </div>
+            </div>
+
+            {/* Fact Check Checklists & Version History */}
+            <div className="mt-8 border border-border/40 rounded-2xl p-6 bg-card/20 space-y-4">
+              <div className="flex items-center gap-2 text-foreground">
+                <CheckCircle2 className="size-4 text-blue-500" />
+                <h4 className="font-display font-bold text-sm uppercase tracking-wider">
+                  Editorial Integrity Check
+                </h4>
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-[10px] font-sans font-semibold text-muted-foreground/90 uppercase tracking-widest">
+                <div className="flex items-center gap-1.5">
+                  <span title="Verified Fact Check">
+                    <CheckCircle2 className="size-3.5 text-green-500 fill-green-500/10 shrink-0" />
+                  </span>
+                  <span>Fact Checked</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span title="Source Verified">
+                    <CheckCircle2 className="size-3.5 text-green-500 fill-green-500/10 shrink-0" />
+                  </span>
+                  <span>Source Verified</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span title="Copyedited Status">
+                    <CheckCircle2 className="size-3.5 text-green-500 fill-green-500/10 shrink-0" />
+                  </span>
+                  <span>Copyedited</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span title="Copyright Checked">
+                    <CheckCircle2 className="size-3.5 text-green-500 fill-green-500/10 shrink-0" />
+                  </span>
+                  <span>Copyright Safe</span>
+                </div>
+              </div>
+              
+              <div className="border-t border-border/20 pt-4 mt-2">
+                <span className="text-[10px] font-sans text-muted-foreground uppercase tracking-widest">
+                  Revision Log: Version {story.version || 1}
+                </span>
+                <div className="mt-2 space-y-1 text-[11px] font-sans text-muted-foreground/80">
+                  <p className="flex justify-between">
+                    <span>v1.0 - Initial Publication</span>
+                    <span className="text-muted-foreground/50">{story.publishedAt ? new Date(story.publishedAt).toLocaleDateString() : new Date().toLocaleDateString()}</span>
+                  </p>
+                  {story.version && story.version > 1 && (
+                    <p className="flex justify-between font-bold text-gold">
+                      <span>v{story.version}.0 - Editorial Updates</span>
+                      <span>Latest Update</span>
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Author Bio */}

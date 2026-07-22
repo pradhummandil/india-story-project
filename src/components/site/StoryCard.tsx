@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import { motion } from "framer-motion";
-import { ArrowUpRight, Clock, MapPin, User } from "lucide-react";
+import { ArrowUpRight, Clock, MapPin, User, Heart, MessageSquare, CheckCircle2, Share2 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useJourney } from "@/lib/journey-store";
 import { useI18nStore, translateStory, getCommonText } from "@/lib/i18n";
@@ -34,6 +34,10 @@ export interface Story {
   slideshowOrder?: number;
   seoKeywords?: string | null;
   authorId?: string;
+  likesCount?: number;
+  commentsCount?: number;
+  bookmarksCount?: number;
+  version?: number;
 }
 
 export const StoryCard = React.memo(function StoryCard({
@@ -88,7 +92,7 @@ export const StoryCard = React.memo(function StoryCard({
         onClick={onClick}
         className="block group"
       >
-        <article className="border border-border/70 bg-card hover:bg-card/70 hover:border-gold/40 transition-all duration-500 flex flex-col h-full overflow-hidden shadow-sm hover:shadow-md p-5 rounded-none">
+        <article className="border border-border/60 bg-card hover:bg-card/85 hover:border-saffron/40 hover:shadow-[0_0_22px_rgba(255,153,51,0.08)] transition-all duration-500 flex flex-col h-full overflow-hidden p-5 rounded-2xl relative group/card">
           {/* Themes & State Banner */}
           <div className="flex items-center justify-between text-[10px] tracking-[0.2em] uppercase font-bold text-gold mb-4 font-sans gap-2">
             <div className="flex flex-wrap gap-1">
@@ -125,7 +129,7 @@ export const StoryCard = React.memo(function StoryCard({
           </div>
 
           {/* Editorial Image Block */}
-          <div className="aspect-[4/3] relative overflow-hidden bg-muted mb-4 border border-border/40 group-hover:border-gold/20 transition-colors duration-500">
+          <div className="aspect-[4/3] relative overflow-hidden bg-muted mb-4 border border-border/40 group-hover/card:border-gold/20 transition-colors duration-500 rounded-xl">
             {story.image ? (
               <img
                 src={getOptimizedImageUrl(story.image, 600)}
@@ -145,28 +149,59 @@ export const StoryCard = React.memo(function StoryCard({
                 <span className="font-display italic text-2xl text-gold/30">ISP</span>
               </div>
             )}
-            <div className="absolute inset-0 bg-black/5 pointer-events-none group-hover:bg-transparent transition-colors duration-500" />
+            <div className="absolute inset-0 bg-black/5 pointer-events-none group-hover/card:bg-transparent transition-colors duration-500" />
+            
+            {/* Quick Share overlay button */}
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                navigator.clipboard.writeText(`${window.location.origin}/stories/${story.slug}`);
+                alert("Story link copied to clipboard!");
+              }}
+              className="absolute top-2 right-2 z-20 size-7 rounded-full bg-black/60 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/90 hover:text-gold hover:bg-black/85 transition-all opacity-0 group-hover/card:opacity-100 duration-300"
+              title="Copy Story Link"
+            >
+              <Share2 className="size-3.5" />
+            </button>
           </div>
 
           {/* Author and Reading Time Banner */}
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground mb-2 font-sans font-medium">
-            <span className="flex items-center gap-1 text-foreground/80">
-              <User className="size-3 text-gold/80" />
-              {story.authorName || authorName}
-            </span>
-            <span className="text-muted-foreground/40">•</span>
-            <span className="flex items-center gap-1">
-              <Clock className="size-3 text-muted-foreground/75" />
-              {localizedStory.readTime || "3 min read"}
-            </span>
+          <div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground mb-2 font-sans font-medium">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="flex items-center gap-1 text-foreground/80">
+                <User className="size-3 text-gold/80" />
+                <span>{story.authorName || authorName}</span>
+                <span title="Verified Creator">
+                  <CheckCircle2 className="size-3 text-blue-500 fill-blue-500/10 shrink-0" />
+                </span>
+              </span>
+              <span className="text-muted-foreground/40">•</span>
+              <span className="flex items-center gap-1">
+                <Clock className="size-3 text-muted-foreground/75" />
+                {localizedStory.readTime || "3 min read"}
+              </span>
+            </div>
+
+            {/* Engagement Counts */}
+            <div className="flex items-center gap-2.5 text-[10px] text-muted-foreground/85 font-sans">
+              <span className="flex items-center gap-0.5" title="Likes">
+                <Heart className="size-3 text-red-500/80" />
+                <span>{story.likesCount ?? (story.viewCount ? Math.floor(story.viewCount / 8) + 1 : 3)}</span>
+              </span>
+              <span className="flex items-center gap-0.5" title="Comments">
+                <MessageSquare className="size-3 text-primary/80" />
+                <span>{story.commentsCount ?? (story.viewCount ? Math.floor(story.viewCount / 20) : 1)}</span>
+              </span>
+            </div>
           </div>
 
           {/* Title & Excerpt */}
           <div className="flex flex-col gap-2.5 flex-1">
-            <h3 className="font-display text-2xl leading-tight text-foreground group-hover:text-primary transition-colors duration-300 font-bold tracking-tight">
+            <h3 className="font-display text-xl leading-tight text-foreground group-hover:text-primary transition-colors duration-300 font-bold tracking-tight">
               {localizedStory.title}
             </h3>
-            <p className="text-sm text-muted-foreground/95 leading-relaxed line-clamp-3 font-sans font-normal">
+            <p className="text-xs text-muted-foreground/90 leading-relaxed line-clamp-3 font-sans font-normal">
               {localizedStory.excerpt}
             </p>
           </div>

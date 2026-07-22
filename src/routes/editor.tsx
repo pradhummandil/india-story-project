@@ -910,6 +910,88 @@ export function EditorPanelPage() {
                         className="w-full h-10 px-3 border border-border text-sm"
                       />
                     </div>
+
+                    {/* SEO Preview & Google Snippet Simulation */}
+                    <div className="border-t border-border/40 pt-4 space-y-2.5">
+                      <label className="block text-[10px] uppercase tracking-wider font-bold text-muted-foreground">SEO Google Preview</label>
+                      <div className="bg-white border border-border p-3 space-y-1 rounded text-left">
+                        <div className="text-xs text-[#1a0dab] font-sans font-medium hover:underline truncate max-w-xs">
+                          {editingStory.seoTitle || editingStory.title || "Untitled Story"}
+                        </div>
+                        <div className="text-[10px] text-[#006621] font-sans truncate">
+                          indiastoryproject.org/stories/{editingStory.slug || "story-slug"}
+                        </div>
+                        <div className="text-[11px] text-[#545454] font-sans line-clamp-2 leading-relaxed">
+                          {editingStory.seoDescription || editingStory.excerpt || "No SEO description provided. Add one to see the preview here."}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* AI Compliance Check Panel */}
+                    <div className="border-t border-border/40 pt-4 space-y-3 text-left">
+                      <label className="block text-[10px] uppercase tracking-wider font-bold text-muted-foreground">AI Compliance Checks</label>
+                      <div className="space-y-2 bg-background p-3 border border-border rounded text-[11px] font-sans">
+                        <div className="flex justify-between items-center">
+                          <span className="text-muted-foreground">Readability Level:</span>
+                          <span className="font-bold text-gold">
+                            {(() => {
+                              const contentText = editingStory.content || "";
+                              const words = contentText.trim().split(/\s+/).filter(Boolean).length;
+                              const sentences = contentText.split(/[.!?।]+/).filter((s: string) => s.trim()).length;
+                              const syllables = contentText.toLowerCase().replace(/[^aeiouy]/g, "").length;
+                              const score = words && sentences 
+                                ? Math.round(206.835 - 1.015 * (words / sentences) - 84.6 * (syllables / words))
+                                : 0;
+                              const scoreVal = Math.max(10, Math.min(100, score || 70));
+                              if (scoreVal > 80) return `Easy (${scoreVal}/100)`;
+                              if (scoreVal > 60) return `Standard (${scoreVal}/100)`;
+                              return `Difficult (${scoreVal}/100)`;
+                            })()}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-muted-foreground">Word Count:</span>
+                          <span className="font-bold text-foreground">
+                            {(editingStory.content || "").trim().split(/\s+/).filter(Boolean).length} words
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-muted-foreground">SEO Keyword Check:</span>
+                          <span className={`font-bold uppercase text-[9px] ${
+                            editingStory.seoKeywords && (editingStory.content || "").toLowerCase().includes((editingStory.seoKeywords.split(",")[0] || "").toLowerCase().trim())
+                              ? "text-emerald-600"
+                              : "text-amber-600"
+                          }`}>
+                            {editingStory.seoKeywords && (editingStory.content || "").toLowerCase().includes((editingStory.seoKeywords.split(",")[0] || "").toLowerCase().trim())
+                              ? "Passed"
+                              : "Missing Keywords in Content"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Editor Fact Check Checklist */}
+                    <div className="border-t border-border/40 pt-4 space-y-2 text-left">
+                      <label className="block text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Verification Checklist</label>
+                      <div className="space-y-1.5 text-xs text-muted-foreground font-sans font-medium">
+                        <label className="flex items-center gap-2 cursor-pointer hover:text-foreground">
+                          <input type="checkbox" className="rounded border-border text-primary focus:ring-primary" />
+                          <span>Source Credibility Verified</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer hover:text-foreground">
+                          <input type="checkbox" className="rounded border-border text-primary focus:ring-primary" />
+                          <span>Quotes Double Checked</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer hover:text-foreground">
+                          <input type="checkbox" className="rounded border-border text-primary focus:ring-primary" />
+                          <span>Plagiarism Check Passed</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer hover:text-foreground">
+                          <input type="checkbox" className="rounded border-border text-primary focus:ring-primary" />
+                          <span>Media Copyright Safe</span>
+                        </label>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

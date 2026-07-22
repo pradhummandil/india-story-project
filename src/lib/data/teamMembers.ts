@@ -35,10 +35,19 @@ export const teamMembers: TeamMember[] = [
   {
     id: "sushant-singh",
     name: "Sushant Singh",
-    role: "Full Stack Developer",
+    role: "Web Developer",
     photo: null,
     bio: "Passionate engineer and web architect building high-performance, responsive platforms for local communities.",
     location: "Noida, India",
     linkedin: "https://www.linkedin.com/in/sushant-kumar-singh-b5b59631/",
+  },
+  {
+    id: "pradhum-mandil",
+    name: "Pradhum Mandil",
+    role: "Full Stack Developer,DevOps Engineer,AI/ML Engineer ",
+    photo: null,
+    bio: "Passionate engineer and App architect building high-performance, responsive platforms for local communities.",
+    location: "Gwalior, India",
+    linkedin: "www.linkedin.com/in/pradhum-m-b69b66318",
   },
 ];

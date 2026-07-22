@@ -116,6 +116,7 @@ import { Route as ApiStoriesRecommendedRouteImport } from './routes/api/stories/
 import { Route as ApiStoriesLatestRouteImport } from './routes/api/stories/latest'
 import { Route as ApiStoriesFilterRouteImport } from './routes/api/stories/filter'
 import { Route as ApiStoriesFeaturedRouteImport } from './routes/api/stories/featured'
+import { Route as ApiStoriesAskRouteImport } from './routes/api/stories/ask'
 import { Route as ApiStoriesSlugRouteImport } from './routes/api/stories/$slug'
 import { Route as ApiSearchHistoryRouteImport } from './routes/api/search/history'
 import { Route as ApiProfileAvatarRouteImport } from './routes/api/profile/avatar'
@@ -756,6 +757,11 @@ const ApiStoriesFeaturedRoute = ApiStoriesFeaturedRouteImport.update({
   path: '/featured',
   getParentRoute: () => ApiStoriesRoute,
 } as any)
+const ApiStoriesAskRoute = ApiStoriesAskRouteImport.update({
+  id: '/ask',
+  path: '/ask',
+  getParentRoute: () => ApiStoriesRoute,
+} as any)
 const ApiStoriesSlugRoute = ApiStoriesSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -1253,6 +1259,7 @@ export interface FileRoutesByFullPath {
   '/api/profile/avatar': typeof ApiProfileAvatarRoute
   '/api/search/history': typeof ApiSearchHistoryRoute
   '/api/stories/$slug': typeof ApiStoriesSlugRouteWithChildren
+  '/api/stories/ask': typeof ApiStoriesAskRoute
   '/api/stories/featured': typeof ApiStoriesFeaturedRoute
   '/api/stories/filter': typeof ApiStoriesFilterRoute
   '/api/stories/latest': typeof ApiStoriesLatestRoute
@@ -1429,6 +1436,7 @@ export interface FileRoutesByTo {
   '/api/profile/avatar': typeof ApiProfileAvatarRoute
   '/api/search/history': typeof ApiSearchHistoryRoute
   '/api/stories/$slug': typeof ApiStoriesSlugRouteWithChildren
+  '/api/stories/ask': typeof ApiStoriesAskRoute
   '/api/stories/featured': typeof ApiStoriesFeaturedRoute
   '/api/stories/filter': typeof ApiStoriesFilterRoute
   '/api/stories/latest': typeof ApiStoriesLatestRoute
@@ -1609,6 +1617,7 @@ export interface FileRoutesById {
   '/api/profile/avatar': typeof ApiProfileAvatarRoute
   '/api/search/history': typeof ApiSearchHistoryRoute
   '/api/stories/$slug': typeof ApiStoriesSlugRouteWithChildren
+  '/api/stories/ask': typeof ApiStoriesAskRoute
   '/api/stories/featured': typeof ApiStoriesFeaturedRoute
   '/api/stories/filter': typeof ApiStoriesFilterRoute
   '/api/stories/latest': typeof ApiStoriesLatestRoute
@@ -1790,6 +1799,7 @@ export interface FileRouteTypes {
     | '/api/profile/avatar'
     | '/api/search/history'
     | '/api/stories/$slug'
+    | '/api/stories/ask'
     | '/api/stories/featured'
     | '/api/stories/filter'
     | '/api/stories/latest'
@@ -1966,6 +1976,7 @@ export interface FileRouteTypes {
     | '/api/profile/avatar'
     | '/api/search/history'
     | '/api/stories/$slug'
+    | '/api/stories/ask'
     | '/api/stories/featured'
     | '/api/stories/filter'
     | '/api/stories/latest'
@@ -2145,6 +2156,7 @@ export interface FileRouteTypes {
     | '/api/profile/avatar'
     | '/api/search/history'
     | '/api/stories/$slug'
+    | '/api/stories/ask'
     | '/api/stories/featured'
     | '/api/stories/filter'
     | '/api/stories/latest'
@@ -3061,6 +3073,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiStoriesFeaturedRouteImport
       parentRoute: typeof ApiStoriesRoute
     }
+    '/api/stories/ask': {
+      id: '/api/stories/ask'
+      path: '/ask'
+      fullPath: '/api/stories/ask'
+      preLoaderRoute: typeof ApiStoriesAskRouteImport
+      parentRoute: typeof ApiStoriesRoute
+    }
     '/api/stories/$slug': {
       id: '/api/stories/$slug'
       path: '/$slug'
@@ -3805,6 +3824,7 @@ const ApiStoriesSlugRouteWithChildren = ApiStoriesSlugRoute._addFileChildren(
 
 interface ApiStoriesRouteChildren {
   ApiStoriesSlugRoute: typeof ApiStoriesSlugRouteWithChildren
+  ApiStoriesAskRoute: typeof ApiStoriesAskRoute
   ApiStoriesFeaturedRoute: typeof ApiStoriesFeaturedRoute
   ApiStoriesFilterRoute: typeof ApiStoriesFilterRoute
   ApiStoriesLatestRoute: typeof ApiStoriesLatestRoute
@@ -3815,6 +3835,7 @@ interface ApiStoriesRouteChildren {
 
 const ApiStoriesRouteChildren: ApiStoriesRouteChildren = {
   ApiStoriesSlugRoute: ApiStoriesSlugRouteWithChildren,
+  ApiStoriesAskRoute: ApiStoriesAskRoute,
   ApiStoriesFeaturedRoute: ApiStoriesFeaturedRoute,
   ApiStoriesFilterRoute: ApiStoriesFilterRoute,
   ApiStoriesLatestRoute: ApiStoriesLatestRoute,

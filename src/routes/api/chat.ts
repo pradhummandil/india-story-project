@@ -48,6 +48,11 @@ export const Route = createFileRoute("/api/chat")({
           const message = sanitizeInput(String(body.message || ""));
           const lang = body.lang || "en";
           const isHindi = lang === "hi";
+          const history = body.history || [];
+
+          const historyContext = history.length > 0
+            ? history.map((m: any) => `${m.sender.toUpperCase()}: ${m.text}`).join("\n")
+            : "No previous messages in this session.";
 
           if (!message.trim()) {
             return json({ error: "Message is required" }, { status: 400 });
@@ -173,7 +178,10 @@ Slug: ${story.slug}
           const prompt = `
 You are the "India Story AI Companion", the official AI guide for the India Story Project.
 
-USER'S QUESTION: "${message}"
+=== CONVERSATION HISTORY ===
+${historyContext}
+
+USER'S CURRENT QUESTION: "${message}"
 LANGUAGE: ${isHindi ? "Hindi (हिन्दी)" : "English"}
 
 ${userContext}

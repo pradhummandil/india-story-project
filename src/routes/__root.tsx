@@ -164,6 +164,23 @@ function RootShell({ children }: { children: ReactNode }) {
         <link rel="icon" type="image/jpeg" href="/Logo-ISP.jpg" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#8b0000" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "India Story Project",
+              "url": "https://indiastoryproject.com",
+              "logo": "https://indiastoryproject.com/Logo-ISP.jpg",
+              "sameAs": [
+                "https://www.instagram.com/indiastoryproject/",
+                "https://www.youtube.com/@indiastoryproject7282",
+                "https://www.linkedin.com/company/india-story-project/"
+              ]
+            })
+          }}
+        />
       </head>
       <body>
         <script
