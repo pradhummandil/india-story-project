@@ -1260,13 +1260,13 @@ export function EditorPanelPage() {
                                     <span className={`px-2.5 py-1 text-[9px] font-bold border uppercase tracking-wider ${
                                       sub.status === "Published"
                                         ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-                                        : sub.status === "FactChecking"
+                                        : sub.status === "FactChecking" || sub.status === "ASSIGNED_TO_EDITOR"
                                           ? "bg-amber-50 border-amber-200 text-amber-700"
                                           : sub.status === "Rejected"
                                             ? "bg-red-50 border-red-200 text-red-700"
                                             : "bg-blue-50 border-blue-200 text-blue-700"
                                     }`}>
-                                      {sub.status === "FactChecking" ? "Assigned to Editor" : sub.status === "Pending" ? "Submitted" : sub.status}
+                                       {sub.status === "FactChecking" || sub.status === "ASSIGNED_TO_EDITOR" ? "Assigned to Editor" : sub.status === "Pending" || sub.status === "SUBMITTED" ? "Submitted" : sub.status}
                                     </span>
                                   </div>
 
@@ -1274,7 +1274,7 @@ export function EditorPanelPage() {
                                     {sub.excerpt || sub.content}
                                   </div>
 
-                                  {isAdmin && sub.status === "Pending" && (
+                                  {isAdmin && (sub.status === "Pending" || sub.status === "SUBMITTED") && (
                                     <div className="pt-4 border-t border-border/45 flex flex-col md:flex-row gap-4 items-start md:items-end justify-between">
                                       <div className="space-y-4 w-full md:max-w-md">
                                         <div>
