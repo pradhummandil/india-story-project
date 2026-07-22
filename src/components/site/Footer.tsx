@@ -5,8 +5,8 @@ import { useI18nStore, getFooterText } from "@/lib/i18n";
 const socials = [
   { Icon: Instagram, label: "Instagram", href: "https://www.instagram.com/indiastoryproject/" },
   { Icon: Twitter, label: "Twitter", href: "https://twitter.com" },
-  { Icon: Youtube, label: "YouTube", href: "https://youtube.com" },
-  { Icon: Linkedin, label: "LinkedIn", href: "https://linkedin.com" },
+  { Icon: Youtube, label: "YouTube", href: "https://www.youtube.com/@indiastoryproject7282" },
+  { Icon: Linkedin, label: "LinkedIn", href: "https://www.linkedin.com/company/india-story-project/" },
 ];
 
 export function Footer() {

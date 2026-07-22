@@ -125,6 +125,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
+      { rel: "icon", type: "image/jpeg", href: "/Logo-ISP.jpg" },
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
@@ -160,6 +161,7 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
+        <link rel="icon" type="image/jpeg" href="/Logo-ISP.jpg" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#8b0000" />
       </head>

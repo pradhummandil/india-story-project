@@ -93,16 +93,16 @@ const THEME_EMOJIS: Record<string, string> = {
 };
 
 const THEME_GRADIENTS: Record<string, string> = {
-  heritage: "from-amber-950/60 to-stone-900/80",
-  innovation: "from-blue-950/60 to-stone-900/80",
-  sustainability: "from-emerald-950/60 to-stone-900/80",
-  science: "from-indigo-950/60 to-stone-900/80",
-  culture: "from-red-950/60 to-stone-900/80",
-  environment: "from-teal-950/60 to-stone-900/80",
-  history: "from-amber-900/50 to-stone-900/80",
-  freedom: "from-orange-950/60 to-stone-900/80",
-  food: "from-rose-950/60 to-stone-900/80",
-  festival: "from-purple-950/60 to-stone-900/80",
+  heritage: "from-amber-950/80 to-neutral-950 border-amber-900/40 hover:border-amber-500/50 hover:shadow-amber-500/10",
+  innovation: "from-red-950/80 to-neutral-950 border-red-900/40 hover:border-red-500/50 hover:shadow-red-500/10",
+  sustainability: "from-emerald-950/80 to-neutral-950 border-emerald-900/40 hover:border-emerald-500/50 hover:shadow-emerald-500/10",
+  science: "from-indigo-950/80 to-neutral-950 border-indigo-900/40 hover:border-indigo-500/50 hover:shadow-indigo-500/10",
+  culture: "from-red-950/80 to-neutral-950 border-red-900/40 hover:border-red-500/50 hover:shadow-red-500/10",
+  environment: "from-teal-950/80 to-neutral-950 border-teal-900/40 hover:border-teal-500/50 hover:shadow-teal-500/10",
+  history: "from-amber-900/60 to-neutral-950 border-amber-800/40 hover:border-amber-500/50 hover:shadow-amber-500/10",
+  freedom: "from-orange-950/80 to-neutral-950 border-orange-900/40 hover:border-orange-500/50 hover:shadow-orange-500/10",
+  food: "from-rose-950/80 to-neutral-950 border-rose-900/40 hover:border-rose-500/50 hover:shadow-rose-500/10",
+  festival: "from-purple-950/80 to-neutral-950 border-purple-900/40 hover:border-purple-500/50 hover:shadow-purple-500/10",
 };
 
 function RouteComponent() {
@@ -298,7 +298,7 @@ function RouteComponent() {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass text-[10px] uppercase tracking-widest text-gold font-sans font-bold"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-950/40 border border-red-500/20 text-[10px] uppercase tracking-widest text-red-400 font-sans font-bold shadow-md"
               >
                 <Compass className="size-3.5 text-gold animate-spin-slow" />
                 Discovery Portal
@@ -330,7 +330,7 @@ function RouteComponent() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search title, state, tags, theme, author..."
-                  className="w-full h-14 pl-12 pr-10 bg-card/60 border-border/80 rounded-xl font-sans text-sm shadow-elegant focus:border-gold/50 focus-visible:ring-0 text-white placeholder-muted-foreground"
+                  className="w-full h-14 pl-12 pr-10 bg-neutral-900 border-neutral-800 rounded-xl font-sans text-sm shadow-lg focus:border-red-500/50 focus-visible:ring-0 text-white placeholder-neutral-550 transition-all"
                 />
                 {searchQuery && (
                   <button
@@ -343,44 +343,44 @@ function RouteComponent() {
               </div>
 
               {/* Dynamic Database Statistics */}
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 max-w-3xl mx-auto pt-8 border-t border-white/5">
-                <div className="bg-card/30 border border-border/30 rounded-xl p-3.5 text-center">
-                  <div className="text-xl sm:text-2xl font-bold font-display text-gold">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 max-w-3xl mx-auto pt-8 border-t border-neutral-800">
+                <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-3.5 text-center shadow-md">
+                  <div className="text-xl sm:text-2xl font-bold font-display text-red-500">
                     {exploreData?.stats?.stories ?? "..."}
                   </div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-sans font-medium mt-0.5">
+                  <div className="text-[10px] uppercase tracking-wider text-neutral-400 font-sans font-semibold mt-0.5">
                     Stories
                   </div>
                 </div>
-                <div className="bg-card/30 border border-border/30 rounded-xl p-3.5 text-center">
-                  <div className="text-xl sm:text-2xl font-bold font-display text-gold">
+                <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-3.5 text-center shadow-md">
+                  <div className="text-xl sm:text-2xl font-bold font-display text-red-500">
                     {exploreData?.stats?.states ?? "..."}
                   </div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-sans font-medium mt-0.5">
+                  <div className="text-[10px] uppercase tracking-wider text-neutral-400 font-sans font-semibold mt-0.5">
                     States
                   </div>
                 </div>
-                <div className="bg-card/30 border border-border/30 rounded-xl p-3.5 text-center">
-                  <div className="text-xl sm:text-2xl font-bold font-display text-gold">
+                <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-3.5 text-center shadow-md">
+                  <div className="text-xl sm:text-2xl font-bold font-display text-red-500">
                     {exploreData?.stats?.themes ?? "..."}
                   </div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-sans font-medium mt-0.5">
+                  <div className="text-[10px] uppercase tracking-wider text-neutral-400 font-sans font-semibold mt-0.5">
                     Themes
                   </div>
                 </div>
-                <div className="bg-card/30 border border-border/30 rounded-xl p-3.5 text-center">
-                  <div className="text-xl sm:text-2xl font-bold font-display text-gold">
+                <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-3.5 text-center shadow-md">
+                  <div className="text-xl sm:text-2xl font-bold font-display text-red-500">
                     {exploreData?.stats?.authors ?? "..."}
                   </div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-sans font-medium mt-0.5">
+                  <div className="text-[10px] uppercase tracking-wider text-neutral-400 font-sans font-semibold mt-0.5">
                     Authors
                   </div>
                 </div>
-                <div className="bg-card/30 border border-border/30 rounded-xl p-3.5 text-center col-span-2 sm:col-span-1">
-                  <div className="text-xl sm:text-2xl font-bold font-display text-gold">
+                <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-3.5 text-center col-span-2 sm:col-span-1 shadow-md">
+                  <div className="text-xl sm:text-2xl font-bold font-display text-red-500">
                     {exploreData?.stats?.views ? `${Math.round(exploreData.stats.views / 100) / 10}k` : "..."}
                   </div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-sans font-medium mt-0.5">
+                  <div className="text-[10px] uppercase tracking-wider text-neutral-400 font-sans font-semibold mt-0.5">
                     Views
                   </div>
                 </div>
@@ -452,7 +452,7 @@ function RouteComponent() {
             
             {/* Desktop Filters Panel */}
             <aside className="hidden lg:block space-y-6">
-              <div className="bg-card/40 border border-border/40 rounded-2xl p-5 sticky top-28 space-y-6 shadow-xl">
+              <div className="bg-neutral-900/90 border border-neutral-800 rounded-2xl p-6 sticky top-28 space-y-6 shadow-xl">
                 <div className="flex items-center justify-between border-b border-border/40 pb-4">
                   <h3 className="font-display font-bold text-base flex items-center gap-2 text-white">
                     <SlidersHorizontal className="size-4 text-gold" />
@@ -587,10 +587,10 @@ function RouteComponent() {
                               key={item.story.id}
                               to="/stories/$slug"
                               params={{ slug: item.story.slug }}
-                              className="w-72 flex-shrink-0 bg-card/45 border border-border/40 rounded-xl p-4 snap-start hover:border-gold/30 transition-all duration-300 flex flex-col justify-between"
+                              className="w-72 flex-shrink-0 bg-neutral-900 border border-neutral-850 rounded-2xl p-5 snap-start hover:border-red-500/50 hover:shadow-lg transition-all duration-300 flex flex-col justify-between"
                             >
                               <div className="space-y-2">
-                                <span className="text-[9px] uppercase tracking-widest text-gold bg-gold/10 px-2 py-0.5 rounded border border-gold/10 font-sans font-bold">
+                                <span className="text-[9px] uppercase tracking-widest text-red-500 bg-red-500/10 px-2.5 py-0.5 rounded border border-red-500/20 font-sans font-bold">
                                   {localized.region}
                                 </span>
                                 <h3 className="font-display font-bold text-sm text-white line-clamp-2 leading-snug">
@@ -598,13 +598,13 @@ function RouteComponent() {
                                 </h3>
                               </div>
                               <div className="mt-4 space-y-2">
-                                <div className="flex items-center justify-between text-[10px] text-muted-foreground font-sans">
+                                <div className="flex items-center justify-between text-[10px] text-neutral-300 font-sans font-medium">
                                   <span>Progress: {item.progressPercent}%</span>
                                   <span>{formatReadTime(item.story.readingTime)}</span>
                                 </div>
-                                <div className="w-full bg-stone-800 rounded-full h-1 overflow-hidden">
+                                <div className="w-full bg-neutral-850 rounded-full h-1 overflow-hidden">
                                   <div
-                                    className="bg-gold h-full transition-all duration-300"
+                                    className="bg-red-600 h-full transition-all duration-300"
                                     style={{ width: `${item.progressPercent}%` }}
                                   />
                                 </div>
@@ -633,9 +633,9 @@ function RouteComponent() {
                               key={story.id}
                               to="/stories/$slug"
                               params={{ slug: story.slug }}
-                              className="w-72 flex-shrink-0 group snap-start bg-card/30 border border-border/30 rounded-xl overflow-hidden hover:border-gold/30 hover:shadow-glow transition-all duration-300"
+                              className="w-72 flex-shrink-0 group snap-start bg-neutral-900 border border-neutral-850 rounded-2xl overflow-hidden hover:border-red-500/50 hover:shadow-lg transition-all duration-300"
                             >
-                              <div className="aspect-[16/10] overflow-hidden relative bg-muted">
+                              <div className="aspect-[16/10] overflow-hidden relative bg-neutral-950">
                                 {story.image ? (
                                   <img
                                     src={story.image}
@@ -643,14 +643,14 @@ function RouteComponent() {
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                   />
                                 ) : (
-                                  <div className="w-full h-full bg-gradient-to-br from-primary/10 to-gold/15" />
+                                  <div className="w-full h-full bg-gradient-to-br from-red-950/20 to-neutral-900" />
                                 )}
                               </div>
-                              <div className="p-3.5 space-y-1.5">
-                                <div className="text-[9px] uppercase tracking-wider text-gold font-sans font-bold">
+                              <div className="p-4 space-y-1.5">
+                                <div className="text-[9px] uppercase tracking-wider text-red-500 font-sans font-bold">
                                   {localized.region}
                                 </div>
-                                <h3 className="font-display font-bold text-sm text-white line-clamp-2 leading-snug group-hover:text-primary transition-colors">
+                                <h3 className="font-display font-bold text-sm text-neutral-100 line-clamp-2 leading-snug group-hover:text-red-500 transition-colors">
                                   {localized.title}
                                 </h3>
                               </div>
@@ -678,9 +678,9 @@ function RouteComponent() {
                               key={story.id}
                               to="/stories/$slug"
                               params={{ slug: story.slug }}
-                              className="w-72 flex-shrink-0 group snap-start bg-card/30 border border-border/30 rounded-xl overflow-hidden hover:border-gold/30 hover:shadow-glow transition-all duration-300"
+                              className="w-72 flex-shrink-0 group snap-start bg-neutral-900 border border-neutral-850 rounded-2xl overflow-hidden hover:border-red-500/50 hover:shadow-lg transition-all duration-300"
                             >
-                              <div className="aspect-[16/10] overflow-hidden relative bg-muted">
+                              <div className="aspect-[16/10] overflow-hidden relative bg-neutral-950">
                                 {story.image ? (
                                   <img
                                     src={story.image}
@@ -688,17 +688,17 @@ function RouteComponent() {
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                   />
                                 ) : (
-                                  <div className="w-full h-full bg-gradient-to-br from-primary/10 to-gold/15" />
+                                  <div className="w-full h-full bg-gradient-to-br from-red-950/20 to-neutral-900" />
                                 )}
-                                <span className="absolute bottom-2 left-2 bg-black/75 backdrop-blur text-[8px] text-white px-2 py-0.5 rounded font-sans font-bold">
+                                <span className="absolute bottom-2.5 left-2.5 bg-red-600/90 backdrop-blur text-[8px] text-white uppercase font-bold tracking-widest px-2.5 py-1 rounded font-sans shadow-md">
                                   🔥 {story.viewCount} views
                                 </span>
                               </div>
-                              <div className="p-3.5 space-y-1.5">
-                                <div className="text-[9px] uppercase tracking-wider text-gold font-sans font-bold">
+                              <div className="p-4 space-y-1.5">
+                                <div className="text-[9px] uppercase tracking-wider text-red-500 font-sans font-bold">
                                   {localized.region}
                                 </div>
-                                <h3 className="font-display font-bold text-sm text-white line-clamp-2 leading-snug group-hover:text-primary transition-colors">
+                                <h3 className="font-display font-bold text-sm text-neutral-100 line-clamp-2 leading-snug group-hover:text-red-500 transition-colors">
                                   {localized.title}
                                 </h3>
                               </div>
@@ -722,20 +722,20 @@ function RouteComponent() {
                         <div
                           key={st.id}
                           onClick={() => handleStateSelect(st.name)}
-                          className="relative rounded-2xl border border-border/40 overflow-hidden aspect-[4/3] group cursor-pointer hover:border-gold/30 shadow-elegant transition-all duration-500"
+                          className="relative rounded-2xl border border-neutral-800 overflow-hidden aspect-[4/3] group cursor-pointer hover:border-red-500/50 shadow-lg hover:shadow-red-500/10 transition-all duration-500"
                         >
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10 z-10" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent z-10" />
                           <img
                             src={st.image}
                             alt={st.name}
                             className="w-full h-full object-cover absolute inset-0 group-hover:scale-105 transition-transform duration-700"
                           />
                           <div className="absolute bottom-4 left-4 right-4 z-20 space-y-1">
-                            <h3 className="font-display font-bold text-base text-white tracking-wide group-hover:text-gold transition-colors">
+                            <h3 className="font-display font-bold text-base text-white tracking-wide group-hover:text-red-400 transition-colors">
                               {st.name}
                             </h3>
-                            <div className="text-[10px] text-white/70 font-sans flex items-center gap-1.5 uppercase font-medium tracking-wider">
-                              <BookOpen className="size-3 text-gold" />
+                            <div className="text-[10px] text-neutral-300 font-sans flex items-center gap-1.5 uppercase font-medium tracking-wider">
+                              <BookOpen className="size-3 text-red-500" />
                               {st.count} {st.count === 1 ? "Story" : "Stories"}
                             </div>
                           </div>
@@ -755,19 +755,19 @@ function RouteComponent() {
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
                       {exploreData?.themes?.map((t: any) => {
                         const emoji = THEME_EMOJIS[t.name.toLowerCase()] || "✨";
-                        const gradient = THEME_GRADIENTS[t.name.toLowerCase()] || "from-stone-900 to-stone-900/60";
+                        const gradient = THEME_GRADIENTS[t.name.toLowerCase()] || "from-neutral-900 to-neutral-950";
                         return (
-                          <div
-                            key={t.id}
-                            onClick={() => handleThemeSelect(t.name)}
-                            className={`relative rounded-xl border border-border/40 p-5 flex flex-col items-center justify-center text-center gap-2 bg-gradient-to-b ${gradient} hover:scale-[1.02] cursor-pointer hover:border-gold/30 transition-all duration-300`}
-                          >
-                            <span className="text-3xl">{emoji}</span>
-                            <span className="font-sans font-bold text-xs text-white leading-tight mt-1">
-                              {t.name}
-                            </span>
-                            <span className="text-[10px] text-white/60 font-sans">{t.count} stories</span>
-                          </div>
+                           <div
+                             key={t.id}
+                             onClick={() => handleThemeSelect(t.name)}
+                             className={`relative rounded-2xl border p-6 flex flex-col items-center justify-center text-center gap-2.5 bg-gradient-to-b ${gradient} hover:scale-[1.03] cursor-pointer hover:shadow-xl transition-all duration-300`}
+                           >
+                             <span className="text-3xl">{emoji}</span>
+                             <span className="font-sans font-bold text-xs text-white leading-tight mt-1">
+                               {t.name}
+                             </span>
+                             <span className="text-[10px] text-neutral-300 font-sans font-semibold">{t.count} stories</span>
+                           </div>
                         );
                       })}
                     </div>
@@ -793,17 +793,17 @@ function RouteComponent() {
                         <div
                           key={item.title}
                           onClick={() => handleCollectionSelect(item.keyword)}
-                          className="bg-card/45 border border-border/40 rounded-xl p-5 hover:border-gold/30 cursor-pointer shadow-elegant hover:shadow-glow transition-all duration-300 flex flex-col justify-between"
+                          className="bg-neutral-900/90 border border-neutral-800 rounded-2xl p-6 hover:border-red-500/50 hover:shadow-[0_0_20px_rgba(220,38,38,0.15)] cursor-pointer shadow-lg transition-all duration-300 flex flex-col justify-between"
                         >
                           <div className="space-y-2">
-                            <h3 className="font-display font-bold text-base text-white hover:text-gold transition-colors">
+                            <h3 className="font-display font-bold text-base text-white hover:text-red-400 transition-colors">
                               {item.title}
                             </h3>
-                            <p className="text-xs text-muted-foreground font-sans line-clamp-2">
+                            <p className="text-xs text-neutral-300 font-sans leading-relaxed">
                               {item.desc}
                             </p>
                           </div>
-                          <div className="mt-4 flex items-center gap-1 text-[10px] text-gold uppercase tracking-wider font-sans font-bold">
+                          <div className="mt-4 flex items-center gap-1 text-[10px] text-red-500 uppercase tracking-wider font-sans font-bold">
                             Browse Collection <ChevronRight className="size-3" />
                           </div>
                         </div>
@@ -908,9 +908,9 @@ function RouteComponent() {
                               key={story.id}
                               to="/stories/$slug"
                               params={{ slug: story.slug }}
-                              className="w-72 flex-shrink-0 group snap-start bg-card/30 border border-border/30 rounded-xl overflow-hidden hover:border-gold/30 hover:shadow-glow transition-all duration-300"
+                              className="w-72 flex-shrink-0 group snap-start bg-neutral-900 border border-neutral-850 rounded-2xl overflow-hidden hover:border-red-500/50 hover:shadow-lg transition-all duration-300"
                             >
-                              <div className="aspect-[16/10] overflow-hidden relative bg-muted">
+                              <div className="aspect-[16/10] overflow-hidden relative bg-neutral-950">
                                 {story.image ? (
                                   <img
                                     src={story.image}
@@ -918,14 +918,14 @@ function RouteComponent() {
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                   />
                                 ) : (
-                                  <div className="w-full h-full bg-gradient-to-br from-primary/10 to-gold/15" />
+                                  <div className="w-full h-full bg-gradient-to-br from-red-950/20 to-neutral-900" />
                                 )}
                               </div>
-                              <div className="p-3.5 space-y-1.5">
-                                <div className="text-[9px] uppercase tracking-wider text-gold font-sans font-bold">
+                              <div className="p-4 space-y-1.5">
+                                <div className="text-[9px] uppercase tracking-wider text-red-500 font-sans font-bold">
                                   {localized.region}
                                 </div>
-                                <h3 className="font-display font-bold text-sm text-white line-clamp-2 leading-snug group-hover:text-primary transition-colors">
+                                <h3 className="font-display font-bold text-sm text-neutral-100 line-clamp-2 leading-snug group-hover:text-red-500 transition-colors">
                                   {localized.title}
                                 </h3>
                               </div>
@@ -1046,12 +1046,12 @@ function RouteComponent() {
                               initial={{ opacity: 0, y: 15 }}
                               animate={{ opacity: 1, y: 0 }}
                               transition={{ duration: 0.3, delay: Math.min(i * 0.05, 0.3) }}
-                              className="flex flex-col sm:flex-row gap-5 bg-card/30 border border-border/40 hover:border-gold/30 rounded-2xl overflow-hidden p-4 group hover:shadow-glow transition-all duration-300"
+                              className="flex flex-col sm:flex-row gap-5 bg-neutral-900 border border-neutral-850 hover:border-red-500/40 rounded-2xl overflow-hidden p-5 group hover:shadow-[0_0_20px_rgba(220,38,38,0.1)] transition-all duration-300"
                             >
                               <Link
                                 to="/stories/$slug"
                                 params={{ slug: story.slug }}
-                                className="w-full sm:w-60 aspect-[16/10] sm:aspect-square md:aspect-[16/10] shrink-0 overflow-hidden bg-muted rounded-xl relative"
+                                className="w-full sm:w-60 aspect-[16/10] sm:aspect-square md:aspect-[16/10] shrink-0 overflow-hidden bg-neutral-950 rounded-xl relative"
                               >
                                 {story.image ? (
                                   <img
@@ -1060,37 +1060,37 @@ function RouteComponent() {
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                   />
                                 ) : (
-                                  <div className="w-full h-full bg-gradient-to-br from-primary/10 to-gold/15" />
+                                  <div className="w-full h-full bg-gradient-to-br from-red-950/20 to-neutral-900" />
                                 )}
                               </Link>
                               <div className="flex-1 flex flex-col justify-between py-1">
                                 <div className="space-y-2">
-                                  <div className="flex items-center gap-3 text-[10px] text-muted-foreground font-sans uppercase font-bold tracking-wider">
-                                    <span className="flex items-center gap-1">
-                                      <MapPin className="size-3 text-gold" />
+                                  <div className="flex items-center gap-3 text-[10px] text-neutral-450 font-sans uppercase font-bold tracking-wider">
+                                    <span className="flex items-center gap-1 text-red-500">
+                                      <MapPin className="size-3" />
                                       {localized.region}
                                     </span>
                                     <span>•</span>
-                                    <span className="flex items-center gap-1">
-                                      <Clock className="size-3 text-gold" />
+                                    <span className="flex items-center gap-1 text-neutral-400">
+                                      <Clock className="size-3 text-red-500" />
                                       {localized.readTime || "4 min"}
                                     </span>
                                   </div>
                                   <Link to="/stories/$slug" params={{ slug: story.slug }}>
-                                    <h3 className="font-display font-bold text-lg sm:text-xl leading-snug text-white group-hover:text-primary transition-colors">
+                                    <h3 className="font-display font-bold text-lg sm:text-xl leading-snug text-neutral-100 group-hover:text-red-500 transition-colors">
                                       {highlightText(localized.title, debouncedSearch)}
                                     </h3>
                                   </Link>
-                                  <p className="text-xs sm:text-sm text-muted-foreground font-sans line-clamp-3 leading-relaxed">
+                                  <p className="text-xs sm:text-sm text-neutral-300 font-sans line-clamp-3 leading-relaxed">
                                     {highlightText(localized.excerpt, debouncedSearch)}
                                   </p>
                                 </div>
-                                <div className="flex items-center justify-between border-t border-white/5 pt-3 mt-4 text-xs font-sans text-muted-foreground">
+                                <div className="flex items-center justify-between border-t border-neutral-800 pt-3 mt-4 text-xs font-sans text-neutral-400">
                                   <span>By {story.authorName || "Contributor"}</span>
                                   <Link
                                     to="/stories/$slug"
                                     params={{ slug: story.slug }}
-                                    className="inline-flex items-center gap-1 text-gold hover:text-white transition-colors uppercase font-bold tracking-wider text-[10px]"
+                                    className="inline-flex items-center gap-1 text-red-500 hover:text-red-400 transition-colors uppercase font-bold tracking-wider text-[10px]"
                                   >
                                     Read Story
                                     <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
