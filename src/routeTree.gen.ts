@@ -74,6 +74,7 @@ import { Route as ApiLatestStoriesRouteImport } from './routes/api/latest-storie
 import { Route as ApiHeroSlidesRouteImport } from './routes/api/hero-slides'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiFeaturedRouteImport } from './routes/api/featured'
+import { Route as ApiExploreRouteImport } from './routes/api/explore'
 import { Route as ApiContactRouteImport } from './routes/api/contact'
 import { Route as ApiCommunityRouteImport } from './routes/api/community'
 import { Route as ApiCommentsRouteImport } from './routes/api/comments'
@@ -508,6 +509,11 @@ const ApiHealthRoute = ApiHealthRouteImport.update({
 const ApiFeaturedRoute = ApiFeaturedRouteImport.update({
   id: '/api/featured',
   path: '/api/featured',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiExploreRoute = ApiExploreRouteImport.update({
+  id: '/api/explore',
+  path: '/api/explore',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiContactRoute = ApiContactRouteImport.update({
@@ -1167,6 +1173,7 @@ export interface FileRoutesByFullPath {
   '/api/comments': typeof ApiCommentsRouteWithChildren
   '/api/community': typeof ApiCommunityRouteWithChildren
   '/api/contact': typeof ApiContactRoute
+  '/api/explore': typeof ApiExploreRoute
   '/api/featured': typeof ApiFeaturedRoute
   '/api/health': typeof ApiHealthRoute
   '/api/hero-slides': typeof ApiHeroSlidesRoute
@@ -1341,6 +1348,7 @@ export interface FileRoutesByTo {
   '/api/comments': typeof ApiCommentsRouteWithChildren
   '/api/community': typeof ApiCommunityRouteWithChildren
   '/api/contact': typeof ApiContactRoute
+  '/api/explore': typeof ApiExploreRoute
   '/api/featured': typeof ApiFeaturedRoute
   '/api/health': typeof ApiHealthRoute
   '/api/hero-slides': typeof ApiHeroSlidesRoute
@@ -1519,6 +1527,7 @@ export interface FileRoutesById {
   '/api/comments': typeof ApiCommentsRouteWithChildren
   '/api/community': typeof ApiCommunityRouteWithChildren
   '/api/contact': typeof ApiContactRoute
+  '/api/explore': typeof ApiExploreRoute
   '/api/featured': typeof ApiFeaturedRoute
   '/api/health': typeof ApiHealthRoute
   '/api/hero-slides': typeof ApiHeroSlidesRoute
@@ -1698,6 +1707,7 @@ export interface FileRouteTypes {
     | '/api/comments'
     | '/api/community'
     | '/api/contact'
+    | '/api/explore'
     | '/api/featured'
     | '/api/health'
     | '/api/hero-slides'
@@ -1872,6 +1882,7 @@ export interface FileRouteTypes {
     | '/api/comments'
     | '/api/community'
     | '/api/contact'
+    | '/api/explore'
     | '/api/featured'
     | '/api/health'
     | '/api/hero-slides'
@@ -2049,6 +2060,7 @@ export interface FileRouteTypes {
     | '/api/comments'
     | '/api/community'
     | '/api/contact'
+    | '/api/explore'
     | '/api/featured'
     | '/api/health'
     | '/api/hero-slides'
@@ -2220,6 +2232,7 @@ export interface RootRouteChildren {
   ApiCommentsRoute: typeof ApiCommentsRouteWithChildren
   ApiCommunityRoute: typeof ApiCommunityRouteWithChildren
   ApiContactRoute: typeof ApiContactRoute
+  ApiExploreRoute: typeof ApiExploreRoute
   ApiFeaturedRoute: typeof ApiFeaturedRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiHeroSlidesRoute: typeof ApiHeroSlidesRoute
@@ -2739,6 +2752,13 @@ declare module '@tanstack/react-router' {
       path: '/api/featured'
       fullPath: '/api/featured'
       preLoaderRoute: typeof ApiFeaturedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/explore': {
+      id: '/api/explore'
+      path: '/api/explore'
+      fullPath: '/api/explore'
+      preLoaderRoute: typeof ApiExploreRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/contact': {
@@ -3954,6 +3974,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCommentsRoute: ApiCommentsRouteWithChildren,
   ApiCommunityRoute: ApiCommunityRouteWithChildren,
   ApiContactRoute: ApiContactRoute,
+  ApiExploreRoute: ApiExploreRoute,
   ApiFeaturedRoute: ApiFeaturedRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiHeroSlidesRoute: ApiHeroSlidesRoute,

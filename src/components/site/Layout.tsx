@@ -6,7 +6,6 @@ import { ScrollProgress } from "./ScrollProgress";
 import { AmbientBackground } from "./AmbientBackground";
 import { CursorGlow } from "./CursorGlow";
 import { StoryCompanion } from "./StoryCompanion";
-import { Chatbot } from "./Chatbot";
 import { useI18nStore } from "@/lib/i18n";
 
 
@@ -28,7 +27,6 @@ export function SiteLayout({ children }: { children: ReactNode }) {
       </main>
       <Footer />
       <StoryCompanion />
-      <Chatbot />
     </div>
   );
 }

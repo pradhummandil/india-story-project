@@ -1,13 +1,45 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { prisma } from "@/lib/repositories/prisma.server";
-import { json, sanitizeInput, checkRateLimit, getClientIp } from "@/routes/api/-_utils";
+import { json, sanitizeInput, checkRateLimit, getClientIp, authenticate } from "@/routes/api/-_utils";
+import { StoryStatus } from "@prisma/client";
+
+// Projection for returning high-fidelity story card details
+const storyCardSelect = {
+  id: true,
+  slug: true,
+  title: true,
+  excerpt: true,
+  titleHi: true,
+  excerptHi: true,
+  viewCount: true,
+  readingTime: true,
+  publishedAt: true,
+  createdAt: true,
+  featured: true,
+  state: { select: { id: true, name: true, slug: true } },
+  author: { select: { id: true, name: true, bio: true, avatar: true } },
+  images: {
+    orderBy: [{ heroImage: "desc" as any }, { sortOrder: "asc" as any }],
+    select: { id: true, imageUrl: true, caption: true },
+    take: 1,
+  },
+  themes: {
+    select: {
+      theme: { select: { name: true } },
+    },
+  },
+};
+
+function formatReadTime(readingTime: number | null) {
+  return readingTime != null && readingTime > 0 ? `${readingTime} min read` : "4 min read";
+}
 
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
         const ip = getClientIp(request);
-        const { allowed } = checkRateLimit(ip, 15, 60 * 1000); // 15 requests per minute limit
+        const { allowed } = checkRateLimit(ip, 30, 60 * 1000); // 30 requests per minute limit
         if (!allowed) {
           return json({ error: "Too many requests. Please try again later." }, { status: 429 });
         }
@@ -15,156 +47,160 @@ export const Route = createFileRoute("/api/chat")({
         try {
           const body = await request.json();
           const message = sanitizeInput(String(body.message || ""));
-          const lang = body.lang;
-          const { GoogleGenAI } = await import("@google/genai");
+          const lang = body.lang || "en";
+          const isHindi = lang === "hi";
 
           if (!message.trim()) {
             return json({ error: "Message is required" }, { status: 400 });
           }
 
-          const isHindi = lang === "hi";
+          // 1. Optional Authentication & Personalization context
+          const user = await authenticate(request);
+          let userContext = "";
+          if (user) {
+            const [bookmarks, likes, progress] = await Promise.all([
+              prisma.bookmark.findMany({
+                where: { userId: user.id },
+                take: 3,
+                include: { story: { select: { title: true } } },
+              }),
+              prisma.storyLike.findMany({
+                where: { userId: user.id },
+                take: 3,
+                include: { story: { select: { title: true } } },
+              }),
+              prisma.readingProgress.findMany({
+                where: { userId: user.id, completed: false },
+                take: 3,
+                include: { story: { select: { title: true } } },
+              }),
+            ]);
 
-          const stories = await prisma.story.findMany({
-            where: {
-              status: "Published",
-              OR: [
-                {
-                  title: {
-                    contains: message,
-                    mode: "insensitive",
-                  },
-                },
-                {
-                  excerpt: {
-                    contains: message,
-                    mode: "insensitive",
-                  },
-                },
-                {
-                  content: {
-                    contains: message,
-                    mode: "insensitive",
-                  },
-                },
-                {
-                  themes: {
-                    some: {
-                      theme: {
-                        name: {
-                          contains: message,
-                          mode: "insensitive",
-                        },
-                      },
-                    },
-                  },
-                },
-                {
-                  state: {
-                    name: {
-                      contains: message,
-                      mode: "insensitive",
-                    },
-                  },
-                },
-              ],
-            },
-            take: 5,
-            select: {
-              title: true,
-              titleHi: true,
-              excerpt: true,
-              excerptHi: true,
-              slug: true,
-              state: {
-                select: {
-                  name: true,
-                },
-              },
-              themes: {
-                select: {
-                  theme: {
-                    select: {
-                      name: true,
-                    },
-                  },
-                },
-              },
-            },
+            const bookmarkedTitles = bookmarks.map((b) => b.story.title).join(", ");
+            const likedTitles = likes.map((l) => l.story.title).join(", ");
+            const readingTitles = progress.map((p) => p.story.title).join(", ");
+
+            userContext = `
+Authenticated User Context:
+- User is logged in.
+- Bookmarks: ${bookmarkedTitles || "None"}
+- Liked Stories: ${likedTitles || "None"}
+- Currently Reading: ${readingTitles || "None"}
+Please use this context to personalize your response if relevant (e.g. recommending similar themes).
+`;
+          }
+
+          // 2. Keyword & Intent Extraction (Database Search / RAG)
+          const cleanQuery = message.toLowerCase();
+          const where: any = { status: StoryStatus.Published };
+          const andConditions: any[] = [];
+
+          // Theme/State keyword matchers
+          const matchedStates = await prisma.state.findMany({
+            where: { name: { contains: cleanQuery, mode: "insensitive" } },
+            select: { name: true },
           });
 
-          const databaseContext = stories
+          const matchedThemes = await prisma.theme.findMany({
+            where: { name: { contains: cleanQuery, mode: "insensitive" } },
+            select: { name: true },
+          });
+
+          if (matchedStates.length > 0) {
+            andConditions.push({
+              state: {
+                name: { in: matchedStates.map((s) => s.name), mode: "insensitive" },
+              },
+            });
+          }
+
+          if (matchedThemes.length > 0) {
+            andConditions.push({
+              themes: {
+                some: {
+                  theme: {
+                    name: { in: matchedThemes.map((t) => t.name), mode: "insensitive" },
+                  },
+                },
+              },
+            });
+          }
+
+          // Filters based on natural speech patterns
+          if (cleanQuery.includes("under 5") || cleanQuery.includes("short story") || cleanQuery.includes("कम समय")) {
+            andConditions.push({ readingTime: { lte: 5 } });
+          }
+
+          if (cleanQuery.includes("hindi") || cleanQuery.includes("हिंदी") || cleanQuery.includes("हिन्दी")) {
+            andConditions.push({ titleHi: { not: null } });
+          }
+
+          if (cleanQuery.includes("hidden gem") || cleanQuery.includes("unexplored") || cleanQuery.includes("अनोखी")) {
+            andConditions.push({ viewCount: { lte: 100 } });
+          }
+
+          if (andConditions.length === 0) {
+            // General text match fallback if no specific keywords matched
+            andConditions.push({
+              OR: [
+                { title: { contains: cleanQuery, mode: "insensitive" } },
+                { excerpt: { contains: cleanQuery, mode: "insensitive" } },
+                { content: { contains: cleanQuery, mode: "insensitive" } },
+                { seoKeywords: { contains: cleanQuery, mode: "insensitive" } },
+              ],
+            });
+          }
+
+          where.AND = andConditions;
+
+          // Execute search on Prisma
+          const storiesRaw = await prisma.story.findMany({
+            where,
+            take: 4,
+            select: storyCardSelect,
+          });
+
+          // Format context to feed Gemini
+          const databaseContext = storiesRaw
             .map(
               (story) => `
-Title: ${story.title}
+Story Title: ${story.title}
 Hindi Title: ${story.titleHi ?? ""}
-State: ${story.state?.name ?? ""}
-Themes: ${
-                story.themes
-                  ?.map((t: any) => t.theme?.name)
-                  .filter(Boolean)
-                  .join(", ") ?? ""
-              }
+State: ${story.state?.name ?? "India"}
+Themes: ${story.themes?.map((t: any) => t.theme?.name).filter(Boolean).join(", ") ?? ""}
 Excerpt: ${story.excerpt}
 Slug: ${story.slug}
-`,
+`
             )
             .join("\n---------------------\n");
 
+          // System prompt with strict instructions
           const prompt = `
-You are Bharat AI, the official AI Guide of India Story Project.
+You are the "India Story AI Companion", the official AI guide for the India Story Project.
 
-The user asked:
+User's Question: "${message}"
+Language: ${isHindi ? "Hindi (हिन्दी)" : "English"}
 
-"${message}"
+${userContext}
 
-Language:
-${isHindi ? "Hindi" : "English"}
+Below are the most relevant stories matching the user's query from our PostgreSQL database:
+${databaseContext || "No exact matching stories found in the database."}
 
-Below are stories from the India Story Project database.
-
-${databaseContext}
-
-Instructions:
-
-1. Answer naturally.
-
-2. If database stories are relevant,
-mention them.
-
-3. Recommend the stories.
-
-4. If database has no matching story,
-use Gemini knowledge.
-
-5. Talk only about
-
-- India
-- History
-- Heritage
-- Culture
-- Tourism
-- Freedom Fighters
-- Local Heroes
-- Traditions
-- Innovation
-- Festivals
-- States
-- Languages
-
-6. Never answer unrelated topics.
-
-7. Maximum 300 words.
-
-8. End with a recommendation.
-
-9. Use Markdown.
-
+INSTRUCTIONS:
+1. Answer the user's query in a highly engaging, friendly, and narrative tone.
+2. If matching stories from the database are provided, refer to them naturally and suggest the user click on the interactive story cards rendered directly below the chat bubble.
+3. NEVER hallucinate stories that do not exist. Only recommend or reference stories present in the provided list.
+4. If there are no relevant database stories, use your general knowledge to answer, but ensure your answer is strictly about Indian history, culture, heritage, tourism, festivals, innovations, or unsung heroes. Do not discuss unrelated topics.
+5. Keep your response concise (maximum 200 words).
+6. Format your reply with clean Markdown (bold text, bullet points).
+7. If responding in Hindi, use standard Devanagari script.
 `;
 
           let replyText = "";
           const hasApiKey = !!process.env.GEMINI_API_KEY;
 
           if (hasApiKey) {
+            const { GoogleGenAI } = await import("@google/genai");
             const ai = new GoogleGenAI({
               apiKey: process.env.GEMINI_API_KEY!,
             });
@@ -175,55 +211,51 @@ use Gemini knowledge.
             replyText = result.text || "";
           } else {
             // Fallback response using database search
-            if (stories.length > 0) {
-              const storyList = stories
+            if (storiesRaw.length > 0) {
+              const storyList = storiesRaw
                 .map(
                   (s) =>
-                    `* [${isHindi && s.titleHi ? s.titleHi : s.title}](/stories/${s.slug}) (${s.state?.name ?? "India"})`,
+                    `* [${isHindi && s.titleHi ? s.titleHi : s.title}](/stories/${s.slug}) (${s.state?.name ?? "India"})`
                 )
                 .join("\n");
               replyText = isHindi
-                ? `नमस्ते! वर्तमान में मेरी मुख्य एआई सेवा (Gemini API) ऑफ़लाइन है, लेकिन मैंने आपकी खोज से संबंधित ये कहानियाँ डेटाबेस में खोजी हैं:\n\n${storyList}\n\nकृपया इन्हें पढ़ें और प्रेरणा लें!`
-                : `Hello! While my advanced AI generation services are currently offline, I found the following relevant stories in our database matching your inquiry:\n\n${storyList}\n\nFeel free to explore these stories to learn more!`;
+                ? `नमस्ते! वर्तमान में मेरी मुख्य एआई सेवा ऑफ़लाइन है, लेकिन मैंने डेटाबेस में ये कहानियाँ खोजी हैं:\n\n${storyList}\n\nकृपया इन्हें पढ़ें और प्रेरणा लें!`
+                : `Hello! While my advanced AI services are offline, I found these relevant stories in our database:\n\n${storyList}\n\nFeel free to explore them!`;
             } else {
               replyText = isHindi
-                ? `नमस्ते! मेरी मुख्य एआई सेवा (Gemini API Key) वर्तमान में कॉन्फ़िगर नहीं है, और मुझे डेटाबेस में कोई कहानी नहीं मिली। कृपया राजस्थान, केरल, या स्वतंत्रता सेनानियों के बारे में अन्य प्रश्नों के साथ प्रयास करें!`
-                : `Hello! My advanced AI services are currently not configured. I couldn't find matching stories directly, but you can try asking about specific states like Kerala, Rajasthan, or search themes like sustainable farming!`;
+                ? `नमस्ते! मेरी एआई सेवा अभी सक्रिय नहीं है, और मुझे कोई कहानी नहीं मिली। कृपया राजस्थान, केरल या इतिहास के बारे में पूछें!`
+                : `Hello! My AI service is not active. I couldn't find matching stories directly, but you can try asking about specific states like Kerala, Rajasthan, or topics like sustainable farming!`;
             }
           }
 
+          // Format matching stories to return to frontend for rich card rendering
+          const formattedStories = storiesRaw.map((s: any) => {
+            const image = s.images?.[0] ?? null;
+            return {
+              id: s.id,
+              slug: s.slug,
+              title: isHindi && s.titleHi ? s.titleHi : s.title,
+              excerpt: isHindi && s.excerptHi ? s.excerptHi : s.excerpt,
+              themes: s.themes?.map((t: any) => t.theme?.name).filter(Boolean) ?? [],
+              region: s.state?.name ?? "India",
+              readTime: formatReadTime(s.readingTime),
+              image: image?.imageUrl || "/Logo-ISP.jpg",
+            };
+          });
+
+          // Contextual follow-up suggestions
+          const suggestions = isHindi
+            ? ["राजस्थान की कहानियाँ", "प्रसिद्ध त्योहार", "स्वतंत्रता सेनानी", "5 मिनट से कम समय की कहानियाँ"]
+            : ["Explore Rajasthan", "Recommend festival stories", "Freedom fighters", "Stories under 5 minutes"];
+
           return json({
             reply: replyText,
-
-            stories: stories.map((story) => ({
-              title: isHindi ? story.titleHi || story.title : story.title,
-              slug: story.slug,
-              state: story.state?.name,
-            })),
-
-            suggestions: isHindi
-              ? ["राजस्थान", "केरल", "स्वतंत्रता सेनानी", "भारत की संस्कृति"]
-              : ["Rajasthan", "Kerala", "Freedom Fighters", "Indian Culture"],
+            stories: formattedStories,
+            suggestions,
           });
         } catch (error: any) {
-          console.error("Gemini Error:", error);
-
-          if (error?.response) {
-            try {
-              console.error("Gemini Response:", await error.response.text());
-            } catch (_) {}
-          }
-
-          console.error("Status:", error?.status);
-          console.error("Message:", error?.message);
-
-          return json(
-            {
-              error: error?.message,
-              status: error?.status,
-            },
-            { status: 500 },
-          );
+          console.error("Explore AI Error:", error);
+          return json({ error: error.message || "Failed to process chat" }, { status: 500 });
         }
       },
     },

@@ -67,7 +67,7 @@ function toStoryCardCompatible(story: any) {
   };
 }
 
-export const Route = createFileRoute("/api/explore" as any)({
+export const Route = createFileRoute("/api/explore")({
   server: {
     handlers: {
       GET: async ({ request }) => {

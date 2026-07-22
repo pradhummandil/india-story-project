@@ -20,7 +20,8 @@ import {
   SlidersHorizontal,
   X,
   Award,
-  ChevronDown
+  ChevronDown,
+  ArrowRight
 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { SiteLayout } from "@/components/site/Layout";
@@ -54,6 +55,10 @@ export const Route = createFileRoute("/explore")({
   }),
   component: RouteComponent,
 });
+
+function formatReadTime(readingTime: number | null) {
+  return readingTime != null && readingTime > 0 ? `${readingTime} min read` : "";
+}
 
 // Helper for highlighting text matches
 function highlightText(text: string, query: string) {
