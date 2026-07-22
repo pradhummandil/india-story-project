@@ -2,28 +2,21 @@ import React, { useState, useEffect, useRef } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Sparkles,
-  Send,
-  Loader2,
-  Mic,
-  MicOff,
-  Copy,
-  Trash2,
-  RotateCcw,
-  CornerDownRight,
-  ArrowRight,
-  MapPin,
   Plus,
   MessageSquare,
-  ChevronRight,
-  Info,
-  Clock
+  Trash2,
+  Bookmark,
+  Heart,
+  Settings
 } from "lucide-react";
 import { SiteLayout } from "@/components/site/Layout";
 import { useI18nStore } from "@/lib/i18n";
 import { useAuthStore } from "@/lib/auth-store";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { ChatHeader, CompanionLogo } from "@/components/site/chatbot/ChatHeader";
+import { ChatMessages } from "@/components/site/chatbot/ChatMessages";
+import { ChatInput } from "@/components/site/chatbot/ChatInput";
+import { SuggestionChips } from "@/components/site/chatbot/SuggestionChips";
 
 type StoryPayload = {
   id: string;
@@ -93,8 +86,7 @@ function ChatbotPage() {
         rec.interimResults = false;
         rec.lang = isHindi ? "hi-IN" : "en-IN";
         rec.onresult = (e: any) => {
-          const text = e.results[0][0].transcript;
-          setInputValue(text);
+          setInputValue(e.results[0][0].transcript);
           setIsListening(false);
         };
         rec.onerror = () => setIsListening(false);
@@ -198,7 +190,6 @@ function ChatbotPage() {
     setSessions((prev) => {
       const updated = prev.map((s) => {
         if (s.id === activeSessionId) {
-          // Generate title from first user query if generic
           let title = s.title;
           if (title === "New Chat" || title === "नई बातचीत") {
             const firstUserMsg = msgs.find((m) => m.sender === "user");
@@ -311,8 +302,8 @@ function ChatbotPage() {
         id: "err-" + Math.random().toString(36).substring(2, 9),
         sender: "bot",
         text: isHindi
-          ? "माफ़ कीजिये, अभी संपर्क स्थापित नहीं हो पाया। कृपया पुनः प्रयास करें या नीचे दिए गए रीट्राय बटन पर क्लिक करें।"
-          : "Sorry, I am facing connectivity issues. Please try again in a moment or click retry below.",
+          ? "माफ़ कीजिये, अभी संपर्क स्थापित नहीं हो पाया। कृपया पुनः प्रयास करें।"
+          : "Sorry, I am facing connectivity issues. Please try again in a moment.",
         timestamp: new Date(),
       };
       const finalMsgs = [...updatedMsgs, errorMsg];
@@ -329,16 +320,6 @@ function ChatbotPage() {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       setLoading(false);
-      const cancelMsg: Message = {
-        id: "cancel-" + Math.random().toString(36).substring(2, 9),
-        sender: "bot",
-        text: isHindi ? "पीढ़ी रद्द कर दी गई।" : "Generation cancelled.",
-        timestamp: new Date(),
-      };
-      const finalMsgs = [...messages, cancelMsg];
-      setMessages(finalMsgs);
-      saveCurrentSessionMessages(finalMsgs);
-      setSuggestions(defaultSuggestions);
     }
   };
 
@@ -348,312 +329,158 @@ function ChatbotPage() {
 
   return (
     <SiteLayout>
-      <div className="min-h-[calc(100vh-6rem)] bg-stone-950 text-white flex flex-col md:flex-row overflow-hidden font-sans border-t border-gold/10">
+      <div className="min-h-[calc(100vh-6rem)] bg-neutral-950 text-white flex flex-col md:flex-row overflow-hidden font-sans border-t border-neutral-800">
         
-        {/* === Sidebar (Conversations History List) === */}
-        <aside className="w-full md:w-80 bg-stone-900/60 border-b md:border-b-0 md:border-r border-gold/15 flex flex-col shrink-0">
-          <div className="p-4 border-b border-gold/15">
+        {/* === Sidebar (ChatGPT style) === */}
+        <aside className="w-full md:w-80 bg-neutral-900/40 border-b md:border-b-0 md:border-r border-neutral-800 flex flex-col shrink-0">
+          <div className="p-4 border-b border-neutral-800">
             <Button
               onClick={createNewSession}
-              className="w-full bg-gradient-to-br from-gold to-saffron text-black font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all rounded-xl h-11"
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-bold flex items-center justify-center gap-2 transition-all rounded-xl h-11 border border-red-500/20"
             >
               <Plus className="size-4" />
               {isHindi ? "नई बातचीत" : "New Chat"}
             </Button>
           </div>
 
+          {/* Sessions List */}
           <div className="flex-1 overflow-y-auto p-3 space-y-1.5 max-h-[250px] md:max-h-none">
-            <h4 className="text-[10px] uppercase font-bold tracking-wider text-gold/60 px-3 mb-2">
+            <h4 className="text-[10px] uppercase font-bold tracking-wider text-neutral-400 px-3 mb-2">
               {isHindi ? "हालिया बातचीत" : "Recent Conversations"}
             </h4>
             {sessions.map((s) => {
               const isActive = s.id === activeSessionId;
               return (
-                <button
+                <div
                   key={s.id}
                   onClick={() => switchSession(s.id)}
-                  className={`w-full flex items-center justify-between px-3 py-3 rounded-xl transition-all text-left ${
+                  className={`group w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all text-left cursor-pointer ${
                     isActive
-                      ? "bg-gold/15 border border-gold/30 text-gold font-semibold"
-                      : "hover:bg-white/5 border border-transparent text-stone-300"
+                      ? "bg-neutral-800 text-white font-semibold border border-neutral-700"
+                      : "hover:bg-neutral-900 border border-transparent text-neutral-400 hover:text-white"
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <MessageSquare className={`size-4 shrink-0 ${isActive ? "text-gold" : "text-stone-400"}`} />
+                    <MessageSquare className={`size-4 shrink-0 ${isActive ? "text-red-500" : "text-neutral-400"}`} />
                     <span className="text-xs truncate">{s.title}</span>
                   </div>
                   <button
                     onClick={(e) => handleDeleteSession(s.id, e)}
-                    className="opacity-0 group-hover:opacity-100 hover:text-red-400 p-0.5 rounded transition-all ml-1"
+                    className="opacity-0 group-hover:opacity-100 hover:text-red-500 p-1 rounded-lg hover:bg-neutral-800 transition-all ml-1"
                     title="Delete Chat"
                   >
                     <Trash2 className="size-3.5" />
                   </button>
-                </button>
+                </div>
               );
             })}
+          </div>
+
+          {/* Sidebar Footer Buttons */}
+          <div className="p-3 border-t border-neutral-800 bg-neutral-950/20 space-y-1">
+            <Link
+              to="/dashboard"
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-neutral-400 hover:text-white rounded-lg hover:bg-neutral-900 transition-colors"
+            >
+              <Bookmark className="size-4 text-red-500" />
+              {isHindi ? "बुकमार्क की गई कहानियां" : "Bookmarks & Favorites"}
+            </Link>
+            <button
+              onClick={handleClearActiveHistory}
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-neutral-400 hover:text-white rounded-lg hover:bg-neutral-900 transition-colors text-left"
+            >
+              <Trash2 className="size-4 text-red-500" />
+              {isHindi ? "चैट साफ़ करें" : "Clear Active Chat"}
+            </button>
           </div>
         </aside>
 
-        {/* === Main Workspace (Chat Pane) === */}
-        <section className="flex-1 flex flex-col justify-between overflow-hidden relative">
+        {/* === Main Chat Workspace === */}
+        <section className="flex-1 flex flex-col justify-between overflow-hidden relative bg-neutral-950">
           
-          {/* Header */}
-          <header className="bg-gradient-to-r from-gold/10 to-saffron/5 border-b border-gold/15 px-6 py-4 flex items-center justify-between">
+          {/* Top Bar */}
+          <header className="bg-neutral-900 border-b border-neutral-800 px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="size-9 rounded-full bg-gold/15 flex items-center justify-center border border-gold/30">
-                <Sparkles className="size-5 text-gold animate-pulse" />
+              <div className="size-9 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/20">
+                <CompanionLogo className="size-5 text-red-500" />
               </div>
               <div>
-                <h2 className="font-display font-bold text-sm sm:text-base tracking-wide text-gradient-gold">
-                  India Story AI Companion
+                <h2 className="font-display font-bold text-sm sm:text-base tracking-wide text-white">
+                  India Story Assistant
                 </h2>
-                <p className="text-[10px] text-stone-400 uppercase font-bold tracking-wider flex items-center gap-1">
-                  <span className="size-1.5 rounded-full bg-gold animate-ping inline-block" />
-                  Interactive Guide & submission assistant
+                <p className="text-[10px] text-neutral-400 uppercase font-bold tracking-wider flex items-center gap-1">
+                  <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
+                  Online
                 </p>
               </div>
             </div>
-            <button
-              onClick={handleClearActiveHistory}
-              title="Clear active chat history"
-              className="text-[10px] border border-gold/20 hover:border-gold/50 text-gold/80 px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-colors uppercase font-bold"
-            >
-              <Trash2 className="size-3.5" />
-              {isHindi ? "इतिहास मिटाएं" : "Clear Chat"}
-            </button>
+            
+            {/* Model Badge */}
+            <div className="bg-neutral-800 border border-neutral-700 text-red-500 text-[10px] uppercase font-bold px-3 py-1 rounded-full">
+              Gemini 2.0 Flash
+            </div>
           </header>
 
-          {/* Active conversation panels */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
-            {messages.map((m) => {
-              const isBot = m.sender === "bot";
-              const isErrorMessage = m.id.startsWith("err-");
-              return (
-                <div
-                  key={m.id}
-                  className={`flex flex-col gap-2 ${isBot ? "items-start" : "items-end"}`}
+          {/* Scrollable chat messages pane */}
+          <div className="flex-1 overflow-hidden flex flex-col justify-between">
+            
+            <ChatMessages
+              messages={messages}
+              loading={loading}
+              isHindi={isHindi}
+              lastQuery={lastQuery}
+              onRetry={handleSend}
+              onCopy={copyToClipboard}
+              messagesEndRef={messagesEndRef}
+              onCancelGeneration={handleCancelGeneration}
+            />
+
+            {/* Quick action prompts */}
+            {!loading && messages.length > 0 && (
+              <div className="px-6 py-2 border-t border-neutral-800 bg-neutral-900/10 flex gap-2 overflow-x-auto scrollbar-none shrink-0">
+                <button
+                  onClick={() => handleSend(isHindi ? "कहानी कैसे सबमिट करें?" : "How to submit my story?")}
+                  className="flex-shrink-0 text-[10px] bg-neutral-900 hover:bg-neutral-800 border border-neutral-850 text-neutral-300 hover:text-white px-3.5 py-1.5 rounded-full transition-colors font-bold uppercase tracking-wide cursor-pointer"
                 >
-                  <div className={`flex gap-3 max-w-[85%] ${isBot ? "justify-start" : "justify-end"}`}>
-                    {isBot && (
-                      <div className="size-8 rounded-full bg-gold/15 border border-gold/25 flex items-center justify-center shrink-0">
-                        <Sparkles className="size-4.5 text-gold" />
-                      </div>
-                    )}
-                    <div className="space-y-2">
-                      <div
-                        className={`rounded-2xl p-4 text-xs sm:text-sm leading-relaxed font-sans ${
-                          isBot
-                            ? "bg-stone-900/60 border border-white/5 text-stone-200 rounded-tl-sm shadow-md"
-                            : "bg-gradient-to-br from-gold/20 to-saffron/10 border border-gold/25 text-gold font-semibold rounded-tr-sm"
-                        }`}
-                      >
-                        {m.text.split("\n").map((line, idx) => {
-                          if (line.startsWith("* ")) {
-                            return (
-                              <li key={idx} className="list-disc ml-4 my-1">
-                                {line.slice(2)}
-                              </li>
-                            );
-                          }
-                          return <p key={idx} className="mb-2 last:mb-0">{line}</p>;
-                        })}
-                      </div>
-
-                      {/* Actions */}
-                      {isBot && m.id !== "greet" && (
-                        <div className="flex items-center gap-4 pl-1">
-                          <button
-                            onClick={() => copyToClipboard(m.text)}
-                            className="text-[10px] text-gold/60 hover:text-gold flex items-center gap-1 transition-colors uppercase font-bold"
-                          >
-                            <Copy className="size-3" />
-                            {isHindi ? "कॉपी" : "Copy Response"}
-                          </button>
-                          {isErrorMessage && lastQuery && (
-                            <button
-                              onClick={() => handleSend(lastQuery)}
-                              className="text-[10px] text-gold/60 hover:text-gold flex items-center gap-1 transition-colors uppercase font-bold"
-                            >
-                              <RotateCcw className="size-3" />
-                              {isHindi ? "पुनः प्रयास" : "Retry"}
-                            </button>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* recommended clickable story cards */}
-                  {isBot && m.stories && m.stories.length > 0 && (
-                    <div className="w-full pl-11 pr-4 pt-1 space-y-3 max-w-[85%]">
-                      <span className="text-[10px] uppercase font-bold tracking-wider text-gold flex items-center gap-1">
-                        <CornerDownRight className="size-3.5 text-gold" />
-                        {isHindi ? "अनुशंसित कहानियाँ:" : "Recommended Stories:"}
-                      </span>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {m.stories.map((story) => (
-                          <div
-                            key={story.id}
-                            className="bg-stone-900/50 border border-gold/15 rounded-xl overflow-hidden p-3.5 flex gap-3 hover:border-gold/30 transition-all duration-300 shadow-lg"
-                          >
-                            <div className="size-16 rounded-lg overflow-hidden shrink-0 bg-stone-950 relative">
-                              <img
-                                src={story.image}
-                                alt={story.title}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <div className="flex-1 flex flex-col justify-between overflow-hidden">
-                              <div className="space-y-0.5">
-                                <div className="flex items-center gap-2 text-[9px] text-muted-foreground uppercase font-bold tracking-wider">
-                                  <span className="flex items-center gap-0.5 text-gold">
-                                    <MapPin className="size-2.5" />
-                                    {story.region}
-                                  </span>
-                                  <span>•</span>
-                                  <span>{story.readTime}</span>
-                                </div>
-                                <h4 className="font-display font-bold text-xs text-white line-clamp-1">
-                                  {story.title}
-                                </h4>
-                              </div>
-                              <div className="flex justify-end">
-                                <Link
-                                  to="/stories/$slug"
-                                  params={{ slug: story.slug }}
-                                  className="inline-flex items-center gap-1 text-gold hover:text-white transition-colors uppercase font-bold tracking-wider text-[9px]"
-                                >
-                                  {isHindi ? "कहानी पढ़ें" : "Read Story"}
-                                  <ArrowRight className="size-2.5" />
-                                </Link>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-
-            {/* Loading / Typing indicator */}
-            {loading && (
-              <div className="flex gap-3 justify-start">
-                <div className="size-8 rounded-full bg-gold/15 border border-gold/25 flex items-center justify-center shrink-0">
-                  <Sparkles className="size-4.5 text-gold animate-pulse" />
-                </div>
-                <div className="space-y-2 max-w-[80%]">
-                  <div className="bg-stone-900/60 border border-white/5 text-stone-400 rounded-xl px-4 py-2 text-xs font-sans flex items-center gap-2">
-                    <span>Companion is thinking</span>
-                    <div className="flex gap-1 items-center h-2">
-                      <motion.span
-                        animate={{ y: [0, -3, 0] }}
-                        transition={{ repeat: Infinity, duration: 0.6, delay: 0 }}
-                        className="size-1.5 rounded-full bg-gold inline-block"
-                      />
-                      <motion.span
-                        animate={{ y: [0, -3, 0] }}
-                        transition={{ repeat: Infinity, duration: 0.6, delay: 0.15 }}
-                        className="size-1.5 rounded-full bg-gold inline-block"
-                      />
-                      <motion.span
-                        animate={{ y: [0, -3, 0] }}
-                        transition={{ repeat: Infinity, duration: 0.6, delay: 0.3 }}
-                        className="size-1.5 rounded-full bg-gold inline-block"
-                      />
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleCancelGeneration}
-                    className="text-[9px] text-red-400 hover:text-red-300 font-bold uppercase tracking-wider pl-1"
-                  >
-                    Cancel Generation
-                  </button>
-                </div>
+                  Story Submission Guide
+                </button>
+                <button
+                  onClick={() => handleSend(isHindi ? "राजस्थान" : "Explore Rajasthan")}
+                  className="flex-shrink-0 text-[10px] bg-neutral-900 hover:bg-neutral-800 border border-neutral-850 text-neutral-300 hover:text-white px-3.5 py-1.5 rounded-full transition-colors font-bold uppercase tracking-wide cursor-pointer"
+                >
+                  Explore Rajasthan
+                </button>
+                <button
+                  onClick={() => handleSend(isHindi ? "गुमनाम नायक" : "Unsung heroes")}
+                  className="flex-shrink-0 text-[10px] bg-neutral-900 hover:bg-neutral-800 border border-neutral-850 text-neutral-300 hover:text-white px-3.5 py-1.5 rounded-full transition-colors font-bold uppercase tracking-wide cursor-pointer"
+                >
+                  Unsung Heroes
+                </button>
               </div>
             )}
-            <div ref={messagesEndRef} />
-          </div>
 
-          {/* Quick Actions Panel */}
-          {!loading && messages.length > 0 && (
-            <div className="px-6 py-2 border-t border-gold/10 bg-black/30 flex gap-2 overflow-x-auto scrollbar-none shrink-0">
-              <button
-                onClick={() => handleSend(isHindi ? "कहानी कैसे सबमिट करें?" : "How to submit my story?")}
-                className="flex-shrink-0 text-[10px] bg-stone-900 hover:bg-stone-800 border border-gold/20 text-stone-300 hover:text-gold px-3.5 py-1.5 rounded-full transition-colors font-bold uppercase tracking-wide cursor-pointer"
-              >
-                Story Submission Guide
-              </button>
-              <button
-                onClick={() => handleSend(isHindi ? "राजस्थान" : "Explore Rajasthan")}
-                className="flex-shrink-0 text-[10px] bg-stone-900 hover:bg-stone-800 border border-gold/20 text-stone-300 hover:text-gold px-3.5 py-1.5 rounded-full transition-colors font-bold uppercase tracking-wide cursor-pointer"
-              >
-                Explore Rajasthan
-              </button>
-              <button
-                onClick={() => handleSend(isHindi ? "गुमनाम नायक" : "Unsung heroes")}
-                className="flex-shrink-0 text-[10px] bg-stone-900 hover:bg-stone-800 border border-gold/20 text-stone-300 hover:text-gold px-3.5 py-1.5 rounded-full transition-colors font-bold uppercase tracking-wide cursor-pointer"
-              >
-                Unsung Heroes
-              </button>
-              <button
-                onClick={() => handleSend(isHindi ? "डैशबोर्ड" : "How does bookmarks and profile work?")}
-                className="flex-shrink-0 text-[10px] bg-stone-900 hover:bg-stone-800 border border-gold/20 text-stone-300 hover:text-gold px-3.5 py-1.5 rounded-full transition-colors font-bold uppercase tracking-wide cursor-pointer"
-              >
-                Platform features
-              </button>
-            </div>
-          )}
+            {/* Suggestions panel */}
+            {suggestions.length > 0 && !loading && (
+              <div className="px-6 py-3.5 border-t border-neutral-800 bg-neutral-900/20 shrink-0">
+                <SuggestionChips suggestions={suggestions} onSelect={handleSend} />
+              </div>
+            )}
 
-          {/* Suggested prompts list */}
-          {suggestions.length > 0 && !loading && (
-            <div className="px-6 py-3.5 border-t border-gold/10 bg-black/45 flex flex-wrap gap-2 shrink-0">
-              {suggestions.map((s, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleSend(s)}
-                  className="text-xs bg-stone-900 hover:bg-stone-800 border border-gold/20 text-stone-300 hover:text-gold px-3.5 py-2 rounded-full transition-colors cursor-pointer"
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* Composer Input Box */}
-          <footer className="p-4 border-t border-gold/10 bg-black flex gap-3 shrink-0">
-            <div className="relative flex-1">
-              <Input
+            {/* Composer Input Bar */}
+            <footer className="p-4 border-t border-neutral-800 bg-neutral-950 flex gap-3 shrink-0">
+              <ChatInput
                 value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder={isHindi ? "पूछें या कहानी सबमिशन का विवरण लिखें..." : "Ask companion or dictate your story..."}
+                onChange={setInputValue}
+                onSend={() => handleSend(inputValue)}
                 disabled={loading}
-                className="h-11 w-full bg-stone-900 border-white/10 text-white text-xs sm:text-sm placeholder:text-stone-500 focus:border-gold/40 focus:ring-0 pr-10 rounded-xl"
+                isListening={isListening}
+                hasSpeechSupport={!!recognitionRef.current}
+                toggleListening={toggleListening}
+                isHindi={isHindi}
               />
-              {recognitionRef.current && (
-                <button
-                  type="button"
-                  onClick={toggleListening}
-                  className={`absolute right-3.5 top-1/2 -translate-y-1/2 p-1.5 rounded-full ${
-                    isListening ? "text-red-500 animate-pulse bg-red-500/10" : "text-white/40 hover:text-white"
-                  }`}
-                >
-                  {isListening ? <MicOff className="size-4.5" /> : <Mic className="size-4.5" />}
-                </button>
-              )}
-            </div>
-            <Button
-              type="button"
-              onClick={() => handleSend(inputValue)}
-              disabled={loading || !inputValue.trim()}
-              className="h-11 w-11 p-0 shrink-0 bg-gradient-to-br from-gold to-saffron text-black font-bold flex items-center justify-center rounded-xl hover:opacity-90"
-            >
-              <Send className="size-4" />
-            </Button>
-          </footer>
+            </footer>
 
+          </div>
         </section>
       </div>
     </SiteLayout>
