@@ -3,7 +3,6 @@ import { prisma } from "@/lib/repositories/prisma.server";
 import { json, sanitizeInput, checkRateLimit, getClientIp, authenticate } from "@/routes/api/-_utils";
 import { StoryStatus } from "@prisma/client";
 
-// Projection for returning high-fidelity story card details
 const storyCardSelect = {
   id: true,
   slug: true,
@@ -39,7 +38,7 @@ export const Route = createFileRoute("/api/chat")({
     handlers: {
       POST: async ({ request }) => {
         const ip = getClientIp(request);
-        const { allowed } = checkRateLimit(ip, 30, 60 * 1000); // 30 requests per minute limit
+        const { allowed } = checkRateLimit(ip, 40, 60 * 1000); // 40 requests per minute limit
         if (!allowed) {
           return json({ error: "Too many requests. Please try again later." }, { status: 429 });
         }
@@ -54,7 +53,7 @@ export const Route = createFileRoute("/api/chat")({
             return json({ error: "Message is required" }, { status: 400 });
           }
 
-          // 1. Optional Authentication & Personalization context
+          // 1. Fetch User Context for Personalization
           const user = await authenticate(request);
           let userContext = "";
           if (user) {
@@ -81,21 +80,18 @@ export const Route = createFileRoute("/api/chat")({
             const readingTitles = progress.map((p) => p.story.title).join(", ");
 
             userContext = `
-Authenticated User Context:
-- User is logged in.
-- Bookmarks: ${bookmarkedTitles || "None"}
-- Liked Stories: ${likedTitles || "None"}
-- Currently Reading: ${readingTitles || "None"}
-Please use this context to personalize your response if relevant (e.g. recommending similar themes).
-`;
+Authenticated User Profile:
+- User is logged in as: ${user.email}
+- Bookmarked Stories: ${bookmarkedTitles || "None yet"}
+- Liked Stories: ${likedTitles || "None yet"}
+- Current Reading Progress: ${readingTitles || "None active"}`;
           }
 
-          // 2. Keyword & Intent Extraction (Database Search / RAG)
+          // 2. Keyword & Intent Extraction (RAG database search)
           const cleanQuery = message.toLowerCase();
           const where: any = { status: StoryStatus.Published };
           const andConditions: any[] = [];
 
-          // Theme/State keyword matchers
           const matchedStates = await prisma.state.findMany({
             where: { name: { contains: cleanQuery, mode: "insensitive" } },
             select: { name: true },
@@ -126,7 +122,6 @@ Please use this context to personalize your response if relevant (e.g. recommend
             });
           }
 
-          // Filters based on natural speech patterns
           if (cleanQuery.includes("under 5") || cleanQuery.includes("short story") || cleanQuery.includes("कम समय")) {
             andConditions.push({ readingTime: { lte: 5 } });
           }
@@ -153,7 +148,7 @@ Please use this context to personalize your response if relevant (e.g. recommend
 
           where.AND = andConditions;
 
-          // Execute search on Prisma
+          // Search Prisma
           const storiesRaw = await prisma.story.findMany({
             where,
             take: 4,
@@ -174,26 +169,57 @@ Slug: ${story.slug}
             )
             .join("\n---------------------\n");
 
-          // System prompt with strict instructions
+          // System Prompt with complete platform context, submission steps, motivational support and website FAQs
           const prompt = `
 You are the "India Story AI Companion", the official AI guide for the India Story Project.
 
-User's Question: "${message}"
-Language: ${isHindi ? "Hindi (हिन्दी)" : "English"}
+USER'S QUESTION: "${message}"
+LANGUAGE: ${isHindi ? "Hindi (हिन्दी)" : "English"}
 
 ${userContext}
 
-Below are the most relevant stories matching the user's query from our PostgreSQL database:
+=== DATABASE STORIES ===
 ${databaseContext || "No exact matching stories found in the database."}
 
-INSTRUCTIONS:
-1. Answer the user's query in a highly engaging, friendly, and narrative tone.
-2. If matching stories from the database are provided, refer to them naturally and suggest the user click on the interactive story cards rendered directly below the chat bubble.
-3. NEVER hallucinate stories that do not exist. Only recommend or reference stories present in the provided list.
-4. If there are no relevant database stories, use your general knowledge to answer, but ensure your answer is strictly about Indian history, culture, heritage, tourism, festivals, innovations, or unsung heroes. Do not discuss unrelated topics.
-5. Keep your response concise (maximum 200 words).
-6. Format your reply with clean Markdown (bold text, bullet points).
-7. If responding in Hindi, use standard Devanagari script.
+=== WEBSITE & PLATFORM KNOWLEDGE ===
+- **About the Platform**: India Story Project is a digital repository celebrating local heritage, unsung heroes, cultural traditions, history, art, and local innovations.
+- **Key Routes**:
+  - Homepage: \`/\`
+  - Explore Portal: \`/explore\` (State filters, theme cards, universal search, timeline navigation).
+  - Share Story Guide: \`/share-story\` (For submitting new stories).
+  - Contributor Signup: \`/join\`
+  - User Dashboard: \`/dashboard\` (Bookmarks, liked stories, reading history).
+  - Settings/Profile: \`/profile\` (Avatar uploads, account preferences).
+- **Core Functions**:
+  - Bookmarking: Save articles to read later. Shown in User Dashboard.
+  - Avatar Uploads: Handled in Profile page, syncs globally.
+  - Submissions: Content contributors can submit articles. These undergo editorial reviews.
+
+=== STORY SUBMISSION ASSISTANT FLOW ===
+If the user indicates they want to submit/write a story:
+- You must act as an encouraging submission guide.
+- Ask for details one-by-one to avoid overwhelming them:
+  1. Story Title
+  2. Associated State/District
+  3. Theme / Short Summary
+  4. Full Story & References/Sources
+- Once you gather their details, direct them to submit it at the official page: "/share-story".
+
+=== MOTIVATIONAL & EMOTIONAL SUPPORT ===
+If the user feels stuck, lacks confidence, or says they don't know how to write:
+- Respond with warm, empathetic, and encouraging language.
+- Suggest a basic narrative template:
+  1. Introduction (The setting/hero)
+  2. The Conflict / Action (What did they do?)
+  3. The Impact / Lesson (What changed?)
+- Reassure them that every voice matters in documentating India's heritage.
+
+=== GENERAL INSTRUCTIONS ===
+1. Answer in a warm, narrative, and engaging human tone.
+2. If matching database stories are provided, refer to them naturally and guide the user to click the interactive story cards rendered directly below the chat bubble.
+3. NEVER fabricate stories that do not exist.
+4. If there are no relevant database stories, use your general knowledge to answer, keeping it focused strictly on Indian history, heritage, culture, or tourism.
+5. Format your reply with clean Markdown (bold text, bullet points). Keep response under 250 words.
 `;
 
           let replyText = "";
@@ -208,12 +234,12 @@ INSTRUCTIONS:
                 )
                 .join("\n");
               return isHindiLanguage
-                ? `नमस्ते! वर्तमान में हमारी एआई साथी सेवा अत्यधिक व्यस्त है या दैनिक सीमा पार हो गई है, लेकिन मैंने डेटाबेस में आपकी खोज से संबंधित ये कहानियाँ पाई हैं:\n\n${storyList}\n\nकृपया इन्हें पढ़ें और भारत की प्रेरणादायक कहानियों का अनुभव लें!`
-                : `Hello! While our advanced AI companion is currently experiencing high demand or rate limits, I successfully queried our database and found these relevant stories for you:\n\n${storyList}\n\nFeel free to explore these articles!`;
+                ? `नमस्ते! वर्तमान में हमारी एआई सेवा व्यस्त है, लेकिन मैंने डेटाबेस में आपकी खोज से संबंधित ये कहानियाँ पाई हैं:\n\n${storyList}\n\nकृपया इन्हें पढ़ें और प्रेरणा लें!`
+                : `Hello! While our advanced AI companion is currently experiencing high demand, I successfully retrieved these relevant stories from our database:\n\n${storyList}\n\nFeel free to explore these articles!`;
             } else {
               return isHindiLanguage
-                ? `नमस्ते! वर्तमान में हमारी एआई सेवा अत्यधिक व्यस्त है, और हमें डेटाबेस में कोई कहानी नहीं मिली। कृपया राजस्थान, केरल या स्वतंत्रता सेनानियों के बारे में अन्य प्रश्नों के साथ प्रयास करें!`
-                : `Hello! Our advanced AI services are currently heavily loaded. I couldn't find matching stories directly, but you can try asking about specific states like Kerala, Rajasthan, or sustainable farming!`;
+                ? `नमस्ते! एआई सेवा व्यस्त है और डेटाबेस में कोई कहानी नहीं मिली। कृपया राजस्थान, केरल या स्वतंत्रता सेनानियों के बारे में पूछें!`
+                : `Hello! Our advanced AI services are currently heavily loaded. I couldn't find matching stories directly, but you can try asking about specific states like Kerala, Rajasthan, or search themes like sustainable farming!`;
             }
           };
 
@@ -229,14 +255,13 @@ INSTRUCTIONS:
               });
               replyText = result.text || "";
             } catch (geminiError: any) {
-              console.error("[Gemini API Quota/Connection Error] Failed to call generateContent:", geminiError);
+              console.error("[Gemini API Error] failed inside chat.ts:", geminiError);
               replyText = getFallbackReply(storiesRaw, isHindi);
             }
           } else {
             replyText = getFallbackReply(storiesRaw, isHindi);
           }
 
-          // Format matching stories to return to frontend for rich card rendering
           const formattedStories = storiesRaw.map((s: any) => {
             const image = s.images?.[0] ?? null;
             return {
@@ -251,10 +276,19 @@ INSTRUCTIONS:
             };
           });
 
-          // Contextual follow-up suggestions
           const suggestions = isHindi
-            ? ["राजस्थान की कहानियाँ", "प्रसिद्ध त्योहार", "स्वतंत्रता सेनानी", "5 मिनट से कम समय की कहानियाँ"]
-            : ["Explore Rajasthan", "Recommend festival stories", "Freedom fighters", "Stories under 5 minutes"];
+            ? [
+                "कहानी कैसे सबमिट करें?",
+                "राजस्थान की लोक कला",
+                "प्रसिद्ध स्वतंत्रता सेनानी",
+                "डैशबोर्ड कैसे काम करता है?",
+              ]
+            : [
+                "How to submit a story?",
+                "Rajasthan local heritage",
+                "Unsung freedom fighters",
+                "How does the dashboard work?",
+              ];
 
           return json({
             reply: replyText,
@@ -262,7 +296,7 @@ INSTRUCTIONS:
             suggestions,
           });
         } catch (error: any) {
-          console.error("Explore AI Error:", error);
+          console.error("Chat API Error:", error);
           return json({ error: error.message || "Failed to process chat" }, { status: 500 });
         }
       },

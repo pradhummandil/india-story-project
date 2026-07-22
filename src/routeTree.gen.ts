@@ -35,6 +35,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CommunityRouteImport } from './routes/community'
+import { Route as ChatbotRouteImport } from './routes/chatbot'
 import { Route as CareersRouteImport } from './routes/careers'
 import { Route as BrandCampaignsRouteImport } from './routes/brand-campaigns'
 import { Route as AdvertiseRouteImport } from './routes/advertise'
@@ -314,6 +315,11 @@ const ContactRoute = ContactRouteImport.update({
 const CommunityRoute = CommunityRouteImport.update({
   id: '/community',
   path: '/community',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChatbotRoute = ChatbotRouteImport.update({
+  id: '/chatbot',
+  path: '/chatbot',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CareersRoute = CareersRouteImport.update({
@@ -1132,6 +1138,7 @@ export interface FileRoutesByFullPath {
   '/advertise': typeof AdvertiseRoute
   '/brand-campaigns': typeof BrandCampaignsRoute
   '/careers': typeof CareersRoute
+  '/chatbot': typeof ChatbotRoute
   '/community': typeof CommunityRouteWithChildren
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
@@ -1309,6 +1316,7 @@ export interface FileRoutesByTo {
   '/advertise': typeof AdvertiseRoute
   '/brand-campaigns': typeof BrandCampaignsRoute
   '/careers': typeof CareersRoute
+  '/chatbot': typeof ChatbotRoute
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/dashboard': typeof DashboardRoute
@@ -1486,6 +1494,7 @@ export interface FileRoutesById {
   '/advertise': typeof AdvertiseRoute
   '/brand-campaigns': typeof BrandCampaignsRoute
   '/careers': typeof CareersRoute
+  '/chatbot': typeof ChatbotRoute
   '/community': typeof CommunityRouteWithChildren
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
@@ -1666,6 +1675,7 @@ export interface FileRouteTypes {
     | '/advertise'
     | '/brand-campaigns'
     | '/careers'
+    | '/chatbot'
     | '/community'
     | '/contact'
     | '/cookies'
@@ -1843,6 +1853,7 @@ export interface FileRouteTypes {
     | '/advertise'
     | '/brand-campaigns'
     | '/careers'
+    | '/chatbot'
     | '/contact'
     | '/cookies'
     | '/dashboard'
@@ -2019,6 +2030,7 @@ export interface FileRouteTypes {
     | '/advertise'
     | '/brand-campaigns'
     | '/careers'
+    | '/chatbot'
     | '/community'
     | '/contact'
     | '/cookies'
@@ -2198,6 +2210,7 @@ export interface RootRouteChildren {
   AdvertiseRoute: typeof AdvertiseRoute
   BrandCampaignsRoute: typeof BrandCampaignsRoute
   CareersRoute: typeof CareersRoute
+  ChatbotRoute: typeof ChatbotRoute
   CommunityRoute: typeof CommunityRouteWithChildren
   ContactRoute: typeof ContactRoute
   CookiesRoute: typeof CookiesRoute
@@ -2479,6 +2492,13 @@ declare module '@tanstack/react-router' {
       path: '/community'
       fullPath: '/community'
       preLoaderRoute: typeof CommunityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chatbot': {
+      id: '/chatbot'
+      path: '/chatbot'
+      fullPath: '/chatbot'
+      preLoaderRoute: typeof ChatbotRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/careers': {
@@ -3940,6 +3960,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdvertiseRoute: AdvertiseRoute,
   BrandCampaignsRoute: BrandCampaignsRoute,
   CareersRoute: CareersRoute,
+  ChatbotRoute: ChatbotRoute,
   CommunityRoute: CommunityRouteWithChildren,
   ContactRoute: ContactRoute,
   CookiesRoute: CookiesRoute,
