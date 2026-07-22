@@ -3,6 +3,7 @@ import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { useAuthStore } from "@/lib/auth-store";
 import { Forbidden403 } from "@/components/site/Forbidden403";
 import { SiteLayout } from "@/components/site/Layout";
+import { NotificationDropdown } from "@/components/site/NotificationDropdown";
 import {
   Layers,
   BookOpen,
@@ -668,37 +669,7 @@ export function EditorPanelPage() {
           </div>
           
           {/* Notifications dropdown trigger */}
-          <div className="relative">
-            <button className="relative p-2 rounded-full hover:bg-white/60 border border-border/40 bg-white transition-colors cursor-pointer">
-              <Bell className="size-5 text-foreground" />
-              {unreadCount > 0 && (
-                <span className="absolute top-0.5 right-0.5 size-4 rounded-full bg-red-600 text-[9px] font-bold text-white flex items-center justify-center animate-pulse">
-                  {unreadCount}
-                </span>
-              )}
-            </button>
-            {/* Popover list of notifications */}
-            {notifications.length > 0 && (
-              <div className="absolute right-0 top-full mt-2 z-50 w-72 max-h-96 overflow-y-auto bg-white border border-border shadow-xl rounded-lg p-2 divide-y divide-border/40">
-                <div className="text-[10px] uppercase font-bold text-muted-foreground p-2 flex items-center justify-between">
-                  <span>Notifications</span>
-                  <span className="text-primary">{unreadCount} unread</span>
-                </div>
-                {notifications.slice(0, 10).map((n) => (
-                  <button
-                    key={n.id}
-                    onClick={() => markNotificationRead(n.id)}
-                    className={`w-full text-left p-3 hover:bg-muted/30 transition-colors ${!n.read ? "bg-primary/5 font-semibold" : ""}`}
-                  >
-                    <p className="text-xs text-foreground leading-tight">{n.message}</p>
-                    <span className="text-[8px] text-muted-foreground/60 mt-1 block">
-                      {new Date(n.createdAt).toLocaleTimeString()}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <NotificationDropdown />
         </div>
 
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
@@ -1690,6 +1661,201 @@ export function EditorPanelPage() {
           </main>
         </div>
       </div>
+
+      {/* ─── Side-by-Side Diff & Assignment Modal ─── */}
+      {diffModalItem && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-background border border-border/80 shadow-2xl rounded-xl max-w-5xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            
+            {/* Modal Header */}
+            <div className="p-4 bg-muted/20 border-b border-border flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 text-[9px] font-extrabold uppercase rounded bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                    {diffModalItem.original?.status || "SUBMITTED"}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    Submitted by {diffModalItem.original?.authorName || "Contributor"} ({diffModalItem.original?.stateName || "State"})
+                  </span>
+                </div>
+                <h3 className="font-display text-lg font-bold text-foreground mt-1">
+                  {diffModalItem.original?.title}
+                </h3>
+              </div>
+              <button
+                onClick={() => setDiffModalItem(null)}
+                className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/40 cursor-pointer"
+                aria-label="Close modal"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+
+            {/* Side-by-Side Diff Body */}
+            <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-muted/5">
+              
+              {/* Left Column: Original User Submission */}
+              <div className="space-y-4 border-r border-border/40 pr-4">
+                <div className="flex items-center justify-between border-b border-border/60 pb-2">
+                  <h4 className="font-display text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <BookOpen className="size-4 text-blue-500" /> Original Submission
+                  </h4>
+                  <span className="text-[10px] text-muted-foreground font-mono">
+                    {new Date(diffModalItem.original?.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+
+                <div className="space-y-3 text-xs">
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase text-muted-foreground block">Title</span>
+                    <p className="font-bold text-foreground mt-0.5">{diffModalItem.original?.title}</p>
+                  </div>
+                  {diffModalItem.original?.titleHi && (
+                    <div>
+                      <span className="text-[10px] font-extrabold uppercase text-amber-600 block">Title (Hindi)</span>
+                      <p className="font-medium text-foreground mt-0.5">{diffModalItem.original?.titleHi}</p>
+                    </div>
+                  )}
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase text-muted-foreground block">Excerpt</span>
+                    <p className="text-muted-foreground italic bg-muted/20 p-2.5 rounded border border-border/40 mt-0.5">
+                      {diffModalItem.original?.excerpt || "No excerpt provided."}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase text-muted-foreground block">Narrative Content</span>
+                    <div className="p-3 bg-card border border-border/60 rounded max-h-60 overflow-y-auto whitespace-pre-wrap text-muted-foreground leading-relaxed mt-0.5">
+                      {diffModalItem.original?.content || "No narrative content."}
+                    </div>
+                  </div>
+                  {diffModalItem.original?.imageUrl && (
+                    <div>
+                      <span className="text-[10px] font-extrabold uppercase text-muted-foreground block mb-1">Cover Image</span>
+                      <img
+                        src={diffModalItem.original.imageUrl}
+                        alt={diffModalItem.original.title}
+                        className="w-full h-40 object-cover rounded border border-border/60"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Column: Editor Version / Revision */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-border/60 pb-2">
+                  <h4 className="font-display text-xs font-black uppercase tracking-wider text-amber-600 flex items-center gap-1.5">
+                    <Sparkles className="size-4 text-amber-500" /> Editor Revision & Review
+                  </h4>
+                  <span className="text-[10px] text-amber-600 font-bold uppercase">
+                    {diffModalItem.edited ? "Editor Revised" : "Awaiting Assignment"}
+                  </span>
+                </div>
+
+                <div className="space-y-3 text-xs">
+                  {diffModalItem.edited ? (
+                    <>
+                      <div>
+                        <span className="text-[10px] font-extrabold uppercase text-muted-foreground block">Revised Title</span>
+                        <p className="font-bold text-foreground mt-0.5">{diffModalItem.edited.title}</p>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-extrabold uppercase text-muted-foreground block">Revised Content</span>
+                        <div className="p-3 bg-card border border-border/60 rounded max-h-60 overflow-y-auto whitespace-pre-wrap text-muted-foreground leading-relaxed mt-0.5">
+                          {diffModalItem.edited.content}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="p-8 border border-dashed border-border/80 text-center bg-muted/10 space-y-2 rounded">
+                      <Layers className="size-6 mx-auto text-muted-foreground" />
+                      <p className="text-xs font-bold text-foreground">Original Submission Queue Item</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        Assign an editor below to start active editing and fact-checking.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Quick Assignment Box inside Modal */}
+                  {isAdmin && (
+                    <div className="p-4 bg-muted/20 border border-border/60 rounded space-y-3 mt-4">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-foreground block">
+                        Assign to Editor Staff
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <select
+                          id="modalEditorSelect"
+                          className="flex-1 h-8 px-2 border border-border text-xs bg-background font-bold focus:outline-none"
+                        >
+                          <option value="">-- Select Editor --</option>
+                          {usersList
+                            .filter((u) => u.role?.toLowerCase() === "editor" || u.role?.toLowerCase() === "admin" || u.role?.toLowerCase() === "superadmin")
+                            .map((u) => (
+                              <option key={u.id} value={u.id}>
+                                {u.name || u.email} ({u.role})
+                              </option>
+                            ))}
+                        </select>
+                        <Button
+                          size="sm"
+                          className="h-8 text-[10px] font-bold uppercase bg-amber-600 hover:bg-amber-700 text-white cursor-pointer"
+                          onClick={async () => {
+                            const sel = (document.getElementById("modalEditorSelect") as HTMLSelectElement)?.value;
+                            if (!sel || !session) return;
+                            await executeSubmissionAction(diffModalItem.original.id, "ASSIGNED_TO_EDITOR", sel);
+                            setDiffModalItem(null);
+                          }}
+                        >
+                          Assign Editor
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Actions Footer */}
+            <div className="p-4 bg-muted/20 border-t border-border flex items-center justify-between">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDiffModalItem(null)}
+                className="text-xs font-bold cursor-pointer"
+              >
+                Close Preview
+              </Button>
+
+              {isAdmin && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs font-bold text-rose-600 border-rose-300 hover:bg-rose-50 cursor-pointer"
+                    onClick={async () => {
+                      await executeSubmissionAction(diffModalItem.original.id, "Rejected");
+                      setDiffModalItem(null);
+                    }}
+                  >
+                    Reject Submission
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+                    onClick={async () => {
+                      await executeSubmissionAction(diffModalItem.original.id, "Published");
+                      setDiffModalItem(null);
+                    }}
+                  >
+                    Approve & Publish Live
+                  </Button>
+                </div>
+              )}
+            </div>
+
+          </div>
+        </div>
+      )}
     </SiteLayout>
   );
 }
