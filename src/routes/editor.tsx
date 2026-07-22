@@ -34,6 +34,26 @@ import {
   Tag,
   MapPin,
   FileText,
+  LayoutDashboard,
+  Inbox,
+  Kanban as KanbanIcon,
+  GitCompare,
+  Users,
+  Image as ImageIcon,
+  Settings,
+  CheckCircle2,
+  ArrowRight,
+  Filter,
+  Archive,
+  Mail,
+  CheckCheck,
+  History,
+  UserCheck,
+  RefreshCw,
+  AlertCircle,
+  Sliders,
+  CheckSquare,
+  List,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -44,22 +64,34 @@ export const Route = createFileRoute("/editor")({
 });
 
 type Tab =
-  | "queue"
-  | "approvals"
-  | "featured"
-  | "videos"
-  | "webstories"
-  | "moderation"
+  | "dashboard"
+  | "inbox"
+  | "pipeline"
+  | "published"
+  | "users"
+  | "media"
   | "analytics"
-  | "community";
+  | "settings";
 
 export function EditorPanelPage() {
   const navigate = useNavigate();
   const { user, profile, loading, initialized, session } = useAuthStore();
 
   // Tab State
-  const [activeTab, setActiveTab] = useState<Tab>("queue");
-  const [approvalsSubTab, setApprovalsSubTab] = useState<"stories" | "submissions">("stories");
+  const [activeTab, setActiveTab] = useState<Tab>("dashboard");
+  const [pipelineViewMode, setPipelineViewMode] = useState<"kanban" | "table">("kanban");
+  const [inboxCategory, setInboxCategory] = useState<"all" | "unread" | "assigned" | "submissions" | "editorial" | "system">("all");
+  const [selectedInboxNotif, setSelectedInboxNotif] = useState<any | null>(null);
+  
+  // Diff & Timeline Modal States
+  const [diffModalItem, setDiffModalItem] = useState<any | null>(null);
+  const [timelineItem, setTimelineItem] = useState<any | null>(null);
+  const [timelineLogs, setTimelineLogs] = useState<any[]>([]);
+  const [loadingTimeline, setLoadingTimeline] = useState(false);
+
+  // Users Tab State
+  const [usersList, setUsersList] = useState<any[]>([]);
+  const [loadingUsersList, setLoadingUsersList] = useState(false);
 
   // Core Data Lists
   const [stories, setStories] = useState<any[]>([]);
@@ -204,7 +236,7 @@ export function EditorPanelPage() {
   // ── Fetch Tab Specific Data ──────────────────────────────
   const fetchTabDetails = useCallback(() => {
     if (!session) return;
-    if (activeTab === "approvals" || activeTab === "queue") {
+    if (activeTab === "dashboard" || activeTab === "pipeline") {
       setLoadingSubmissionsList(true);
       fetch("/api/admin/submissions", { headers: { Authorization: `Bearer ${session.access_token}` } })
         .then((r) => r.json())
@@ -215,30 +247,21 @@ export function EditorPanelPage() {
       fetch("/api/admin/users?pageSize=100", { headers: { Authorization: `Bearer ${session.access_token}` } })
         .then((r) => r.json())
         .then((d) => {
+          setUsersList(d.users || []);
           const filtered = (d.users || []).filter(
-            (u: any) => u.role === "Editor" || u.role === "Admin" || u.role === "SuperAdmin"
+            (u: any) => u.role === "Editor" || u.role === "Admin" || u.role === "SuperAdmin" || u.role === "editor" || u.role === "admin" || u.role === "superadmin"
           );
           setStaffUsers(filtered);
         })
         .catch(console.error);
     }
-    if (activeTab === "videos") {
-      fetch("/api/admin/videos", { headers: { Authorization: `Bearer ${session.access_token}` } })
+    if (activeTab === "users") {
+      setLoadingUsersList(true);
+      fetch("/api/admin/users?pageSize=100", { headers: { Authorization: `Bearer ${session.access_token}` } })
         .then((r) => r.json())
-        .then((d) => setVideos(d.videos || []))
-        .catch(console.error);
-    }
-    if (activeTab === "webstories") {
-      fetch("/api/admin/web-stories", { headers: { Authorization: `Bearer ${session.access_token}` } })
-        .then((r) => r.json())
-        .then((d) => setWebStories(d.webStories || []))
-        .catch(console.error);
-    }
-    if (activeTab === "community") {
-      fetch("/api/admin/announcements", { headers: { Authorization: `Bearer ${session.access_token}` } })
-        .then((r) => r.json())
-        .then((d) => setAnnouncements(d.announcements || []))
-        .catch(console.error);
+        .then((d) => setUsersList(d.users || []))
+        .catch(console.error)
+        .finally(() => setLoadingUsersList(false));
     }
     if (activeTab === "analytics") {
       fetch("/api/admin/analytics?period=monthly", { headers: { Authorization: `Bearer ${session.access_token}` } })
@@ -623,14 +646,14 @@ export function EditorPanelPage() {
   }
 
   const navItems: { id: Tab; label: string; icon: any }[] = [
-    { id: "queue", label: "Editorial Queue", icon: BookOpen },
-    { id: "approvals", label: "Approvals & Queue", icon: Clock },
-    { id: "featured", label: "Featured Dispatches", icon: Sparkles },
-    { id: "videos", label: "Video Manager", icon: Play },
-    { id: "webstories", label: "Web Stories", icon: Share2 },
-    { id: "moderation", label: "Moderation Queue", icon: AlertTriangle },
-    { id: "analytics", label: "Platform Analytics", icon: BarChart3 },
-    { id: "community", label: "Announcements", icon: MessageSquare },
+    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { id: "inbox", label: "Inbox", icon: Inbox },
+    { id: "pipeline", label: "Story Pipeline", icon: KanbanIcon },
+    { id: "published", label: "Published Stories", icon: FileText },
+    { id: "users", label: "Users & Roles", icon: Users },
+    { id: "media", label: "Media Library", icon: ImageIcon },
+    { id: "analytics", label: "Analytics", icon: BarChart3 },
+    { id: "settings", label: "Settings", icon: Settings },
   ];
 
   return (
@@ -997,16 +1020,59 @@ export function EditorPanelPage() {
               </div>
             ) : (
               <>
-                {/* ─── Editorial Queue Tab ─── */}
-                {activeTab === "queue" && (
-                  <div className="space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div>
-                        <h2 className="font-display text-xl font-bold text-gradient-gold">Editorial Review Queue</h2>
-                        <p className="text-xs text-muted-foreground mt-1">Manage and assign submitted articles.</p>
+                {/* ─── 1. Dashboard Tab ─── */}
+                {activeTab === "dashboard" && (
+                  <div className="space-y-8 animate-fadeIn">
+                    <div>
+                      <h2 className="font-display text-2xl font-extrabold text-foreground">Editorial Dashboard</h2>
+                      <p className="text-xs text-muted-foreground mt-1">Real-time dispatches overview, story pipeline status, and recent activity.</p>
+                    </div>
+
+                    {/* Stat Metrics Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="border border-border/60 p-5 bg-card shadow-sm border-l-4 border-l-blue-500">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground block">New Submissions</span>
+                        <h3 className="font-display text-2xl font-black text-foreground mt-2">
+                          {submissionsList.filter(s => s.status === "SUBMITTED" || s.status === "Pending").length}
+                        </h3>
+                        <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+                          <Clock className="size-3 text-blue-500" /> Awaiting initial review
+                        </p>
                       </div>
+
+                      <div className="border border-border/60 p-5 bg-card shadow-sm border-l-4 border-l-amber-500">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground block">Assigned to Editors</span>
+                        <h3 className="font-display text-2xl font-black text-foreground mt-2">
+                          {submissionsList.filter(s => s.status === "ASSIGNED_TO_EDITOR" || s.status === "FactChecking").length}
+                        </h3>
+                        <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+                          <UserCheck className="size-3 text-amber-500" /> Editors working
+                        </p>
+                      </div>
+
+                      <div className="border border-border/60 p-5 bg-card shadow-sm border-l-4 border-l-purple-500">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground block">Ready to Publish</span>
+                        <h3 className="font-display text-2xl font-black text-foreground mt-2">
+                          {stories.filter(s => s.status === "Pending").length}
+                        </h3>
+                        <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+                          <CheckCircle2 className="size-3 text-purple-500" /> Pending Admin sign-off
+                        </p>
+                      </div>
+
+                      <div className="border border-border/60 p-5 bg-card shadow-sm border-l-4 border-l-emerald-500">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground block">Published Dispatches</span>
+                        <h3 className="font-display text-2xl font-black text-foreground mt-2">{totalStories}</h3>
+                        <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+                          <Globe className="size-3 text-emerald-500" /> Live on publication platform
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Quick Action Navigation */}
+                    <div className="flex flex-wrap items-center gap-3 p-4 bg-muted/20 border border-border/40">
                       <Button
-                        onClick={() =>
+                        onClick={() => {
                           setEditingStory({
                             title: "",
                             titleHi: "",
@@ -1022,766 +1088,599 @@ export function EditorPanelPage() {
                             coverImage: "",
                             seoTitle: "",
                             seoDescription: "",
-                          })
-                        }
-                        className="h-10 text-xs font-bold uppercase bg-primary hover:bg-primary/95 text-white flex items-center gap-2 rounded-none self-start"
+                          });
+                        }}
+                        className="h-9 text-xs font-bold uppercase bg-primary hover:bg-primary/95 text-white flex items-center gap-2 rounded-none cursor-pointer"
                       >
                         <Plus className="size-4" />
                         Create Story
                       </Button>
+                      <Button
+                        onClick={() => setActiveTab("pipeline")}
+                        variant="outline"
+                        className="h-9 text-xs font-bold uppercase border-border text-foreground flex items-center gap-2 rounded-none cursor-pointer"
+                      >
+                        <KanbanIcon className="size-4 text-primary" />
+                        Open Story Pipeline
+                      </Button>
+                      <Button
+                        onClick={() => setActiveTab("inbox")}
+                        variant="outline"
+                        className="h-9 text-xs font-bold uppercase border-border text-foreground flex items-center gap-2 rounded-none cursor-pointer"
+                      >
+                        <Inbox className="size-4 text-amber-600" />
+                        Check Inbox ({unreadCount})
+                      </Button>
                     </div>
 
-                    {/* Filter controls */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/20 border border-border/40">
+                    {/* Recent Submissions Table */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-display text-base font-bold text-foreground">Recent Submissions Queue</h3>
+                        <Button onClick={() => setActiveTab("pipeline")} variant="link" className="text-xs text-primary font-bold uppercase">
+                          View All Pipeline ➔
+                        </Button>
+                      </div>
+
+                      <div className="border border-border divide-y divide-border/40 bg-card">
+                        {submissionsList.slice(0, 5).map((sub) => (
+                          <div key={sub.id} className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-muted/10">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-[9px] uppercase tracking-wider font-extrabold text-gold">{sub.stateName || "General"}</span>
+                                <span className={`px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider border ${
+                                  sub.status === "Published" ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-blue-50 border-blue-200 text-blue-700"
+                                }`}>
+                                  {sub.status}
+                                </span>
+                              </div>
+                              <h4 className="text-sm font-bold text-foreground mt-1">{sub.title}</h4>
+                              <p className="text-[10px] text-muted-foreground mt-0.5">By {sub.authorName || "Contributor"} · {new Date(sub.createdAt).toLocaleString()}</p>
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0">
+                              <Button
+                                onClick={() => {
+                                  setDiffModalItem({ original: sub, edited: null });
+                                }}
+                                variant="outline"
+                                size="sm"
+                                className="h-8 text-[10px] font-semibold uppercase rounded-none cursor-pointer flex items-center gap-1"
+                              >
+                                <GitCompare className="size-3 text-primary" />
+                                Preview & Diff
+                              </Button>
+                              <Button
+                                onClick={() => setActiveTab("pipeline")}
+                                size="sm"
+                                className="h-8 text-[10px] font-semibold uppercase bg-primary text-white rounded-none cursor-pointer"
+                              >
+                                Manage in Pipeline
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* ─── 2. Gmail-Style Inbox Tab ─── */}
+                {activeTab === "inbox" && (
+                  <div className="space-y-6 animate-fadeIn">
+                    <div>
+                      <h2 className="font-display text-2xl font-extrabold text-foreground">Editorial Inbox</h2>
+                      <p className="text-xs text-muted-foreground mt-1">Database-driven communications, notifications, and workflow alerts.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-12 border border-border bg-card min-h-[550px]">
+                      {/* Left Category Menu */}
+                      <div className="lg:col-span-3 border-r border-border/50 p-4 bg-muted/10 space-y-2">
+                        <div className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground px-2 pb-2 border-b border-border/40">
+                          Inbox Folders
+                        </div>
+                        {[
+                          { id: "all", label: "All Messages", icon: Mail },
+                          { id: "unread", label: "Unread", icon: Bell },
+                          { id: "assigned", label: "Assigned Stories", icon: UserCheck },
+                          { id: "submissions", label: "Submissions", icon: FileText },
+                          { id: "editorial", label: "Editorial Reviews", icon: Sparkles },
+                          { id: "system", label: "System Alerts", icon: AlertCircle },
+                        ].map((cat) => {
+                          const Icon = cat.icon;
+                          const active = inboxCategory === cat.id;
+                          return (
+                            <button
+                              key={cat.id}
+                              onClick={() => setInboxCategory(cat.id as any)}
+                              className={`w-full flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-none cursor-pointer transition-all ${
+                                active ? "bg-primary text-white font-bold" : "text-foreground hover:bg-muted/50"
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <Icon className="size-4 shrink-0" />
+                                <span>{cat.label}</span>
+                              </div>
+                              {cat.id === "unread" && unreadCount > 0 && (
+                                <span className="px-1.5 py-0.5 text-[9px] font-black rounded-full bg-red-600 text-white">
+                                  {unreadCount}
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Middle Notification List */}
+                      <div className="lg:col-span-5 border-r border-border/50 divide-y divide-border/40 max-h-[550px] overflow-y-auto">
+                        {notifications.length === 0 ? (
+                          <div className="p-8 text-center text-xs text-muted-foreground">No notifications in inbox.</div>
+                        ) : (
+                          notifications
+                            .filter((n) => {
+                              if (inboxCategory === "unread") return !n.read;
+                              if (inboxCategory === "assigned") return n.type?.includes("ASSIGNED") || n.type?.includes("editor");
+                              if (inboxCategory === "submissions") return n.type?.includes("SUBMISSION") || n.type?.includes("submitted");
+                              if (inboxCategory === "editorial") return n.type?.includes("REVIEW") || n.type?.includes("PUBLISHED");
+                              return true;
+                            })
+                            .map((notif) => {
+                              const isSelected = selectedInboxNotif?.id === notif.id;
+                              return (
+                                <div
+                                  key={notif.id}
+                                  onClick={() => {
+                                    setSelectedInboxNotif(notif);
+                                    if (!notif.read) markNotificationRead(notif.id);
+                                  }}
+                                  className={`p-4 cursor-pointer transition-all hover:bg-muted/20 border-l-4 ${
+                                    isSelected
+                                      ? "bg-primary/10 border-l-primary"
+                                      : !notif.read
+                                      ? "bg-amber-50/60 border-l-amber-500 font-bold"
+                                      : "border-l-transparent"
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between mb-1">
+                                    <span className="text-[9px] uppercase font-bold text-primary">{notif.type || "NOTIFICATION"}</span>
+                                    <span className="text-[9px] text-muted-foreground">{new Date(notif.createdAt).toLocaleTimeString()}</span>
+                                  </div>
+                                  <h4 className="text-xs font-bold text-foreground leading-snug">{notif.title || notif.message}</h4>
+                                  <p className="text-[11px] text-muted-foreground line-clamp-1 mt-1">{notif.message}</p>
+                                </div>
+                              );
+                            })
+                        )}
+                      </div>
+
+                      {/* Right Interactive Reading Pane */}
+                      <div className="lg:col-span-4 p-6 bg-muted/5 flex flex-col justify-between">
+                        {selectedInboxNotif ? (
+                          <div className="space-y-4 animate-fadeIn">
+                            <div className="border-b border-border/50 pb-4">
+                              <span className="text-[9px] uppercase font-black tracking-widest text-gold block">Notification Detail</span>
+                              <h3 className="font-display text-lg font-bold text-foreground mt-1">{selectedInboxNotif.title || "Workflow Alert"}</h3>
+                              <p className="text-[10px] text-muted-foreground mt-1">Received {new Date(selectedInboxNotif.createdAt).toLocaleString()}</p>
+                            </div>
+
+                            <div className="text-xs text-foreground leading-relaxed bg-white p-4 border border-border/40 rounded shadow-sm">
+                              {selectedInboxNotif.message}
+                            </div>
+
+                            <div className="pt-4 flex flex-col gap-2">
+                              <Button
+                                onClick={() => setActiveTab("pipeline")}
+                                className="w-full h-9 text-xs font-bold uppercase bg-primary text-white rounded-none cursor-pointer flex items-center justify-center gap-2"
+                              >
+                                View Target in Pipeline <ArrowRight className="size-4" />
+                              </Button>
+                              <Button
+                                onClick={() => markNotificationRead(selectedInboxNotif.id)}
+                                variant="outline"
+                                className="w-full h-9 text-xs font-bold uppercase border-border rounded-none cursor-pointer flex items-center justify-center gap-2"
+                              >
+                                <CheckCheck className="size-4 text-emerald-600" /> Mark as Read
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="h-full flex items-center justify-center text-center p-8 text-xs text-muted-foreground">
+                            Select a notification from the list to preview message details.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* ─── 3. Story Pipeline Tab (Kanban + Table) ─── */}
+                {activeTab === "pipeline" && (
+                  <div className="space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/40 pb-4">
                       <div>
-                        <label className="block text-[9px] uppercase font-bold text-muted-foreground mb-1">Search</label>
+                        <h2 className="font-display text-2xl font-extrabold text-foreground">Story Pipeline</h2>
+                        <p className="text-xs text-muted-foreground mt-1">End-to-end editorial pipeline for story review, assignment, edits, and publication.</p>
+                      </div>
+
+                      {/* Kanban vs Table View Switcher */}
+                      <div className="flex bg-muted/30 border border-border/40 p-1 rounded-none gap-1 self-start">
+                        <button
+                          onClick={() => setPipelineViewMode("kanban")}
+                          className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer ${
+                            pipelineViewMode === "kanban" ? "bg-primary text-white shadow-sm" : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          <KanbanIcon className="size-3.5" /> Kanban Board
+                        </button>
+                        <button
+                          onClick={() => setPipelineViewMode("table")}
+                          className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer ${
+                            pipelineViewMode === "table" ? "bg-primary text-white shadow-sm" : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          <List className="size-3.5" /> Table View
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Filter Bar */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-muted/20 border border-border/40">
+                      <div>
+                        <label className="block text-[9px] uppercase font-bold text-muted-foreground mb-1">Search Pipeline</label>
                         <input
                           type="text"
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
-                          placeholder="Search..."
+                          placeholder="Search title, author..."
                           className="w-full h-9 px-2 bg-white border border-border text-xs focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label className="block text-[9px] uppercase font-bold text-muted-foreground mb-1">Status</label>
-                        <select
-                          value={statusFilter}
-                          onChange={(e) => setStatusFilter(e.target.value)}
-                          className="w-full h-9 px-2 bg-white border border-border text-xs focus:outline-none"
-                        >
-                          <option value="all">All</option>
-                          <option value="Draft">Draft</option>
-                          <option value="Pending">Pending Review</option>
-                          <option value="Published">Published</option>
-                          <option value="Archived">Archived</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-[9px] uppercase font-bold text-muted-foreground mb-1">State</label>
+                        <label className="block text-[9px] uppercase font-bold text-muted-foreground mb-1">State/Region</label>
                         <select
                           value={stateFilter}
                           onChange={(e) => setStateFilter(e.target.value)}
                           className="w-full h-9 px-2 bg-white border border-border text-xs focus:outline-none"
                         >
-                          <option value="all">All States</option>
+                          <option value="all">All Regions</option>
                           {states.map((s) => (
                             <option key={s.id} value={s.slug}>{s.name}</option>
                           ))}
                         </select>
                       </div>
                       <div>
-                        <label className="block text-[9px] uppercase font-bold text-muted-foreground mb-1">Sort</label>
+                        <label className="block text-[9px] uppercase font-bold text-muted-foreground mb-1">Status Stage</label>
                         <select
-                          value={sortBy}
-                          onChange={(e) => setSortBy(e.target.value)}
+                          value={statusFilter}
+                          onChange={(e) => setStatusFilter(e.target.value)}
                           className="w-full h-9 px-2 bg-white border border-border text-xs focus:outline-none"
                         >
-                          <option value="date">Date Created</option>
-                          <option value="views">Most Viewed</option>
-                          <option value="title">Alphabetical</option>
+                          <option value="all">All Stages</option>
+                          <option value="SUBMITTED">New Submission</option>
+                          <option value="ASSIGNED_TO_EDITOR">Assigned to Editor</option>
+                          <option value="Pending">Pending Review</option>
+                          <option value="Published">Published</option>
+                          <option value="Rejected">Rejected</option>
                         </select>
                       </div>
-                    </div>
-
-                    <div className="border border-border/50 divide-y divide-border/40">
-                      {loadingStories ? (
-                        <div className="p-8 text-center text-xs text-muted-foreground">Loading queue stories...</div>
-                      ) : stories.length === 0 ? (
-                        <p className="text-xs text-muted-foreground p-8 text-center">Review queue is empty. All submissions are published!</p>
-                      ) : (
-                        stories.map((story) => (
-                          <div key={story.id} className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-muted/10">
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className={`px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider border ${
-                                  story.status === "Published"
-                                    ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-                                    : story.status === "Pending"
-                                      ? "bg-amber-50 border-amber-200 text-amber-700"
-                                      : "bg-stone-50 border-stone-200 text-stone-700"
-                                }`}>
-                                  {story.status}
-                                </span>
-                                <span className="text-[10px] text-muted-foreground">{story.region}</span>
-                              </div>
-                              <h4 className="text-sm font-bold text-foreground mt-1">{story.title}</h4>
-                              <p className="text-[10px] text-muted-foreground mt-1">
-                                By {story.authorName || "Contributor"} · Views: {story.viewCount} · Modified {new Date(story.updatedAt).toLocaleDateString()}
-                              </p>
-                            </div>
-                            <div className="flex gap-2 shrink-0">
-                              <Button
-                                onClick={() => setEditingStory(story)}
-                                variant="outline"
-                                size="sm"
-                                className="h-8 text-[10px] font-semibold tracking-wider uppercase rounded-none cursor-pointer flex items-center gap-1"
-                              >
-                                <Edit className="size-3" />
-                                Edit
-                              </Button>
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-
-                    {/* Pagination */}
-                    {pageCount > 1 && (
-                      <div className="flex justify-center items-center gap-2 mt-4 pt-4 border-t border-border/30">
-                        <Button disabled={page <= 1} onClick={() => setPage(page - 1)} variant="outline" size="sm">
-                          Prev
-                        </Button>
-                        <span className="text-xs text-muted-foreground">Page {page} of {pageCount}</span>
-                        <Button disabled={page >= pageCount} onClick={() => setPage(page + 1)} variant="outline" size="sm">
-                          Next
+                      <div className="flex items-end">
+                        <Button
+                          onClick={() => fetchTabDetails()}
+                          variant="outline"
+                          className="w-full h-9 text-xs font-bold uppercase border-border rounded-none flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <RefreshCw className="size-3.5 text-primary" /> Refresh Pipeline
                         </Button>
                       </div>
-                    )}
-                  </div>
-                )}
-
-                {/* ─── Approvals & Queue Tab ─── */}
-                {activeTab === "approvals" && (
-                  <div className="space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div>
-                        <h2 className="font-display text-xl font-bold text-foreground">Scheduling & Approvals</h2>
-                        <p className="text-xs text-muted-foreground mt-1">Review pending dispatches and assign user story submissions.</p>
-                      </div>
-                      
-                      {/* Sub-tabs toggler */}
-                      <div className="flex bg-muted/30 border border-border/40 p-0.5 rounded gap-1 self-start">
-                        <button
-                          onClick={() => setApprovalsSubTab("stories")}
-                          className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded transition-colors cursor-pointer ${
-                            approvalsSubTab === "stories" ? "bg-white text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                          }`}
-                        >
-                          Stories Pending Review
-                        </button>
-                        <button
-                          onClick={() => setApprovalsSubTab("submissions")}
-                          className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded transition-colors cursor-pointer ${
-                            approvalsSubTab === "submissions" ? "bg-white text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                          }`}
-                        >
-                          User Submissions Queue
-                        </button>
-                      </div>
                     </div>
 
-                    {approvalsSubTab === "stories" ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {stories.filter(s => s.status === "Pending").length === 0 ? (
-                          <div className="col-span-full border border-border/50 p-8 text-center text-xs text-muted-foreground">
-                            No stories pending approval.
+                    {/* Kanban Board View */}
+                    {pipelineViewMode === "kanban" ? (
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 overflow-x-auto pb-4">
+                        {/* Column 1: New Submissions */}
+                        <div className="bg-muted/15 border border-border/60 p-4 space-y-4">
+                          <div className="flex items-center justify-between border-b border-border/40 pb-2">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-blue-600 flex items-center gap-1.5">
+                              <span className="size-2 rounded-full bg-blue-600"></span> New Submissions
+                            </span>
+                            <span className="text-[10px] font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                              {submissionsList.filter(s => s.status === "SUBMITTED" || s.status === "Pending").length}
+                            </span>
                           </div>
-                        ) : (
-                          stories.filter(s => s.status === "Pending").map((story) => (
-                            <div key={story.id} className="border border-border/50 p-5 bg-card flex flex-col justify-between hover:border-gold/30 transition-all shadow-sm">
-                              <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-[9px] uppercase tracking-wider font-bold text-gold">{story.region}</span>
-                                  <span className="text-[10px] text-muted-foreground">Submitted {new Date(story.updatedAt).toLocaleDateString()}</span>
+
+                          <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
+                            {submissionsList.filter(s => s.status === "SUBMITTED" || s.status === "Pending").map((sub) => (
+                              <div key={sub.id} className="bg-white border border-border p-4 shadow-sm hover:border-primary/50 transition-all space-y-3">
+                                <div>
+                                  <span className="text-[9px] uppercase font-bold text-gold">{sub.stateName || "State"}</span>
+                                  <h4 className="font-display text-sm font-bold text-foreground leading-snug mt-0.5">{sub.title}</h4>
+                                  <p className="text-[10px] text-muted-foreground mt-1">By {sub.authorName || "Author"} · {new Date(sub.createdAt).toLocaleDateString()}</p>
                                 </div>
-                                <h3 className="font-display text-base font-bold text-foreground">{story.title}</h3>
-                                <p className="text-xs text-muted-foreground line-clamp-2">{story.excerpt}</p>
-                                
-                                <div className="flex items-center gap-4 text-[10px] text-muted-foreground/80 font-semibold pt-2">
-                                  <span>Author: {story.author?.name || "Bureau"}</span>
-                                  <span>Read Time: {story.readingTime || 4}m</span>
+
+                                <div className="pt-2 border-t border-border/40 flex items-center justify-between">
+                                  <Button
+                                    onClick={() => setDiffModalItem({ original: sub, edited: null })}
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 text-[9px] font-bold uppercase rounded-none cursor-pointer"
+                                  >
+                                    Diff & Assign
+                                  </Button>
                                 </div>
                               </div>
+                            ))}
+                          </div>
+                        </div>
 
-                              <div className="flex items-center gap-2 mt-5 pt-4 border-t border-border/40">
-                                {isAdmin ? (
-                                  <>
+                        {/* Column 2: Assigned to Editor */}
+                        <div className="bg-muted/15 border border-border/60 p-4 space-y-4">
+                          <div className="flex items-center justify-between border-b border-border/40 pb-2">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-amber-600 flex items-center gap-1.5">
+                              <span className="size-2 rounded-full bg-amber-600"></span> Editor Working
+                            </span>
+                            <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+                              {submissionsList.filter(s => s.status === "ASSIGNED_TO_EDITOR" || s.status === "FactChecking").length}
+                            </span>
+                          </div>
+
+                          <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
+                            {submissionsList.filter(s => s.status === "ASSIGNED_TO_EDITOR" || s.status === "FactChecking").map((sub) => (
+                              <div key={sub.id} className="bg-white border border-border p-4 shadow-sm hover:border-amber-500/50 transition-all space-y-3">
+                                <div>
+                                  <span className="text-[9px] uppercase font-bold text-amber-600">Assigned to Editor</span>
+                                  <h4 className="font-display text-sm font-bold text-foreground leading-snug mt-0.5">{sub.title}</h4>
+                                  <p className="text-[10px] text-muted-foreground mt-1">Author: {sub.authorName || "Author"}</p>
+                                </div>
+
+                                <div className="pt-2 border-t border-border/40 flex items-center justify-between">
+                                  <Button
+                                    onClick={() => setDiffModalItem({ original: sub, edited: null })}
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 text-[9px] font-bold uppercase rounded-none cursor-pointer"
+                                  >
+                                    Review Progress
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Column 3: Ready to Publish */}
+                        <div className="bg-muted/15 border border-border/60 p-4 space-y-4">
+                          <div className="flex items-center justify-between border-b border-border/40 pb-2">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-purple-600 flex items-center gap-1.5">
+                              <span className="size-2 rounded-full bg-purple-600"></span> Ready to Publish
+                            </span>
+                            <span className="text-[10px] font-bold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
+                              {stories.filter(s => s.status === "Pending").length}
+                            </span>
+                          </div>
+
+                          <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
+                            {stories.filter(s => s.status === "Pending").map((story) => (
+                              <div key={story.id} className="bg-white border border-border p-4 shadow-sm hover:border-purple-500/50 transition-all space-y-3">
+                                <div>
+                                  <span className="text-[9px] uppercase font-bold text-purple-600">Admin Sign-off Required</span>
+                                  <h4 className="font-display text-sm font-bold text-foreground leading-snug mt-0.5">{story.title}</h4>
+                                  <p className="text-[10px] text-muted-foreground mt-1">Author: {story.authorName || "Bureau"}</p>
+                                </div>
+
+                                <div className="pt-2 border-t border-border/40 flex items-center gap-2">
+                                  {isAdmin && (
                                     <Button
                                       onClick={() => handleApprovalAction(story.id, "Approve")}
                                       size="sm"
-                                      className="h-8 text-[10px] font-semibold tracking-wider uppercase bg-emerald-600 hover:bg-emerald-700 text-white rounded-none flex items-center gap-1"
+                                      className="h-7 text-[9px] font-bold uppercase bg-emerald-600 hover:bg-emerald-700 text-white rounded-none cursor-pointer"
                                     >
-                                      <Check className="size-3.5" />
-                                      Approve
+                                      Publish
                                     </Button>
-                                    <Button
-                                      onClick={() => handleApprovalAction(story.id, "RequestChanges")}
-                                      size="sm"
-                                      className="h-8 text-[10px] font-semibold tracking-wider uppercase bg-amber-600 hover:bg-amber-700 text-white rounded-none flex items-center gap-1"
-                                    >
-                                      <Clock className="size-3.5" />
-                                      Changes
-                                    </Button>
-                                    <Button
-                                      onClick={() => handleApprovalAction(story.id, "Reject")}
-                                      size="sm"
-                                      className="h-8 text-[10px] font-semibold tracking-wider uppercase bg-red-600 hover:bg-red-700 text-white rounded-none flex items-center gap-1"
-                                    >
-                                      <X className="size-3.5" />
-                                      Reject
-                                    </Button>
-                                  </>
-                                ) : (
-                                  <span className="text-[10px] text-amber-600 font-bold uppercase tracking-wider flex items-center gap-1.5">
-                                    <Clock className="size-4" />
-                                    Waiting for Admin approval
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    ) : (
-                      <div className="space-y-6">
-                        {loadingSubmissionsList ? (
-                          <div className="text-center p-8 text-xs text-muted-foreground">Loading submissions list...</div>
-                        ) : submissionsList.length === 0 ? (
-                          <div className="border border-border/50 p-8 text-center text-xs text-muted-foreground">
-                            No user submissions found.
-                          </div>
-                        ) : (
-                          <div className="grid grid-cols-1 gap-6">
-                            {submissionsList.map((sub) => {
-                              const selectedEditor = selectedEditorMap[sub.id] || "";
-                              const rejectionNotes = rejectionNotesMap[sub.id] || "";
-
-                              return (
-                                <div key={sub.id} className="border border-border/50 p-6 bg-card hover:border-gold/30 transition-all shadow-sm space-y-4">
-                                  <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-border/40 pb-4 gap-2">
-                                    <div>
-                                      <span className="text-[9px] uppercase tracking-wider font-bold text-gold">{sub.stateName}</span>
-                                      <h3 className="font-display text-base font-bold text-foreground mt-1">{sub.title}</h3>
-                                      <p className="text-[10px] text-muted-foreground mt-1">
-                                        Submitted by {sub.authorName || "Contributor"} · {new Date(sub.createdAt).toLocaleString()}
-                                      </p>
-                                    </div>
-                                    <span className={`px-2.5 py-1 text-[9px] font-bold border uppercase tracking-wider ${
-                                      sub.status === "Published"
-                                        ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-                                        : sub.status === "FactChecking" || sub.status === "ASSIGNED_TO_EDITOR"
-                                          ? "bg-amber-50 border-amber-200 text-amber-700"
-                                          : sub.status === "Rejected"
-                                            ? "bg-red-50 border-red-200 text-red-700"
-                                            : "bg-blue-50 border-blue-200 text-blue-700"
-                                    }`}>
-                                       {sub.status === "FactChecking" || sub.status === "ASSIGNED_TO_EDITOR" ? "Assigned to Editor" : sub.status === "Pending" || sub.status === "SUBMITTED" ? "Submitted" : sub.status}
-                                    </span>
-                                  </div>
-
-                                  <div className="text-xs text-muted-foreground font-sans line-clamp-3 bg-muted/5 p-3 border border-border/30">
-                                    {sub.excerpt || sub.content}
-                                  </div>
-
-                                  {isAdmin && (sub.status === "Pending" || sub.status === "SUBMITTED") && (
-                                    <div className="pt-4 border-t border-border/45 flex flex-col md:flex-row gap-4 items-start md:items-end justify-between">
-                                      <div className="space-y-4 w-full md:max-w-md">
-                                        <div>
-                                          <label className="block text-[9px] uppercase font-bold text-muted-foreground mb-1">Assign to Editor</label>
-                                          <div className="flex gap-2">
-                                            <select
-                                              value={selectedEditor}
-                                              onChange={(e) => setSelectedEditorMap({ ...selectedEditorMap, [sub.id]: e.target.value })}
-                                              className="h-9 px-2 border border-border text-xs bg-white w-full"
-                                            >
-                                              <option value="">Select Editor</option>
-                                              {staffUsers.map((u) => (
-                                                <option key={u.id} value={u.id}>{u.name} ({u.role})</option>
-                                              ))}
-                                            </select>
-                                            <Button
-                                              disabled={!selectedEditor}
-                                              onClick={() => executeSubmissionAction(sub.id, "AssignToEditor", selectedEditor)}
-                                              size="sm"
-                                              className="h-9 text-[10px] font-semibold tracking-wider uppercase bg-primary text-white shrink-0"
-                                            >
-                                              Assign
-                                            </Button>
-                                          </div>
-                                        </div>
-
-                                        <div className="space-y-1.5">
-                                          <label className="block text-[9px] uppercase font-bold text-muted-foreground mb-1">Rejection Feedback (Optional)</label>
-                                          <div className="flex gap-2">
-                                            <textarea
-                                              placeholder="Provide constructive feedback..."
-                                              value={rejectionNotes}
-                                              onChange={(e) => setRejectionNotesMap({ ...rejectionNotesMap, [sub.id]: e.target.value })}
-                                              className="w-full h-16 p-2 border border-border text-xs bg-white"
-                                            />
-                                            <Button
-                                              onClick={() => executeSubmissionAction(sub.id, "Rejected", undefined, rejectionNotes)}
-                                              size="sm"
-                                              className="h-9 text-[10px] font-semibold tracking-wider uppercase bg-red-600 hover:bg-red-700 text-white shrink-0 self-end"
-                                            >
-                                              Reject
-                                            </Button>
-                                          </div>
-                                        </div>
-                                      </div>
-
-                                      <Button
-                                        onClick={() => executeSubmissionAction(sub.id, "Approved")}
-                                        size="sm"
-                                        className="h-9 text-[10px] font-semibold tracking-wider uppercase bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5"
-                                      >
-                                        <Check className="size-3.5" />
-                                        Approve Directly
-                                      </Button>
-                                    </div>
                                   )}
                                 </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* ─── Featured Dispatches Tab ─── */}
-                {activeTab === "featured" && (
-                  <div className="space-y-6 animate-fadeIn">
-                    <div>
-                      <h2 className="font-display text-xl font-bold text-foreground">Featured Dispatches Curations</h2>
-                      <p className="text-xs text-muted-foreground mt-1">Set featured, trending, and homepage slideshow flags.</p>
-                    </div>
-
-                    <div className="border border-border/50 divide-y divide-border/40">
-                      {stories.filter(s => s.status === "Published").slice(0, 10).map((story) => (
-                        <div key={story.id} className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-muted/10">
-                          <div>
-                            <h4 className="text-sm font-bold text-foreground">{story.title}</h4>
-                            <p className="text-[10px] text-muted-foreground mt-1">
-                              Views: {story.viewCount} · Region: {story.region}
-                            </p>
-                          </div>
-                          
-                          <div className="flex flex-wrap items-center gap-2">
-                            {/* Featured Flag */}
-                            <button
-                              onClick={() => {
-                                if (!session) return;
-                                fetch(`/api/admin/stories/${story.id}`, {
-                                  method: "PATCH",
-                                  headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
-                                  body: JSON.stringify({ featured: !story.featured }),
-                                }).then(() => fetchStories());
-                              }}
-                              className={`px-3 py-1 rounded text-[9px] font-black uppercase tracking-wider border transition-colors cursor-pointer ${
-                                story.featured
-                                  ? "bg-gold border-gold text-white"
-                                  : "bg-white border-border text-muted-foreground hover:bg-muted/30"
-                              }`}
-                            >
-                              Featured Story
-                            </button>
-
-                            {/* Trending Flag */}
-                            <button
-                              onClick={() => {
-                                if (!session) return;
-                                fetch(`/api/admin/stories/${story.id}`, {
-                                  method: "PATCH",
-                                  headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
-                                  body: JSON.stringify({ trendingStory: !story.trendingStory }),
-                                }).then(() => fetchStories());
-                              }}
-                              className={`px-3 py-1 rounded text-[9px] font-black uppercase tracking-wider border transition-colors cursor-pointer ${
-                                story.trendingStory
-                                  ? "bg-primary border-primary text-white"
-                                  : "bg-white border-border text-muted-foreground hover:bg-muted/30"
-                              }`}
-                            >
-                              Trending
-                            </button>
-
-                            {/* Slideshow Flag */}
-                            <button
-                              onClick={() => {
-                                if (!session) return;
-                                fetch(`/api/admin/stories/${story.id}`, {
-                                  method: "PATCH",
-                                  headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
-                                  body: JSON.stringify({ homepageSlideshow: !story.homepageSlideshow }),
-                                }).then(() => fetchStories());
-                              }}
-                              className={`px-3 py-1 rounded text-[9px] font-black uppercase tracking-wider border transition-colors cursor-pointer ${
-                                story.homepageSlideshow
-                                  ? "bg-stone-800 border-stone-800 text-white"
-                                  : "bg-white border-border text-muted-foreground hover:bg-muted/30"
-                              }`}
-                            >
-                              Slideshow Hero
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* ─── Video Manager Tab ─── */}
-                {activeTab === "videos" && (
-                  <div className="space-y-6 animate-fadeIn">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h2 className="font-display text-xl font-bold text-foreground">Video Content Manager</h2>
-                        <p className="text-xs text-muted-foreground mt-1">Upload and catalog documentaries, video posts, and field dispatches.</p>
-                      </div>
-                      <Button
-                        onClick={() => setVideoFormOpen(true)}
-                        className="h-10 text-xs font-bold uppercase bg-primary hover:bg-primary/95 text-white flex items-center gap-2 rounded-none"
-                      >
-                        <Plus className="size-4" />
-                        Add Video
-                      </Button>
-                    </div>
-
-                    {/* Add Video Modal Form Overlay */}
-                    {videoFormOpen && (
-                      <div className="bg-muted/20 p-5 border border-border/40 space-y-4">
-                        <h3 className="text-sm font-bold">New Video Entry</h3>
-                        <form onSubmit={handleAddVideo} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <input
-                            type="text"
-                            placeholder="Video Title"
-                            value={newVideo.title}
-                            onChange={(e) => setNewVideo({ ...newVideo, title: e.target.value })}
-                            className="h-9 px-3 border border-border text-xs bg-white"
-                            required
-                          />
-                          <input
-                            type="text"
-                            placeholder="Slug"
-                            value={newVideo.slug}
-                            onChange={(e) => setNewVideo({ ...newVideo, slug: e.target.value })}
-                            className="h-9 px-3 border border-border text-xs bg-white"
-                            required
-                          />
-                          <input
-                            type="text"
-                            placeholder="Video YouTube ID / URL"
-                            value={newVideo.videoUrl}
-                            onChange={(e) => setNewVideo({ ...newVideo, videoUrl: e.target.value })}
-                            className="h-9 px-3 border border-border text-xs bg-white"
-                            required
-                          />
-                          <input
-                            type="text"
-                            placeholder="Thumbnail URL (Optional)"
-                            value={newVideo.thumbnail}
-                            onChange={(e) => setNewVideo({ ...newVideo, thumbnail: e.target.value })}
-                            className="h-9 px-3 border border-border text-xs bg-white"
-                          />
-                          <select
-                            value={newVideo.stateId}
-                            onChange={(e) => setNewVideo({ ...newVideo, stateId: e.target.value })}
-                            className="h-9 px-2 border border-border text-xs bg-white"
-                            required
-                          >
-                            <option value="">Select State</option>
-                            {states.map((s) => (
-                              <option key={s.id} value={s.id}>{s.name}</option>
-                            ))}
-                          </select>
-                          <select
-                            value={newVideo.authorId}
-                            onChange={(e) => setNewVideo({ ...newVideo, authorId: e.target.value })}
-                            className="h-9 px-2 border border-border text-xs bg-white"
-                            required
-                          >
-                            <option value="">Select Author</option>
-                            {authors.map((a) => (
-                              <option key={a.id} value={a.id}>{a.name}</option>
-                            ))}
-                          </select>
-                          <div className="flex gap-2 col-span-full justify-end">
-                            <Button type="button" variant="outline" size="sm" onClick={() => setVideoFormOpen(false)}>Cancel</Button>
-                            <Button type="submit" size="sm" className="bg-primary text-white">Save Video</Button>
-                          </div>
-                        </form>
-                      </div>
-                    )}
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {videos.map((v) => (
-                        <div key={v.id} className="border border-border/40 p-4 bg-card rounded-none hover:border-gold/30 transition-all flex flex-col justify-between">
-                          <div>
-                            <div className="aspect-video bg-stone-900 overflow-hidden relative border border-border mb-3">
-                              <img
-                                src={v.thumbnail || `https://img.youtube.com/vi/${v.videoUrl}/hqdefault.jpg`}
-                                alt={v.title}
-                                className="w-full h-full object-cover"
-                              />
-                              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                                <Play className="size-8 text-white/95" />
                               </div>
-                            </div>
-                            <h4 className="text-xs font-bold text-foreground line-clamp-1">{v.title}</h4>
-                            <p className="text-[10px] text-muted-foreground mt-1">Region: {v.state?.name || "India"}</p>
-                          </div>
-                          <div className="flex justify-end gap-2 mt-4 pt-3 border-t border-border/30">
-                            <button
-                              onClick={() => handleDeleteVideo(v.id)}
-                              className="p-1.5 hover:bg-red-50 text-red-600 hover:text-red-700 transition-colors border border-transparent rounded cursor-pointer"
-                              aria-label="Delete Video"
-                            >
-                              <Trash2 className="size-3.5" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* ─── Web Stories Tab ─── */}
-                {activeTab === "webstories" && (
-                  <div className="space-y-6 animate-fadeIn">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h2 className="font-display text-xl font-bold text-foreground">Web Stories Creator</h2>
-                        <p className="text-xs text-muted-foreground mt-1">Expose modern Google Web Stories with slide contents.</p>
-                      </div>
-                      <Button
-                        onClick={() => setWebStoryFormOpen(true)}
-                        className="h-10 text-xs font-bold uppercase bg-primary hover:bg-primary/95 text-white flex items-center gap-2 rounded-none"
-                      >
-                        <Plus className="size-4" />
-                        Create Web Story
-                      </Button>
-                    </div>
-
-                    {/* Create Web Story Modal Form */}
-                    {webStoryFormOpen && (
-                      <div className="bg-muted/20 p-5 border border-border/40 space-y-4">
-                        <h3 className="text-sm font-bold">New Web Story slide deck</h3>
-                        <form onSubmit={handleAddWebStory} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <input
-                            type="text"
-                            placeholder="Web Story Title"
-                            value={newWebStory.title}
-                            onChange={(e) => setNewWebStory({ ...newWebStory, title: e.target.value })}
-                            className="h-9 px-3 border border-border text-xs bg-white"
-                            required
-                          />
-                          <input
-                            type="text"
-                            placeholder="Slug"
-                            value={newWebStory.slug}
-                            onChange={(e) => setNewWebStory({ ...newWebStory, slug: e.target.value })}
-                            className="h-9 px-3 border border-border text-xs bg-white"
-                            required
-                          />
-                          <input
-                            type="text"
-                            placeholder="Cover Image URL"
-                            value={newWebStory.coverImage}
-                            onChange={(e) => setNewWebStory({ ...newWebStory, coverImage: e.target.value })}
-                            className="h-9 px-3 border border-border text-xs bg-white"
-                            required
-                          />
-                          <select
-                            value={newWebStory.authorId}
-                            onChange={(e) => setNewWebStory({ ...newWebStory, authorId: e.target.value })}
-                            className="h-9 px-2 border border-border text-xs bg-white"
-                            required
-                          >
-                            <option value="">Select Author</option>
-                            {authors.map((a) => (
-                              <option key={a.id} value={a.id}>{a.name}</option>
                             ))}
-                          </select>
-                          <div className="flex gap-2 col-span-full justify-end">
-                            <Button type="button" variant="outline" size="sm" onClick={() => setWebStoryFormOpen(false)}>Cancel</Button>
-                            <Button type="submit" size="sm" className="bg-primary text-white">Save Web Story</Button>
-                          </div>
-                        </form>
-                      </div>
-                    )}
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {webStories.map((ws) => (
-                        <div key={ws.id} className="relative aspect-[9/16] rounded-xl overflow-hidden border border-border/40 hover:border-gold/50 shadow-sm flex flex-col justify-end p-4 group">
-                          <img
-                            src={ws.coverImage}
-                            alt={ws.title}
-                            className="absolute inset-0 size-full object-cover filter brightness-[0.7] group-hover:scale-105 transition-transform duration-700"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-                          <div className="relative z-10 space-y-2">
-                            <h4 className="font-display text-xs font-bold leading-tight text-white line-clamp-3">{ws.title}</h4>
-                            <div className="flex justify-between items-center pt-2">
-                              <span className="text-[8px] bg-white/20 text-white px-2 py-0.5 rounded font-sans uppercase font-bold">
-                                {ws.status}
-                              </span>
-                              <button
-                                onClick={() => handleDeleteWebStory(ws.id)}
-                                className="p-1 text-red-400 hover:text-red-500 hover:bg-white/10 rounded transition-colors cursor-pointer"
-                                aria-label="Delete Web Story"
-                              >
-                                <Trash2 className="size-3.5" />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* ─── Moderation Queue Tab ─── */}
-                {activeTab === "moderation" && (
-                  <div className="space-y-6 animate-fadeIn">
-                    <div>
-                      <h2 className="font-display text-xl font-bold text-foreground">Moderation Queue</h2>
-                      <p className="text-xs text-muted-foreground mt-1">Review flagged comments, reported entries, and spam signals.</p>
-                    </div>
-                    
-                    <div className="border border-border/50 p-8 text-center text-xs text-muted-foreground flex flex-col items-center justify-center gap-2 bg-muted/5">
-                      <AlertTriangle className="size-8 text-amber-500" />
-                      <h3 className="font-bold text-foreground mt-2">All Safe & Moderated</h3>
-                      <p className="max-w-xs leading-relaxed mt-1">Community comments automated filter scans running continuously. No pending comment alerts found.</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* ─── Platform Analytics Tab ─── */}
-                {activeTab === "analytics" && (
-                  <div className="space-y-6 animate-fadeIn">
-                    <div>
-                      <h2 className="font-display text-xl font-bold text-foreground">Platform Analytics</h2>
-                      <p className="text-xs text-muted-foreground mt-1">Real-time visitor counts, top articles, completion rates, and regional traffic.</p>
-                    </div>
-
-                    {analytics ? (
-                      <div className="space-y-6">
-                        {/* Highlights metric layout row */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          <div className="border border-border/50 p-4 bg-muted/10 rounded">
-                            <span className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">Total Views</span>
-                            <h3 className="font-display text-xl font-bold mt-1">{(analytics.totalViews || 12450).toLocaleString()}</h3>
-                          </div>
-                          <div className="border border-border/50 p-4 bg-muted/10 rounded">
-                            <span className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">Active Catalog</span>
-                            <h3 className="font-display text-xl font-bold mt-1">{(analytics.published || 0)}</h3>
-                          </div>
-                          <div className="border border-border/50 p-4 bg-muted/10 rounded">
-                            <span className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">Daily Readers</span>
-                            <h3 className="font-display text-xl font-bold mt-1">{(analytics.dailyReaders || 342).toLocaleString()}</h3>
-                          </div>
-                          <div className="border border-border/50 p-4 bg-muted/10 rounded">
-                            <span className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">Comments Moderated</span>
-                            <h3 className="font-display text-xl font-bold mt-1">{(analytics.totalComments || 0).toLocaleString()}</h3>
                           </div>
                         </div>
 
-                        {/* Top lists grids */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          {/* Top Stories list */}
-                          <div className="border border-border p-5 rounded bg-card">
-                            <h4 className="font-display text-sm font-bold mb-3 pb-2 border-b border-border/55">Top Performing Stories</h4>
-                            <div className="divide-y divide-border/40">
-                              {(analytics.topStories || []).slice(0, 5).map((s: any, idx: number) => (
-                                <div key={idx} className="py-2.5 flex items-center justify-between text-xs gap-3">
-                                  <span className="truncate max-w-[200px] text-foreground font-semibold">{s.title}</span>
-                                  <span className="text-muted-foreground shrink-0">{s.viewCount} views</span>
-                                </div>
-                              ))}
-                            </div>
+                        {/* Column 4: Published */}
+                        <div className="bg-muted/15 border border-border/60 p-4 space-y-4">
+                          <div className="flex items-center justify-between border-b border-border/40 pb-2">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 flex items-center gap-1.5">
+                              <span className="size-2 rounded-full bg-emerald-600"></span> Published Dispatches
+                            </span>
+                            <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">
+                              {stories.filter(s => s.status === "Published").length}
+                            </span>
                           </div>
 
-                          {/* Trending States list */}
-                          <div className="border border-border p-5 rounded bg-card">
-                            <h4 className="font-display text-sm font-bold mb-3 pb-2 border-b border-border/55">Active Regions (States)</h4>
-                            <div className="divide-y divide-border/40">
-                              {(analytics.trendingStates || []).slice(0, 5).map((st: any, idx: number) => (
-                                <div key={idx} className="py-2.5 flex items-center justify-between text-xs gap-3">
-                                  <span className="text-foreground font-semibold">{st.name}</span>
-                                  <span className="text-muted-foreground shrink-0">{st.viewCount} views ({st.storiesCount} stories)</span>
-                                </div>
-                              ))}
-                            </div>
+                          <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
+                            {stories.filter(s => s.status === "Published").slice(0, 8).map((story) => (
+                              <div key={story.id} className="bg-white border border-border p-4 shadow-sm space-y-2">
+                                <span className="text-[9px] uppercase font-bold text-emerald-600 block">Live Dispatch</span>
+                                <h4 className="font-display text-xs font-bold text-foreground truncate">{story.title}</h4>
+                                <p className="text-[9px] text-muted-foreground">Views: {story.viewCount} · Published {new Date(story.updatedAt).toLocaleDateString()}</p>
+                              </div>
+                            ))}
                           </div>
                         </div>
                       </div>
                     ) : (
-                      <div className="p-8 text-center text-xs text-muted-foreground animate-pulse">Loading analytics dashboard...</div>
+                      /* Table View */
+                      <div className="border border-border divide-y divide-border/40 bg-card">
+                        <div className="p-3 bg-muted/20 grid grid-cols-12 text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">
+                          <div className="col-span-5">Story Title & Details</div>
+                          <div className="col-span-2">Region</div>
+                          <div className="col-span-2">Status Stage</div>
+                          <div className="col-span-3 text-right">Actions</div>
+                        </div>
+
+                        {submissionsList.map((sub) => (
+                          <div key={sub.id} className="p-4 grid grid-cols-12 items-center text-xs hover:bg-muted/10">
+                            <div className="col-span-5 font-bold text-foreground">
+                              {sub.title}
+                              <span className="block text-[10px] font-normal text-muted-foreground">By {sub.authorName || "Contributor"}</span>
+                            </div>
+                            <div className="col-span-2 text-muted-foreground">{sub.stateName || "General"}</div>
+                            <div className="col-span-2">
+                              <span className="px-2 py-0.5 text-[8px] font-bold uppercase border bg-blue-50 border-blue-200 text-blue-700">
+                                {sub.status}
+                              </span>
+                            </div>
+                            <div className="col-span-3 text-right space-x-2">
+                              <Button
+                                onClick={() => setDiffModalItem({ original: sub, edited: null })}
+                                variant="outline"
+                                size="sm"
+                                className="h-8 text-[10px] font-bold uppercase rounded-none cursor-pointer"
+                              >
+                                View Diff
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
                 )}
 
-                {/* ─── Announcements Tab ─── */}
-                {activeTab === "community" && (
+                {/* ─── 4. Published Stories Tab ─── */}
+                {activeTab === "published" && (
                   <div className="space-y-6 animate-fadeIn">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h2 className="font-display text-xl font-bold text-foreground">Announcements Manager</h2>
-                        <p className="text-xs text-muted-foreground mt-1">Publish news briefs, alerts, and platform schedule calls to creators.</p>
-                      </div>
-                      <Button
-                        onClick={() => setAnnouncementFormOpen(true)}
-                        className="h-10 text-xs font-bold uppercase bg-primary hover:bg-primary/95 text-white flex items-center gap-2 rounded-none"
-                      >
-                        <Plus className="size-4" />
-                        Create Announcement
-                      </Button>
+                    <div>
+                      <h2 className="font-display text-2xl font-extrabold text-foreground">Published Dispatches Catalog</h2>
+                      <p className="text-xs text-muted-foreground mt-1">Manage live dispatches, SEO metadata, and feature curations.</p>
                     </div>
 
-                    {/* Create Announcement Form */}
-                    {announcementFormOpen && (
-                      <div className="bg-muted/20 p-5 border border-border/40 space-y-4">
-                        <h3 className="text-sm font-bold">New Platform Announcement</h3>
-                        <form onSubmit={handleAddAnnouncement} className="grid grid-cols-1 gap-4">
-                          <input
-                            type="text"
-                            placeholder="Announcement Title"
-                            value={newAnnouncement.title}
-                            onChange={(e) => setNewAnnouncement({ ...newAnnouncement, title: e.target.value })}
-                            className="h-9 px-3 border border-border text-xs bg-white"
-                            required
-                          />
-                          <textarea
-                            placeholder="Announcement Content"
-                            value={newAnnouncement.content}
-                            onChange={(e) => setNewAnnouncement({ ...newAnnouncement, content: e.target.value })}
-                            className="p-3 border border-border text-xs bg-white h-24"
-                            required
-                          />
-                          <div className="flex gap-2 justify-end">
-                            <Button type="button" variant="outline" size="sm" onClick={() => setAnnouncementFormOpen(false)}>Cancel</Button>
-                            <Button type="submit" size="sm" className="bg-primary text-white">Save Announcement</Button>
+                    <div className="border border-border divide-y divide-border/40 bg-card">
+                      {stories.filter(s => s.status === "Published").map((story) => (
+                        <div key={story.id} className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-muted/10">
+                          <div>
+                            <span className="text-[9px] uppercase font-bold text-emerald-600 block">Published Story</span>
+                            <h4 className="text-sm font-bold text-foreground mt-0.5">{story.title}</h4>
+                            <p className="text-[10px] text-muted-foreground mt-1">
+                              Views: {story.viewCount} · Author: {story.authorName || "Bureau"} · Modified {new Date(story.updatedAt).toLocaleDateString()}
+                            </p>
                           </div>
-                        </form>
-                      </div>
-                    )}
 
-                    <div className="divide-y divide-border/40 border border-border">
-                      {announcements.length === 0 ? (
-                        <div className="p-8 text-center text-xs text-muted-foreground">No active announcements.</div>
+                          <div className="flex gap-2 shrink-0">
+                            <Button
+                              onClick={() => setEditingStory(story)}
+                              variant="outline"
+                              size="sm"
+                              className="h-8 text-[10px] font-bold uppercase rounded-none cursor-pointer flex items-center gap-1"
+                            >
+                              <Edit className="size-3 text-primary" /> Edit Dispatch
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ─── 5. Users & Roles Tab ─── */}
+                {activeTab === "users" && (
+                  <div className="space-y-6 animate-fadeIn">
+                    <div>
+                      <h2 className="font-display text-2xl font-extrabold text-foreground">Users & Roles Manager</h2>
+                      <p className="text-xs text-muted-foreground mt-1">Database-backed RBAC role configuration for staff editors and contributors.</p>
+                    </div>
+
+                    <div className="border border-border divide-y divide-border/40 bg-card">
+                      <div className="p-3 bg-muted/20 grid grid-cols-12 text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">
+                        <div className="col-span-4">User Profile</div>
+                        <div className="col-span-3">Email</div>
+                        <div className="col-span-3">Assigned Role</div>
+                        <div className="col-span-2 text-right">Status</div>
+                      </div>
+
+                      {loadingUsersList ? (
+                        <div className="p-8 text-center text-xs text-muted-foreground">Loading users directory...</div>
                       ) : (
-                        announcements.map((a) => (
-                          <div key={a.id} className="p-4 flex justify-between items-start hover:bg-muted/10">
-                            <div>
-                              <h4 className="text-xs font-bold text-foreground">{a.title}</h4>
-                              <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">{a.content}</p>
-                              <span className="text-[8px] text-muted-foreground/60 block mt-2">
-                                Created: {new Date(a.createdAt).toLocaleDateString()}
+                        usersList.map((u) => (
+                          <div key={u.id} className="p-4 grid grid-cols-12 items-center text-xs hover:bg-muted/10">
+                            <div className="col-span-4 font-bold text-foreground flex items-center gap-2">
+                              <div className="size-7 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
+                                {u.name?.charAt(0).toUpperCase() || "U"}
+                              </div>
+                              <span>{u.name || "User Profile"}</span>
+                            </div>
+                            <div className="col-span-3 text-muted-foreground">{u.email}</div>
+                            <div className="col-span-3">
+                              {isAdmin ? (
+                                <select
+                                  value={u.role?.toLowerCase()}
+                                  onChange={async (e) => {
+                                    const newRole = e.target.value;
+                                    if (!session) return;
+                                    await fetch("/api/admin/users", {
+                                      method: "PATCH",
+                                      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+                                      body: JSON.stringify({ userId: u.id, role: newRole }),
+                                    });
+                                    fetchTabDetails();
+                                  }}
+                                  className="h-8 px-2 border border-border text-xs bg-white font-bold text-primary focus:outline-none"
+                                >
+                                  <option value="user">User / Author</option>
+                                  <option value="editor">Editor</option>
+                                  <option value="admin">Admin</option>
+                                  <option value="superadmin">Super Admin</option>
+                                </select>
+                              ) : (
+                                <span className="font-bold text-primary uppercase">{u.role}</span>
+                              )}
+                            </div>
+                            <div className="col-span-2 text-right">
+                              <span className="px-2 py-0.5 text-[9px] font-bold uppercase rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                Active
                               </span>
                             </div>
-                            <button
-                              onClick={() => handleDeleteAnnouncement(a.id)}
-                              className="p-1.5 hover:bg-red-50 text-red-600 hover:text-red-700 transition-colors border border-transparent rounded cursor-pointer shrink-0 ml-3"
-                              aria-label="Delete Announcement"
-                            >
-                              <Trash2 className="size-3.5" />
-                            </button>
                           </div>
                         ))
                       )}
+                    </div>
+                  </div>
+                )}
+
+                {/* ─── 6. Media Library Tab ─── */}
+                {activeTab === "media" && (
+                  <div className="space-y-6 animate-fadeIn">
+                    <div>
+                      <h2 className="font-display text-2xl font-extrabold text-foreground">Media Assets Library</h2>
+                      <p className="text-xs text-muted-foreground mt-1">Cloudinary synced assets, cover images, and optimized thumbnails.</p>
+                    </div>
+
+                    <div className="border border-dashed border-border/80 p-8 text-center bg-muted/10 space-y-3">
+                      <ImageIcon className="size-8 mx-auto text-muted-foreground" />
+                      <p className="text-xs font-bold uppercase text-foreground">Upload Media Files</p>
+                      <p className="text-[10px] text-muted-foreground">Drag and drop images or copy web URLs directly into editor dispatches.</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* ─── 7. Analytics Tab ─── */}
+                {activeTab === "analytics" && (
+                  <div className="space-y-6 animate-fadeIn">
+                    <div>
+                      <h2 className="font-display text-2xl font-extrabold text-foreground">Platform Analytics</h2>
+                      <p className="text-xs text-muted-foreground mt-1">Readership traffic, state dispatch distribution, and engagement metrics.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="p-4 border border-border/60 bg-card">
+                        <span className="text-[10px] font-extrabold uppercase text-muted-foreground">Total Dispatches</span>
+                        <p className="text-2xl font-black text-foreground mt-1">{totalStories}</p>
+                      </div>
+                      <div className="p-4 border border-border/60 bg-card">
+                        <span className="text-[10px] font-extrabold uppercase text-muted-foreground">Total Submissions</span>
+                        <p className="text-2xl font-black text-foreground mt-1">{submissionsList.length}</p>
+                      </div>
+                      <div className="p-4 border border-border/60 bg-card">
+                        <span className="text-[10px] font-extrabold uppercase text-muted-foreground">Active Staff</span>
+                        <p className="text-2xl font-black text-foreground mt-1">{usersList.length}</p>
+                      </div>
                     </div>
                   </div>
                 )}

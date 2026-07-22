@@ -60,6 +60,39 @@ export const Route = createFileRoute("/api/admin/users")({
           pageCount: Math.ceil(total / pageSize),
         });
       },
+
+      PATCH: async ({ request }) => {
+        const admin = await verifyAdmin(request);
+        if (!admin) return json({ error: "Forbidden" }, { status: 403 });
+
+        let body: any;
+        try {
+          body = await request.json();
+        } catch {
+          return json({ error: "Invalid JSON" }, { status: 400 });
+        }
+
+        const { userId, role, active } = body;
+        if (!userId) return json({ error: "userId is required" }, { status: 400 });
+
+        const data: any = {};
+        if (role) data.role = role.toLowerCase();
+        if (typeof active === "boolean") data.active = active;
+
+        const updatedProfile = await prisma.profile.update({
+          where: { id: userId },
+          data,
+        });
+
+        try {
+          await prisma.userProfile.update({
+            where: { id: userId },
+            data: { role: role === "admin" || role === "superadmin" ? "Admin" : role === "editor" ? "Editor" : "Reader" },
+          });
+        } catch {}
+
+        return json({ success: true, profile: updatedProfile });
+      },
     },
   },
 });
