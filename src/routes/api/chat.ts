@@ -199,33 +199,41 @@ INSTRUCTIONS:
           let replyText = "";
           const hasApiKey = !!process.env.GEMINI_API_KEY;
 
-          if (hasApiKey) {
-            const { GoogleGenAI } = await import("@google/genai");
-            const ai = new GoogleGenAI({
-              apiKey: process.env.GEMINI_API_KEY!,
-            });
-            const result = await ai.models.generateContent({
-              model: "gemini-2.0-flash",
-              contents: prompt,
-            });
-            replyText = result.text || "";
-          } else {
-            // Fallback response using database search
-            if (storiesRaw.length > 0) {
-              const storyList = storiesRaw
+          const getFallbackReply = (stories: any[], isHindiLanguage: boolean) => {
+            if (stories.length > 0) {
+              const storyList = stories
                 .map(
                   (s) =>
-                    `* [${isHindi && s.titleHi ? s.titleHi : s.title}](/stories/${s.slug}) (${s.state?.name ?? "India"})`
+                    `* [${isHindiLanguage && s.titleHi ? s.titleHi : s.title}](/stories/${s.slug}) (${s.state?.name ?? "India"})`
                 )
                 .join("\n");
-              replyText = isHindi
-                ? `नमस्ते! वर्तमान में मेरी मुख्य एआई सेवा ऑफ़लाइन है, लेकिन मैंने डेटाबेस में ये कहानियाँ खोजी हैं:\n\n${storyList}\n\nकृपया इन्हें पढ़ें और प्रेरणा लें!`
-                : `Hello! While my advanced AI services are offline, I found these relevant stories in our database:\n\n${storyList}\n\nFeel free to explore them!`;
+              return isHindiLanguage
+                ? `नमस्ते! वर्तमान में हमारी एआई साथी सेवा अत्यधिक व्यस्त है या दैनिक सीमा पार हो गई है, लेकिन मैंने डेटाबेस में आपकी खोज से संबंधित ये कहानियाँ पाई हैं:\n\n${storyList}\n\nकृपया इन्हें पढ़ें और भारत की प्रेरणादायक कहानियों का अनुभव लें!`
+                : `Hello! While our advanced AI companion is currently experiencing high demand or rate limits, I successfully queried our database and found these relevant stories for you:\n\n${storyList}\n\nFeel free to explore these articles!`;
             } else {
-              replyText = isHindi
-                ? `नमस्ते! मेरी एआई सेवा अभी सक्रिय नहीं है, और मुझे कोई कहानी नहीं मिली। कृपया राजस्थान, केरल या इतिहास के बारे में पूछें!`
-                : `Hello! My AI service is not active. I couldn't find matching stories directly, but you can try asking about specific states like Kerala, Rajasthan, or topics like sustainable farming!`;
+              return isHindiLanguage
+                ? `नमस्ते! वर्तमान में हमारी एआई सेवा अत्यधिक व्यस्त है, और हमें डेटाबेस में कोई कहानी नहीं मिली। कृपया राजस्थान, केरल या स्वतंत्रता सेनानियों के बारे में अन्य प्रश्नों के साथ प्रयास करें!`
+                : `Hello! Our advanced AI services are currently heavily loaded. I couldn't find matching stories directly, but you can try asking about specific states like Kerala, Rajasthan, or sustainable farming!`;
             }
+          };
+
+          if (hasApiKey) {
+            try {
+              const { GoogleGenAI } = await import("@google/genai");
+              const ai = new GoogleGenAI({
+                apiKey: process.env.GEMINI_API_KEY!,
+              });
+              const result = await ai.models.generateContent({
+                model: "gemini-2.0-flash",
+                contents: prompt,
+              });
+              replyText = result.text || "";
+            } catch (geminiError: any) {
+              console.error("[Gemini API Quota/Connection Error] Failed to call generateContent:", geminiError);
+              replyText = getFallbackReply(storiesRaw, isHindi);
+            }
+          } else {
+            replyText = getFallbackReply(storiesRaw, isHindi);
           }
 
           // Format matching stories to return to frontend for rich card rendering

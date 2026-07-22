@@ -2,24 +2,18 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Sparkles,
   X,
   Send,
-  User,
-  Bot,
   Loader2,
   Mic,
   MicOff,
   Copy,
   Trash2,
   CornerDownRight,
-  Flame,
-  Clock,
-  Compass,
   ArrowRight,
   MapPin,
-  HelpCircle,
-  HelpCircle as QuestionIcon
+  Sparkles,
+  RotateCcw
 } from "lucide-react";
 import { useI18nStore } from "@/lib/i18n";
 import { useAuthStore } from "@/lib/auth-store";
@@ -43,6 +37,19 @@ type Message = {
   }>;
 };
 
+// Premium Custom SVG Logo: Book + AI Sparkle
+function CompanionLogo({ className = "size-6" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+      {/* Book outline */}
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" strokeLinecap="round" strokeLinejoin="round" />
+      {/* AI Sparkle */}
+      <path d="M14 6l1.2 2.5L18 9l-2.8 2.3.6 2.7-2.8-1.2-2.8 1.2.6-2.7L8 9l2.8-.5L12 6z" fill="currentColor" stroke="none" className="text-gold animate-pulse" />
+    </svg>
+  );
+}
+
 export function StoryCompanion() {
   const lang = useI18nStore((s) => s.lang);
   const { session } = useAuthStore();
@@ -52,14 +59,14 @@ export function StoryCompanion() {
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isListening, setIsListening] = useState(false);
+  const [lastQuery, setLastQuery] = useState("");
   const abortControllerRef = useRef<AbortController | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const isHindi = lang === "hi";
-
-  // Speech Recognition setup
   const recognitionRef = useRef<any>(null);
 
+  // Speech Recognition setup
   useEffect(() => {
     if (typeof window !== "undefined") {
       const SpeechRecognition =
@@ -74,12 +81,8 @@ export function StoryCompanion() {
           setInputValue(text);
           setIsListening(false);
         };
-        rec.onerror = () => {
-          setIsListening(false);
-        };
-        rec.onend = () => {
-          setIsListening(false);
-        };
+        rec.onerror = () => setIsListening(false);
+        rec.onend = () => setIsListening(false);
         recognitionRef.current = rec;
       }
     }
@@ -95,7 +98,6 @@ export function StoryCompanion() {
     }
   };
 
-  // Pre-configured suggestions
   const defaultSuggestions = isHindi
     ? [
         "राजस्थान की कहानियाँ",
@@ -146,19 +148,24 @@ export function StoryCompanion() {
     ]);
   };
 
-  // Save messages to localStorage
   const saveChatHistory = (msgs: Message[]) => {
     const key = session ? `isp_chat_history_${session.user.id}` : "isp_chat_history_guest";
     localStorage.setItem(key, JSON.stringify(msgs));
   };
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
+    if (isOpen) {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    }
+  }, [messages, loading, isOpen]);
 
   const handleSend = async (text: string) => {
     const trimmed = text.trim();
     if (!trimmed || loading) return;
+
+    setLastQuery(trimmed);
 
     const userMsg: Message = {
       id: Math.random().toString(36).substring(2, 9),
@@ -174,7 +181,6 @@ export function StoryCompanion() {
     setLoading(true);
     setSuggestions([]);
 
-    // Abort controller for cancel option
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
@@ -219,8 +225,8 @@ export function StoryCompanion() {
         id: "err-" + Math.random().toString(36).substring(2, 9),
         sender: "bot",
         text: isHindi
-          ? "माफ़ कीजिये, अभी संपर्क स्थापित नहीं हो पाया। कृपया पुनः प्रयास करें।"
-          : "Sorry, I am facing connectivity issues. Please try again in a moment.",
+          ? "माफ़ कीजिये, अभी संपर्क स्थापित नहीं हो पाया। कृपया पुनः प्रयास करें या नीचे दिए गए रीट्राय बटन पर क्लिक करें।"
+          : "Sorry, I am facing connectivity issues. Please try again in a moment or click retry below.",
         timestamp: new Date(),
       };
       const finalMsgs = [...updatedMsgs, errorMsg];
@@ -254,6 +260,7 @@ export function StoryCompanion() {
     const key = session ? `isp_chat_history_${session.user.id}` : "isp_chat_history_guest";
     localStorage.removeItem(key);
     setDefaultGreeting();
+    setSuggestions(defaultSuggestions);
   };
 
   const copyToClipboard = (text: string) => {
@@ -273,14 +280,14 @@ export function StoryCompanion() {
 
   return (
     <div className="fixed bottom-6 right-6 z-[60] font-sans">
-      {/* ── Trigger FAB Button ── */}
+      {/* ── Trigger Button with Custom SVG Logo ── */}
       <motion.button
         id="chatbot-trigger"
         onClick={() => setIsOpen(!isOpen)}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         aria-label="Open AI Story Companion"
-        className="size-14 rounded-full bg-gradient-to-br from-gold to-saffron text-gold-foreground flex items-center justify-center shadow-glow relative cursor-pointer border border-gold/30 hover:border-gold/50"
+        className="size-14 rounded-full bg-gradient-to-r from-stone-950 to-neutral-900 hover:from-neutral-900 hover:to-stone-950 text-gold flex items-center justify-center shadow-[0_0_20px_rgba(212,175,55,0.2)] border border-gold/30 hover:border-gold/50 cursor-pointer relative"
       >
         <AnimatePresence mode="wait">
           {isOpen ? (
@@ -290,7 +297,7 @@ export function StoryCompanion() {
               animate={{ rotate: 0, opacity: 1 }}
               exit={{ rotate: 90, opacity: 0 }}
             >
-              <X className="size-6" />
+              <X className="size-6 text-gold" />
             </motion.div>
           ) : (
             <motion.div
@@ -300,8 +307,8 @@ export function StoryCompanion() {
               exit={{ scale: 0.3, opacity: 0 }}
               className="relative"
             >
-              <Sparkles className="size-6" />
-              <span className="absolute -top-1.5 -right-1.5 size-3 bg-red-500 rounded-full animate-pulse border border-black" />
+              <CompanionLogo className="size-6 text-gold" />
+              <span className="absolute -top-1 -right-1 size-2.5 bg-gold rounded-full animate-pulse border border-black" />
             </motion.div>
           )}
         </AnimatePresence>
@@ -315,21 +322,21 @@ export function StoryCompanion() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute bottom-18 right-0 w-[92vw] sm:w-[410px] h-[550px] bg-zinc-950/95 backdrop-blur-lg border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+            className="absolute bottom-18 right-0 w-[92vw] sm:w-[410px] h-[550px] bg-stone-950/98 border border-gold/20 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.7)] flex flex-col overflow-hidden"
           >
             {/* Header */}
-            <div className="bg-gradient-to-r from-gold/10 to-saffron/5 border-b border-white/10 px-4 py-3 flex.5 flex items-center justify-between">
-              <div className="flex items-center gap-2">
+            <div className="bg-gradient-to-r from-gold/15 to-saffron/5 border-b border-gold/20 px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
                 <div className="size-8 rounded-full bg-gold/15 flex items-center justify-center border border-gold/30">
-                  <Sparkles className="size-4.5 text-gold" />
+                  <CompanionLogo className="size-4.5 text-gold" />
                 </div>
                 <div>
                   <h3 className="text-xs font-bold uppercase tracking-widest text-gradient-gold">
                     India Story AI Companion
                   </h3>
-                  <span className="text-[9px] text-emerald-400 flex items-center gap-1 font-bold">
-                    <span className="size-1.5 rounded-full bg-emerald-400 animate-ping inline-block" />
-                    Interactive Guide
+                  <span className="text-[9px] text-gold/80 flex items-center gap-1 font-bold">
+                    <span className="size-1.5 rounded-full bg-gold animate-ping inline-block" />
+                    Storytelling Assistant
                   </span>
                 </div>
               </div>
@@ -337,13 +344,13 @@ export function StoryCompanion() {
                 <button
                   onClick={handleClearHistory}
                   title="Clear history"
-                  className="text-white/40 hover:text-white/80 p-1 rounded hover:bg-white/5 transition-colors"
+                  className="text-gold/60 hover:text-gold p-1.5 rounded-lg hover:bg-gold/10 transition-colors"
                 >
                   <Trash2 className="size-3.5" />
                 </button>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="text-white/40 hover:text-white transition-colors"
+                  className="text-gold/60 hover:text-gold p-1.5 rounded-lg hover:bg-gold/10 transition-colors"
                 >
                   <X className="size-4" />
                 </button>
@@ -354,6 +361,7 @@ export function StoryCompanion() {
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {messages.map((m) => {
                 const isBot = m.sender === "bot";
+                const isErrorMessage = m.id.startsWith("err-");
                 return (
                   <div
                     key={m.id}
@@ -361,51 +369,60 @@ export function StoryCompanion() {
                   >
                     <div className={`flex gap-2.5 max-w-[85%] ${isBot ? "justify-start" : "justify-end"}`}>
                       {isBot && (
-                        <div className="size-7 rounded-full bg-gold/15 border border-gold/20 flex items-center justify-center shrink-0">
-                          <Bot className="size-3.5 text-gold" />
+                        <div className="size-7 rounded-full bg-gold/10 border border-gold/25 flex items-center justify-center shrink-0">
+                          <CompanionLogo className="size-4 text-gold" />
                         </div>
                       )}
                       <div className="space-y-2">
                         <div
-                          className={`rounded-xl p-3 text-xs leading-relaxed font-sans ${
+                          className={`rounded-2xl p-3 text-xs leading-relaxed font-sans ${
                             isBot
-                              ? "bg-white/5 border border-white/5 text-white/90"
-                              : "bg-gradient-to-br from-gold to-saffron text-gold-foreground font-semibold shadow-glow"
+                              ? "bg-stone-900/60 border border-white/5 text-stone-200 rounded-tl-sm"
+                              : "bg-gradient-to-br from-gold/20 to-saffron/10 border border-gold/25 text-gold font-semibold rounded-tr-sm"
                           }`}
                         >
                           {m.text}
                         </div>
                         
-                        {/* Copy / Actions under Bot replies */}
+                        {/* Actions under Bot replies */}
                         {isBot && m.id !== "greet" && (
-                          <div className="flex items-center gap-2 pl-1">
+                          <div className="flex items-center gap-3 pl-1">
                             <button
                               onClick={() => copyToClipboard(m.text)}
                               title="Copy response"
-                              className="text-[10px] text-muted-foreground hover:text-white flex items-center gap-1 transition-colors"
+                              className="text-[9px] text-gold/60 hover:text-gold flex items-center gap-1 transition-colors uppercase font-bold"
                             >
-                              <Copy className="size-3" />
+                              <Copy className="size-2.5" />
                               Copy
                             </button>
+                            {isErrorMessage && lastQuery && (
+                              <button
+                                onClick={() => handleSend(lastQuery)}
+                                className="text-[9px] text-gold/60 hover:text-gold flex items-center gap-1 transition-colors uppercase font-bold"
+                              >
+                                <RotateCcw className="size-2.5" />
+                                Retry
+                              </button>
+                            )}
                           </div>
                         )}
                       </div>
                     </div>
 
-                    {/* Rich database story cards matching results */}
+                    {/* Rich matching stories cards */}
                     {isBot && m.stories && m.stories.length > 0 && (
                       <div className="w-full pl-9 pr-4 pt-1 space-y-2.5">
-                        <span className="text-[10px] uppercase font-bold tracking-wider text-gold flex items-center gap-1">
-                          <CornerDownRight className="size-3" />
-                          Matched Stories:
+                        <span className="text-[9px] uppercase font-bold tracking-wider text-gold flex items-center gap-1">
+                          <CornerDownRight className="size-3 text-gold" />
+                          Recommended Stories:
                         </span>
                         <div className="grid grid-cols-1 gap-2.5">
                           {m.stories.map((story) => (
                             <div
                               key={story.id}
-                              className="bg-card/45 border border-border/30 rounded-xl overflow-hidden p-3 flex gap-3 hover:border-gold/30 transition-all duration-300"
+                              className="bg-stone-900/40 border border-gold/15 rounded-xl overflow-hidden p-3 flex gap-3 hover:border-gold/30 transition-all duration-300 shadow-md"
                             >
-                              <div className="size-16 rounded-lg overflow-hidden shrink-0 bg-stone-900 relative">
+                              <div className="size-16 rounded-lg overflow-hidden shrink-0 bg-stone-950 relative">
                                 <img
                                   src={story.image}
                                   alt={story.title}
@@ -451,10 +468,10 @@ export function StoryCompanion() {
               {loading && (
                 <div className="flex gap-2.5 justify-start">
                   <div className="size-7 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
-                    <Sparkles className="size-3.5 text-gold animate-pulse" />
+                    <CompanionLogo className="size-4 text-gold animate-pulse" />
                   </div>
                   <div className="space-y-2 max-w-[80%]">
-                    <div className="bg-white/5 border border-white/5 text-white/40 rounded-xl px-3 py-2 text-[10px] font-sans flex items-center gap-1.5">
+                    <div className="bg-stone-900/60 border border-white/5 text-stone-400 rounded-xl px-3 py-2 text-[10px] font-sans flex items-center gap-1.5">
                       <span>Companion is thinking</span>
                       <div className="flex gap-1 items-center h-2">
                         <motion.span
@@ -488,22 +505,22 @@ export function StoryCompanion() {
 
             {/* Quick action buttons */}
             {!loading && messages.length > 0 && (
-              <div className="px-4 py-1.5 border-t border-white/5 bg-black/30 flex gap-1.5 overflow-x-auto scrollbar-none shrink-0">
+              <div className="px-4 py-1.5 border-t border-gold/10 bg-black/40 flex gap-1.5 overflow-x-auto scrollbar-none shrink-0">
                 <button
                   onClick={() => handleSend(isHindi ? "राजस्थान" : "Explore Rajasthan")}
-                  className="flex-shrink-0 text-[9px] bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-gold px-2.5 py-1 rounded-full transition-colors font-bold uppercase tracking-wide cursor-pointer"
+                  className="flex-shrink-0 text-[9px] bg-stone-900 hover:bg-stone-800 border border-gold/20 text-stone-300 hover:text-gold px-2.5 py-1 rounded-full transition-colors font-bold uppercase tracking-wide cursor-pointer"
                 >
                   Explore Rajasthan
                 </button>
                 <button
-                  onClick={() => handleSend(isHindi ? "ऐतिहासिक कहानियाँ" : "Recommend history stories")}
-                  className="flex-shrink-0 text-[9px] bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-gold px-2.5 py-1 rounded-full transition-colors font-bold uppercase tracking-wide cursor-pointer"
+                  onClick={() => handleSend(isHindi ? "इतिहास की कहानियाँ" : "Recommend history stories")}
+                  className="flex-shrink-0 text-[9px] bg-stone-900 hover:bg-stone-800 border border-gold/20 text-stone-300 hover:text-gold px-2.5 py-1 rounded-full transition-colors font-bold uppercase tracking-wide cursor-pointer"
                 >
                   History Stories
                 </button>
                 <button
                   onClick={() => handleSend(isHindi ? "गुमनाम नायक" : "Unsung heroes")}
-                  className="flex-shrink-0 text-[9px] bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-gold px-2.5 py-1 rounded-full transition-colors font-bold uppercase tracking-wide cursor-pointer"
+                  className="flex-shrink-0 text-[9px] bg-stone-900 hover:bg-stone-800 border border-gold/20 text-stone-300 hover:text-gold px-2.5 py-1 rounded-full transition-colors font-bold uppercase tracking-wide cursor-pointer"
                 >
                   Unsung Heroes
                 </button>
@@ -512,12 +529,12 @@ export function StoryCompanion() {
 
             {/* Suggestions panel */}
             {suggestions.length > 0 && !loading && (
-              <div className="px-4 py-2 border-t border-white/5 bg-black/40 flex flex-wrap gap-1.5 shrink-0">
+              <div className="px-4 py-2 border-t border-gold/10 bg-black/40 flex flex-wrap gap-1.5 shrink-0">
                 {suggestions.map((s, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleSend(s)}
-                    className="text-[10px] bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 hover:text-white px-2.5 py-1 rounded-full transition-colors cursor-pointer"
+                    className="text-[10px] bg-stone-900 hover:bg-stone-800 border border-gold/20 text-stone-300 hover:text-gold px-2.5 py-1 rounded-full transition-colors cursor-pointer"
                   >
                     {s}
                   </button>
@@ -531,7 +548,7 @@ export function StoryCompanion() {
                 e.preventDefault();
                 handleSend(inputValue);
               }}
-              className="p-3 border-t border-white/10 bg-black flex gap-2 shrink-0"
+              className="p-3 border-t border-gold/20 bg-black flex gap-2 shrink-0"
             >
               <div className="relative flex-1">
                 <Input
@@ -539,7 +556,7 @@ export function StoryCompanion() {
                   onChange={(e) => setInputValue(e.target.value)}
                   placeholder={isHindi ? "संदेश लिखें..." : "Ask AI companion..."}
                   disabled={loading}
-                  className="h-9 w-full bg-white/5 border-white/10 text-white text-xs placeholder:text-white/20 focus:border-gold/50 pr-8"
+                  className="h-9 w-full bg-stone-900 border-white/10 text-white text-xs placeholder:text-stone-500 focus:border-gold/40 focus:ring-0 pr-8"
                 />
                 {recognitionRef.current && (
                   <button
@@ -556,7 +573,7 @@ export function StoryCompanion() {
               <Button
                 type="submit"
                 disabled={loading || !inputValue.trim()}
-                className="h-9 w-9 p-0 shrink-0 bg-gradient-to-br from-gold to-saffron text-gold-foreground flex items-center justify-center rounded-lg"
+                className="h-9 w-9 p-0 shrink-0 bg-gradient-to-br from-gold to-saffron text-black font-bold flex items-center justify-center rounded-lg hover:opacity-90"
               >
                 <Send className="size-3.5" />
               </Button>
