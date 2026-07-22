@@ -51,7 +51,7 @@ type ChatSession = {
   timestamp: string;
 };
 
-export const Route = createFileRoute("/chatbot" as any)({
+export const Route = createFileRoute("/chatbot")({
   head: () => ({
     meta: [
       { title: "AI Story Companion — Discovery & Submission Guide | India Story Project" },
