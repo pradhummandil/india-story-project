@@ -93,6 +93,7 @@ import { Route as AdminCommentsRouteImport } from './routes/admin/comments'
 import { Route as AdminAchievementsRouteImport } from './routes/admin/achievements'
 import { Route as AdminUsersIndexRouteImport } from './routes/admin/users/index'
 import { Route as AdminThemesIndexRouteImport } from './routes/admin/themes/index'
+import { Route as AdminSubmissionsIndexRouteImport } from './routes/admin/submissions/index'
 import { Route as AdminStoriesIndexRouteImport } from './routes/admin/stories/index'
 import { Route as AdminStatesIndexRouteImport } from './routes/admin/states/index'
 import { Route as AdminSettingsIndexRouteImport } from './routes/admin/settings/index'
@@ -156,6 +157,7 @@ import { Route as ApiAdminAuthorsRouteImport } from './routes/api/admin/authors'
 import { Route as ApiAdminAnnouncementsRouteImport } from './routes/api/admin/announcements'
 import { Route as ApiAdminAnalyticsRouteImport } from './routes/api/admin/analytics'
 import { Route as ApiAdminAchievementsRouteImport } from './routes/api/admin/achievements'
+import { Route as AdminSubmissionsIdRouteImport } from './routes/admin/submissions/$id'
 import { Route as AdminStoriesNewRouteImport } from './routes/admin/stories/new'
 import { Route as ApiStoriesSlugAudioRouteImport } from './routes/api/stories.$slug.audio'
 import { Route as ApiPodcastFeedXmlRouteImport } from './routes/api/podcast.feed.xml'
@@ -624,6 +626,11 @@ const AdminThemesIndexRoute = AdminThemesIndexRouteImport.update({
 } as any).lazy(() =>
   import('./routes/admin/themes/index.lazy').then((d) => d.Route),
 )
+const AdminSubmissionsIndexRoute = AdminSubmissionsIndexRouteImport.update({
+  id: '/submissions/',
+  path: '/submissions/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminStoriesIndexRoute = AdminStoriesIndexRouteImport.update({
   id: '/stories/',
   path: '/stories/',
@@ -957,6 +964,11 @@ const ApiAdminAchievementsRoute = ApiAdminAchievementsRouteImport.update({
   path: '/api/admin/achievements',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminSubmissionsIdRoute = AdminSubmissionsIdRouteImport.update({
+  id: '/submissions/$id',
+  path: '/submissions/$id',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminStoriesNewRoute = AdminStoriesNewRouteImport.update({
   id: '/stories/new',
   path: '/stories/new',
@@ -1220,6 +1232,7 @@ export interface FileRoutesByFullPath {
   '/videos/': typeof VideosIndexRoute
   '/web-stories/': typeof WebStoriesIndexRoute
   '/admin/stories/new': typeof AdminStoriesNewRoute
+  '/admin/submissions/$id': typeof AdminSubmissionsIdRoute
   '/api/admin/achievements': typeof ApiAdminAchievementsRoute
   '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
   '/api/admin/announcements': typeof ApiAdminAnnouncementsRoute
@@ -1283,6 +1296,7 @@ export interface FileRoutesByFullPath {
   '/admin/settings/': typeof AdminSettingsIndexRoute
   '/admin/states/': typeof AdminStatesIndexRoute
   '/admin/stories/': typeof AdminStoriesIndexRoute
+  '/admin/submissions/': typeof AdminSubmissionsIndexRoute
   '/admin/themes/': typeof AdminThemesIndexRoute
   '/admin/users/': typeof AdminUsersIndexRoute
   '/admin/newsroom/story/$id': typeof AdminNewsroomStoryIdRoute
@@ -1397,6 +1411,7 @@ export interface FileRoutesByTo {
   '/videos': typeof VideosIndexRoute
   '/web-stories': typeof WebStoriesIndexRoute
   '/admin/stories/new': typeof AdminStoriesNewRoute
+  '/admin/submissions/$id': typeof AdminSubmissionsIdRoute
   '/api/admin/achievements': typeof ApiAdminAchievementsRoute
   '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
   '/api/admin/announcements': typeof ApiAdminAnnouncementsRoute
@@ -1460,6 +1475,7 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminSettingsIndexRoute
   '/admin/states': typeof AdminStatesIndexRoute
   '/admin/stories': typeof AdminStoriesIndexRoute
+  '/admin/submissions': typeof AdminSubmissionsIndexRoute
   '/admin/themes': typeof AdminThemesIndexRoute
   '/admin/users': typeof AdminUsersIndexRoute
   '/admin/newsroom/story/$id': typeof AdminNewsroomStoryIdRoute
@@ -1578,6 +1594,7 @@ export interface FileRoutesById {
   '/videos/': typeof VideosIndexRoute
   '/web-stories/': typeof WebStoriesIndexRoute
   '/admin/stories/new': typeof AdminStoriesNewRoute
+  '/admin/submissions/$id': typeof AdminSubmissionsIdRoute
   '/api/admin/achievements': typeof ApiAdminAchievementsRoute
   '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
   '/api/admin/announcements': typeof ApiAdminAnnouncementsRoute
@@ -1641,6 +1658,7 @@ export interface FileRoutesById {
   '/admin/settings/': typeof AdminSettingsIndexRoute
   '/admin/states/': typeof AdminStatesIndexRoute
   '/admin/stories/': typeof AdminStoriesIndexRoute
+  '/admin/submissions/': typeof AdminSubmissionsIndexRoute
   '/admin/themes/': typeof AdminThemesIndexRoute
   '/admin/users/': typeof AdminUsersIndexRoute
   '/admin/newsroom/story/$id': typeof AdminNewsroomStoryIdRoute
@@ -1760,6 +1778,7 @@ export interface FileRouteTypes {
     | '/videos/'
     | '/web-stories/'
     | '/admin/stories/new'
+    | '/admin/submissions/$id'
     | '/api/admin/achievements'
     | '/api/admin/analytics'
     | '/api/admin/announcements'
@@ -1823,6 +1842,7 @@ export interface FileRouteTypes {
     | '/admin/settings/'
     | '/admin/states/'
     | '/admin/stories/'
+    | '/admin/submissions/'
     | '/admin/themes/'
     | '/admin/users/'
     | '/admin/newsroom/story/$id'
@@ -1937,6 +1957,7 @@ export interface FileRouteTypes {
     | '/videos'
     | '/web-stories'
     | '/admin/stories/new'
+    | '/admin/submissions/$id'
     | '/api/admin/achievements'
     | '/api/admin/analytics'
     | '/api/admin/announcements'
@@ -2000,6 +2021,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/states'
     | '/admin/stories'
+    | '/admin/submissions'
     | '/admin/themes'
     | '/admin/users'
     | '/admin/newsroom/story/$id'
@@ -2117,6 +2139,7 @@ export interface FileRouteTypes {
     | '/videos/'
     | '/web-stories/'
     | '/admin/stories/new'
+    | '/admin/submissions/$id'
     | '/api/admin/achievements'
     | '/api/admin/analytics'
     | '/api/admin/announcements'
@@ -2180,6 +2203,7 @@ export interface FileRouteTypes {
     | '/admin/settings/'
     | '/admin/states/'
     | '/admin/stories/'
+    | '/admin/submissions/'
     | '/admin/themes/'
     | '/admin/users/'
     | '/admin/newsroom/story/$id'
@@ -2912,6 +2936,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminThemesIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/submissions/': {
+      id: '/admin/submissions/'
+      path: '/submissions'
+      fullPath: '/admin/submissions/'
+      preLoaderRoute: typeof AdminSubmissionsIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/stories/': {
       id: '/admin/stories/'
       path: '/stories'
@@ -3353,6 +3384,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminAchievementsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/submissions/$id': {
+      id: '/admin/submissions/$id'
+      path: '/submissions/$id'
+      fullPath: '/admin/submissions/$id'
+      preLoaderRoute: typeof AdminSubmissionsIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/stories/new': {
       id: '/admin/stories/new'
       path: '/stories/new'
@@ -3583,6 +3621,7 @@ interface AdminRouteChildren {
   AdminSlideshowRoute: typeof AdminSlideshowRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminStoriesNewRoute: typeof AdminStoriesNewRoute
+  AdminSubmissionsIdRoute: typeof AdminSubmissionsIdRoute
   AdminAnalyticsIndexRoute: typeof AdminAnalyticsIndexRoute
   AdminAuthorsIndexRoute: typeof AdminAuthorsIndexRoute
   AdminCategoriesIndexRoute: typeof AdminCategoriesIndexRoute
@@ -3592,6 +3631,7 @@ interface AdminRouteChildren {
   AdminSettingsIndexRoute: typeof AdminSettingsIndexRoute
   AdminStatesIndexRoute: typeof AdminStatesIndexRoute
   AdminStoriesIndexRoute: typeof AdminStoriesIndexRoute
+  AdminSubmissionsIndexRoute: typeof AdminSubmissionsIndexRoute
   AdminThemesIndexRoute: typeof AdminThemesIndexRoute
   AdminUsersIndexRoute: typeof AdminUsersIndexRoute
   AdminNewsroomStoryIdRoute: typeof AdminNewsroomStoryIdRoute
@@ -3608,6 +3648,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminSlideshowRoute: AdminSlideshowRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminStoriesNewRoute: AdminStoriesNewRoute,
+  AdminSubmissionsIdRoute: AdminSubmissionsIdRoute,
   AdminAnalyticsIndexRoute: AdminAnalyticsIndexRoute,
   AdminAuthorsIndexRoute: AdminAuthorsIndexRoute,
   AdminCategoriesIndexRoute: AdminCategoriesIndexRoute,
@@ -3617,6 +3658,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminSettingsIndexRoute: AdminSettingsIndexRoute,
   AdminStatesIndexRoute: AdminStatesIndexRoute,
   AdminStoriesIndexRoute: AdminStoriesIndexRoute,
+  AdminSubmissionsIndexRoute: AdminSubmissionsIndexRoute,
   AdminThemesIndexRoute: AdminThemesIndexRoute,
   AdminUsersIndexRoute: AdminUsersIndexRoute,
   AdminNewsroomStoryIdRoute: AdminNewsroomStoryIdRoute,

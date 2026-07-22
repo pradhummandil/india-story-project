@@ -3,6 +3,8 @@ import { useEffect, useState, useRef } from "react";
 import { Menu, X, Compass, User, LogOut, Shield, Sparkles, Search, Layers, Edit3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LanguageToggle } from "./LanguageToggle";
+import { NotificationDropdown } from "./NotificationDropdown";
+import { TopAnnouncementBar } from "./TopAnnouncementBar";
 import { openGlobalSearch } from "@/components/common/GlobalSearch";
 import { useI18nStore, getNavText } from "@/lib/i18n";
 import { motion, AnimatePresence } from "framer-motion";
@@ -56,11 +58,15 @@ export function Navbar() {
     <header
       className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 fixed-header ${
         isTransparent
-          ? "bg-transparent is-transparent py-6 text-white"
-          : "bg-background/80 backdrop-blur-md py-3 shadow-sm text-foreground"
+          ? "bg-transparent is-transparent text-white"
+          : "bg-background/85 backdrop-blur-md shadow-sm text-foreground"
       }`}
     >
-      <div className="container mx-auto px-6 flex items-center justify-between">
+      {/* 1. Live Feed Announcement Bar ABOVE Navbar */}
+      <TopAnnouncementBar />
+
+      {/* 2. Main Navbar Bar */}
+      <div className="container mx-auto px-6 flex items-center justify-between py-3">
         <Link to="/" preload="intent" className="flex items-center gap-3 group">
           <div className="relative size-9 rounded-full border border-[#C8A96A]/40 overflow-hidden p-0.5 shadow-sm shadow-[#C8A96A]/10 transition-all duration-300 group-hover:scale-105 group-hover:border-[#C8A96A]/60 flex items-center justify-center">
             <img
@@ -122,8 +128,8 @@ export function Navbar() {
           })}
         </nav>
 
-        {/* Right side elements: Language Switch + Auth / Explore Button */}
-        <div className="hidden md:flex items-center gap-4">
+        {/* Right side elements: Search + Language Switch + Notifications + Auth */}
+        <div className="hidden md:flex items-center gap-3">
           <button
             onClick={openGlobalSearch}
             className={`p-2 rounded-full hover:bg-muted/80 transition-colors duration-300 relative focus:outline-none cursor-pointer ${
@@ -134,6 +140,7 @@ export function Navbar() {
             <Search className="size-4" />
           </button>
           <LanguageToggle />
+          <NotificationDropdown />
 
           {user ? (
             <div className="relative" ref={dropdownRef}>

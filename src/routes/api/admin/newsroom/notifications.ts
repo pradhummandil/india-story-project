@@ -95,6 +95,24 @@ export const Route = createFileRoute("/api/admin/newsroom/notifications")({
             return json({ success: true });
           }
 
+          if (action === "mark_all_read") {
+            await prisma.notification.updateMany({
+              where: { recipientId: user.id, isRead: false },
+              data: { isRead: true },
+            });
+            return json({ success: true });
+          }
+
+          if (action === "delete") {
+            if (!notificationId) {
+              return json({ error: "notificationId is required" }, { status: 400 });
+            }
+            await prisma.notification.deleteMany({
+              where: { id: notificationId, recipientId: user.id },
+            });
+            return json({ success: true });
+          }
+
           return json({ error: "Invalid action" }, { status: 400 });
         } catch (e: any) {
           return json({ error: e.message || "Operation failed" }, { status: 500 });
