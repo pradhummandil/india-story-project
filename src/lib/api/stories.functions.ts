@@ -3,6 +3,7 @@ import { storyService } from "../services/story-service.server";
 import { themeService } from "../services/theme-service.server";
 import { prisma } from "../repositories/prisma.server";
 import { storyRepository } from "../repositories/story-repository.server";
+import { normalizeStateName } from "../utils/state-normalizer";
 
 const FALLBACK_IMAGE = "/Logo-ISP.jpg";
 
@@ -67,7 +68,8 @@ export const getInitialStoriesAndCategories = createServerFn({ method: "GET" }).
       const stateCountsResult: Record<string, number> = {};
       stateCountsList.forEach((s: any) => {
         if (s._count.stories > 0) {
-          stateCountsResult[s.name] = s._count.stories;
+          const canonicalName = normalizeStateName(s.name);
+          stateCountsResult[canonicalName] = (stateCountsResult[canonicalName] || 0) + s._count.stories;
         }
       });
 

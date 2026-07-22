@@ -74,29 +74,44 @@ export function StoryMap({ stateCounts = {} }: { stateCounts?: Record<string, nu
     setMounted(true);
   }, []);
 
-  // Fetch stories on-demand when drawer opens
+  // Fetch stories on-demand when drawer opens with AbortController to prevent race conditions
   useEffect(() => {
-    if (drawerState) {
-      setLoadingStories(true);
-      fetch(`/api/stories?region=${encodeURIComponent(drawerState.state)}&pageSize=6`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data && Array.isArray(data.stories)) {
-            setDrawerStories(data.stories.map((s: any) => translateStory(s, lang)));
-          } else {
-            setDrawerStories([]);
-          }
-        })
-        .catch((err) => {
-          console.error(err);
-          setDrawerStories([]);
-        })
-        .finally(() => {
-          setLoadingStories(false);
-        });
-    } else {
+    if (!drawerState) {
       setDrawerStories([]);
+      return;
     }
+
+    const abortController = new AbortController();
+    setLoadingStories(true);
+
+    fetch(`/api/stories?region=${encodeURIComponent(drawerState.state)}&pageSize=6`, {
+      signal: abortController.signal,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.stories)) {
+          setDrawerStories(data.stories.map((s: any) => translateStory(s, lang)));
+        } else {
+          setDrawerStories([]);
+        }
+      })
+      .catch((err) => {
+        if (err.name === "AbortError") {
+          // Request aborted, ignore
+          return;
+        }
+        console.error("Failed to fetch state stories:", err);
+        setDrawerStories([]);
+      })
+      .finally(() => {
+        if (!abortController.signal.aborted) {
+          setLoadingStories(false);
+        }
+      });
+
+    return () => {
+      abortController.abort();
+    };
   }, [drawerState, lang]);
 
   // Map state coordinate centers
@@ -371,18 +386,59 @@ export function StoryMap({ stateCounts = {} }: { stateCounts?: Record<string, nu
                 </p>
 
                 {loadingStories ? (
-                  <div className="flex flex-col gap-3 py-12 items-center justify-center">
-                    <div className="size-8 rounded-full border-2 border-gold border-t-transparent animate-spin" />
-                    <span className="text-xs text-muted-foreground font-sans">{lang === "en" ? "Loading Stories..." : "कहानियां लोड हो रही हैं..."}</span>
+                  <div className="space-y-4">
+                    {[1, 2, 3].map((n) => (
+                      <div key={n} className="flex gap-4 p-3 border border-border/20 animate-pulse bg-card/40">
+                        <div className="size-20 bg-muted/70 shrink-0" />
+                        <div className="flex flex-col justify-between py-1 flex-1 space-y-2">
+                          <div>
+                            <div className="h-2.5 w-16 bg-muted/60 rounded" />
+                            <div className="h-4 w-5/6 bg-muted/70 rounded mt-2" />
+                            <div className="h-4 w-2/3 bg-muted/70 rounded mt-1.5" />
+                          </div>
+                          <div className="h-2 w-12 bg-muted/60 rounded mt-2" />
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ) : drawerStories.length > 0 ? (
                   drawerStories.map((st) => (
                     <MiniStoryCard key={st.id} story={st} />
                   ))
                 ) : (
-                  <p className="text-sm text-muted-foreground font-sans py-12 text-center">
-                    {lang === "en" ? "No stories found in this state." : "इस राज्य में कोई कहानी नहीं मिली।"}
-                  </p>
+                  <div className="text-center py-10 px-4 border border-dashed border-border/40 bg-card/20 space-y-5">
+                    <div className="mx-auto size-12 rounded-full bg-primary/5 flex items-center justify-center border border-primary/10">
+                      <Sparkles className="size-6 text-gold animate-pulse" />
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="font-display font-bold text-base text-foreground">
+                        {lang === "en" ? "No Stories Yet" : "कोई कहानी उपलब्ध नहीं"}
+                      </h4>
+                      <p className="text-xs text-muted-foreground font-sans leading-relaxed max-w-xs mx-auto">
+                        {lang === "en"
+                          ? "We are currently documenting stories for this region. Explore other vibrant states nearby."
+                          : "हम वर्तमान में इस क्षेत्र की कहानियों का दस्तावेजीकरण कर रहे हैं। पास के अन्य राज्यों को देखें।"}
+                      </p>
+                    </div>
+                    
+                    {/* Nearby state recommendations */}
+                    <div className="pt-2">
+                      <p className="text-[10px] uppercase font-sans font-bold tracking-widest text-gold mb-3">
+                        {lang === "en" ? "Recommended Regions" : "अनुशंसित क्षेत्र"}
+                      </p>
+                      <div className="flex flex-wrap gap-2 justify-center">
+                        {hotspots.filter(h => h.state !== drawerState.state).slice(0, 3).map((h) => (
+                          <button
+                            key={h.id}
+                            onClick={() => setDrawerState(h)}
+                            className="text-[10px] font-sans font-bold uppercase tracking-wider px-3 py-1.5 bg-background border border-border/50 hover:border-gold/30 hover:bg-muted text-muted-foreground hover:text-foreground transition-all duration-300"
+                          >
+                            {h.state} ({h.count})
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
 

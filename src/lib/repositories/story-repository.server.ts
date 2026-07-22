@@ -1,6 +1,7 @@
 import { StoryStatus } from "@prisma/client";
 import type { State, Story, StoryImage, Author, Tag } from "@prisma/client";
 import { prisma } from "./prisma.server";
+import { normalizeStateName, stateNameToSlug } from "../utils/state-normalizer";
 
 export type StoryCardCompatible = {
   id: string;
@@ -260,11 +261,15 @@ export class StoryRepository {
       }
     }
     if (options.region) {
+      const normalizedName = normalizeStateName(options.region);
+      const normalizedSlug = stateNameToSlug(options.region);
       andConditions.push({
         state: {
           OR: [
-            { slug: { equals: options.region, mode: "insensitive" } },
+            { slug: { equals: normalizedSlug, mode: "insensitive" } },
+            { name: { equals: normalizedName, mode: "insensitive" } },
             { name: { equals: options.region, mode: "insensitive" } },
+            { slug: { equals: options.region, mode: "insensitive" } },
           ],
         },
       });
