@@ -67,6 +67,9 @@ model UserProfile {
   mentionsSent     UserMention[]     @relation("MentionedBy")
   mentionsReceived UserMention[]     @relation("MentionedUser")
   userStat         UserStat?
+  notifications    Notification[]    @relation("UserNotifications")
+  assignedStories  Story[]           @relation("StoryEditorAssignments")
+  assignedSubmissions SubmittedStory[] @relation("EditorAssignments")
 
   @@index([role])
   @@index([totalXP])
@@ -195,6 +198,9 @@ model Story {
   tags              StoryTag[]
   themes            StoryTheme[]
   views             StoryView[]
+  assignedEditorId  String?           @db.Uuid
+  assignedEditor    UserProfile?      @relation("StoryEditorAssignments", fields: [assignedEditorId], references: [id])
+  notifications     Notification[]
 
   @@index([slug])
   @@index([status])
@@ -459,6 +465,9 @@ model SubmittedStory {
   tags           String?
   themes         String?
   user           UserProfile      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignedEditorId  String?           @db.Uuid
+  assignedEditor    UserProfile?      @relation("EditorAssignments", fields: [assignedEditorId], references: [id])
+  notifications     Notification[]
 
   @@index([userId])
   @@index([status])
@@ -903,6 +912,8 @@ enum SubmissionStatus {
   ChangesRequested
   Published
   Draft
+  SUBMITTED
+  ASSIGNED_TO_EDITOR
 }
 
 enum UserRole {
@@ -911,4 +922,26 @@ enum UserRole {
   Editor
   Author
   Reader
+}
+
+model Notification {
+  id           String          @id @default(uuid()) @db.Uuid
+  recipientId  String          @db.Uuid
+  senderId     String?         @db.Uuid
+  storyId      String?         @db.Uuid
+  submissionId String?         @db.Uuid
+  type         String
+  title        String
+  message      String
+  isRead       Boolean         @default(false)
+  createdAt    DateTime        @default(now())
+  priority     String          @default("normal")
+  actionUrl    String?
+  
+  recipient    UserProfile     @relation("UserNotifications", fields: [recipientId], references: [id], onDelete: Cascade)
+  story        Story?          @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  submission   SubmittedStory? @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId])
+  @@index([isRead])
 }

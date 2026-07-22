@@ -75,7 +75,7 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
         const user = await authenticate(request);
         if (!user) return json({ error: "Unauthorized" }, { status: 401 });
 
-        const profile = await prisma.userProfile.findUnique({ where: { id: user.id } });
+        const profile = await prisma.profile.findUnique({ where: { id: user.id } });
         if (!profile) return json({ error: "Profile not found" }, { status: 403 });
 
         const role = profile.role?.toLowerCase() || "";
@@ -87,26 +87,34 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
         }
 
         if (isEditor) {
-          const logs = await prisma.auditLog.findMany({
-            where: {
-              action: { in: ["STORY_WORKFLOW_STATE", "SUBMISSION_WORKFLOW_STATE"] },
-            },
-            orderBy: { createdAt: "desc" },
-            take: 20,
+          const storyObj = await prisma.story.findUnique({
+            where: { id: params.id },
+            select: { assignedEditorId: true, authorId: true },
           });
 
-          let isAssigned = false;
-          for (const log of logs) {
-            try {
-              const details = JSON.parse(log.details);
-              if (
-                (details.storyId === params.id || details.submissionId === params.id) &&
-                (details.reviewerId === user.id || details.assignedEditorId === user.id)
-              ) {
-                isAssigned = true;
-                break;
-              }
-            } catch {}
+          let isAssigned = storyObj?.assignedEditorId === user.id || storyObj?.authorId === user.id;
+
+          if (!isAssigned) {
+            const logs = await prisma.auditLog.findMany({
+              where: {
+                action: { in: ["STORY_WORKFLOW_STATE", "SUBMISSION_WORKFLOW_STATE"] },
+              },
+              orderBy: { createdAt: "desc" },
+              take: 20,
+            });
+
+            for (const log of logs) {
+              try {
+                const details = JSON.parse(log.details);
+                if (
+                  (details.storyId === params.id || details.submissionId === params.id) &&
+                  (details.reviewerId === user.id || details.assignedEditorId === user.id)
+                ) {
+                  isAssigned = true;
+                  break;
+                }
+              } catch {}
+            }
           }
 
           if (!isAssigned) {
@@ -280,6 +288,59 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
           include: storyIncludes,
         });
 
+        // Log Editor/Admin Edit action
+        await prisma.auditLog.create({
+          data: {
+            userId: user.id,
+            action: isEditor ? "EDITOR_EDITED" : "ADMIN_EDITED",
+            details: JSON.stringify({
+              storyId: params.id,
+              title: story.title,
+              role: isEditor ? "Editor" : "Admin",
+              timestamp: new Date().toISOString(),
+            }),
+          },
+        });
+
+        // If the Editor submitted it back to Admin (body.status === "Pending")
+        if (isEditor && body.status === "Pending") {
+          await prisma.auditLog.create({
+            data: {
+              userId: user.id,
+              action: "EDITOR_SUBMITTED",
+              details: JSON.stringify({
+                storyId: params.id,
+                title: story.title,
+                role: "Editor",
+                timestamp: new Date().toISOString(),
+              }),
+            },
+          });
+
+          // Create database notification for all Admins/SuperAdmins
+          const staff = await prisma.profile.findMany({
+            where: {
+              role: { in: ["admin", "superadmin"] },
+            },
+            select: { id: true },
+          });
+
+          for (const member of staff) {
+            await prisma.notification.create({
+              data: {
+                recipientId: member.id,
+                senderId: user.id,
+                storyId: story.id,
+                type: "EDITOR_SUBMITTED",
+                title: "Story Ready for Review",
+                message: `Editor ${profile.fullName || "Staff"} has finished editing "${story.title}" and submitted it for review.`,
+                priority: "high",
+                actionUrl: `/admin/stories?id=${story.id}`,
+              },
+            });
+          }
+        }
+
         return json({ story: toAdminRow(story) });
       },
 
@@ -287,7 +348,7 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
         const user = await authenticate(request);
         if (!user) return json({ error: "Unauthorized" }, { status: 401 });
 
-        const profile = await prisma.userProfile.findUnique({ where: { id: user.id } });
+        const profile = await prisma.profile.findUnique({ where: { id: user.id } });
         if (!profile) return json({ error: "Profile not found" }, { status: 403 });
 
         const role = profile.role?.toLowerCase() || "";
@@ -299,26 +360,34 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
         }
 
         if (isEditor) {
-          const logs = await prisma.auditLog.findMany({
-            where: {
-              action: { in: ["STORY_WORKFLOW_STATE", "SUBMISSION_WORKFLOW_STATE"] },
-            },
-            orderBy: { createdAt: "desc" },
-            take: 20,
+          const storyObj = await prisma.story.findUnique({
+            where: { id: params.id },
+            select: { assignedEditorId: true, authorId: true },
           });
 
-          let isAssigned = false;
-          for (const log of logs) {
-            try {
-              const details = JSON.parse(log.details);
-              if (
-                (details.storyId === params.id || details.submissionId === params.id) &&
-                (details.reviewerId === user.id || details.assignedEditorId === user.id)
-              ) {
-                isAssigned = true;
-                break;
-              }
-            } catch {}
+          let isAssigned = storyObj?.assignedEditorId === user.id || storyObj?.authorId === user.id;
+
+          if (!isAssigned) {
+            const logs = await prisma.auditLog.findMany({
+              where: {
+                action: { in: ["STORY_WORKFLOW_STATE", "SUBMISSION_WORKFLOW_STATE"] },
+              },
+              orderBy: { createdAt: "desc" },
+              take: 20,
+            });
+
+            for (const log of logs) {
+              try {
+                const details = JSON.parse(log.details);
+                if (
+                  (details.storyId === params.id || details.submissionId === params.id) &&
+                  (details.reviewerId === user.id || details.assignedEditorId === user.id)
+                ) {
+                  isAssigned = true;
+                  break;
+                }
+              } catch {}
+            }
           }
 
           if (!isAssigned) {
@@ -360,7 +429,20 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
         return json({ story: toAdminRow(story) });
       },
 
-      DELETE: async ({ params }) => {
+      DELETE: async ({ params, request }) => {
+        const user = await authenticate(request);
+        if (!user) return json({ error: "Unauthorized" }, { status: 401 });
+
+        const profile = await prisma.profile.findUnique({ where: { id: user.id } });
+        if (!profile) return json({ error: "Profile not found" }, { status: 403 });
+
+        const role = profile.role?.toLowerCase() || "";
+        const isAdmin = role === "admin" || role === "superadmin";
+
+        if (!isAdmin) {
+          return json({ error: "Forbidden" }, { status: 403 });
+        }
+
         await prisma.story.delete({ where: { id: params.id } });
         return json({ success: true });
       },

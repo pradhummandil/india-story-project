@@ -2,8 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { prisma } from "@/lib/repositories/prisma.server";
 import { json, authenticate } from "@/routes/api/-_utils";
 
-const db = prisma as any;
-
 export const Route = createFileRoute("/api/admin/newsroom/notifications")({
   server: {
     handlers: {
@@ -12,28 +10,26 @@ export const Route = createFileRoute("/api/admin/newsroom/notifications")({
         if (!user) return json({ error: "Unauthorized" }, { status: 401 });
 
         try {
-          const logs = await db.auditLog.findMany({
-            where: {
-              userId: user.id,
-              action: "WORKFLOW_NOTIFICATION",
-            },
+          const notifications = await prisma.notification.findMany({
+            where: { recipientId: user.id },
             orderBy: { createdAt: "desc" },
             take: 50,
           });
 
-          const notifications = logs.map((log: any) => {
-            let details = {};
-            try {
-              details = JSON.parse(log.details);
-            } catch {}
-            return {
-              id: log.id,
-              createdAt: log.createdAt.toISOString(),
-              ...details,
-            };
-          });
+          const mappedNotifications = notifications.map((n: any) => ({
+            id: n.id,
+            createdAt: n.createdAt.toISOString(),
+            message: n.message,
+            read: n.isRead,
+            type: n.type,
+            title: n.title,
+            storyId: n.storyId,
+            submissionId: n.submissionId,
+            priority: n.priority,
+            actionUrl: n.actionUrl,
+          }));
 
-          return json({ notifications });
+          return json({ notifications: mappedNotifications });
         } catch (e: any) {
           return json({ error: e.message || "Failed to load notifications" }, { status: 500 });
         }
@@ -50,7 +46,7 @@ export const Route = createFileRoute("/api/admin/newsroom/notifications")({
           return json({ error: "Invalid JSON" }, { status: 400 });
         }
 
-        const { action, notificationId, storyId, storyTitle, message, type, recipientId, priority } = body;
+        const { action, notificationId, storyId, storyTitle, message, type, recipientId, priority, title } = body;
 
         try {
           if (action === "create") {
@@ -58,25 +54,21 @@ export const Route = createFileRoute("/api/admin/newsroom/notifications")({
               return json({ error: "recipientId, message, type are required" }, { status: 400 });
             }
 
-            const profile = await db.userProfile.findUnique({
+            const profile = await prisma.profile.findUnique({
               where: { id: user.id },
-              select: { name: true },
+              select: { fullName: true },
             });
-            const senderName = profile?.name || user.email?.split("@")[0] || "Staff";
+            const senderName = profile?.fullName || user.email?.split("@")[0] || "Staff";
 
-            await db.auditLog.create({
+            await prisma.notification.create({
               data: {
-                userId: recipientId,
-                action: "WORKFLOW_NOTIFICATION",
-                details: JSON.stringify({
-                  storyId: storyId || null,
-                  storyTitle: storyTitle || "",
-                  senderName,
-                  message,
-                  type,
-                  priority: priority || "Medium",
-                  read: false,
-                }),
+                recipientId,
+                senderId: user.id,
+                storyId: storyId || null,
+                type,
+                title: title || "New Notification",
+                message,
+                priority: priority || "normal",
               },
             });
 
@@ -88,20 +80,15 @@ export const Route = createFileRoute("/api/admin/newsroom/notifications")({
               return json({ error: "notificationId is required" }, { status: 400 });
             }
 
-            const log = await db.auditLog.findUnique({ where: { id: notificationId } });
-            if (!log || log.userId !== user.id) {
+            const notification = await prisma.notification.findUnique({ where: { id: notificationId } });
+            if (!notification || notification.recipientId !== user.id) {
               return json({ error: "Notification not found or unauthorized" }, { status: 404 });
             }
 
-            let details = {};
-            try {
-              details = JSON.parse(log.details);
-            } catch {}
-
-            await db.auditLog.update({
+            await prisma.notification.update({
               where: { id: notificationId },
               data: {
-                details: JSON.stringify({ ...details, read: true }),
+                isRead: true,
               },
             });
 

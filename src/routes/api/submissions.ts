@@ -104,7 +104,7 @@ export const Route = createFileRoute("/api/submissions")({
           }
 
           let submission;
-          const dataPayload = {
+          const dataPayload: any = {
             title: sanitizeInput(title),
             excerpt: sanitizeInput(excerpt || ""),
             content: sanitizeInput(content || ""),
@@ -119,7 +119,7 @@ export const Route = createFileRoute("/api/submissions")({
               : userProfile.name || "Anonymous Contributor",
             imageUrl: imageUrl?.trim() || null,
             imageCaption: imageCaption ? sanitizeInput(imageCaption) : null,
-            status: status || "Pending",
+            status: status === "Draft" ? "Draft" : "SUBMITTED",
             heroName: heroName ? sanitizeInput(heroName) : null,
             district: district?.trim() || null,
             language: language || "en",
@@ -135,6 +135,20 @@ export const Route = createFileRoute("/api/submissions")({
           };
 
           if (id) {
+            const existingSub = await prisma.submittedStory.findUnique({
+              where: { id },
+              select: { status: true, userId: true },
+            });
+            if (!existingSub) {
+              return json({ error: "Submission not found" }, { status: 404 });
+            }
+            if (existingSub.userId !== user.id) {
+              return json({ error: "Unauthorized" }, { status: 403 });
+            }
+            if (existingSub.status !== "Draft") {
+              return json({ error: "Only draft submissions can be edited." }, { status: 400 });
+            }
+
             submission = await (prisma.submittedStory as any).update({
               where: { id, userId: user.id },
               data: dataPayload,
@@ -149,35 +163,43 @@ export const Route = createFileRoute("/api/submissions")({
           }
 
           if (status !== "Draft") {
-            (async () => {
+            setTimeout(async () => {
               try {
-                const staff = await prisma.userProfile.findMany({
+                const staff = await prisma.profile.findMany({
                   where: {
-                    role: { in: ["Admin", "SuperAdmin", "Editor"] },
+                    role: { in: ["admin", "superadmin"] },
                   },
                   select: { id: true },
                 });
 
                 for (const member of staff) {
-                  await prisma.auditLog.create({
+                  await prisma.notification.create({
                     data: {
-                      userId: member.id,
-                      action: "WORKFLOW_NOTIFICATION",
-                      details: JSON.stringify({
-                        storyId: submission.id,
-                        storyTitle: submission.title,
-                        senderName: dataPayload.authorName,
-                        message: `New story "${submission.title}" submitted by ${dataPayload.authorName} from ${dataPayload.stateName}.`,
-                        type: "user_story_submission",
-                        priority: "High",
-                        stateName: dataPayload.stateName,
-                        themes: dataPayload.themes,
-                        submittedAt: new Date().toISOString(),
-                        read: false,
-                      }),
+                      recipientId: member.id,
+                      senderId: user.id,
+                      submissionId: submission.id,
+                      type: "NEW_SUBMISSION",
+                      title: "New Story Submission",
+                      message: `New story "${submission.title}" submitted by ${dataPayload.authorName} from ${dataPayload.stateName}.`,
+                      priority: "high",
+                      actionUrl: `/admin/submissions?id=${submission.id}`,
                     },
                   });
                 }
+
+                await prisma.auditLog.create({
+                  data: {
+                    userId: user.id,
+                    action: "USER_SUBMITTED",
+                    details: JSON.stringify({
+                      submissionId: submission.id,
+                      title: submission.title,
+                      authorName: dataPayload.authorName,
+                      role: "Author",
+                      timestamp: new Date().toISOString(),
+                    }),
+                  },
+                });
 
                 const emailAddress = dataPayload.email || user.email;
                 if (emailAddress) {
@@ -190,7 +212,7 @@ export const Route = createFileRoute("/api/submissions")({
               } catch (err) {
                 console.error("[Submissions Flow] Error in async notifications:", err);
               }
-            })();
+            }, 0);
           }
 
           // Award +20 XP only for non-draft submissions

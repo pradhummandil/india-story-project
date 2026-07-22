@@ -42,7 +42,7 @@ export const Route = createFileRoute("/api/admin/submissions/action")({
           if (action === "Approve" || action === "Approved" || action === "Approve directly") {
             finalAction = "Published";
           } else if (action === "Assign" || action === "AssignToEditor" || action === "Assign to Editor") {
-            finalAction = "FactChecking";
+            finalAction = "ASSIGNED_TO_EDITOR";
           }
 
           const VALID_ACTIONS = [
@@ -51,6 +51,7 @@ export const Route = createFileRoute("/api/admin/submissions/action")({
             "Published",
             "ChangesRequested",
             "Rejected",
+            "ASSIGNED_TO_EDITOR",
           ];
           if (!VALID_ACTIONS.includes(finalAction)) {
             return json(
@@ -76,6 +77,7 @@ export const Route = createFileRoute("/api/admin/submissions/action")({
             data: {
               status: finalAction as any,
               adminNotes: adminNotes || null,
+              assignedEditorId: editorId || null,
             },
           });
 
@@ -153,6 +155,7 @@ export const Route = createFileRoute("/api/admin/submissions/action")({
                 status: "Published",
                 stateId: state.id,
                 authorId: author.id,
+                assignedEditorId: submission.assignedEditorId || null,
                 readingTime: Math.max(1, Math.ceil(submission.content.split(/\s+/).length / 200)),
                 publishedAt: new Date(),
                 featured,
@@ -234,43 +237,122 @@ export const Route = createFileRoute("/api/admin/submissions/action")({
           const submitterEmail = submission.email || submission.user?.email;
           const authorName = submission.authorName || submission.user?.name || "Contributor";
 
-          (async () => {
+          setTimeout(async () => {
             try {
-              if (finalAction === "Published" && submitterEmail) {
+              if (finalAction === "Published") {
                 const createdStory = await prisma.story.findFirst({
                   where: { title: submission.title },
                   orderBy: { createdAt: "desc" },
                 });
                 const slug = createdStory?.slug || submissionId;
-                await sendSubmissionPublishedEmail(submitterEmail, authorName, submission.title, slug);
-              } else if (finalAction === "Rejected" && submitterEmail) {
-                await sendSubmissionRejectionEmail(submitterEmail, authorName, submission.title);
-              } else if (finalAction === "FactChecking") {
-                if (editorId) {
-                  await prisma.auditLog.create({
+
+                // Create database notification for author
+                await prisma.notification.create({
+                  data: {
+                    recipientId: submission.userId,
+                    senderId: admin.id,
+                    storyId: createdStory?.id || null,
+                    submissionId: submission.id,
+                    type: "PUBLISHED",
+                    title: "Story Published",
+                    message: `Your story "${submission.title}" has been approved and published!`,
+                    priority: "normal",
+                    actionUrl: `/stories/${slug}`,
+                  },
+                });
+
+                // Create database notification for assigned editor if any
+                if (submission.assignedEditorId) {
+                  await prisma.notification.create({
                     data: {
-                      userId: editorId,
-                      action: "SUBMISSION_WORKFLOW_STATE",
-                      details: JSON.stringify({
-                        submissionId,
-                        assignedEditorId: editorId,
-                        assignedAt: new Date().toISOString(),
-                      }),
+                      recipientId: submission.assignedEditorId,
+                      senderId: admin.id,
+                      storyId: createdStory?.id || null,
+                      submissionId: submission.id,
+                      type: "PUBLISHED",
+                      title: "Story Published",
+                      message: `The story "${submission.title}" you were assigned to has been published.`,
+                      priority: "normal",
+                      actionUrl: `/stories/${slug}`,
+                    },
+                  });
+                }
+
+                // Create Audit Log
+                await prisma.auditLog.create({
+                  data: {
+                    userId: admin.id,
+                    action: "PUBLISHED",
+                    details: JSON.stringify({
+                      submissionId,
+                      storyId: createdStory?.id || null,
+                      title: submission.title,
+                      role: "Admin",
+                      timestamp: new Date().toISOString(),
+                    }),
+                  },
+                });
+
+                if (submitterEmail) {
+                  await sendSubmissionPublishedEmail(submitterEmail, authorName, submission.title, slug);
+                }
+              } else if (finalAction === "Rejected") {
+                // Create database notification for author
+                await prisma.notification.create({
+                  data: {
+                    recipientId: submission.userId,
+                    senderId: admin.id,
+                    submissionId: submission.id,
+                    type: "ADMIN_REJECTED",
+                    title: "Submission Rejected",
+                    message: `Your story submission "${submission.title}" was not approved. Notes: ${adminNotes || "None"}`,
+                    priority: "normal",
+                  },
+                });
+
+                // Create Audit Log
+                await prisma.auditLog.create({
+                  data: {
+                    userId: admin.id,
+                    action: "REJECTED",
+                    details: JSON.stringify({
+                      submissionId,
+                      title: submission.title,
+                      role: "Admin",
+                      timestamp: new Date().toISOString(),
+                    }),
+                  },
+                });
+
+                if (submitterEmail) {
+                  await sendSubmissionRejectionEmail(submitterEmail, authorName, submission.title);
+                }
+              } else if (finalAction === "ASSIGNED_TO_EDITOR") {
+                if (editorId) {
+                  // Create database notification for editor
+                  await prisma.notification.create({
+                    data: {
+                      recipientId: editorId,
+                      senderId: admin.id,
+                      submissionId: submission.id,
+                      type: "EDITOR_ASSIGNED",
+                      title: "New Story Assignment",
+                      message: `You have been assigned to review and edit "${submission.title}".`,
+                      priority: "high",
+                      actionUrl: `/editor?tab=queue`,
                     },
                   });
 
+                  // Create Audit Log for Admin Assigning Editor
                   await prisma.auditLog.create({
                     data: {
-                      userId: editorId,
-                      action: "WORKFLOW_NOTIFICATION",
+                      userId: admin.id,
+                      action: "ADMIN_ASSIGNED",
                       details: JSON.stringify({
-                        storyId: submissionId,
-                        storyTitle: submission.title,
-                        senderName: "Administrator",
-                        message: `New story "${submission.title}" has been approved by Admin and assigned to you.`,
-                        type: "story_assignment",
-                        priority: "High",
-                        read: false,
+                        submissionId,
+                        assignedEditorId: editorId,
+                        role: "Admin",
+                        timestamp: new Date().toISOString(),
                       }),
                     },
                   });
@@ -283,7 +365,7 @@ export const Route = createFileRoute("/api/admin/submissions/action")({
             } catch (err) {
               console.error("[Submissions Action Flow] Error in async triggers:", err);
             }
-          })();
+          }, 0);
 
           return json({ success: true, submission: updatedSubmission });
         } catch (e: any) {
