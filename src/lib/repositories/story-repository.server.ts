@@ -105,24 +105,63 @@ function formatReadTime(readingTime: number | null) {
   return readingTime != null && readingTime > 0 ? `${readingTime} min read` : "";
 }
 
+function isDevanagari(str?: string | null) {
+  return /[\u0900-\u097F]/.test(str || "");
+}
+
+function slugToEnglishTitle(slug?: string | null) {
+  if (!slug) return "Story";
+  return slug
+    .replace(/-\d+$/, "")
+    .split("-")
+    .map((w) =>
+      ["of", "the", "in", "a", "an", "to", "for", "and", "on", "with", "by"].includes(w)
+        ? w
+        : w.charAt(0).toUpperCase() + w.slice(1),
+    )
+    .join(" ")
+    .replace(/^./, (c) => c.toUpperCase());
+}
+
 function toStoryCardCompatible(story: any): StoryCardCompatible {
   const image = story.images?.[0] ?? null;
+
+  let title = story.title;
+  let titleHi = story.titleHi;
+  if (isDevanagari(title)) {
+    titleHi = titleHi || title;
+    title = slugToEnglishTitle(story.slug);
+  }
+
+  let excerpt = story.excerpt;
+  let excerptHi = story.excerptHi;
+  if (isDevanagari(excerpt)) {
+    excerptHi = excerptHi || excerpt;
+    excerpt = `${title} — Documenting grassroots stories and unsung heroes across India.`;
+  }
+
+  let content = story.content;
+  let contentHi = story.contentHi;
+  if (content && isDevanagari(content)) {
+    contentHi = contentHi || content;
+    content = `${title}\n\n${excerpt}\n\nThis story documents impactful grassroots change in India. Toggle language options to view the complete Hindi text.`;
+  }
 
   return {
     id: story.id,
     slug: story.slug,
-    title: story.title,
-    excerpt: story.excerpt,
+    title,
+    excerpt,
     themes: story.themeNames ?? story.themes?.map((t: any) => t.theme?.name).filter(Boolean) ?? [],
     region: story.state?.name ?? "India",
     readTime: formatReadTime(story.readingTime),
     image: image?.imageUrl,
     imageAlt: image?.caption ?? undefined,
     url: story.slug,
-    content: story.content, // undefined or populated depending on select
-    titleHi: story.titleHi,
-    excerptHi: story.excerptHi,
-    contentHi: story.contentHi,
+    content,
+    titleHi,
+    excerptHi,
+    contentHi,
     authorName: story.author?.name,
     authorBio: story.author?.bio,
     authorAvatar: story.author?.avatar,

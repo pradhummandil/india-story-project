@@ -93,19 +93,19 @@ export default function GroupsPage() {
   return (
     <div className="space-y-6">
       {/* ── Groups Header ── */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/5 pb-5">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border pb-5">
         <div>
-          <h1 className="font-display text-2xl font-bold text-white">
+          <h1 className="font-display text-2xl font-bold text-foreground">
             Regional Hubs & Story Groups
           </h1>
-          <p className="text-xs text-white/40 font-sans mt-1">
+          <p className="text-xs text-muted-foreground font-sans mt-1">
             Join groups centered around history, folklore, startups, or specific Indian states.
           </p>
         </div>
         {user ? (
           <button
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-1.5 bg-primary text-white text-[11px] font-sans font-bold uppercase tracking-widest px-4 py-2 hover:bg-primary/95 transition-colors"
+            className="flex items-center gap-1.5 bg-primary text-primary-foreground text-[11px] font-sans font-bold uppercase tracking-widest px-4 py-2 hover:bg-primary/95 transition-colors"
           >
             <Plus className="size-3.5" />
             Create Group
@@ -113,7 +113,7 @@ export default function GroupsPage() {
         ) : (
           <Link
             to="/login"
-            className="bg-white/5 border border-white/10 text-[10px] font-sans font-bold uppercase tracking-widest px-4 py-2 text-white/50 hover:text-white transition-colors"
+            className="bg-card border border-border text-[10px] font-sans font-bold uppercase tracking-widest px-4 py-2 text-muted-foreground hover:text-foreground transition-colors"
           >
             Sign in to Join
           </Link>
@@ -121,7 +121,7 @@ export default function GroupsPage() {
       </div>
 
       {/* ── Controls: Sort & Filter ── */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-[#121212] border border-white/5 p-4 rounded-sm">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-card border border-border p-4 rounded-xl shadow-sm">
         <div className="flex items-center gap-1.5">
           {[
             { id: "popular", label: "Popular" },
@@ -130,8 +130,8 @@ export default function GroupsPage() {
             <button
               key={s.id}
               onClick={() => setSort(s.id)}
-              className={`px-3 py-1.5 text-[9px] font-sans font-bold uppercase tracking-widest transition-colors ${
-                sort === s.id ? "bg-white/8 text-white" : "text-white/40 hover:text-white/70"
+              className={`px-3 py-1.5 text-[9px] font-sans font-bold uppercase tracking-widest rounded transition-colors ${
+                sort === s.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {s.label}
@@ -140,17 +140,17 @@ export default function GroupsPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-[9px] text-white/30 uppercase tracking-wider font-sans font-bold">
+          <span className="text-[9px] text-muted-foreground uppercase tracking-wider font-sans font-bold">
             Privacy:
           </span>
           <select
             value={privacy}
             onChange={(e) => setPrivacy(e.target.value)}
-            className="bg-black border border-white/8 text-white text-[10px] font-sans font-bold uppercase tracking-widest px-2.5 py-1.5 focus:outline-none focus:border-white/20"
+            className="bg-background border border-border text-foreground text-[10px] font-sans font-bold uppercase tracking-widest px-2.5 py-1.5 rounded-lg focus:outline-none focus:border-primary/50"
           >
-            <option value="all">All Groups</option>
-            <option value="public">🌐 Public</option>
-            <option value="private">🔒 Private</option>
+            <option value="all" className="bg-card text-foreground">All Groups</option>
+            <option value="public" className="bg-card text-foreground">🌐 Public</option>
+            <option value="private" className="bg-card text-foreground">🔒 Private</option>
           </select>
         </div>
       </div>
@@ -159,24 +159,24 @@ export default function GroupsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {loading ? (
           Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-44 bg-white/5 rounded-sm animate-pulse" />
+            <div key={i} className="h-44 bg-muted rounded-2xl animate-pulse" />
           ))
         ) : groups.length === 0 ? (
-          <div className="text-center py-12 bg-[#121212] border border-white/5 rounded-sm text-white/20 text-xs font-sans col-span-full">
+          <div className="text-center py-12 bg-card border border-border rounded-2xl text-muted-foreground text-xs font-sans col-span-full shadow-sm">
             No groups found matching selection.
           </div>
         ) : (
           groups.map((group) => (
             <div
               key={group.id}
-              className="bg-[#121212] border border-white/5 p-5 flex flex-col justify-between h-48 rounded-sm hover:border-white/10 transition-colors"
+              className="bg-card border border-border p-5 flex flex-col justify-between h-48 rounded-2xl hover:border-gold/40 shadow-sm transition-all"
             >
               <div className="space-y-2">
                 <div className="flex justify-between items-start">
-                  <span className="p-2 bg-primary/10 rounded-sm text-primary">
+                  <span className="p-2 bg-primary/10 rounded-lg text-primary border border-primary/20">
                     <Users className="size-4" />
                   </span>
-                  <span className="text-[8px] font-sans font-bold uppercase tracking-widest text-white/30 flex items-center gap-1 border border-white/5 px-2 py-0.5 rounded-full">
+                  <span className="text-[8px] font-sans font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1 border border-border px-2 py-0.5 rounded-full bg-muted/50">
                     {group.privacy === "public" ? (
                       <>
                         <Globe className="size-2.5" /> Public
@@ -191,27 +191,27 @@ export default function GroupsPage() {
                 <div className="space-y-1">
                   <Link
                     to={`/community/groups/${group.id}` as any}
-                    className="text-xs font-sans font-bold text-white hover:text-primary transition-colors block truncate"
+                    className="text-xs font-sans font-bold text-foreground hover:text-primary transition-colors block truncate"
                   >
                     {group.name}
                   </Link>
-                  <p className="text-[10px] text-white/40 font-sans line-clamp-2 leading-relaxed">
+                  <p className="text-[10px] text-muted-foreground font-sans line-clamp-2 leading-relaxed">
                     {group.description}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-3 border-t border-white/5">
-                <span className="text-[9px] text-white/30 font-sans">
+              <div className="flex items-center justify-between pt-3 border-t border-border/40">
+                <span className="text-[9px] text-muted-foreground font-sans">
                   {group.memberCount} members
                 </span>
                 {user ? (
                   <button
-                    onClick={() => handleToggleJoin(group.id, group.isMember)}
-                    className={`px-3 py-1 text-[9px] font-sans font-bold uppercase tracking-widest transition-colors ${
+                    onClick={() => handleJoinLeave(group.id, group.isMember)}
+                    className={`px-3 py-1 text-[9px] font-sans font-bold uppercase tracking-widest rounded transition-colors ${
                       group.isMember
-                        ? "bg-white/5 border border-white/10 text-white/50 hover:text-white"
-                        : "bg-primary text-white hover:bg-primary/95"
+                        ? "bg-muted border border-border text-foreground hover:bg-muted/80"
+                        : "bg-primary text-primary-foreground hover:bg-primary/95"
                     }`}
                   >
                     {group.isMember ? "Joined" : "Join"}

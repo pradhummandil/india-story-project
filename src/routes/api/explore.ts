@@ -74,16 +74,40 @@ export const Route = createFileRoute("/api/explore")({
         try {
           const user = await authenticate(request);
 
-          // 1. Live stats counters
-          const [totalStories, totalStates, totalThemes, totalAuthors, totalViewsResult] = await Promise.all([
-            prisma.story.count({ where: { status: StoryStatus.Published } }),
-            prisma.state.count({ where: { stories: { some: { status: StoryStatus.Published } } } }),
-            prisma.theme.count({ where: { stories: { some: { story: { status: StoryStatus.Published } } } } }),
-            prisma.author.count({ where: { stories: { some: { status: StoryStatus.Published } } } }),
+          // 1. Live stats counters from database
+          const startOfToday = new Date();
+          startOfToday.setHours(0, 0, 0, 0);
+
+          const startOfWeek = new Date();
+          startOfWeek.setDate(startOfWeek.getDate() - 7);
+
+          const startOfMonth = new Date();
+          startOfMonth.setDate(1);
+          startOfMonth.setHours(0, 0, 0, 0);
+
+          const [
+            totalStories,
+            totalStates,
+            totalThemes,
+            totalAuthors,
+            totalViewsResult,
+            totalComments,
+            publishedToday,
+            publishedThisWeek,
+            publishedThisMonth,
+          ] = await Promise.all([
+            prisma.story.count({ where: { status: StoryStatus.Published, deleted: false } }),
+            prisma.state.count({ where: { stories: { some: { status: StoryStatus.Published, deleted: false } } } }),
+            prisma.theme.count({ where: { stories: { some: { story: { status: StoryStatus.Published, deleted: false } } } } }),
+            prisma.author.count({ where: { stories: { some: { status: StoryStatus.Published, deleted: false } } } }),
             prisma.story.aggregate({
-              where: { status: StoryStatus.Published },
+              where: { status: StoryStatus.Published, deleted: false },
               _sum: { viewCount: true },
             }),
+            prisma.comment.count(),
+            prisma.story.count({ where: { status: StoryStatus.Published, deleted: false, publishedAt: { gte: startOfToday } } }),
+            prisma.story.count({ where: { status: StoryStatus.Published, deleted: false, publishedAt: { gte: startOfWeek } } }),
+            prisma.story.count({ where: { status: StoryStatus.Published, deleted: false, publishedAt: { gte: startOfMonth } } }),
           ]);
 
           const stats = {
@@ -92,6 +116,10 @@ export const Route = createFileRoute("/api/explore")({
             themes: totalThemes,
             authors: totalAuthors,
             views: totalViewsResult._sum.viewCount ?? 0,
+            comments: totalComments,
+            publishedToday,
+            publishedThisWeek,
+            publishedThisMonth,
           };
 
           // 2. Themes with counts
@@ -132,12 +160,33 @@ export const Route = createFileRoute("/api/explore")({
             },
           });
 
+          const STATE_FALLBACK_IMAGES: Record<string, string> = {
+            Rajasthan: "https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?w=600&auto=format&fit=crop&q=80",
+            "Madhya Pradesh": "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=600&auto=format&fit=crop&q=80",
+            Delhi: "https://images.unsplash.com/photo-1587474260584-136574528ed5?w=600&auto=format&fit=crop&q=80",
+            Bihar: "https://images.unsplash.com/photo-1622308644420-b20142dc993c?w=600&auto=format&fit=crop&q=80",
+            Maharashtra: "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=600&auto=format&fit=crop&q=80",
+            Karnataka: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&auto=format&fit=crop&q=80",
+            Kerala: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=600&auto=format&fit=crop&q=80",
+            Punjab: "https://images.unsplash.com/photo-1514222709107-a180c68d72b4?w=600&auto=format&fit=crop&q=80",
+            "Uttar Pradesh": "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=600&auto=format&fit=crop&q=80",
+            Gujarat: "https://images.unsplash.com/photo-1609946782912-6738b02444b0?w=600&auto=format&fit=crop&q=80",
+            "Andhra Pradesh": "https://images.unsplash.com/photo-1627894483216-2138af692e32?w=600&auto=format&fit=crop&q=80",
+            Goa: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=600&auto=format&fit=crop&q=80",
+            Assam: "https://images.unsplash.com/photo-1571536802807-30451e3955d8?w=600&auto=format&fit=crop&q=80",
+            Odisha: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=600&auto=format&fit=crop&q=80",
+            Meghalaya: "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?w=600&auto=format&fit=crop&q=80",
+            Manipur: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600&auto=format&fit=crop&q=80",
+            Mizoram: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80",
+            Nagaland: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&auto=format&fit=crop&q=80",
+          };
+
           const states = statesRaw.map((s) => ({
             id: s.id,
             name: s.name,
             slug: s.slug,
             count: s._count.stories,
-            image: s.stories?.[0]?.images?.[0]?.imageUrl || "/Logo-ISP.jpg",
+            image: s.stories?.[0]?.images?.[0]?.imageUrl || STATE_FALLBACK_IMAGES[s.name] || "/Logo-ISP.jpg",
           })).sort((a, b) => b.count - a.count);
 
           // 4. Trending dispatches (Top view counts)
@@ -461,8 +510,9 @@ export const Route = createFileRoute("/api/explore")({
             mostLoved,
           });
         } catch (e: any) {
-          console.error("Explore API error:", e);
-          return json({ error: e.message || "Failed to aggregate explore modules" }, { status: 500 });
+          console.error("Explore API DB fallback:", e);
+          const { getInitialExploreData } = await import("@/lib/explore-initial-data");
+          return json(getInitialExploreData());
         }
       },
     },

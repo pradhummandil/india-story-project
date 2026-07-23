@@ -5,7 +5,7 @@ import { Link } from "@tanstack/react-router";
 
 import { Button } from "@/components/ui/button";
 import type { Story } from "@/components/site/StoryCard";
-import { useI18nStore, translateStory, getCommonText } from "@/lib/i18n";
+import { useI18nStore, translateStory, getCommonText, translateStateName } from "@/lib/i18n";
 import { INDIA_PATHS } from "./IndiaPaths";
 import { STATE_COORDINATES } from "./StateCoordinates";
 
@@ -265,9 +265,9 @@ export function StoryMap({ stateCounts = {} }: { stateCounts?: Record<string, nu
                 className="absolute bg-card/95 border border-border/80 px-4 py-2.5 shadow-elegant rounded-none pointer-events-none z-50 flex flex-col items-center min-w-[140px]"
                 style={tooltipStyle}
               >
-                <span className="font-display font-bold text-sm text-foreground">{active.state}</span>
+                <span className="font-display font-bold text-sm text-foreground">{translateStateName(active.state, lang)}</span>
                 <span className="text-[10px] uppercase tracking-widest text-gold font-sans font-bold mt-1">
-                  {active.count} {active.count === 1 ? "Story" : "Stories"}
+                  {active.count} {active.count === 1 ? (lang === "hi" ? "कहानी" : "Story") : (lang === "hi" ? "कहानियाँ" : "Stories")}
                 </span>
               </motion.div>
             )}
@@ -275,7 +275,7 @@ export function StoryMap({ stateCounts = {} }: { stateCounts?: Record<string, nu
         </div>
 
         {/* Right Column: Stories Panel */}
-        <div className="h-[600px] bg-neutral-900 border border-neutral-800 rounded-2xl p-6 overflow-hidden flex flex-col shadow-elegant">
+        <div className="h-[600px] bg-card border border-border/80 rounded-2xl p-6 overflow-hidden flex flex-col shadow-md text-foreground">
           <AnimatePresence mode="wait">
             {!selectedState ? (
               <motion.div
@@ -290,28 +290,30 @@ export function StoryMap({ stateCounts = {} }: { stateCounts?: Record<string, nu
                   <h3 className="font-display text-2xl font-bold mb-2 text-foreground">
                     {lang === "en" ? "India's Cultural Landscape" : "भारत का सांस्कृतिक परिदृश्य"}
                   </h3>
-                  <p className="text-muted-foreground text-xs leading-relaxed font-sans">
+                  <p className="text-muted-foreground text-xs leading-relaxed font-sans font-medium">
                     {lang === "en"
                       ? "Every state contains unique stories of innovators and changemakers. Click on active states on the map or select from the list below to discover stories from that region."
                       : "प्रत्येक राज्य में नवप्रवर्तकों और बदलाव लाने वालों की अनूठी कहानियां हैं। उस क्षेत्र की कहानियों को खोजने के लिए मानचित्र पर सक्रिय राज्यों पर क्लिक करें या नीचे दी गई सूची से चयन करें।"}
                   </p>
                 </div>
 
-                <div className="flex-1 overflow-y-auto border border-border/40 p-2 space-y-1.5 pr-1 scrollbar-thin bg-card/5 rounded-xl">
+                <div className="flex-1 overflow-y-auto border border-border/40 p-2 space-y-1.5 pr-1 scrollbar-thin bg-background/50 rounded-xl">
                   {hotspots.map((h) => {
                     return (
                       <motion.button
                         key={h.id}
                         onClick={() => setSelectedState(h)}
-                        className="w-full text-left px-4 py-3 border border-transparent hover:border-gold/30 hover:bg-card/45 transition-all duration-300 flex items-center justify-between font-sans text-muted-foreground hover:text-foreground rounded-xl"
+                        className="w-full text-left px-4 py-3 border border-border/40 hover:border-primary/40 bg-background hover:bg-muted/80 transition-all duration-300 flex items-center justify-between font-sans text-foreground rounded-xl shadow-xs group cursor-pointer"
                         whileTap={{ scale: 0.99 }}
                       >
-                        <span className="text-xs font-semibold tracking-wider uppercase">{h.state}</span>
+                        <span className="text-xs font-semibold tracking-wider text-foreground group-hover:text-primary transition-colors">
+                          {translateStateName(h.state, lang)}
+                        </span>
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-bold text-gold bg-primary/5 px-2 py-0.5 border border-primary/10 rounded">
+                          <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 border border-primary/20 rounded">
                             {h.count}
                           </span>
-                          <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
+                          <ArrowRight className="size-4 shrink-0 text-muted-foreground group-hover:text-primary transition-colors" />
                         </div>
                       </motion.button>
                     );
@@ -347,7 +349,7 @@ export function StoryMap({ stateCounts = {} }: { stateCounts?: Record<string, nu
                       {lang === "en" ? "Explore State" : "राज्य अन्वेषण"}
                     </span>
                     <h3 className="font-display text-2xl font-bold mt-1 text-foreground">
-                      {selectedState.state}
+                      {translateStateName(selectedState.state, lang)}
                     </h3>
                   </div>
                   <button

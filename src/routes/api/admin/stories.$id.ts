@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { prisma } from "@/lib/repositories/prisma.server";
 import { json, authenticate } from "@/routes/api/-_utils";
+import { invalidateHeroCache } from "@/routes/api/hero-slides";
+import { invalidateTrendingCache } from "@/routes/api/trending";
 import { StoryStatus } from "@prisma/client";
 import { supabase } from "@/lib/supabase-client";
 import { extractCloudinaryPublicId, deleteFromCloudinary } from "@/lib/cloudinary.server";
@@ -426,6 +428,8 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
           data,
           include: storyIncludes,
         });
+        invalidateHeroCache();
+        invalidateTrendingCache();
         return json({ story: toAdminRow(story) });
       },
 
@@ -444,6 +448,8 @@ export const Route = createFileRoute("/api/admin/stories/$id")({
         }
 
         await prisma.story.delete({ where: { id: params.id } });
+        invalidateHeroCache();
+        invalidateTrendingCache();
         return json({ success: true });
       },
     },

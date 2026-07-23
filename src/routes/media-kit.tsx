@@ -27,7 +27,12 @@ export const Route = createFileRoute("/media-kit")({
   component: MediaKitPage,
 });
 
+import { useI18nStore, uiText } from "@/lib/i18n";
+
 function MediaKitPage() {
+  const lang = useI18nStore((s) => s.lang);
+  const mkText = uiText[lang].mediaKit;
+
   return (
     <SiteLayout>
       <div className="bg-background min-h-screen py-24 md:py-32">
@@ -35,13 +40,14 @@ function MediaKitPage() {
         <div className="container mx-auto px-6 border-b border-border/40 pb-10 mb-12">
           <div className="max-w-3xl">
             <p className="text-xs uppercase tracking-[0.3em] text-gold font-sans font-bold mb-3 flex items-center gap-2">
-              <FileText className="size-4 text-gold fill-gold" /> Press Resources
+              <FileText className="size-4 text-gold fill-gold" /> {mkText.title}
             </p>
             <h1 className="font-display text-5xl md:text-7xl font-bold leading-none tracking-tight">
-              Media Kit &amp; <span className="text-primary italic">Assets.</span>
+              {lang === "hi" ? "मीडिया किट और " : "Media Kit & "}
+              <span className="text-primary italic">{lang === "hi" ? "ब्रांड संपत्तियां।" : "Assets."}</span>
             </h1>
             <p className="mt-4 text-muted-foreground text-sm md:text-base leading-relaxed font-sans font-medium">
-              Official branding assets, logos, and quick-sheet documentation about our coverage.
+              {mkText.subtitle}
             </p>
           </div>
         </div>

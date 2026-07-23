@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { ShieldCheck, ArrowLeft } from "lucide-react";
 import { SiteLayout } from "@/components/site/Layout";
+import { useI18nStore, uiText } from "@/lib/i18n";
 
 export const Route = createFileRoute("/privacy")({
   head: () => ({
@@ -18,6 +19,9 @@ export const Route = createFileRoute("/privacy")({
 });
 
 function PrivacyTermsPage() {
+  const lang = useI18nStore((s) => s.lang);
+  const privText = uiText[lang].privacyPage;
+
   const [activeTab, setActiveTab] = useState<
     "privacy" | "terms" | "cookies" | "accessibility" | "grievance"
   >("privacy");
@@ -29,14 +33,14 @@ function PrivacyTermsPage() {
         <div className="container mx-auto px-6 border-b border-border/40 pb-10 mb-12">
           <div className="max-w-3xl">
             <p className="text-xs uppercase tracking-[0.3em] text-gold font-sans font-bold mb-3 flex items-center gap-2">
-              <ShieldCheck className="size-4" /> Policy and Compliance
+              <ShieldCheck className="size-4" /> {privText.title}
             </p>
             <h1 className="font-display text-5xl md:text-7xl font-bold leading-none tracking-tight">
-              Transparency &amp; <span className="text-primary italic">Trust.</span>
+              {lang === "hi" ? "पारदर्शिता और " : "Transparency & "}
+              <span className="text-primary italic">{lang === "hi" ? "विश्वास।" : "Trust."}</span>
             </h1>
             <p className="mt-4 text-muted-foreground text-sm md:text-base leading-relaxed font-sans font-medium">
-              Explore our privacy practices, user agreements, cookie declarations, and grievance
-              redressal channels.
+              {privText.subtitle}
             </p>
           </div>
         </div>
@@ -47,53 +51,53 @@ function PrivacyTermsPage() {
           <div className="lg:col-span-1 flex flex-col gap-2 font-sans">
             <button
               onClick={() => setActiveTab("privacy")}
-              className={`text-left px-4 py-3 text-xs uppercase tracking-wider font-bold border transition-colors ${
+              className={`text-left px-4 py-3 text-xs tracking-wider font-bold border transition-colors ${
                 activeTab === "privacy"
-                  ? "bg-primary border-primary text-white"
-                  : "border-border bg-card text-muted-foreground hover:text-white"
+                  ? "bg-primary text-white border-primary"
+                  : "bg-card text-muted-foreground border-border/60 hover:text-foreground"
               }`}
             >
-              Privacy Policy
+              {lang === "hi" ? "1. गोपनीयता नीति" : "1. Privacy Policy"}
             </button>
             <button
               onClick={() => setActiveTab("terms")}
-              className={`text-left px-4 py-3 text-xs uppercase tracking-wider font-bold border transition-colors ${
+              className={`text-left px-4 py-3 text-xs tracking-wider font-bold border transition-colors ${
                 activeTab === "terms"
-                  ? "bg-primary border-primary text-white"
-                  : "border-border bg-card text-muted-foreground hover:text-white"
+                  ? "bg-primary text-white border-primary"
+                  : "bg-card text-muted-foreground border-border/60 hover:text-foreground"
               }`}
             >
-              Terms of Service
+              {lang === "hi" ? "2. सेवा की शर्तें" : "2. Terms of Service"}
             </button>
             <button
               onClick={() => setActiveTab("cookies")}
-              className={`text-left px-4 py-3 text-xs uppercase tracking-wider font-bold border transition-colors ${
+              className={`text-left px-4 py-3 text-xs tracking-wider font-bold border transition-colors ${
                 activeTab === "cookies"
-                  ? "bg-primary border-primary text-white"
-                  : "border-border bg-card text-muted-foreground hover:text-white"
+                  ? "bg-primary text-white border-primary"
+                  : "bg-card text-muted-foreground border-border/60 hover:text-foreground"
               }`}
             >
-              Cookie Policy
+              {lang === "hi" ? "3. कुकी नीति" : "3. Cookie Policy"}
             </button>
             <button
               onClick={() => setActiveTab("accessibility")}
-              className={`text-left px-4 py-3 text-xs uppercase tracking-wider font-bold border transition-colors ${
+              className={`text-left px-4 py-3 text-xs tracking-wider font-bold border transition-colors ${
                 activeTab === "accessibility"
-                  ? "bg-primary border-primary text-white"
-                  : "border-border bg-card text-muted-foreground hover:text-white"
+                  ? "bg-primary text-white border-primary"
+                  : "bg-card text-muted-foreground border-border/60 hover:text-foreground"
               }`}
             >
-              Accessibility
+              {lang === "hi" ? "4. सुगमता (एक्सेसिबिलिटी)" : "4. Accessibility"}
             </button>
             <button
               onClick={() => setActiveTab("grievance")}
-              className={`text-left px-4 py-3 text-xs uppercase tracking-wider font-bold border transition-colors ${
+              className={`text-left px-4 py-3 text-xs tracking-wider font-bold border transition-colors ${
                 activeTab === "grievance"
-                  ? "bg-primary border-primary text-white"
-                  : "border-border bg-card text-muted-foreground hover:text-white"
+                  ? "bg-primary text-white border-primary"
+                  : "bg-card text-muted-foreground border-border/60 hover:text-foreground"
               }`}
             >
-              Grievance Redressal
+              {lang === "hi" ? "5. शिकायत अधिकारी" : "5. Grievance Officer"}
             </button>
           </div>
 

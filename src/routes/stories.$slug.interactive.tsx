@@ -6,7 +6,7 @@ export const Route = createFileRoute("/stories/$slug/interactive")({
       <div className="text-center">
         <h1 className="text-4xl font-bold mb-4">Interactive Profile Not Found</h1>
         <p className="text-muted-foreground mb-8">The story you're looking for doesn't exist.</p>
-        <Link to="/explore" className="text-[#C8A96A] hover:text-white transition-colors">
+        <Link to="/explore" search={{ q: undefined, state: undefined, theme: undefined, era: undefined, collection: undefined }} className="text-[#C8A96A] hover:text-white transition-colors">
           Back to Explore
         </Link>
       </div>

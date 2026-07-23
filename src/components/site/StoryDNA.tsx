@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dna, Sparkles, MapPin, HeartHandshake, Target, Users, Wand2 } from "lucide-react";
-import { stories } from "@/lib/stories-data";
+import { useStoriesData } from "@/lib/stories-data";
 import { deriveDNA, getConnections } from "@/lib/story-dna";
 import type { Story } from "@/components/site/StoryCard";
+import { useI18nStore, uiText, translateStory, translateStateName } from "@/lib/i18n";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -37,6 +38,10 @@ function Trait({
 }
 
 export function StoryDNA() {
+  const lang = useI18nStore((s) => s.lang);
+  const dnaText = uiText[lang].storiesPage;
+  const { stories } = useStoriesData();
+
   const [selectedId, setSelectedId] = useState<string>("");
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
@@ -48,14 +53,18 @@ export function StoryDNA() {
     }
   }, [stories, selectedId]);
 
-  const story = useMemo(
+  const rawStory = useMemo(
     () => stories.find((s) => s.id === selectedId) ?? stories[0],
     [selectedId, stories],
   );
 
+  const story = useMemo(() => {
+    return rawStory ? translateStory(rawStory, lang) : null;
+  }, [rawStory, lang]);
+
   const connections = useMemo(() => {
-    return story ? getConnections(story.id, 6) : [];
-  }, [story]);
+    return rawStory ? getConnections(rawStory.id, 6) : [];
+  }, [rawStory]);
 
   // Position nodes around a circle
   const nodes = useMemo(() => {
@@ -70,24 +79,27 @@ export function StoryDNA() {
     });
   }, [connections]);
 
-  if (!story) {
+  if (!story || !rawStory) {
     return null;
   }
 
-  const dna = deriveDNA(story);
+  const dna = deriveDNA(rawStory);
 
   return (
     <section className="container mx-auto px-6 py-16 md:py-24">
       <div className="max-w-2xl mb-10">
-        <p className="text-xs uppercase tracking-widest text-gold mb-3 flex items-center gap-2">
-          <Dna className="size-3.5" /> Story DNA Engine
+        <p className="text-xs uppercase tracking-widest text-gold mb-3 flex items-center gap-2 font-medium">
+          <Dna className="size-3.5" /> {dnaText.dnaTitle}
         </p>
         <h2 className="font-display text-4xl md:text-5xl leading-[1.05]">
-          Explore the <span className="text-gradient-gold italic">DNA</span> of change.
+          {lang === "hi" ? "कहानी के " : "Explore the "}
+          <span className="text-gradient-gold italic">{lang === "hi" ? "डीएनए" : "DNA"}</span>
+          {lang === "hi" ? " की खोज करें।" : " of change."}
         </h2>
-        <p className="mt-4 text-muted-foreground leading-relaxed">
-          Every story carries a unique signature — its theme, impact, region, and emotion. Follow
-          the threads to discover a living network of connected change across India.
+        <p className="mt-4 text-muted-foreground leading-relaxed font-sans">
+          {lang === "hi"
+            ? "हर कहानी का अपना अनूठा हस्ताक्षर होता है — इसका विषय, प्रभाव, क्षेत्र और भावना। पूरे भारत में जुड़े बदलावों के नेटवर्क की खोज करें।"
+            : "Every story carries a unique signature — its theme, impact, region, and emotion. Follow the threads to discover a living network of connected change across India."}
         </p>
       </div>
 
@@ -109,15 +121,15 @@ export function StoryDNA() {
             <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/60 to-background/90 pointer-events-none" />
             <div className="relative">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] uppercase tracking-[0.25em] text-gold">
-                  DNA Profile
+                <span className="text-[10px] uppercase tracking-[0.25em] text-gold font-bold">
+                  {lang === "hi" ? "डीएनए प्रोफाइल" : "DNA Profile"}
                 </span>
                 <span className="text-[10px] tracking-widest text-muted-foreground">
                   #{story.id.padStart(4, "0")}
                 </span>
               </div>
-              <h3 className="font-display text-2xl leading-tight mb-1">{story.title}</h3>
-              <p className="text-xs text-muted-foreground mb-5">
+              <h3 className="font-display text-2xl leading-tight mb-1 font-bold">{story.title}</h3>
+              <p className="text-xs text-muted-foreground mb-5 font-sans font-medium">
                 {story.region} · {story.readTime}
               </p>
 
@@ -132,16 +144,16 @@ export function StoryDNA() {
               </div>
 
               <div className="grid grid-cols-1 gap-2">
-                <Trait icon={Sparkles} label="Theme" value={dna.theme} delay={0.05} />
-                <Trait icon={MapPin} label="Region" value={dna.region} delay={0.1} />
-                <Trait icon={Target} label="Impact Type" value={dna.impactType} delay={0.15} />
-                <Trait icon={Users} label="Beneficiary" value={dna.beneficiary} delay={0.2} />
-                <Trait icon={HeartHandshake} label="Emotion" value={dna.emotion} delay={0.25} />
+                <Trait icon={Sparkles} label={lang === "hi" ? "विषय" : "Theme"} value={story.themes?.[0] || dna.theme} delay={0.05} />
+                <Trait icon={MapPin} label={lang === "hi" ? "क्षेत्र" : "Region"} value={story.region} delay={0.1} />
+                <Trait icon={Target} label={lang === "hi" ? "प्रभाव प्रकार" : "Impact Type"} value={lang === "hi" ? (dna.impactType === "Grassroots Innovation" ? "जमीनी नवाचार" : dna.impactType === "Cultural Preservation" ? "सांस्कृतिक संरक्षण" : dna.impactType === "Social Upliftment" ? "सामाजिक उत्थान" : dna.impactType) : dna.impactType} delay={0.15} />
+                <Trait icon={Users} label={lang === "hi" ? "लाभार्थी" : "Beneficiary"} value={lang === "hi" ? (dna.beneficiary === "Artisans & Craft Communities" ? "कारीगर और शिल्प समुदाय" : dna.beneficiary === "Rural Farmers" ? "ग्रामीण किसान" : dna.beneficiary === "Local Students" ? "स्थानीय छात्र" : dna.beneficiary) : dna.beneficiary} delay={0.2} />
+                <Trait icon={HeartHandshake} label={lang === "hi" ? "भावना" : "Emotion"} value={lang === "hi" ? (dna.emotion === "Hope" ? "आशा" : dna.emotion === "Pride" ? "गौरव" : dna.emotion === "Inspiration" ? "प्रेरणा" : dna.emotion) : dna.emotion} delay={0.25} />
               </div>
 
               <div className="mt-5">
                 <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">
-                  SDG alignment
+                  {lang === "hi" ? "सतत विकास लक्ष्य (SDG)" : "SDG alignment"}
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {dna.sdgs.map((g) => (
@@ -149,7 +161,7 @@ export function StoryDNA() {
                       key={g.id}
                       className="text-[11px] px-2.5 py-1 rounded-full glass text-foreground/90"
                     >
-                      SDG {g.id} · {g.label}
+                      SDG {g.id} · {lang === "hi" ? (g.label === "Gender Equality" ? "लैंगिक समानता" : g.label === "Reduced Inequalities" ? "अमानताओं में कमी" : g.label === "Decent Work" ? "सम्मानजनक कार्य" : g.label) : g.label}
                     </span>
                   ))}
                 </div>
@@ -173,7 +185,9 @@ export function StoryDNA() {
           ))}
 
           <div className="relative flex items-center justify-between mb-3">
-            <p className="text-xs uppercase tracking-widest text-gold">Connected Stories</p>
+            <p className="text-xs uppercase tracking-widest text-gold font-bold">
+              {lang === "hi" ? "जुड़ी हुई कहानियां" : "Connected Stories"}
+            </p>
             <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setZoom((z) => Math.max(0.7, z - 0.15))}
@@ -311,17 +325,17 @@ export function StoryDNA() {
       <div className="mt-6 grid md:grid-cols-4 gap-3">
         {[
           {
-            label: "Related Heroes",
+            label: lang === "hi" ? "संबंधित नायक" : "Related Heroes",
             icon: Users,
             items: connections.filter((c) => c.reasons.includes("Similar mission")).slice(0, 2),
           },
           {
-            label: "Similar Transformations",
+            label: lang === "hi" ? "समान परिवर्तन" : "Similar Transformations",
             icon: Wand2,
             items: connections.filter((c) => c.reasons.includes("Same impact area")).slice(0, 2),
           },
           {
-            label: "Similar Innovations",
+            label: lang === "hi" ? "समान नवाचार" : "Similar Innovations",
             icon: Sparkles,
             items: connections
               .filter((c) => {
@@ -331,7 +345,7 @@ export function StoryDNA() {
               .slice(0, 2),
           },
           {
-            label: "Similar Communities",
+            label: lang === "hi" ? "समान समुदाय" : "Similar Communities",
             icon: HeartHandshake,
             items: connections
               .filter(
@@ -343,22 +357,27 @@ export function StoryDNA() {
           <div key={col.label} className="glass rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3 text-gold">
               <col.icon className="size-3.5" />
-              <p className="text-[10px] uppercase tracking-[0.2em]">{col.label}</p>
+              <p className={`text-[10px] ${lang === "en" ? "uppercase tracking-[0.2em]" : "font-semibold"}`}>{col.label}</p>
             </div>
             <div className="space-y-2">
               {col.items.length === 0 && (
-                <p className="text-xs text-muted-foreground">Keep exploring to surface more.</p>
+                <p className="text-xs text-muted-foreground">
+                  {lang === "hi" ? "और अधिक जानकारी प्राप्त करने के लिए अन्वेषण जारी रखें।" : "Keep exploring to surface more."}
+                </p>
               )}
-              {col.items.map((c) => (
-                <button
-                  key={c.story.id}
-                  onClick={() => setSelectedId(c.story.id)}
-                  className="block text-left w-full p-2 rounded-lg hover:bg-foreground/5 transition-colors"
-                >
-                  <p className="text-sm font-display leading-tight line-clamp-2">{c.story.title}</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">{c.story.region}</p>
-                </button>
-              ))}
+              {col.items.map((c) => {
+                const translatedNodeStory = translateStory(c.story, lang);
+                return (
+                  <button
+                    key={c.story.id}
+                    onClick={() => setSelectedId(c.story.id)}
+                    className="block text-left w-full p-2 rounded-lg hover:bg-foreground/5 transition-colors"
+                  >
+                    <p className="text-sm font-display leading-tight line-clamp-2">{translatedNodeStory.title}</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{translateStateName(translatedNodeStory.region, lang)}</p>
+                  </button>
+                );
+              })}
             </div>
           </div>
         ))}

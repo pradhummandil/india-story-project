@@ -1,5 +1,6 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
+import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Megaphone,
@@ -277,7 +278,7 @@ function AdvertisePage() {
     };
     setInvoices([newInv, ...invoices]);
     setActiveInvoice(newInv);
-    alert(`Thank you for donating ₹${amount}! Receipt invoice generated.`);
+    toast.success(`Thank you for donating ₹${amount}! Receipt invoice generated.`);
   };
 
   return (

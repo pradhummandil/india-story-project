@@ -10,7 +10,7 @@ import { YouMayAlsoLike } from "@/components/site/YouMayAlsoLike";
 import { StoryDNA } from "@/components/site/StoryDNA";
 import type { Story } from "@/components/site/StoryCard";
 import { useStoriesData } from "@/lib/stories-data";
-import { useI18nStore, getCommonText, translateStory } from "@/lib/i18n";
+import { useI18nStore, getCommonText, translateStory, translateThemeName, translateStateName } from "@/lib/i18n";
 
 type StoriesSearch = {
   category?: string;
@@ -67,7 +67,7 @@ function StoriesList() {
   const [activeAuthor, setActiveAuthor] = useState("All");
   const [activeTag, setActiveTag] = useState("All");
   const [sortBy, setSortBy] = useState("newest");
-  const [visibleCount, setVisibleCount] = useState(9); // Pagination: load 9 initially
+  const [visibleCount, setVisibleCount] = useState(12);
 
   const lang = useI18nStore((s) => s.lang);
   const commonText = getCommonText(lang);
@@ -112,7 +112,7 @@ function StoriesList() {
     const list = [{ value: "All", label: lang === "en" ? "All Themes" : "सभी विषय" }];
     categories.forEach((c) => {
       if (c && c !== "All") {
-        list.push({ value: c, label: c });
+        list.push({ value: c, label: translateThemeName(c, lang) });
       }
     });
     return list;
@@ -159,14 +159,14 @@ function StoriesList() {
         const keywordsStr = s.seoKeywords || "";
 
         return (
-          s.title.toLowerCase().includes(q) ||
+          (s.title?.toLowerCase().includes(q) ?? false) ||
           (s.titleHi?.toLowerCase().includes(q) ?? false) ||
-          s.excerpt.toLowerCase().includes(q) ||
+          (s.excerpt?.toLowerCase().includes(q) ?? false) ||
           (s.excerptHi?.toLowerCase().includes(q) ?? false) ||
           (s.content?.toLowerCase().includes(q) ?? false) ||
           (s.contentHi?.toLowerCase().includes(q) ?? false) ||
           themeStr.toLowerCase().includes(q) ||
-          s.region.toLowerCase().includes(q) ||
+          (s.region?.toLowerCase().includes(q) ?? false) ||
           (s.authorName?.toLowerCase().includes(q) ?? false) ||
           tagsStr.toLowerCase().includes(q) ||
           districtStr.toLowerCase().includes(q) ||
@@ -180,7 +180,7 @@ function StoriesList() {
 
     // Sort Options
     if (sortBy === "alpha") {
-      result.sort((a, b) => a.title.localeCompare(b.title));
+      result.sort((a, b) => (a?.title || "").localeCompare(b?.title || ""));
     } else if (sortBy === "readTime") {
       result.sort((a, b) => {
         const t1 = parseInt(a.readTime) || 0;
@@ -230,7 +230,7 @@ function StoriesList() {
 
   const handleCategoryChange = (val: string) => {
     setActiveCategory(val);
-    setVisibleCount(9); // Reset pagination
+    setVisibleCount(12); // Reset pagination
     void navigate({
       search: (prev) => ({
         ...prev,
@@ -241,7 +241,7 @@ function StoriesList() {
 
   const handleStateChange = (val: string) => {
     setActiveState(val);
-    setVisibleCount(9); // Reset pagination
+    setVisibleCount(12); // Reset pagination
     void navigate({
       search: (prev) => ({
         ...prev,
@@ -252,7 +252,7 @@ function StoriesList() {
 
   const handleAuthorChange = (val: string) => {
     setActiveAuthor(val);
-    setVisibleCount(9);
+    setVisibleCount(12);
     void navigate({
       search: (prev) => ({
         ...prev,
@@ -263,7 +263,7 @@ function StoriesList() {
 
   const handleTagChange = (val: string) => {
     setActiveTag(val);
-    setVisibleCount(9);
+    setVisibleCount(12);
     void navigate({
       search: (prev) => ({
         ...prev,
@@ -274,7 +274,7 @@ function StoriesList() {
 
   const handleSortChange = (val: string) => {
     setSortBy(val);
-    setVisibleCount(9);
+    setVisibleCount(12);
     void navigate({
       search: (prev) => ({
         ...prev,
@@ -285,7 +285,7 @@ function StoriesList() {
 
   const handleSearchChange = (val: string) => {
     setQuery(val);
-    setVisibleCount(9); // Reset pagination
+    setVisibleCount(12); // Reset pagination
     void navigate({
       search: (prev) => ({
         ...prev,
@@ -342,7 +342,7 @@ function StoriesList() {
               <option value="All">{lang === "en" ? "All States" : "सभी राज्य"}</option>
               {states.map((st) => (
                 <option key={st} value={st}>
-                  {st}
+                  {translateStateName(st, lang)}
                 </option>
               ))}
             </select>
@@ -354,7 +354,7 @@ function StoriesList() {
             <select
               value={activeAuthor}
               onChange={(e) => handleAuthorChange(e.target.value)}
-              className="w-full h-12 pl-11 pr-8 bg-background border border-border rounded-none focus:outline-none focus:border-primary text-xs font-semibold uppercase tracking-wider text-muted-foreground font-sans cursor-pointer appearance-none"
+              className="w-full h-12 pl-11 pr-8 bg-background border border-border rounded-none focus:outline-none focus:border-primary text-xs font-semibold tracking-wider text-muted-foreground font-sans cursor-pointer appearance-none"
             >
               <option value="All">{lang === "en" ? "All Authors" : "सभी लेखक"}</option>
               {authorsList.map((auth) => (
@@ -371,7 +371,7 @@ function StoriesList() {
             <select
               value={activeTag}
               onChange={(e) => handleTagChange(e.target.value)}
-              className="w-full h-12 pl-11 pr-8 bg-background border border-border rounded-none focus:outline-none focus:border-primary text-xs font-semibold uppercase tracking-wider text-muted-foreground font-sans cursor-pointer appearance-none"
+              className="w-full h-12 pl-11 pr-8 bg-background border border-border rounded-none focus:outline-none focus:border-primary text-xs font-semibold tracking-wider text-muted-foreground font-sans cursor-pointer appearance-none"
             >
               <option value="All">{lang === "en" ? "All Tags" : "सभी टैग"}</option>
               {tagsList.map((tag) => (
@@ -388,7 +388,7 @@ function StoriesList() {
             <select
               value={sortBy}
               onChange={(e) => handleSortChange(e.target.value)}
-              className="w-full h-12 pl-11 pr-8 bg-background border border-border rounded-none focus:outline-none focus:border-primary text-xs font-semibold uppercase tracking-wider text-muted-foreground font-sans cursor-pointer appearance-none"
+              className="w-full h-12 pl-11 pr-8 bg-background border border-border rounded-none focus:outline-none focus:border-primary text-xs font-semibold tracking-wider text-muted-foreground font-sans cursor-pointer appearance-none"
             >
               <option value="newest">{lang === "en" ? "Sort: Newest" : "क्रम: नवीनतम"}</option>
               <option value="oldest">{lang === "en" ? "Sort: Oldest" : "क्रम: सबसे पुराना"}</option>
@@ -418,7 +418,9 @@ function StoriesList() {
               <button
                 key={c.value}
                 onClick={() => handleCategoryChange(c.value)}
-                className={`px-4 py-2 border text-xs uppercase tracking-wider font-semibold font-sans transition-all rounded-none ${
+                className={`px-4 py-2 border text-xs font-semibold font-sans transition-all rounded-none ${
+                  lang === "en" ? "uppercase tracking-wider" : ""
+                } ${
                   isActive
                     ? "bg-primary border-primary text-primary-foreground shadow-sm"
                     : "border-border bg-card text-muted-foreground hover:text-foreground hover:border-gold/45"
@@ -430,8 +432,8 @@ function StoriesList() {
           })}
         </div>
 
-        {/* Premium Masonry Grid Layout using CSS Columns */}
-        <div className="columns-1 sm:columns-2 lg:columns-3 gap-8 [column-fill:balance] w-full">
+        {/* High Density 4-Column Responsive Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4.5 sm:gap-5 items-stretch w-full">
           {paginatedStories.map((s, i) => (
             <StoryCard key={s.id} story={s} index={i} />
           ))}
@@ -447,7 +449,7 @@ function StoriesList() {
         {filteredAndSorted.length > visibleCount && (
           <div className="text-center mt-16 pt-8 border-t border-border/40">
             <Button
-              onClick={() => setVisibleCount((prev) => prev + 6)}
+              onClick={() => setVisibleCount((prev) => prev + 12)}
               className="bg-background hover:bg-card text-foreground hover:text-primary border border-border hover:border-gold/50 font-sans uppercase tracking-[0.2em] text-xs h-12 px-8 rounded-none shadow-sm transition-all duration-300"
             >
               {lang === "en" ? "Load More Stories" : "अधिक कहानियाँ लोड करें"}

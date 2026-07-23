@@ -101,6 +101,67 @@ function CountUp({ target, suffix, duration = 1800 }: { target: number; suffix: 
 export function ImpactNumbers() {
   const lang = useI18nStore((s) => s.lang);
   const sectionRef = useRef(null);
+  const [statsData, setStatsData] = useState<any>(null);
+
+  useEffect(() => {
+    fetch("/api/explore")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.stats) setStatsData(d.stats);
+      })
+      .catch(() => {});
+  }, []);
+
+  const dynamicStats: StatItem[] = [
+    {
+      icon: BookOpen,
+      value: statsData?.stories ? `${statsData.stories}+` : "500+",
+      numericValue: statsData?.stories ?? 500,
+      suffix: "+",
+      label: { en: "Stories Published", hi: "प्रकाशित कहानियाँ" },
+      color: "text-primary",
+    },
+    {
+      icon: MapPin,
+      value: statsData?.states ? `${statsData.states}` : "36",
+      numericValue: statsData?.states ?? 36,
+      suffix: "",
+      label: { en: "States & UTs Covered", hi: "राज्य और केंद्र शासित प्रदेश" },
+      color: "text-gold",
+    },
+    {
+      icon: Users,
+      value: statsData?.authors ? `${statsData.authors}+` : "100+",
+      numericValue: statsData?.authors ?? 100,
+      suffix: "+",
+      label: { en: "Local Heroes & Authors", hi: "स्थानीय नायक और लेखक" },
+      color: "text-saffron",
+    },
+    {
+      icon: Globe2,
+      value: statsData?.views ? `${Math.round(statsData.views / 100) / 10}k` : "5M+",
+      numericValue: statsData?.views ? Math.round(statsData.views / 1000) : 5000,
+      suffix: "k+",
+      label: { en: "Story Views", hi: "कहानी विचार" },
+      color: "text-primary",
+    },
+    {
+      icon: Feather,
+      value: statsData?.themes ? `${statsData.themes}+` : "20+",
+      numericValue: statsData?.themes ?? 20,
+      suffix: "+",
+      label: { en: "Active Themes", hi: "सक्रिय विषय" },
+      color: "text-gold",
+    },
+    {
+      icon: TrendingUp,
+      value: "3×",
+      numericValue: 3,
+      suffix: "×",
+      label: { en: "Year-over-Year Growth", hi: "वार्षिक वृद्धि" },
+      color: "text-saffron",
+    },
+  ];
 
   return (
     <section
@@ -117,14 +178,14 @@ export function ImpactNumbers() {
         }}
       />
 
-      <div className="relative container mx-auto px-6 py-20 md:py-28">
+      <div className="relative container mx-auto px-6 py-12 md:py-16">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7 }}
-          className="text-center mb-16"
+          className="text-center mb-12"
         >
           <p className="text-xs uppercase tracking-[0.28em] font-sans font-bold text-gold mb-3">
             {lang === "en" ? "Our Impact" : "हमारा प्रभाव"}
@@ -141,7 +202,7 @@ export function ImpactNumbers() {
 
         {/* Stats grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 lg:gap-4">
-          {STATS.map((stat, i) => {
+          {dynamicStats.map((stat, i) => {
             const Icon = stat.icon;
             const label = lang === "hi" ? stat.label.hi : stat.label.en;
             return (

@@ -3,7 +3,8 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Story } from "@/components/site/StoryCard";
 import { useI18nStore, getCommonText } from "@/lib/i18n";
-import { getStoryAuthor, getOptimizedImageUrl, getResponsiveSrcSet } from "@/lib/utils";
+import { getStoryAuthor } from "@/lib/utils";
+import { UniversalImage } from "@/components/common/UniversalImage";
 
 interface FeaturedStoryCardProps {
   story: Story;
@@ -18,23 +19,13 @@ export function FeaturedStoryCard({ story }: FeaturedStoryCardProps) {
     <div className="max-w-4xl mx-auto border border-border/80 bg-card/40 hover:border-gold/30 transition-all duration-500 overflow-hidden shadow-xl flex flex-col md:flex-row items-stretch">
       {/* Image Section */}
       <div className="w-full md:w-1/2 aspect-[16/10] md:aspect-square lg:aspect-[4/3] overflow-hidden border-b md:border-b-0 md:border-r border-border/40 bg-muted relative shrink-0">
-        {story.image ? (
-          <img
-            src={getOptimizedImageUrl(story.image, 1000)}
-            srcSet={getResponsiveSrcSet(story.image, [480, 800, 1200])}
-            sizes="(max-width: 768px) 100vw, 50vw"
-            alt={story.imageAlt ?? story.title}
-            loading="lazy"
-            decoding="async"
-            width="800"
-            height="500"
-            className="w-full h-full object-cover filter saturate-[0.85] hover:scale-103 transition-transform duration-[1s] ease-out"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-red-950/40 to-stone-900 flex items-center justify-center">
-            <span className="font-display italic text-3xl text-gold/30">ISP</span>
-          </div>
-        )}
+        <UniversalImage
+          src={story.image}
+          alt={story.imageAlt ?? story.title}
+          width={1000}
+          aspectRatio="aspect-full w-full h-full"
+          className="filter saturate-[0.85] hover:scale-103 transition-transform duration-[1s] ease-out"
+        />
       </div>
 
       {/* Content Section */}
@@ -49,7 +40,7 @@ export function FeaturedStoryCard({ story }: FeaturedStoryCardProps) {
           <span>{story.region}</span>
         </div>
 
-        <h3 className="font-display text-2xl md:text-3xl lg:text-4xl leading-[1.15] font-bold text-white hover:text-gold transition-colors duration-300">
+        <h3 className="font-display text-2xl md:text-3xl lg:text-4xl leading-[1.15] font-bold text-foreground hover:text-primary dark:text-white dark:hover:text-gold transition-colors duration-300">
           <Link to="/stories/$slug" params={{ slug: story.slug }}>
             {story.title}
           </Link>

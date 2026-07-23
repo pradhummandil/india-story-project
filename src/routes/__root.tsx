@@ -19,6 +19,7 @@ import { CinematicLoader } from "../components/site/CinematicLoader";
 import { initAuthListener, useAuthStore } from "../lib/auth-store";
 import PodcastPlayer from "../components/audio/PodcastPlayer";
 import { GlobalSearch } from "../components/common/GlobalSearch";
+import { Toaster } from "../components/ui/sonner";
 
 if (typeof window !== "undefined") {
   const originalFetch = window.fetch;
@@ -225,6 +226,8 @@ function RootComponent() {
       <PodcastPlayer />
 
       <GlobalSearch />
+
+      <Toaster position="bottom-right" />
 
       <Analytics />
       <SpeedInsights />

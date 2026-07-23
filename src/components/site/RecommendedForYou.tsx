@@ -24,18 +24,30 @@ const emojiForTheme = (theme: string) => {
   return "✨";
 };
 
-function deriveModesFromThemes(themesList: readonly string[]) {
+function deriveModesFromThemes(themesList: readonly string[], lang: string) {
   const filtered = themesList.filter((t) => t !== "All" && t.toLowerCase() !== "general").slice(0, 6);
+  const modeTrans: Record<string, string> = {
+    all: lang === "hi" ? "आपके लिए" : "For You",
+    Architecture: lang === "hi" ? "वास्तुकला" : "Architecture",
+    Art: lang === "hi" ? "कला" : "Art",
+    Culture: lang === "hi" ? "संस्कृति" : "Culture",
+    Environment: lang === "hi" ? "पर्यावरण" : "Environment",
+    Festivals: lang === "hi" ? "त्योहार" : "Festivals",
+    Food: lang === "hi" ? "खान-पान" : "Food",
+    Sustainability: lang === "hi" ? "सतत विकास" : "Sustainability",
+    Science: lang === "hi" ? "विज्ञान" : "Science",
+  };
+
   return [
     {
       id: "all",
       emoji: "✨",
-      label: "For You",
+      label: modeTrans.all,
     },
     ...filtered.map((t) => ({
       id: t,
       emoji: emojiForTheme(t),
-      label: t,
+      label: modeTrans[t] || t,
     })),
   ];
 }
@@ -49,7 +61,7 @@ export function RecommendedForYou({ themes = [] }: { themes?: readonly string[] 
   const [recs, setRecs] = useState<Story[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const modes = useMemo(() => deriveModesFromThemes(themes), [themes]);
+  const modes = useMemo(() => deriveModesFromThemes(themes, lang), [themes, lang]);
 
   // Fetch recommendations dynamically from the server endpoint based on preferences
   useEffect(() => {
@@ -62,16 +74,33 @@ export function RecommendedForYou({ themes = [] }: { themes?: readonly string[] 
       `/api/stories/recommended?limit=8&viewed=${encodeURIComponent(viewed)}&themes=${encodeURIComponent(preferredThemes)}&regions=${encodeURIComponent(preferredRegions)}`
     )
       .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
+      .then(async (data) => {
+        if (Array.isArray(data) && data.length > 0) {
           setRecs(data.map((s: any) => translateStory(s, lang)));
         } else {
-          setRecs([]);
+          // Fallback to latest stories if preferences return empty
+          const fallbackRes = await fetch("/api/stories/latest?limit=8");
+          const fallbackData = await fallbackRes.json();
+          if (Array.isArray(fallbackData)) {
+            setRecs(fallbackData.map((s: any) => translateStory(s, lang)));
+          } else {
+            setRecs([]);
+          }
         }
       })
-      .catch((err) => {
-        console.error("Failed to load recommendations:", err);
-        setRecs([]);
+      .catch(async (err) => {
+        console.error("Failed to load recommendations, trying latest fallback:", err);
+        try {
+          const fallbackRes = await fetch("/api/stories/latest?limit=8");
+          const fallbackData = await fallbackRes.json();
+          if (Array.isArray(fallbackData)) {
+            setRecs(fallbackData.map((s: any) => translateStory(s, lang)));
+          } else {
+            setRecs([]);
+          }
+        } catch {
+          setRecs([]);
+        }
       })
       .finally(() => {
         setLoading(false);
@@ -88,16 +117,32 @@ export function RecommendedForYou({ themes = [] }: { themes?: readonly string[] 
     <section className="container mx-auto px-6 py-16 md:py-24">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
         <div>
-          <p className="text-xs uppercase tracking-widest text-gold mb-3 inline-flex items-center gap-2">
+          <p className="text-xs uppercase tracking-widest text-gold mb-3 inline-flex items-center gap-2 font-medium">
             <Sparkles className="size-3" />
-            {personalized ? "Personalized for you" : "Discover"}
+            {personalized
+              ? lang === "hi"
+                ? "आपके लिए वैयक्तिकृत"
+                : "Personalized for you"
+              : lang === "hi"
+              ? "खोजें"
+              : "Discover"}
           </p>
           <h2 className="font-display text-4xl md:text-5xl max-w-2xl font-bold">
-            {personalized ? "Recommended For You" : "Find your next story"}
+            {personalized
+              ? lang === "hi"
+                ? "आपके लिए अनुशंसित कहानियाँ"
+                : "Recommended For You"
+              : lang === "hi"
+              ? "अपनी अगली कहानी खोजें"
+              : "Find your next story"}
           </h2>
           <p className="mt-3 text-muted-foreground max-w-xl font-sans text-sm">
             {personalized
-              ? "Updated as you explore — based on the stories, regions and themes you've spent time with."
+              ? lang === "hi"
+                ? "जैसे-जैसे आप आगे बढ़ते हैं अपडेट होता है — आपके पढ़े गए विषयों और क्षेत्रों के आधार पर।"
+                : "Updated as you explore — based on the stories, regions and themes you've spent time with."
+              : lang === "hi"
+              ? "नीचे दी गई श्रेणियों में से चुनें। कहानियाँ आपके पढ़ने के साथ बदलती हैं।"
               : "Pick a discovery theme below. Your recommendations evolve as you read."}
           </p>
         </div>
@@ -161,7 +206,7 @@ export function RecommendedForYou({ themes = [] }: { themes?: readonly string[] 
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -16 }}
                   transition={{ duration: 0.5, delay: i * 0.05, ease: [0.22, 1, 0.36, 1] }}
-                  className="snap-start shrink-0 w-[85%] sm:w-[55%] md:w-[38%] lg:w-[30%]"
+                  className="snap-start shrink-0 w-[80%] sm:w-[48%] md:w-[32%] lg:w-[23%] xl:w-[19.5%]"
                 >
                   <StoryCard story={s} index={0} />
                 </motion.div>

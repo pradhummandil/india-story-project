@@ -31,7 +31,10 @@ import {
   Headphones,
   Dna,
   Sparkles,
+  Youtube,
+  ExternalLink,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
@@ -39,9 +42,12 @@ import { StoryCard } from "@/components/site/StoryCard";
 import type { Story } from "@/components/site/StoryCard";
 import { useI18nStore, translateStory, getCommonText } from "@/lib/i18n";
 import { stories, useStoriesData } from "@/lib/stories-data";
-import { getStoryAuthor, getOptimizedImageUrl, getResponsiveSrcSet } from "@/lib/utils";
+import { getStoryAuthor, getOptimizedImageUrl, getResponsiveSrcSet, sanitizeStoryContent } from "@/lib/utils";
 import { useAuthStore } from "@/lib/auth-store";
 import { useAudioStore } from "@/lib/audio-store";
+import { getVideoForStorySlug, extractYouTubeId } from "@/lib/youtube-videos";
+import type { YouTubeVideoItem } from "@/components/site/YouTubeStoryCard";
+import { YouTubeModalPlayer } from "@/components/site/YouTubeModalPlayer";
 
 // Local Dictionary fallback dictionary
 const LOCAL_DICTIONARY: Record<string, string> = {
@@ -86,6 +92,7 @@ export function StoryDetail({ story }: { story: Story }) {
   const lastActiveTime = useRef<number>(Date.now());
   const [showResumeBanner, setShowResumeBanner] = useState(false);
   const [savedScrollPos, setSavedScrollPos] = useState(0);
+  const [showInlineVideo, setShowInlineVideo] = useState(false);
 
   // Comments states
   const [comments, setComments] = useState<any[]>([]);
@@ -435,7 +442,7 @@ export function StoryDetail({ story }: { story: Story }) {
         },
         body: JSON.stringify({ commentId, reason: reason.trim() }),
       });
-      alert("Comment reported successfully.");
+      toast.success("Comment reported successfully.");
       await loadComments();
     } catch (e) {
       console.error(e);
@@ -643,8 +650,9 @@ export function StoryDetail({ story }: { story: Story }) {
     }
   };
 
-  // Split content by paragraph to enable Kindle overlays
-  const paragraphs = (localizedStory.content || "").split(/\n\s*\n/).filter((p) => p.trim());
+  // Split content by paragraph after stripping comment form artifacts
+  const cleanContent = sanitizeStoryContent(localizedStory.content || "");
+  const paragraphs = cleanContent.split(/\n\s*\n/).filter((p) => p.trim());
 
   // Dynamic story highlights
   const highlights = useMemo(() => {
@@ -660,14 +668,28 @@ export function StoryDetail({ story }: { story: Story }) {
   // Generate Table of Contents
   const toc = paragraphs
     .map((p, idx) => {
+      const trimmed = p.trim();
+      if (!trimmed || trimmed.length < 3 || /^[।|\-—\s\u0964]+$/.test(trimmed)) {
+        return null;
+      }
+      if (
+        /^(Comment|टिप्पणी)$/i.test(trimmed) ||
+        /^(Name|नाम)\s*\*?$/i.test(trimmed) ||
+        /^(Email|ईमेल)\s*\*?$/i.test(trimmed) ||
+        /^(Save my name|अगली बार)/i.test(trimmed) ||
+        /^(Leave a Reply|टिप्पणी छोड़ें)$/i.test(trimmed)
+      ) {
+        return null;
+      }
       if (
         p.length < 50 &&
-        (p.startsWith("Chapter") || p.startsWith("भाग") || p.includes(":") || p.length < 35)
+        (p.startsWith("Chapter") || p.startsWith("भाग") || p.includes(":") || (p.length < 35 && p.length > 5))
       ) {
         return { index: idx, title: p };
       }
       if (idx % 4 === 0) {
-        return { index: idx, title: `Section ${Math.floor(idx / 4) + 1}: ${p.slice(0, 20)}...` };
+        const prefix = lang === "hi" ? "अनुभाग" : "Section";
+        return { index: idx, title: `${prefix} ${Math.floor(idx / 4) + 1}: ${p.slice(0, 20)}...` };
       }
       return null;
     })
@@ -700,7 +722,7 @@ export function StoryDetail({ story }: { story: Story }) {
   const handleCopyQuote = () => {
     if (!selectedText) return;
     navigator.clipboard.writeText(`"${selectedText}" — India Story Project`);
-    alert("Quote copied to clipboard!");
+    toast.success("Quote copied to clipboard!");
     setSelectedText("");
     setSelectionCoords(null);
   };
@@ -1047,6 +1069,27 @@ export function StoryDetail({ story }: { story: Story }) {
               <span>Listen</span>
             </button>
 
+            {/* Watch Video Button */}
+            {(() => {
+              const linkedVideo = getVideoForStorySlug(story.slug);
+              if (!linkedVideo) return null;
+              return (
+                <button
+                  type="button"
+                  onClick={() => setShowInlineVideo((v) => !v)}
+                  className={`flex items-center gap-1.5 border rounded-full px-3 py-1 transition-all cursor-pointer font-bold text-xs ${
+                    showInlineVideo
+                      ? "bg-red-600 border-red-500 text-white shadow-lg"
+                      : "bg-red-600/15 border-red-500/40 text-red-400 hover:bg-red-600 hover:text-white"
+                  }`}
+                  title="Watch Video Dispatch"
+                >
+                  <Youtube className="size-3.5 text-red-500 fill-red-500" />
+                  <span>{showInlineVideo ? (lang === "hi" ? "वीडियो छुपाएं" : "Hide Video") : (lang === "hi" ? "वीडियो देखें" : "Watch Video")}</span>
+                </button>
+              );
+            })()}
+
             {/* DNA Explorer */}
             <Link
               to="/stories/$slug/interactive"
@@ -1070,6 +1113,53 @@ export function StoryDetail({ story }: { story: Story }) {
         </div>
       </div>
 
+      {/* Inline Embedded YouTube Video Player */}
+      <AnimatePresence>
+        {showInlineVideo && (() => {
+          const linkedVideo = getVideoForStorySlug(story.slug);
+          if (!linkedVideo) return null;
+          const ytid = extractYouTubeId(linkedVideo.youtubeId || linkedVideo.id);
+          return (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.4 }}
+              className="bg-black/95 border-y border-red-500/30 py-6 px-6 relative z-30"
+            >
+              <div className="max-w-4xl mx-auto space-y-3">
+                <div className="flex items-center justify-between text-xs text-white/80 font-sans">
+                  <span className="flex items-center gap-2 font-bold uppercase tracking-wider text-red-400">
+                    <Youtube className="size-4 text-red-500 fill-red-500" />
+                    {linkedVideo.title}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowInlineVideo(false)}
+                    className="text-white/70 hover:text-white px-3 py-1 rounded-full bg-white/10 text-xs font-bold transition-colors cursor-pointer"
+                  >
+                    ✕ {lang === "hi" ? "वीडियो बंद करें" : "Close Video"}
+                  </button>
+                </div>
+                <div className="aspect-video w-full rounded-2xl overflow-hidden border border-white/15 shadow-2xl bg-black">
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    src={`https://www.youtube.com/embed/${ytid}?autoplay=1`}
+                    title={linkedVideo.title}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allowFullScreen
+                    className="w-full h-full border-0 rounded-2xl"
+                  />
+                </div>
+              </div>
+            </motion.div>
+          );
+        })()}
+      </AnimatePresence>
+
       {/* Main Content Layout */}
       <div className={`transition-colors duration-300 py-16 ${themeClasses[readTheme]}`}>
         <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-12">
@@ -1077,7 +1167,7 @@ export function StoryDetail({ story }: { story: Story }) {
           <aside className="hidden lg:block">
             <div className="sticky top-28 space-y-4">
               <h4 className="font-sans text-[10px] font-bold text-muted-foreground uppercase tracking-widest border-b border-border/40 pb-2">
-                Table of Contents
+                {lang === "hi" ? "विषय सूची" : "Table of Contents"}
               </h4>
               <nav className="space-y-2 max-h-[60vh] overflow-y-auto">
                 {toc.map((item) => (
@@ -1211,17 +1301,23 @@ export function StoryDetail({ story }: { story: Story }) {
               <div className="flex items-center gap-2 text-gold">
                 <Sparkles className="size-4 animate-pulse" />
                 <h4 className="font-display font-bold text-sm uppercase tracking-wider">
-                  AI Editorial Assistant
+                  {lang === "hi" ? "एआई संपादकीय सहायक" : "AI Editorial Assistant"}
                 </h4>
               </div>
               <div className="space-y-3">
                 <p className="text-xs text-muted-foreground font-sans leading-relaxed">
-                  Below is an AI-generated synthesis highlighting key cultural and historical points of interest from this dispatch.
+                  {lang === "hi"
+                    ? "नीचे इस कहानी के मुख्य सांस्कृतिक और ऐतिहासिक बिंदुओं का एआई-जनित विश्लेषण है।"
+                    : "Below is an AI-generated synthesis highlighting key cultural and historical points of interest from this dispatch."}
                 </p>
                 <div className="border border-border/40 rounded-xl overflow-hidden bg-background/50">
                   <details className="group">
                     <summary className="flex items-center justify-between p-4 text-xs font-bold uppercase tracking-wider font-sans cursor-pointer hover:text-gold transition-colors select-none">
-                      <span>View Story Highlights & Cultural Context</span>
+                      <span>
+                        {lang === "hi"
+                          ? "कहानी के मुख्य बिंदु और सांस्कृतिक संदर्भ देखें"
+                          : "View Story Highlights & Cultural Context"}
+                      </span>
                       <span className="transition-transform group-open:rotate-180">
                         <ChevronRight className="size-4" />
                       </span>
@@ -1241,10 +1337,12 @@ export function StoryDetail({ story }: { story: Story }) {
               {/* Ask about this story widget */}
               <div className="mt-6 border-t border-border/30 pt-6 space-y-3">
                 <h5 className="text-xs uppercase font-bold tracking-wider font-sans text-foreground">
-                  Ask a question about this story
+                  {lang === "hi" ? "इस कहानी के बारे में प्रश्न पूछें" : "Ask a question about this story"}
                 </h5>
                 <p className="text-[11px] text-muted-foreground font-sans">
-                  Query our AI editorial companion about characters, settings, or historical events mentioned in this chronicle.
+                  {lang === "hi"
+                    ? "हमारे एआई संपादकीय सहायक से पात्रों, स्थानों या ऐतिहासिक घटनाओं के बारे में पूछें।"
+                    : "Query our AI editorial companion about characters, settings, or historical events mentioned in this chronicle."}
                 </p>
                 <form
                   onSubmit={async (e) => {
@@ -1279,11 +1377,17 @@ export function StoryDetail({ story }: { story: Story }) {
                   <input
                     value={qaQuery}
                     onChange={(e) => setQaQuery(e.target.value)}
-                    placeholder="e.g., What is the historical significance of satyagraha?"
+                    placeholder={
+                      lang === "hi"
+                        ? "उदा. सत्याग्रह का ऐतिहासिक महत्व क्या है?"
+                        : "e.g., What is the historical significance of satyagraha?"
+                    }
                     className="flex-1 h-9 bg-background border border-border/60 rounded-lg px-3 text-xs text-foreground focus:outline-none focus:border-gold/50"
                   />
                   <Button type="submit" size="sm" className="h-9 font-sans" disabled={qaLoading}>
-                    {qaLoading ? "Thinking..." : "Ask AI"}
+                    {qaLoading
+                      ? (lang === "hi" ? "सोच रहा है..." : "Thinking...")
+                      : (lang === "hi" ? "एआई से पूछें" : "Ask AI")}
                   </Button>
                 </form>
                 {qaResponse && (
@@ -1292,7 +1396,9 @@ export function StoryDetail({ story }: { story: Story }) {
                     animate={{ opacity: 1, y: 0 }}
                     className="mt-3 bg-background border border-border/60 rounded-xl p-4 text-xs font-sans leading-relaxed text-muted-foreground"
                   >
-                    <p className="font-bold text-gold mb-1">AI Response:</p>
+                    <p className="font-bold text-gold mb-1">
+                      {lang === "hi" ? "एआई उत्तर:" : "AI Response:"}
+                    </p>
                     <p className="whitespace-pre-line">{qaResponse}</p>
                   </motion.div>
                 )}
@@ -1304,7 +1410,7 @@ export function StoryDetail({ story }: { story: Story }) {
               <div className="flex items-center gap-2 text-foreground">
                 <CheckCircle2 className="size-4 text-blue-500" />
                 <h4 className="font-display font-bold text-sm uppercase tracking-wider">
-                  Editorial Integrity Check
+                  {lang === "hi" ? "संपादकीय सत्यता जांच" : "Editorial Integrity Check"}
                 </h4>
               </div>
               <div className="grid grid-cols-2 gap-4 text-[10px] font-sans font-semibold text-muted-foreground/90 uppercase tracking-widest">
@@ -1312,41 +1418,49 @@ export function StoryDetail({ story }: { story: Story }) {
                   <span title="Verified Fact Check">
                     <CheckCircle2 className="size-3.5 text-green-500 fill-green-500/10 shrink-0" />
                   </span>
-                  <span>Fact Checked</span>
+                  <span>{lang === "hi" ? "तथ्य सत्यापित" : "Fact Checked"}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span title="Source Verified">
                     <CheckCircle2 className="size-3.5 text-green-500 fill-green-500/10 shrink-0" />
                   </span>
-                  <span>Source Verified</span>
+                  <span>{lang === "hi" ? "स्रोत प्रमाणित" : "Source Verified"}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span title="Copyedited Status">
                     <CheckCircle2 className="size-3.5 text-green-500 fill-green-500/10 shrink-0" />
                   </span>
-                  <span>Copyedited</span>
+                  <span>{lang === "hi" ? "संपादित" : "Copyedited"}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span title="Copyright Checked">
                     <CheckCircle2 className="size-3.5 text-green-500 fill-green-500/10 shrink-0" />
                   </span>
-                  <span>Copyright Safe</span>
+                  <span>{lang === "hi" ? "कॉपीराइट सुरक्षित" : "Copyright Safe"}</span>
                 </div>
               </div>
               
               <div className="border-t border-border/20 pt-4 mt-2">
                 <span className="text-[10px] font-sans text-muted-foreground uppercase tracking-widest">
-                  Revision Log: Version {story.version || 1}
+                  {lang === "hi"
+                    ? `संशोधन रिकॉर्ड: संस्करण ${story.version || 1}`
+                    : `Revision Log: Version ${story.version || 1}`}
                 </span>
                 <div className="mt-2 space-y-1 text-[11px] font-sans text-muted-foreground/80">
                   <p className="flex justify-between">
-                    <span>v1.0 - Initial Publication</span>
-                    <span className="text-muted-foreground/50">{story.publishedAt ? new Date(story.publishedAt).toLocaleDateString() : new Date().toLocaleDateString()}</span>
+                    <span>
+                      {lang === "hi" ? "v1.0 - प्रारंभिक प्रकाशन" : "v1.0 - Initial Publication"}
+                    </span>
+                    <span className="text-muted-foreground/50">
+                      {story.publishedAt ? new Date(story.publishedAt).toLocaleDateString() : new Date().toLocaleDateString()}
+                    </span>
                   </p>
                   {story.version && story.version > 1 && (
                     <p className="flex justify-between font-bold text-gold">
-                      <span>v{story.version}.0 - Editorial Updates</span>
-                      <span>Latest Update</span>
+                      <span>
+                        {lang === "hi" ? `v${story.version}.0 - संपादकीय अपडेट` : `v${story.version}.0 - Editorial Updates`}
+                      </span>
+                      <span>{lang === "hi" ? "नवीनतम अपडेट" : "Latest Update"}</span>
                     </p>
                   )}
                 </div>
@@ -1505,13 +1619,19 @@ export function StoryDetail({ story }: { story: Story }) {
       {!isZen && (
         <div className="max-w-5xl mx-auto px-6 py-16 border-t border-border/50">
           <h3 className="font-display text-2xl font-bold text-foreground mb-6">
-            Discussion ({comments.length} Comments)
+            {lang === "hi"
+              ? `चर्चा (${comments.length} टिप्पणी)`
+              : `Discussion (${comments.length} Comments)`}
           </h3>
 
           {session ? (
             <form onSubmit={(e) => handleAddComment(e)} className="mb-8 space-y-3">
               <textarea
-                placeholder="Join the discussion... Share your thoughts about this story."
+                placeholder={
+                  lang === "hi"
+                    ? "चर्चा में शामिल हों... इस कहानी पर अपने विचार साझा करें।"
+                    : "Join the discussion... Share your thoughts about this story."
+                }
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
                 className="w-full min-h-[100px] border border-border bg-card rounded-xl px-4 py-3 text-sm font-sans text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -1522,14 +1642,16 @@ export function StoryDetail({ story }: { story: Story }) {
                   size="sm"
                   className="bg-primary text-white px-5 rounded-full uppercase tracking-wider text-xs"
                 >
-                  Post Comment
+                  {lang === "hi" ? "टिप्पणी भेजें" : "POST COMMENT"}
                 </Button>
               </div>
             </form>
           ) : (
             <div className="bg-card/40 border border-border/30 rounded-xl p-6 text-center mb-8">
               <p className="text-sm font-sans text-muted-foreground mb-3">
-                Please sign in to join the discussion.
+                {lang === "hi"
+                  ? "चर्चा में शामिल होने के लिए कृपया साइन इन करें।"
+                  : "Please sign in to join the discussion."}
               </p>
               <Link
                 to="/login"
@@ -1658,6 +1780,7 @@ export function StoryDetail({ story }: { story: Story }) {
           </motion.div>
         )}
       </AnimatePresence>
+
     </motion.div>
   );
 }

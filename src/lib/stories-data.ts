@@ -71,14 +71,51 @@ const getDeterministicSeed = (str: string) => {
   return sum;
 };
 
+function isDevanagari(str?: string | null) {
+  return /[\u0900-\u097F]/.test(str || "");
+}
+
+function slugToEnglishTitle(slug?: string | null) {
+  if (!slug) return "Story";
+  return slug
+    .replace(/-\d+$/, "")
+    .split("-")
+    .map((w) =>
+      ["of", "the", "in", "a", "an", "to", "for", "and", "on", "with", "by"].includes(w)
+        ? w
+        : w.charAt(0).toUpperCase() + w.slice(1),
+    )
+    .join(" ")
+    .replace(/^./, (c) => c.toUpperCase());
+}
+
 function normalizeStory(raw: Record<string, unknown>): Story {
   const getString = (value: unknown, fallback = "") =>
     typeof value === "string" ? value : fallback;
 
-  const rawTitle = getString(raw.title);
-  const rawExcerpt = getString(raw.excerpt);
-  const rawContent = getString(raw.content);
+  const rawSlug = getString(raw.slug);
+  let rawTitle = getString(raw.title);
+  let rawExcerpt = getString(raw.excerpt);
+  let rawContent = getString(raw.content);
   const rawRegion = getString(raw.region);
+
+  let titleHi = getString(raw.titleHi) || undefined;
+  let excerptHi = getString(raw.excerptHi) || undefined;
+  let contentHi = getString(raw.contentHi) || undefined;
+
+  // Perform automatic language separation
+  if (isDevanagari(rawTitle)) {
+    titleHi = titleHi || rawTitle;
+    rawTitle = slugToEnglishTitle(rawSlug);
+  }
+  if (isDevanagari(rawExcerpt)) {
+    excerptHi = excerptHi || rawExcerpt;
+    rawExcerpt = `${rawTitle} — Documenting grassroots stories and unsung heroes across India.`;
+  }
+  if (rawContent && isDevanagari(rawContent)) {
+    contentHi = contentHi || rawContent;
+    rawContent = `${rawTitle}\n\n${rawExcerpt}\n\nThis story documents impactful grassroots change in India. Toggle language options to view the complete Hindi text.`;
+  }
 
   const region = (!rawRegion || rawRegion.toLowerCase() === "india")
     ? geocodeStoryRegion(rawTitle, rawExcerpt, rawContent, getDeterministicSeed(rawTitle || "default"))
@@ -86,7 +123,7 @@ function normalizeStory(raw: Record<string, unknown>): Story {
 
   return {
     id: getString(raw.id),
-    slug: getString(raw.slug),
+    slug: rawSlug,
     title: rawTitle,
     excerpt: rawExcerpt,
     themes: Array.isArray(raw.themes)
@@ -100,12 +137,12 @@ function normalizeStory(raw: Record<string, unknown>): Story {
     readTime: getString(raw.readTime),
     image: typeof raw.image === "string" && raw.image.trim() ? raw.image : undefined,
     imageAlt: typeof raw.imageAlt === "string" && raw.imageAlt.trim() ? raw.imageAlt : undefined,
-    content: typeof raw.content === "string" && raw.content.length ? raw.content : undefined,
-    url: getString(raw.url) || getString(raw.slug),
+    content: rawContent.length ? rawContent : undefined,
+    url: getString(raw.url) || rawSlug,
     gradient: typeof raw.gradient === "string" ? raw.gradient : undefined,
-    titleHi: getString(raw.titleHi) || undefined,
-    excerptHi: getString(raw.excerptHi) || undefined,
-    contentHi: getString(raw.contentHi) || undefined,
+    titleHi,
+    excerptHi,
+    contentHi,
     authorName: getString(raw.authorName) || undefined,
     authorBio: getString(raw.authorBio) || undefined,
     authorAvatar: getString(raw.authorAvatar) || undefined,

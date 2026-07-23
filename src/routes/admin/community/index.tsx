@@ -23,6 +23,7 @@ import {
   Plus,
 } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { toast } from "sonner";
 import { useAuthStore } from "@/lib/auth-store";
 import { Button } from "@/components/ui/button";
 
@@ -161,9 +162,10 @@ export default function AdminCommunityPage() {
       });
       if (res.ok) {
         void loadData();
+        toast.success("Moderation action applied.");
       } else {
         const err = await res.json();
-        alert(err.error || "Action failed");
+        toast.error(err.error || "Action failed");
       }
     } catch (e) {
       console.error(e);
@@ -199,9 +201,10 @@ export default function AdminCommunityPage() {
         setChallengePrize("");
         setShowChallengeForm(false);
         void loadData();
+        toast.success("Challenge created successfully!");
       } else {
         const err = await res.json();
-        alert(err.error || "Failed to create challenge");
+        toast.error(err.error || "Failed to create challenge");
       }
     } catch (err) {
       console.error(err);

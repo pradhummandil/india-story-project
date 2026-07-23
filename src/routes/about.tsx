@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { teamMembers } from "@/lib/data/teamMembers";
 import { SiteLayout } from "@/components/site/Layout";
+import { useI18nStore, uiText } from "@/lib/i18n";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
@@ -45,7 +46,7 @@ const stats = [
   { value: "5M+", label: "Readers Reached" },
 ];
 
-const editorialValues = [
+const editorialValuesEn = [
   {
     icon: Feather,
     title: "Truth Over Traffic",
@@ -59,12 +60,35 @@ const editorialValues = [
   {
     icon: HeartHandshake,
     title: "Fair to Contributors",
-    desc: "We credit every author, award XP, and treat storytellers as valued partners.",
+    desc: "We credit every author, award XP, and treat local storytellers as valued partners.",
   },
   {
     icon: Globe,
     title: "Rooted in Place",
     desc: "We prioritize local, ground-level reporting over distant commentary.",
+  },
+];
+
+const editorialValuesHi = [
+  {
+    icon: Feather,
+    title: "ट्रैफिक से बढ़कर सत्य",
+    desc: "हम कभी क्लिक्स के पीछे नहीं भागते। हर कहानी प्रभाव के लिए चुनी जाती है, न कि वायरल होने के लिए।",
+  },
+  {
+    icon: ShieldCheck,
+    title: "सख्त सत्यापन",
+    desc: "प्रकाशन से पहले प्राथमिक स्रोतों के खिलाफ तथ्यों की गहन जांच की जाती है।",
+  },
+  {
+    icon: HeartHandshake,
+    title: "योगदानकर्ताओं के प्रति निष्पक्ष",
+    desc: "हम हर लेखक को श्रेय देते हैं और स्थानीय कहानीकारों को मूल्यवान साझेदार मानते हैं।",
+  },
+  {
+    icon: Globe,
+    title: "जमीनी स्तर पर आधारित",
+    desc: "हम दूरस्थ टिप्पणी के स्थान पर स्थानीय, धरातलीय रिपोर्टिंग को प्राथमिकता देते हैं।",
   },
 ];
 
@@ -133,42 +157,47 @@ const fadeUp = {
 };
 
 function About() {
+  const lang = useI18nStore((s) => s.lang);
+  const aboutText = uiText[lang].about;
+
+  const stats = [
+    { value: "500+", label: lang === "hi" ? "प्रकाशित कहानियाँ" : "Stories Published" },
+    { value: "36", label: lang === "hi" ? "राज्य और क्षेत्र" : "States & UTs" },
+    { value: "100+", label: lang === "hi" ? "जमीनी नायक" : "Local Heroes" },
+    { value: "5M+", label: lang === "hi" ? "पाठक पहुंचे" : "Readers Reached" },
+  ];
+
   return (
     <SiteLayout>
       <div className="bg-background text-foreground min-h-screen">
         {/* ─── Hero Banner ─── */}
         <section className="relative overflow-hidden pt-32 pb-24 md:pt-44 md:pb-32 border-b border-border/40 bg-card">
           <div className="absolute inset-0 bg-hero opacity-20 pointer-events-none" />
-          <div className="absolute -top-60 left-1/3 size-[700px] rounded-full bg-gold/6 blur-[140px] pointer-events-none" />
-          <div className="absolute -bottom-60 right-1/3 size-[600px] rounded-full bg-saffron/6 blur-[140px] pointer-events-none" />
-          <div
-            className="absolute inset-0 opacity-[0.02] pointer-events-none"
-            style={{
-              backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
-              backgroundSize: "48px 48px",
-            }}
-          />
+          <div className="absolute -top-40 right-1/4 size-[500px] rounded-full bg-gold/6 blur-[120px] pointer-events-none" />
+          <div className="absolute -bottom-40 left-1/4 size-[400px] rounded-full bg-saffron/6 blur-[120px] pointer-events-none" />
 
-          <div className="container mx-auto px-6 relative max-w-5xl text-center">
+          <div className="container mx-auto px-6 relative max-w-4xl text-center">
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full glass border border-gold/20 text-[11px] uppercase tracking-[0.2em] text-gold font-sans font-bold mb-8"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-gold/20 text-[11px] uppercase tracking-[0.2em] text-gold font-sans font-bold mb-8"
             >
-              <Globe className="size-3" />
-              About India Story Project
+              <Sparkles className="size-3" />
+              {aboutText.title}
             </motion.div>
 
             <motion.h1
               initial={{ opacity: 0, y: 22 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.85, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-              className="font-display text-5xl md:text-7xl font-bold leading-[1.05] tracking-tight"
+              className="font-display text-5xl md:text-7xl font-bold leading-[1.06] tracking-tight"
             >
-              India Deserves
+              {lang === "hi" ? "भारत की अनकही" : "Chronicling the People"}
               <br />
-              <span className="text-gradient-gold italic">Better Stories</span>
+              <span className="text-gradient-gold italic">
+                {lang === "hi" ? "कहानियों का संग्रह" : "Building Tomorrow's India"}
+              </span>
             </motion.h1>
 
             <motion.p
@@ -177,9 +206,7 @@ function About() {
               transition={{ duration: 0.85, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
               className="mt-7 text-base md:text-lg text-muted-foreground leading-relaxed font-sans max-w-2xl mx-auto"
             >
-              In a world dominated by outrage cycles and fleeting headlines, the quiet stories of
-              positive change — local craftsmanship, community innovations, and grassroots heroes —
-              are constantly being drowned out. We exist to change that.
+              {aboutText.subtitle}
             </motion.p>
 
             {/* Stats Row */}
@@ -218,16 +245,15 @@ function About() {
                   <Feather className="size-5" />
                 </div>
                 <span className="text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-gold">
-                  Mission
+                  {lang === "hi" ? "हमारा उद्देश्य" : "Mission"}
                 </span>
                 <h2 className="font-display text-2xl md:text-3xl font-bold mt-2 mb-4 leading-snug">
-                  Slow, Place-Rooted Journalism
+                  {lang === "hi" ? "धीमी और जमीनी पत्रकारिता" : "Slow, Place-Rooted Journalism"}
                 </h2>
                 <p className="text-muted-foreground leading-relaxed text-sm font-sans">
-                  We commission long-form stories directly from local community members who live
-                  where they report. Every story is reviewed deeply, fact-checked thoroughly, and
-                  published with aesthetic care. No SEO sensationalism. No hot-takes. Just real,
-                  transformative India.
+                  {lang === "hi"
+                    ? "हम स्थानीय समुदाय के सदस्यों से सीधे विस्तृत कहानियों का दस्तावेजीकरण करते हैं। प्रत्येक कहानी की गहन समीक्षा और सत्यापन किया जाता है।"
+                    : "We commission long-form stories directly from local community members who live where they report. Every story is reviewed deeply, fact-checked thoroughly, and published with aesthetic care."}
                 </p>
               </motion.div>
 
@@ -242,15 +268,15 @@ function About() {
                   <Eye className="size-5" />
                 </div>
                 <span className="text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-gold">
-                  Vision
+                  {lang === "hi" ? "हमारा दृष्टिकोण" : "Vision"}
                 </span>
                 <h2 className="font-display text-2xl md:text-3xl font-bold mt-2 mb-4 leading-snug">
-                  The Living Archive of Bharat
+                  {lang === "hi" ? "भारत का जीवंत संग्रह" : "The Living Archive of Bharat"}
                 </h2>
                 <p className="text-muted-foreground leading-relaxed text-sm font-sans">
-                  A public treasury where readers around the globe discover who India is becoming —
-                  told directly through the lens of local builders, artisans, solar pioneers, and
-                  grassroots change agents. A living, evolving record of modern Bharat.
+                  {lang === "hi"
+                    ? "एक सार्वजनिक खजाना जहाँ दुनिया भर के पाठक खोजते हैं कि भारत क्या बन रहा है — स्थानीय कारीगरों, नवप्रवर्तकों और बदलाव के नायकों की नज़र से।"
+                    : "A public treasury where readers around the globe discover who India is becoming — told directly through the lens of local builders, artisans, solar pioneers, and grassroots change agents."}
                 </p>
               </motion.div>
             </div>
@@ -267,17 +293,15 @@ function About() {
               transition={{ duration: 0.6 }}
             >
               <span className="text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-gold">
-                Context
+                {lang === "hi" ? "संदर्भ" : "Context"}
               </span>
               <h2 className="font-display text-3xl md:text-5xl font-bold mt-3 mb-7 leading-tight max-w-2xl mx-auto">
-                Why India Needs This
+                {lang === "hi" ? "भारत को इसकी आवश्यकता क्यों है" : "Why India Needs This"}
               </h2>
               <p className="text-base md:text-lg text-muted-foreground leading-relaxed font-sans max-w-3xl mx-auto">
-                Traditional mass media reduces the narrative of developmental India to
-                administrative metrics and transient noise. The human factor — the village
-                schoolteacher who built a digital library, the farmer restoring heirloom seeds, the
-                weaver preserving lost indigo patterns — is lost. We tell these stories because they
-                represent the true, resilient foundation of Bharat.
+                {lang === "hi"
+                  ? "पारंपरिक मुख्यधारा मीडिया विकासात्मक भारत के आख्यान को प्रशासनिक आंकड़ों तक सीमित कर देता है। मानवीय कारक — डिजिटल पुस्तकालय बनाने वाला शिक्षक, पुरानी फसलों को सहेजने वाला किसान — दब जाता है। हम ये कहानियाँ बताते हैं क्योंकि वे भारत की वास्तविक नींव का प्रतिनिधित्व करती हैं।"
+                  : "Traditional mass media reduces the narrative of developmental India to administrative metrics and transient noise. The human factor — the village schoolteacher who built a digital library, the farmer restoring heirloom seeds, the weaver preserving lost indigo patterns — is lost. We tell these stories because they represent the true, resilient foundation of Bharat."}
               </p>
             </motion.div>
 
@@ -285,19 +309,19 @@ function About() {
               {[
                 {
                   icon: BookOpen,
-                  text: "Over 500+ long-form stories published with full editorial oversight",
+                  text: lang === "hi" ? "पूर्ण संपादकीय देखरेख के साथ 500+ से अधिक कहानियाँ प्रकाशित" : "Over 500+ long-form stories published with full editorial oversight",
                 },
                 {
                   icon: MapPin,
-                  text: "All 36 States and Union Territories represented in our archive",
+                  text: lang === "hi" ? "हमारे संग्रह में सभी 36 राज्य और केंद्र शासित प्रदेश शामिल हैं" : "All 36 States and Union Territories represented in our archive",
                 },
                 {
                   icon: Users,
-                  text: "A growing community of verified contributors from across India",
+                  text: lang === "hi" ? "पूरे भारत से सत्यापित योगदानकर्ताओं का बढ़ता समुदाय" : "A growing community of verified contributors from across India",
                 },
                 {
                   icon: Award,
-                  text: "Recognized by readers as India's most credible human-interest platform",
+                  text: lang === "hi" ? "पाठकों द्वारा भारत का सबसे विश्वसनीय मानवीय कहानियों का मंच माना गया" : "Recognized by readers as India's most credible human-interest platform",
                 },
               ].map((item, i) => (
                 <motion.div
@@ -325,16 +349,16 @@ function About() {
           <div className="container mx-auto px-6 max-w-6xl">
             <div className="text-center mb-16">
               <span className="text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-gold">
-                Our Principles
+                {lang === "hi" ? "हमारे सिद्धांत" : "Our Principles"}
               </span>
               <h2 className="font-display text-3xl md:text-5xl font-bold mt-3 leading-tight">
-                Editorial Values
+                {lang === "hi" ? "संपादकीय मूल्य" : "Editorial Values"}
               </h2>
               <div className="w-12 h-0.5 bg-primary/60 mx-auto mt-5" />
             </div>
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {editorialValues.map((v, i) => (
+              {(lang === "hi" ? editorialValuesHi : editorialValuesEn).map((v, i) => (
                 <motion.div
                   key={i}
                   custom={i}

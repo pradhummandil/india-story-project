@@ -94,6 +94,7 @@ export function CinematicHero({
 
     buildSlides();
 
+    if (typeof window === "undefined" || typeof BroadcastChannel === "undefined") return;
     const channel = new BroadcastChannel("isp-stories-updates");
     channel.onmessage = () => {
       buildSlides();
@@ -227,47 +228,7 @@ export function CinematicHero({
         })}
       </div>
 
-      {/* ── Live Publication Ticker ── */}
-      <div className="absolute top-24 left-0 right-0 z-30 bg-black/45 backdrop-blur-md border-y border-white/5 py-2.5 overflow-hidden hidden sm:block">
-        <div className="max-w-6xl mx-auto px-6 md:px-12 flex items-center justify-between gap-8 text-[9px] uppercase font-sans font-bold tracking-widest text-white/80">
-          <div className="flex items-center gap-2 text-gold shrink-0">
-            <span className="relative flex size-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full size-2 bg-red-500"></span>
-            </span>
-            <span>Live Feed:</span>
-          </div>
-          <div className="flex-1 overflow-hidden relative h-4">
-            <motion.div
-              className="flex gap-12 whitespace-nowrap absolute"
-              animate={{ x: ["0%", "-50%"] }}
-              transition={{
-                repeat: Infinity,
-                duration: 35,
-                ease: "linear",
-              }}
-            >
-              {(latestStoriesTitles.length > 0
-                ? [...latestStoriesTitles, ...latestStoriesTitles]
-                : [
-                    "Experience India's stories of changemakers & heroes",
-                    "Explore historic dispatches, travel routes, and timelines",
-                    "Experience India's stories of changemakers & heroes",
-                    "Explore historic dispatches, travel routes, and timelines",
-                  ]
-              ).map((t, idx) => (
-                <span key={idx} className="flex items-center gap-2">
-                  <span className="text-red-500">•</span>
-                  {t}
-                </span>
-              ))}
-            </motion.div>
-          </div>
-          <div className="shrink-0 bg-gold/10 text-gold border border-gold/20 px-3 py-0.5 rounded-full text-[8px] tracking-widest">
-            Today's Dispatch: {todayPublicationCount} {todayPublicationCount === 1 ? "Story" : "Stories"}
-          </div>
-        </div>
-      </div>
+
 
       {/* ── Slide progress bar ── */}
       <div className="absolute bottom-0 left-0 right-0 z-30 h-[2px] bg-white/10">

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { prisma } from "@/lib/repositories/prisma.server";
 import { json, authenticate } from "@/routes/api/-_utils";
+import { userInterestService } from "@/lib/services/user-interest.service";
 
 const db = prisma as any;
 
@@ -8,8 +9,8 @@ export const Route = createFileRoute("/api/authors/follow")({
   server: {
     handlers: {
       /**
-       * GET /api/authors/follow?authorId=xxx
-       * Check if the authenticated user follows this author.
+       * GET /api/authors/follow?authorId=xxx&themeId=yyy&stateName=zzz
+       * Check if the authenticated user follows an author, theme, or state.
        */
       GET: async ({ request }) => {
         const user = await authenticate(request);
@@ -17,17 +18,16 @@ export const Route = createFileRoute("/api/authors/follow")({
 
         const url = new URL(request.url);
         const authorId = url.searchParams.get("authorId");
-        if (!authorId) {
-          return json({ error: "authorId parameter is required" }, { status: 400 });
-        }
+        const themeId = url.searchParams.get("themeId");
+        const stateName = url.searchParams.get("stateName");
 
         try {
-          const follow = await db.follow.findUnique({
+          const follow = await db.follow.findFirst({
             where: {
-              followerId_authorId: {
-                followerId: user.id,
-                authorId,
-              },
+              followerId: user.id,
+              ...(authorId ? { authorId } : {}),
+              ...(themeId ? { themeId } : {}),
+              ...(stateName ? { stateName } : {}),
             },
           });
 
@@ -39,7 +39,7 @@ export const Route = createFileRoute("/api/authors/follow")({
 
       /**
        * POST /api/authors/follow
-       * Toggle follow status for an author.
+       * Toggle follow status for an author, theme, or state.
        */
       POST: async ({ request }) => {
         const user = await authenticate(request);
@@ -52,43 +52,60 @@ export const Route = createFileRoute("/api/authors/follow")({
           return json({ error: "Invalid JSON body" }, { status: 400 });
         }
 
-        const { authorId } = body;
-        if (!authorId) {
-          return json({ error: "authorId is required" }, { status: 400 });
+        const { authorId, themeId, stateName } = body;
+        if (!authorId && !themeId && !stateName) {
+          return json({ error: "authorId, themeId, or stateName is required" }, { status: 400 });
         }
 
         try {
-          const existing = await db.follow.findUnique({
+          const existing = await db.follow.findFirst({
             where: {
-              followerId_authorId: {
-                followerId: user.id,
-                authorId,
-              },
+              followerId: user.id,
+              ...(authorId ? { authorId } : {}),
+              ...(themeId ? { themeId } : {}),
+              ...(stateName ? { stateName } : {}),
             },
           });
 
           if (existing) {
             // Unfollow
             await db.follow.delete({
-              where: {
-                followerId_authorId: {
-                  followerId: user.id,
-                  authorId,
-                },
-              },
+              where: { id: existing.id },
             });
             return json({ followed: false, message: "Unfollowed successfully" });
           } else {
             // Follow
-            await db.follow.create({
+            const newFollow = await db.follow.create({
               data: {
                 followerId: user.id,
-                authorId,
+                authorId: authorId || undefined,
+                themeId: themeId || undefined,
+                stateName: stateName || undefined,
               },
             });
-            return json({ followed: true, message: "Followed successfully" });
+
+            // Create notification for follow confirmation
+            const entityName = authorId ? "Author" : themeId ? "Theme" : `State (${stateName})`;
+            await db.notification.create({
+              data: {
+                userId: user.id,
+                type: "FOLLOW",
+                title: `Now Following ${entityName}`,
+                content: `You will now receive automatic updates and recommendations whenever stories are published for this ${entityName.toLowerCase()}.`,
+              },
+            }).catch(() => {});
+
+            // Update user recommendation weights for homepage personalization
+            await userInterestService.trackInteraction(user.id, "LIKE", {
+              targetId: authorId || undefined,
+              themeId: themeId || undefined,
+              stateName: stateName || undefined,
+            });
+
+            return json({ followed: true, follow: newFollow, message: "Followed successfully" });
           }
         } catch (e: any) {
+          console.error("Follow error:", e);
           return json({ error: e.message || "Failed to toggle follow status" }, { status: 500 });
         }
       },

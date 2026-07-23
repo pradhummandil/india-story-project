@@ -165,7 +165,7 @@ function normalizeThemes(payload: ThemePayload): readonly string[] {
 
 async function fetchAllStories(existingStories: Story[] = []): Promise<Story[]> {
   const stories: Story[] = [...existingStories];
-  const pageSize = 12;
+  const pageSize = 100;
   const startPage =
     existingStories.length > 0 ? Math.floor(existingStories.length / pageSize) + 1 : 1;
 

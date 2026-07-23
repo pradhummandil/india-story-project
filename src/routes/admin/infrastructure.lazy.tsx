@@ -20,6 +20,7 @@ import {
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { useAuthStore } from "@/lib/auth-store";
 import { Forbidden403 } from "@/components/site/Forbidden403";
+import { toast } from "sonner";
 
 export const Route = createLazyFileRoute("/admin/infrastructure")({
   component: AdminInfrastructurePage,
@@ -155,7 +156,7 @@ export default function AdminInfrastructurePage() {
     setIsBackupRunning(true);
     setTimeout(() => {
       setIsBackupRunning(false);
-      alert("Database backup finalized! Export file IndiaStory_Backup_Active.sql created.");
+      toast.success("Database backup finalized! Export file IndiaStory_Backup_Active.sql created.");
     }, 2000);
   };
 

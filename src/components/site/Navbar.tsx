@@ -9,10 +9,15 @@ import { openGlobalSearch } from "@/components/common/GlobalSearch";
 import { useI18nStore, getNavText } from "@/lib/i18n";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/lib/auth-store";
+import { UserAvatar } from "@/components/common/UserAvatar";
+
+import { MegaMenuDrawer } from "./MegaMenuDrawer";
+import { Grid } from "lucide-react";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [megaMenuOpen, setMegaMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { location } = useRouterState();
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -62,10 +67,7 @@ export function Navbar() {
           : "bg-background/85 backdrop-blur-md shadow-sm text-foreground"
       }`}
     >
-      {/* 1. Live Feed Announcement Bar ABOVE Navbar */}
-      <TopAnnouncementBar />
-
-      {/* 2. Main Navbar Bar */}
+      {/* Main Navbar Bar */}
       <div className="container mx-auto px-6 flex items-center justify-between py-3">
         <Link to="/" preload="intent" className="flex items-center gap-3 group">
           <div className="relative size-9 rounded-full border border-[#C8A96A]/40 overflow-hidden p-0.5 shadow-sm shadow-[#C8A96A]/10 transition-all duration-300 group-hover:scale-105 group-hover:border-[#C8A96A]/60 flex items-center justify-center">
@@ -90,7 +92,7 @@ export function Navbar() {
         </Link>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-8 font-sans text-[11px] tracking-[0.15em] font-medium uppercase">
+        <nav className={`hidden md:flex items-center gap-6 font-sans text-[12px] font-medium leading-normal ${lang === "en" ? "uppercase tracking-[0.12em]" : ""}`}>
           {links.map((l) => {
             const active =
               l.to === "/" ? location.pathname === "/" : location.pathname.startsWith(l.to);
@@ -139,6 +141,20 @@ export function Navbar() {
           >
             <Search className="size-4" />
           </button>
+          {/* Mega Menu / All Pages 3-Line Menu Trigger */}
+          <button
+            type="button"
+            onClick={() => setMegaMenuOpen(true)}
+            className={`p-2 rounded-full border transition-all duration-300 cursor-pointer flex items-center justify-center ${
+              isTransparent
+                ? "bg-white/10 hover:bg-white/20 border-white/20 text-white"
+                : "bg-primary/10 hover:bg-primary/20 border-primary/25 text-primary"
+            }`}
+            title={lang === "hi" ? "सभी 18 पोर्टल और नीतियां देखें" : "Explore All 18 Portals & Pages"}
+          >
+            <Menu className="size-4 stroke-[2.5]" />
+          </button>
+
           <LanguageToggle />
           <NotificationDropdown />
 
@@ -148,17 +164,7 @@ export function Navbar() {
                 onClick={() => setUserMenuOpen((o) => !o)}
                 className="flex items-center gap-2 outline-none"
               >
-                {avatarUrl ? (
-                  <img
-                    src={avatarUrl}
-                    alt={displayName}
-                    className="size-8 rounded-full border border-border/50 object-cover hover:scale-105 transition-transform"
-                  />
-                ) : (
-                  <div className="size-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center hover:scale-105 transition-transform">
-                    <User className="size-4 text-primary" />
-                  </div>
-                )}
+                <UserAvatar src={avatarUrl} name={displayName} email={user?.email} size="sm" />
               </button>
 
               <AnimatePresence>
@@ -171,7 +177,7 @@ export function Navbar() {
                     className="absolute right-0 mt-2 w-48 bg-[#161616] border border-white/10 rounded-sm shadow-xl py-1 z-50 text-white"
                   >
                     <div className="px-4 py-2 border-b border-white/5">
-                      <p className="text-xs text-white/45 font-sans">Signed in as</p>
+                      <p className="text-xs text-white/45 font-sans">{navText.signedInAs}</p>
                       <p className="text-sm font-sans font-medium truncate">{displayName}</p>
                     </div>
 
@@ -182,7 +188,7 @@ export function Navbar() {
                       className="flex items-center gap-2 px-4 py-2 text-xs font-sans text-white/70 hover:text-white hover:bg-white/5 transition-colors"
                     >
                       <User className="size-3.5" />
-                      My Profile
+                      {navText.profile}
                     </Link>
 
                     {(role === "admin" || role === "superadmin") && (
@@ -193,7 +199,7 @@ export function Navbar() {
                         className="flex items-center gap-2 px-4 py-2 text-xs font-sans text-white/70 hover:text-white hover:bg-white/5 transition-colors"
                       >
                         <Shield className="size-3.5" />
-                        Admin CMS
+                        {navText.adminCms}
                       </Link>
                     )}
                     {role === "editor" && (
@@ -204,7 +210,7 @@ export function Navbar() {
                         className="flex items-center gap-2 px-4 py-2 text-xs font-sans text-white/70 hover:text-white hover:bg-white/5 transition-colors"
                       >
                         <Layers className="size-3.5" />
-                        Editor Workspace
+                        {navText.editorWorkspace}
                       </Link>
                     )}
                     {role === "author" && (
@@ -215,7 +221,7 @@ export function Navbar() {
                         className="flex items-center gap-2 px-4 py-2 text-xs font-sans text-white/70 hover:text-white hover:bg-white/5 transition-colors"
                       >
                         <Edit3 className="size-3.5" />
-                        Author Dashboard
+                        {navText.authorDashboard}
                       </Link>
                     )}
 
@@ -227,7 +233,7 @@ export function Navbar() {
                       className="flex items-center gap-2 px-4 py-2 text-xs font-sans text-red-400 hover:bg-red-500/10 w-full text-left transition-colors border-t border-white/5 mt-1"
                     >
                       <LogOut className="size-3.5" />
-                      Sign Out
+                      {navText.signOut}
                     </button>
                   </motion.div>
                 )}
@@ -236,7 +242,7 @@ export function Navbar() {
           ) : (
             <Link to="/login" className="inline-flex">
               <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-sans uppercase tracking-[0.15em] text-[10px] font-semibold h-9 px-5 rounded-full shadow-sm shadow-primary/10 transition-all duration-300 hover:-translate-y-0.5">
-                Sign In
+                {navText.signIn}
               </Button>
             </Link>
           )}
@@ -377,6 +383,21 @@ export function Navbar() {
                 </Link>
               )}
 
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  setMegaMenuOpen(true);
+                }}
+                className="w-full py-2.5 px-4 rounded-xl bg-white/5 border border-white/10 text-gold flex items-center justify-between text-xs font-sans font-bold uppercase tracking-wider mt-2"
+              >
+                <span className="flex items-center gap-2">
+                  <Grid className="size-4" />
+                  {lang === "hi" ? "सभी 18 पेज डायरेक्टरी" : "Explore All 18 Portals"}
+                </span>
+                <span className="text-[10px] text-white/50">Open Drawer →</span>
+              </button>
+
               <Link to="/share-story" onClick={() => setOpen(false)} className="w-full mt-2">
                 <Button className="w-full bg-primary hover:bg-primary/95 text-primary-foreground rounded-full uppercase tracking-widest text-[10px] h-12 font-sans font-bold shadow-sm shadow-primary/10 hover:shadow-md hover:translate-y-[-1px] transition-all duration-300">
                   <Sparkles className="size-4 mr-2" />
@@ -387,6 +408,12 @@ export function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* All Pages Mega Menu Overlay Drawer */}
+      <MegaMenuDrawer
+        isOpen={megaMenuOpen}
+        onClose={() => setMegaMenuOpen(false)}
+      />
     </header>
   );
 }

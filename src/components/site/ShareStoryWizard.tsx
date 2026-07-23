@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useContributor, regionDots } from "@/lib/contributor-store";
 import { themes } from "@/lib/stories-data";
 import { useAuthStore } from "@/lib/auth-store";
+import { toast } from "sonner";
 
 const steps = [
   { id: 0, label: "Themes", icon: Sparkles },
@@ -72,13 +73,14 @@ export function ShareStoryWizard() {
       });
       if (res.ok) {
         setDone(true);
+        toast.success("Story submitted successfully!");
       } else {
         const errorData = await res.json();
-        alert(`Failed to submit: ${errorData.error || "Unknown error"}`);
+        toast.error(`Failed to submit: ${errorData.error || "Unknown error"}`);
       }
     } catch (e) {
       console.error("Story submission failed:", e);
-      alert("An error occurred during story submission.");
+      toast.error("An error occurred during story submission.");
     }
   };
 

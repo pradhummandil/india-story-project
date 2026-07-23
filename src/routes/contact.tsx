@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { SiteLayout } from "@/components/site/Layout";
 import { Button } from "@/components/ui/button";
+import { useI18nStore, uiText } from "@/lib/i18n";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -39,7 +40,7 @@ export const Route = createFileRoute("/contact")({
   component: Contact,
 });
 
-const contactCards = [
+const contactCardsEn = [
   {
     icon: PenTool,
     title: "Editorial & Story Pitches",
@@ -80,6 +81,54 @@ const contactCards = [
     icon: Radio,
     title: "Media & Press",
     desc: "For interview requests, press releases, media kits, or coverage inquiries.",
+    email: "media@indiastoryproject.com",
+    color: "from-rose-500/10 to-rose-600/5",
+    accent: "text-rose-400",
+    accentBg: "bg-rose-500/10 border-rose-500/15",
+  },
+];
+
+const contactCardsHi = [
+  {
+    icon: PenTool,
+    title: "संपादकीय और कहानी के प्रस्ताव",
+    desc: "क्या आपके पास किसी स्थानीय नायक, नवाचार या सांस्कृतिक विरासत की कहानी है? हमारे साथ विचार साझा करें।",
+    email: "editorial@indiastoryproject.com",
+    color: "from-amber-500/10 to-amber-600/5",
+    accent: "text-amber-400",
+    accentBg: "bg-amber-500/10 border-amber-500/15",
+  },
+  {
+    icon: Bug,
+    title: "तकनीकी सहायता",
+    desc: "कोई समस्या या प्लेटफ़ॉर्म समस्या आ रही है? हमारी तकनीकी टीम मदद के लिए तैयार है।",
+    email: "technical@indiastoryproject.com",
+    color: "from-blue-500/10 to-blue-600/5",
+    accent: "text-blue-400",
+    accentBg: "bg-blue-500/10 border-blue-500/15",
+  },
+  {
+    icon: ShieldQuestion,
+    title: "सामान्य सहायता",
+    desc: "अपने खाते, XP पॉइंट्स, पढ़ने की स्ट्रिक, या कहानी प्रस्तुतियों के बारे में प्रश्न।",
+    email: "support@indiastoryproject.com",
+    color: "from-purple-500/10 to-purple-600/5",
+    accent: "text-purple-400",
+    accentBg: "bg-purple-500/10 border-purple-500/15",
+  },
+  {
+    icon: Briefcase,
+    title: "व्यापार और साझेदारी",
+    desc: "हमारे कहानी डेटाबेस का लाइसेंस लेने या सामुदायिक प्रभाव पर सहयोग करने में रुचि रखते हैं?",
+    email: "business@indiastoryproject.com",
+    color: "from-emerald-500/10 to-emerald-600/5",
+    accent: "text-emerald-400",
+    accentBg: "bg-emerald-500/10 border-emerald-500/15",
+  },
+  {
+    icon: Radio,
+    title: "मीडिया और प्रेस",
+    desc: "साक्षात्कार अनुरोधों, प्रेस विज्ञप्तियों, मीडिया किट, या कवरेज पूछताछ के लिए।",
     email: "media@indiastoryproject.com",
     color: "from-rose-500/10 to-rose-600/5",
     accent: "text-rose-400",
@@ -207,6 +256,9 @@ function FloatingTextarea({
 }
 
 function Contact() {
+  const lang = useI18nStore((s) => s.lang);
+  const contactText = uiText[lang].contact;
+
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -261,7 +313,7 @@ function Contact() {
               className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full glass border border-gold/20 text-[11px] uppercase tracking-[0.2em] text-gold font-sans font-bold mb-8"
             >
               <MessageSquare className="size-3" />
-              Get In Touch
+              {contactText.title}
             </motion.div>
 
             <motion.h1
@@ -270,9 +322,9 @@ function Contact() {
               transition={{ duration: 0.85, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
               className="font-display text-5xl md:text-7xl font-bold leading-[1.05] tracking-tight"
             >
-              Let's Build India's
+              {lang === "hi" ? "आइए मिलकर भारत की" : "Let's Build India's"}
               <br />
-              <span className="text-gradient-gold italic">Story Together</span>
+              <span className="text-gradient-gold italic">{lang === "hi" ? "कहानी का निर्माण करें" : "Story Together"}</span>
             </motion.h1>
 
             <motion.p
@@ -281,8 +333,7 @@ function Contact() {
               transition={{ duration: 0.85, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
               className="mt-7 text-base md:text-lg text-muted-foreground leading-relaxed font-sans max-w-2xl mx-auto"
             >
-              Have a story to pitch? A partnership idea? A technical question? We read every message
-              and route it to the right team within 24–48 hours.
+              {contactText.subtitle}
             </motion.p>
 
             <motion.div
@@ -310,15 +361,15 @@ function Contact() {
           <div className="container mx-auto px-6 max-w-6xl">
             <div className="text-center mb-12">
               <span className="text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-gold">
-                Departments
+                {lang === "hi" ? "विभाग" : "Departments"}
               </span>
               <h2 className="font-display text-2xl md:text-3xl font-bold mt-3">
-                Who Should You Reach?
+                {lang === "hi" ? "आप किसे संपर्क करना चाहते हैं?" : "Who Should You Reach?"}
               </h2>
             </div>
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
-              {contactCards.map((card, i) => (
+              {(lang === "hi" ? contactCardsHi : contactCardsEn).map((card, i) => (
                 <motion.div
                   key={i}
                   initial={{ opacity: 0, y: 18 }}
@@ -361,9 +412,11 @@ function Contact() {
               <div className="lg:col-span-3">
                 <div className="mb-8">
                   <span className="text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-gold">
-                    Send a Message
+                    {lang === "hi" ? "संदेश भेजें" : "Send a Message"}
                   </span>
-                  <h2 className="font-display text-2xl md:text-3xl font-bold mt-2">Write to Us</h2>
+                  <h2 className="font-display text-2xl md:text-3xl font-bold mt-2">
+                    {lang === "hi" ? "हमें लिखें" : "Write to Us"}
+                  </h2>
                 </div>
 
                 <AnimatePresence mode="wait">
@@ -378,10 +431,10 @@ function Contact() {
                         <CheckCircle2 className="size-7 text-emerald-400" />
                       </div>
                       <h3 className="font-display text-xl font-bold text-foreground mb-2">
-                        Message Received!
+                        {lang === "hi" ? "संदेश प्राप्त हुआ!" : "Message Received!"}
                       </h3>
                       <p className="text-sm text-muted-foreground font-sans max-w-xs mx-auto leading-relaxed mb-6">
-                        Thank you for reaching out. We'll get back to you within 24–48 hours.
+                        {lang === "hi" ? "संपर्क करने के लिए धन्यवाद। हम 24–48 घंटों में उत्तर देंगे।" : "Thank you for reaching out. We'll get back to you within 24–48 hours."}
                       </p>
                       <button
                         onClick={() => {
@@ -393,7 +446,7 @@ function Contact() {
                         }}
                         className="text-xs uppercase tracking-widest font-bold font-sans text-gold hover:text-gold/70 transition-colors"
                       >
-                        Send Another Message
+                        {lang === "hi" ? "एक और संदेश भेजें" : "Send Another Message"}
                       </button>
                     </motion.div>
                   ) : (
@@ -413,14 +466,14 @@ function Contact() {
                       <div className="grid sm:grid-cols-2 gap-8">
                         <FloatingInput
                           id="name"
-                          label="Your Name"
+                          label={lang === "hi" ? "आपका नाम" : "Your Name"}
                           required
                           value={name}
                           onChange={setName}
                         />
                         <FloatingInput
                           id="email"
-                          label="Email Address"
+                          label={lang === "hi" ? "ईमेल पता" : "Email Address"}
                           type="email"
                           required
                           value={email}
@@ -430,7 +483,7 @@ function Contact() {
 
                       <FloatingInput
                         id="subject"
-                        label="Subject"
+                        label={lang === "hi" ? "विषय" : "Subject"}
                         required
                         value={subject}
                         onChange={setSubject}
@@ -438,7 +491,7 @@ function Contact() {
 
                       <FloatingTextarea
                         id="message"
-                        label="Your Message"
+                        label={lang === "hi" ? "आपका संदेश" : "Your Message"}
                         required
                         value={message}
                         onChange={setMessage}
@@ -452,18 +505,18 @@ function Contact() {
                         {loading ? (
                           <>
                             <Sparkles className="size-4 animate-pulse" />
-                            Sending…
+                            {lang === "hi" ? "भेजा जा रहा है…" : "Sending…"}
                           </>
                         ) : (
                           <>
                             <Send className="size-4" />
-                            Send Message
+                            {lang === "hi" ? "संदेश भेजें" : "Send Message"}
                           </>
                         )}
                       </Button>
 
                       <p className="text-center text-[10px] text-muted-foreground font-sans">
-                        We typically respond within 24–48 business hours.
+                        {lang === "hi" ? "हम आमतौर पर 24–48 व्यावसायिक घंटों में उत्तर देते हैं।" : "We typically respond within 24–48 business hours."}
                       </p>
                     </motion.form>
                   )}
@@ -474,28 +527,30 @@ function Contact() {
               <div className="lg:col-span-2 space-y-6">
                 <div>
                   <span className="text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-gold">
-                    Contact Details
+                    {lang === "hi" ? "संपर्क विवरण" : "Contact Details"}
                   </span>
-                  <h2 className="font-display text-2xl font-bold mt-2 mb-6">Reach Us Directly</h2>
+                  <h2 className="font-display text-2xl font-bold mt-2 mb-6">
+                    {lang === "hi" ? "सीधे संपर्क करें" : "Reach Us Directly"}
+                  </h2>
                 </div>
 
                 <div className="space-y-4">
                   {[
                     {
                       icon: Mail,
-                      label: "Primary Email",
+                      label: lang === "hi" ? "प्राथमिक ईमेल" : "Primary Email",
                       value: "indiastoryprojectmanager21@gmail.com",
                       href: "mailto:indiastoryprojectmanager21@gmail.com",
                     },
                     {
                       icon: MapPin,
-                      label: "National Offices",
-                      value: "Bengaluru · Mumbai · New Delhi",
+                      label: lang === "hi" ? "राष्ट्रीय कार्यालय" : "National Offices",
+                      value: lang === "hi" ? "बेंगलुरु · मुंबई · नई दिल्ली" : "Bengaluru · Mumbai · New Delhi",
                       href: undefined,
                     },
                     {
                       icon: Phone,
-                      label: "Phone Helpline",
+                      label: lang === "hi" ? "फ़ोन हेल्पलाइन" : "Phone Helpline",
                       value: "+91 80 4567 8901",
                       href: "tel:+918045678901",
                     },
@@ -529,7 +584,7 @@ function Contact() {
                 {/* Social Links */}
                 <div className="pt-2">
                   <h4 className="text-[10px] uppercase tracking-[0.15em] font-bold font-sans text-muted-foreground mb-4">
-                    Follow Us
+                    {lang === "hi" ? "हमारा अनुसरण करें" : "Follow Us"}
                   </h4>
                   <div className="grid grid-cols-2 gap-2">
                     {socialLinks.map((soc, i) => (
@@ -568,7 +623,7 @@ function Contact() {
                   <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent pointer-events-none" />
                   <div className="absolute bottom-3 left-3 flex items-center gap-1.5 text-[10px] font-sans font-bold text-white/60">
                     <MapPin className="size-3 text-gold" />
-                    MG Road, Bengaluru
+                    {lang === "hi" ? "एमजी रोड, बेंगलुरु" : "MG Road, Bengaluru"}
                   </div>
                 </div>
               </div>
@@ -588,17 +643,18 @@ function Contact() {
               <div className="absolute -top-20 -right-20 size-[200px] rounded-full bg-gold/5 blur-3xl pointer-events-none" />
               <Feather className="size-7 text-gold mx-auto mb-5" />
               <h2 className="font-display text-2xl md:text-4xl font-bold mb-4 leading-tight">
-                Have a Story to Tell?
+                {lang === "hi" ? "क्या आपके पास सुनाने के लिए कोई कहानी है?" : "Have a Story to Tell?"}
               </h2>
               <p className="text-muted-foreground font-sans text-sm max-w-md mx-auto mb-8 leading-relaxed">
-                Skip the contact form — go straight to our story submission portal and share your
-                story with India.
+                {lang === "hi"
+                  ? "संपर्क फ़ॉर्म को छोड़ें — सीधे हमारे कहानी प्रस्तुत करने के पोर्टल पर जाएं और अपनी कहानी पूरे भारत के साथ साझा करें।"
+                  : "Skip the contact form — go straight to our story submission portal and share your story with India."}
               </p>
               <a
                 href="/share-story"
                 className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-sans font-bold text-xs uppercase tracking-widest h-11 px-7 rounded-full shadow-glow transition-all duration-300 btn-premium"
               >
-                Submit Your Story
+                {lang === "hi" ? "अपनी कहानी जमा करें" : "Submit Your Story"}
                 <ArrowRight className="size-3.5" />
               </a>
             </motion.div>

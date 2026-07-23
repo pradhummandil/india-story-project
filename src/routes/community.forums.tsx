@@ -112,12 +112,12 @@ export default function ForumsPage() {
   return (
     <div className="space-y-6">
       {/* ── Forum Header ── */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/5 pb-5">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border/60 pb-5">
         <div>
-          <h1 className="font-display text-2xl font-bold text-white">
+          <h1 className="font-display text-2xl font-bold text-foreground">
             Community Discussion Forums
           </h1>
-          <p className="text-xs text-white/40 font-sans mt-1">
+          <p className="text-xs text-muted-foreground font-sans mt-1">
             Browse through categories, engage in Q&A, and collaborate on stories.
           </p>
         </div>
@@ -127,7 +127,7 @@ export default function ForumsPage() {
               setShowModal(true);
               if (categories.length > 0) setCategoryId(categories[0].id);
             }}
-            className="flex items-center gap-1.5 bg-primary text-white text-[11px] font-sans font-bold uppercase tracking-widest px-4 py-2 hover:bg-primary/95 transition-colors"
+            className="flex items-center gap-1.5 bg-primary text-primary-foreground text-[11px] font-sans font-bold uppercase tracking-widest px-4 py-2 rounded hover:bg-primary/95 transition-colors btn-premium"
           >
             <Plus className="size-3.5" />
             New Topic
@@ -135,7 +135,7 @@ export default function ForumsPage() {
         ) : (
           <Link
             to="/login"
-            className="bg-white/5 border border-white/10 text-[10px] font-sans font-bold uppercase tracking-widest px-4 py-2 text-white/50 hover:text-white transition-colors"
+            className="bg-card border border-border text-[10px] font-sans font-bold uppercase tracking-widest px-4 py-2 text-muted-foreground hover:text-foreground rounded transition-colors"
           >
             Sign in to Post
           </Link>
@@ -149,10 +149,10 @@ export default function ForumsPage() {
             setSelectedCategory(null);
             setPage(1);
           }}
-          className={`px-3 py-1.5 text-[10px] font-sans font-bold uppercase tracking-widest border transition-colors flex-shrink-0 ${
+          className={`px-3 py-1.5 text-[10px] font-sans font-bold uppercase tracking-widest border rounded transition-colors flex-shrink-0 ${
             selectedCategory === null
               ? "bg-primary/10 border-primary text-primary"
-              : "bg-white/5 border-white/8 text-white/40 hover:text-white/70"
+              : "bg-card border-border text-muted-foreground hover:text-foreground"
           }`}
         >
           All Categories
@@ -164,15 +164,15 @@ export default function ForumsPage() {
               setSelectedCategory(cat.id);
               setPage(1);
             }}
-            className={`px-3 py-1.5 text-[10px] font-sans font-bold uppercase tracking-widest border transition-colors flex-shrink-0 flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 text-[10px] font-sans font-bold uppercase tracking-widest border rounded transition-colors flex-shrink-0 flex items-center gap-1.5 ${
               selectedCategory === cat.id
                 ? "bg-primary/10 border-primary text-primary"
-                : "bg-white/5 border-white/8 text-white/40 hover:text-white/70"
+                : "bg-card border-border text-muted-foreground hover:text-foreground"
             }`}
           >
             <span>{cat.icon}</span>
             <span>{cat.name}</span>
-            <span className="text-[8px] bg-white/5 px-1 py-0.2 rounded-full text-white/30">
+            <span className="text-[8px] bg-muted px-1 py-0.2 rounded-full text-muted-foreground">
               {cat._count?.topics ?? 0}
             </span>
           </button>
@@ -180,7 +180,7 @@ export default function ForumsPage() {
       </div>
 
       {/* ── Controls: Sort & Search ── */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-[#121212] border border-white/5 p-4 rounded-sm">
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-card border border-border p-4 rounded-xl shadow-sm">
         <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
           {[
             { id: "latest", label: "Latest" },
@@ -194,8 +194,8 @@ export default function ForumsPage() {
                 setSort(s.id);
                 setPage(1);
               }}
-              className={`px-3 py-1.5 text-[9px] font-sans font-bold uppercase tracking-widest transition-colors ${
-                sort === s.id ? "bg-white/8 text-white" : "text-white/40 hover:text-white/70"
+              className={`px-3 py-1.5 text-[9px] font-sans font-bold uppercase tracking-widest rounded transition-colors ${
+                sort === s.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {s.label}
@@ -205,18 +205,18 @@ export default function ForumsPage() {
 
         <form onSubmit={handleSearchSubmit} className="flex items-center gap-2">
           <div className="relative">
-            <Search className="size-3.5 text-white/30 absolute left-3 top-2.5" />
+            <Search className="size-3.5 text-muted-foreground absolute left-3 top-2.5" />
             <input
               type="text"
               placeholder="Search topics..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-black border border-white/8 pl-9 pr-4 py-1.5 text-xs text-white placeholder-white/20 focus:outline-none focus:border-white/20 w-full sm:w-60 font-sans"
+              className="bg-background border border-border pl-9 pr-4 py-1.5 text-xs text-foreground placeholder:text-muted-foreground/60 rounded-lg focus:outline-none focus:border-primary/50 w-full sm:w-60 font-sans"
             />
           </div>
           <button
             type="submit"
-            className="bg-white/5 border border-white/8 px-3 py-1.5 text-[9px] font-sans font-bold uppercase tracking-widest text-white/55 hover:text-white hover:bg-white/8 transition-colors"
+            className="bg-background border border-border px-3 py-1.5 text-[9px] font-sans font-bold uppercase tracking-widest text-foreground hover:border-gold/50 transition-colors rounded-lg"
           >
             Search
           </button>
@@ -227,17 +227,17 @@ export default function ForumsPage() {
       <div className="space-y-3">
         {loading ? (
           Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-16 bg-white/5 rounded-sm animate-pulse" />
+            <div key={i} className="h-16 bg-muted rounded-xl animate-pulse" />
           ))
         ) : topics.length === 0 ? (
-          <div className="text-center py-12 bg-[#121212] border border-white/5 rounded-sm text-white/20 text-xs font-sans">
+          <div className="text-center py-12 bg-card border border-border rounded-2xl text-muted-foreground text-xs font-sans shadow-sm">
             No discussion topics found. Be the first to start a discussion!
           </div>
         ) : (
           topics.map((t) => (
             <div
               key={t.id}
-              className="bg-[#121212] border border-white/5 hover:border-white/10 p-4 transition-colors rounded-sm flex items-center justify-between gap-4"
+              className="bg-card border border-border hover:border-gold/40 p-4 transition-all rounded-xl flex items-center justify-between gap-4 shadow-sm"
             >
               <div className="flex items-start gap-3 min-w-0">
                 {t.user?.avatarUrl ? (
@@ -247,7 +247,7 @@ export default function ForumsPage() {
                     className="size-8 rounded-full object-cover mt-0.5"
                   />
                 ) : (
-                  <div className="size-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold text-white/50 mt-0.5">
+                  <div className="size-8 rounded-full bg-muted border border-border flex items-center justify-center text-[10px] font-bold text-foreground mt-0.5">
                     {t.user?.name?.[0] || "M"}
                   </div>
                 )}
@@ -256,18 +256,17 @@ export default function ForumsPage() {
                     {t.isPinned && (
                       <Pin className="size-3 text-primary fill-primary flex-shrink-0" />
                     )}
-                    {t.isLocked && <Lock className="size-3 text-white/30 flex-shrink-0" />}
+                    {t.isLocked && <Lock className="size-3 text-muted-foreground flex-shrink-0" />}
                     <Link
                       to={`/community/topics/${t.id}` as any}
-                      className="text-xs font-sans font-bold text-white/80 hover:text-white transition-colors truncate max-w-md sm:max-w-xl"
+                      className="text-xs font-sans font-bold text-foreground hover:text-primary transition-colors truncate max-w-md sm:max-w-xl"
                     >
                       {t.title}
                     </Link>
                   </div>
-                  <div className="flex items-center gap-2 text-[9px] text-white/30 font-sans flex-wrap">
+                  <div className="flex items-center gap-2 text-[9px] text-muted-foreground font-sans flex-wrap">
                     <span
-                      className="font-bold uppercase tracking-wider"
-                      style={{ color: t.category?.color || "#C8A96A" }}
+                      className="font-bold uppercase tracking-wider text-primary"
                     >
                       {t.category?.name || "General"}
                     </span>
@@ -279,16 +278,16 @@ export default function ForumsPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-6 text-right text-[10px] text-white/30 font-sans flex-shrink-0">
+              <div className="flex items-center gap-6 text-right text-[10px] text-muted-foreground font-sans flex-shrink-0">
                 <div>
-                  <p className="font-bold text-white/50 flex items-center justify-end gap-1">
-                    <MessageCircle className="size-3" /> {t.replyCount}
+                  <p className="font-bold text-foreground flex items-center justify-end gap-1">
+                    <MessageCircle className="size-3 text-primary" /> {t.replyCount}
                   </p>
                   <p className="uppercase tracking-widest text-[8px]">Replies</p>
                 </div>
                 <div className="hidden sm:block">
-                  <p className="font-bold text-white/40 flex items-center justify-end gap-1">
-                    <Eye className="size-3" /> {t.viewCount}
+                  <p className="font-bold text-foreground flex items-center justify-end gap-1">
+                    <Eye className="size-3 text-gold" /> {t.viewCount}
                   </p>
                   <p className="uppercase tracking-widest text-[8px]">Views</p>
                 </div>

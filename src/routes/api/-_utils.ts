@@ -128,7 +128,48 @@ export function getClientIp(request: Request): string {
   return "127.0.0.1";
 }
 
-export async function fetchStoriesBackup(request: Request): Promise<any> {
-  throw new Error("Static fallback stories-backup.json is disabled and must not be used.");
+export function successResponse(
+  data: unknown,
+  options?: {
+    message?: string;
+    pagination?: { page: number; pageSize: number; total: number; totalPages: number; hasMore: boolean };
+    meta?: Record<string, any>;
+    init?: ResponseInit;
+  }
+) {
+  return json(
+    {
+      success: true,
+      message: options?.message ?? "Operation successful",
+      data,
+      pagination: options?.pagination ?? null,
+      meta: options?.meta ?? { timestamp: new Date().toISOString() },
+    },
+    options?.init
+  );
+}
+
+export function errorResponse(
+  message: string,
+  options?: {
+    status?: number;
+    errors?: any[];
+    init?: ResponseInit;
+  }
+) {
+  return json(
+    {
+      success: false,
+      message,
+      error: message,
+      errors: options?.errors ?? [],
+      data: null,
+      timestamp: new Date().toISOString(),
+    },
+    {
+      status: options?.status ?? 400,
+      ...(options?.init ?? {}),
+    }
+  );
 }
 

@@ -3,21 +3,27 @@ import { useAudioStore, type Episode } from "@/lib/audio-store";
 import {
   Play,
   Pause,
+  Square,
   RotateCcw,
   RotateCw,
   Volume2,
   VolumeX,
-  ChevronUp,
   ChevronDown,
   Download,
   X,
   Languages,
   UserCheck,
   Gauge,
-  Rss,
+  Sparkles,
   Radio,
+  Volume1,
+  Music,
+  Disc,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
+import { motion, AnimatePresence } from "framer-motion";
+
+const SPEED_OPTIONS = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
 
 export default function PodcastPlayer() {
   const {
@@ -31,6 +37,7 @@ export default function PodcastPlayer() {
     playerOpen,
     audio,
     playEpisode,
+    stopEpisode,
     togglePlay,
     seek,
     setSpeed,
@@ -41,9 +48,11 @@ export default function PodcastPlayer() {
 
   const { session } = useAuthStore();
   const [muted, setMuted] = useState(false);
+  const [volume, setVolume] = useState(1);
   const [catalog, setCatalog] = useState<Episode[]>([]);
   const [loadingCatalog, setLoadingCatalog] = useState(false);
   const timelineRef = useRef<HTMLDivElement>(null);
+  const hasCheckedSavedProgressRef = useRef(false);
 
   // Initialize store event listeners
   useEffect(() => {
@@ -66,10 +75,10 @@ export default function PodcastPlayer() {
     }
   }, [playerOpen, catalog.length]);
 
-  // Sync continue listening state on mount if user is logged in
+  // Sync continue listening state ONLY ONCE on initial mount if user is logged in
   useEffect(() => {
-    if (session?.access_token && !currentEpisode) {
-      // Fetch user's latest uncompleted progress
+    if (session?.access_token && !currentEpisode && !hasCheckedSavedProgressRef.current) {
+      hasCheckedSavedProgressRef.current = true;
       fetch("/api/audio-progress", {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
@@ -79,7 +88,6 @@ export default function PodcastPlayer() {
         .then((data) => {
           if (data?.items && data.items.length > 0) {
             const latest = data.items[0];
-            // Load but don't autoplay immediately
             useAudioStore.setState({
               currentEpisode: latest.story,
               currentTime: latest.currentTime,
@@ -100,7 +108,7 @@ export default function PodcastPlayer() {
   if (!currentEpisode) return null;
 
   const formatTime = (time: number) => {
-    if (isNaN(time)) return "0:00";
+    if (isNaN(time) || time < 0) return "0:00";
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
@@ -111,22 +119,33 @@ export default function PodcastPlayer() {
     const rect = timelineRef.current.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const width = rect.width;
-    const percentage = clickX / width;
+    const percentage = Math.max(0, Math.min(1, clickX / width));
     seek(percentage * duration);
   };
 
   const skipForward = () => {
-    seek(Math.min(duration, currentTime + 15));
+    seek(Math.min(duration, currentTime + 10));
   };
 
   const skipBackward = () => {
-    seek(Math.max(0, currentTime - 15));
+    seek(Math.max(0, currentTime - 10));
   };
 
   const toggleMute = () => {
     if (!audio) return;
-    audio.muted = !muted;
-    setMuted(!muted);
+    const nextMute = !muted;
+    audio.muted = nextMute;
+    setMuted(nextMute);
+  };
+
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = parseFloat(e.target.value);
+    setVolume(val);
+    if (audio) {
+      audio.volume = val;
+      audio.muted = val === 0;
+      setMuted(val === 0);
+    }
   };
 
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
@@ -141,708 +160,426 @@ export default function PodcastPlayer() {
     <>
       {/* ────────────────── MINI PLAYER (Floating Bottom Bar) ────────────────── */}
       {!playerOpen && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: "20px",
-            right: "20px",
-            left: "20px",
-            maxWidth: "600px",
-            margin: "0 auto",
-            backgroundColor: "rgba(20, 20, 20, 0.85)",
-            backdropFilter: "blur(16px)",
-            border: "1px solid rgba(255, 255, 255, 0.08)",
-            borderRadius: "16px",
-            padding: "12px 16px",
-            boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
-            zIndex: 9999,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "12px",
-            color: "white",
-            cursor: "pointer",
-          }}
+        <motion.div
+          initial={{ y: 80, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 80, opacity: 0 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className="fixed bottom-5 left-4 right-4 md:left-auto md:right-8 md:w-[540px] z-[9999] bg-[#121215]/90 backdrop-blur-2xl border border-white/12 rounded-2xl p-3 shadow-[0_20px_50px_rgba(0,0,0,0.8)] text-white select-none cursor-pointer group hover:border-gold/40 transition-all"
           onClick={() => setPlayerOpen(true)}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", flex: 1, minWidth: 0 }}>
-            <img
-              src={currentEpisode.imageUrl}
-              alt={currentTitle || ""}
-              style={{
-                width: "48px",
-                height: "48px",
-                borderRadius: "8px",
-                objectFit: "cover",
-              }}
-            />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div
-                style={{
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}
-              >
-                {currentTitle}
-              </div>
-              <div
-                style={{
-                  fontSize: "12px",
-                  color: "#a0a0a0",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}
-              >
-                {currentEpisode.authorName} • {formatTime(currentTime)} /{" "}
-                {formatTime(duration || currentEpisode.duration)}
-              </div>
-            </div>
-          </div>
-
-          <div
-            style={{ display: "flex", alignItems: "center", gap: "8px" }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={togglePlay}
-              style={{
-                background: "#C8A96A",
-                color: "black",
-                border: "none",
-                borderRadius: "50%",
-                width: "36px",
-                height: "36px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                transition: "transform 0.1s ease",
-              }}
-            >
-              {isPlaying ? (
-                <Pause size={18} fill="currentColor" />
-              ) : (
-                <Play size={18} fill="currentColor" style={{ marginLeft: "2px" }} />
-              )}
-            </button>
-            <button
-              onClick={() => useAudioStore.setState({ currentEpisode: null })}
-              style={{
-                background: "transparent",
-                color: "#a0a0a0",
-                border: "none",
-                borderRadius: "50%",
-                width: "36px",
-                height: "36px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-              }}
-            >
-              <X size={18} />
-            </button>
-          </div>
-
-          {/* Miniature progress bar */}
-          <div
-            style={{
-              position: "absolute",
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: "3px",
-              backgroundColor: "rgba(255,255,255,0.1)",
-              borderBottomLeftRadius: "16px",
-              borderBottomRightRadius: "16px",
-              overflow: "hidden",
-            }}
-          >
-            <div
-              style={{
-                height: "100%",
-                width: `${progressPercent}%`,
-                backgroundColor: "#C8A96A",
-              }}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* ────────────────── FULL PLAYER SCREEN OVERLAY ────────────────── */}
-      {playerOpen && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "#0a0a0a",
-            backgroundImage: `radial-gradient(circle at top, rgba(200, 169, 106, 0.08) 0%, rgba(0,0,0,0) 70%)`,
-            zIndex: 100000,
-            color: "white",
-            overflowY: "auto",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          {/* Header */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "16px 24px",
-              borderBottom: "1px solid rgba(255,255,255,0.05)",
-            }}
-          >
-            <button
-              onClick={() => setPlayerOpen(false)}
-              style={{
-                background: "transparent",
-                border: "none",
-                color: "#a0a0a0",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                fontSize: "14px",
-              }}
-            >
-              <ChevronDown size={20} />
-              Minimize Player
-            </button>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                fontSize: "14px",
-                fontWeight: 600,
-                color: "#C8A96A",
-              }}
-            >
-              <Radio size={16} className="animate-pulse" />
-              NOW PLAYING
-            </div>
-            <button
-              onClick={() => useAudioStore.setState({ currentEpisode: null, playerOpen: false })}
-              style={{
-                background: "transparent",
-                border: "none",
-                color: "#a0a0a0",
-                cursor: "pointer",
-              }}
-            >
-              <X size={20} />
-            </button>
-          </div>
-
-          {/* Main Layout Grid */}
-          <div
-            style={{
-              flex: 1,
-              display: "grid",
-              gridTemplateColumns: "window.innerWidth > 900 ? '1fr 1fr' : '1fr'",
-              maxWidth: "1200px",
-              margin: "0 auto",
-              width: "100%",
-              padding: "24px",
-              gap: "40px",
-              alignItems: "center",
-            }}
-            className="grid lg:grid-cols-2"
-          >
-            {/* Left Column: Cover & Details */}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                textAlign: "center",
-              }}
-            >
+          <div className="flex items-center gap-3">
+            {/* Album Thumbnail with Pulsing Ring */}
+            <div className="relative shrink-0">
               <img
                 src={currentEpisode.imageUrl}
                 alt={currentTitle || ""}
-                style={{
-                  width: "100%",
-                  maxWidth: "320px",
-                  aspectRatio: "1",
-                  borderRadius: "24px",
-                  objectFit: "cover",
-                  boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.7)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  marginBottom: "28px",
-                }}
+                className={`size-12 rounded-xl object-cover shadow-md ${isPlaying ? "animate-spin-slow" : ""}`}
+                style={{ animationDuration: "12s" }}
               />
-              <h2
-                style={{
-                  fontSize: "22px",
-                  fontWeight: 700,
-                  color: "#fff",
-                  marginBottom: "8px",
-                  lineHeight: "1.3",
-                }}
-              >
+              {isPlaying && (
+                <span className="absolute -top-1 -right-1 flex size-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold opacity-75"></span>
+                  <span className="relative inline-flex rounded-full size-3 bg-gold"></span>
+                </span>
+              )}
+            </div>
+
+            {/* Episode Title & Metadata */}
+            <div className="flex-1 min-w-0">
+              <h4 className="text-xs font-sans font-bold text-white truncate group-hover:text-gold transition-colors">
                 {currentTitle}
-              </h2>
-              <div
-                style={{
-                  fontSize: "15px",
-                  color: "#C8A96A",
-                  marginBottom: "16px",
-                  fontWeight: 500,
-                }}
-              >
-                {currentEpisode.authorName}
-              </div>
-              <p
-                style={{
-                  fontSize: "14px",
-                  color: "#a0a0a0",
-                  maxWidth: "480px",
-                  lineHeight: "1.5",
-                  margin: "0 auto",
-                }}
-              >
-                {currentExcerpt}
+              </h4>
+              <p className="text-[11px] font-sans text-white/50 truncate mt-0.5">
+                {currentEpisode.authorName || "India Story Project"} • {formatTime(currentTime)} / {formatTime(duration || currentEpisode.duration)}
               </p>
             </div>
 
-            {/* Right Column: Controls & Settings */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
-              {/* Settings selectors (Voice, Lang, Speed) */}
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(3, 1fr)",
-                  gap: "12px",
-                  backgroundColor: "rgba(255,255,255,0.02)",
-                  padding: "16px",
-                  borderRadius: "16px",
-                  border: "1px solid rgba(255,255,255,0.05)",
-                }}
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                onClick={togglePlay}
+                className="size-9 rounded-full bg-gradient-to-r from-gold to-saffron text-gold-foreground flex items-center justify-center hover:scale-105 transition-transform shadow-lg cursor-pointer"
+                title={isPlaying ? "Pause" : "Play"}
               >
-                {/* Language Select */}
-                <div style={{ textAlign: "center" }}>
-                  <div
-                    style={{
-                      fontSize: "11px",
-                      color: "#a0a0a0",
-                      marginBottom: "6px",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    Language
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "center", gap: "4px" }}>
-                    <button
-                      onClick={() => setLanguage("en")}
-                      style={{
-                        padding: "4px 10px",
-                        fontSize: "12px",
-                        fontWeight: 600,
-                        borderRadius: "8px",
-                        border: "none",
-                        cursor: "pointer",
-                        background: language === "en" ? "#C8A96A" : "rgba(255,255,255,0.05)",
-                        color: language === "en" ? "black" : "white",
-                      }}
-                    >
-                      EN
-                    </button>
-                    <button
-                      onClick={() => setLanguage("hi")}
-                      style={{
-                        padding: "4px 10px",
-                        fontSize: "12px",
-                        fontWeight: 600,
-                        borderRadius: "8px",
-                        border: "none",
-                        cursor: "pointer",
-                        background: language === "hi" ? "#C8A96A" : "rgba(255,255,255,0.05)",
-                        color: language === "hi" ? "black" : "white",
-                      }}
-                    >
-                      हिं
-                    </button>
-                  </div>
-                </div>
+                {isPlaying ? (
+                  <Pause className="size-4 fill-current" />
+                ) : (
+                  <Play className="size-4 fill-current ml-0.5" />
+                )}
+              </button>
 
-                {/* Voice Selector */}
-                <div style={{ textAlign: "center" }}>
-                  <div
-                    style={{
-                      fontSize: "11px",
-                      color: "#a0a0a0",
-                      marginBottom: "6px",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    Voice
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "center", gap: "4px" }}>
-                    <button
-                      onClick={() => setVoice("female")}
-                      style={{
-                        padding: "4px 10px",
-                        fontSize: "12px",
-                        fontWeight: 600,
-                        borderRadius: "8px",
-                        border: "none",
-                        cursor: "pointer",
-                        background: voice === "female" ? "#C8A96A" : "rgba(255,255,255,0.05)",
-                        color: voice === "female" ? "black" : "white",
-                      }}
-                    >
-                      Female
-                    </button>
-                    <button
-                      onClick={() => setVoice("male")}
-                      style={{
-                        padding: "4px 10px",
-                        fontSize: "12px",
-                        fontWeight: 600,
-                        borderRadius: "8px",
-                        border: "none",
-                        cursor: "pointer",
-                        background: voice === "male" ? "#C8A96A" : "rgba(255,255,255,0.05)",
-                        color: voice === "male" ? "black" : "white",
-                      }}
-                    >
-                      Male
-                    </button>
-                  </div>
-                </div>
-
-                {/* Speed Select */}
-                <div style={{ textAlign: "center" }}>
-                  <div
-                    style={{
-                      fontSize: "11px",
-                      color: "#a0a0a0",
-                      marginBottom: "6px",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    Speed
-                  </div>
-                  <select
-                    value={playbackSpeed}
-                    onChange={(e) => setSpeed(parseFloat(e.target.value))}
-                    style={{
-                      background: "rgba(255,255,255,0.05)",
-                      color: "white",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      borderRadius: "8px",
-                      padding: "4px 8px",
-                      fontSize: "12px",
-                      cursor: "pointer",
-                      width: "100%",
-                      maxWidth: "70px",
-                      margin: "0 auto",
-                    }}
-                  >
-                    <option value="0.5">0.5x</option>
-                    <option value="1.0">1.0x</option>
-                    <option value="1.25">1.25x</option>
-                    <option value="1.5">1.5x</option>
-                    <option value="2.0">2.0x</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Progress Slider */}
-              <div>
-                <div
-                  ref={timelineRef}
-                  onClick={handleTimelineClick}
-                  style={{
-                    height: "6px",
-                    backgroundColor: "rgba(255,255,255,0.1)",
-                    borderRadius: "3px",
-                    position: "relative",
-                    cursor: "pointer",
-                    marginBottom: "12px",
-                  }}
-                >
-                  <div
-                    style={{
-                      height: "100%",
-                      width: `${progressPercent}%`,
-                      backgroundColor: "#C8A96A",
-                      borderRadius: "3px",
-                      position: "absolute",
-                      left: 0,
-                      top: 0,
-                    }}
-                  />
-                  <div
-                    style={{
-                      width: "14px",
-                      height: "14px",
-                      backgroundColor: "white",
-                      border: "2px solid #C8A96A",
-                      borderRadius: "50%",
-                      position: "absolute",
-                      left: `${progressPercent}%`,
-                      top: "50%",
-                      transform: "translate(-50%, -50%)",
-                      boxShadow: "0 2px 4px rgba(0,0,0,0.5)",
-                    }}
-                  />
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    fontSize: "12px",
-                    color: "#a0a0a0",
-                  }}
-                >
-                  <span>{formatTime(currentTime)}</span>
-                  <span>{formatTime(duration || currentEpisode.duration)}</span>
-                </div>
-              </div>
-
-              {/* Controls buttons row */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "28px",
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  stopEpisode();
                 }}
+                className="size-9 rounded-full bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer"
+                title="Close Player"
               >
-                <button
-                  onClick={skipBackward}
-                  style={{
-                    background: "transparent",
-                    color: "white",
-                    border: "none",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                  title="Rewind 15s"
-                >
-                  <RotateCcw size={24} />
-                </button>
-
-                <button
-                  onClick={togglePlay}
-                  style={{
-                    background: "white",
-                    color: "black",
-                    border: "none",
-                    borderRadius: "50%",
-                    width: "64px",
-                    height: "64px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    boxShadow: "0 10px 25px rgba(255,255,255,0.1)",
-                    transition: "transform 0.1s ease",
-                  }}
-                >
-                  {isPlaying ? (
-                    <Pause size={32} fill="black" />
-                  ) : (
-                    <Play size={32} fill="black" style={{ marginLeft: "4px" }} />
-                  )}
-                </button>
-
-                <button
-                  onClick={skipForward}
-                  style={{
-                    background: "transparent",
-                    color: "white",
-                    border: "none",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                  title="Forward 15s"
-                >
-                  <RotateCw size={24} />
-                </button>
-              </div>
-
-              {/* Utility actions */}
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  gap: "20px",
-                  borderTop: "1px solid rgba(255,255,255,0.05)",
-                  paddingTop: "20px",
-                }}
-              >
-                <button
-                  onClick={toggleMute}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    color: "#a0a0a0",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    fontSize: "13px",
-                  }}
-                >
-                  {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-                  {muted ? "Muted" : "Mute"}
-                </button>
-
-                <a
-                  href={`/api/stories/${currentEpisode.slug}/audio?lang=${language}&voice=${voice}&download=true`}
-                  download
-                  style={{
-                    color: "#a0a0a0",
-                    textDecoration: "none",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    fontSize: "13px",
-                  }}
-                >
-                  <Download size={18} />
-                  Download Audio
-                </a>
-
-                <a
-                  href="/api/podcast/feed.xml"
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{
-                    color: "#a0a0a0",
-                    textDecoration: "none",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    fontSize: "13px",
-                  }}
-                >
-                  <Rss size={18} color="#C8A96A" />
-                  Podcast Feed
-                </a>
-              </div>
+                <X className="size-4" />
+              </button>
             </div>
           </div>
 
-          {/* Bottom section: Quick browse catalog */}
-          <div
-            style={{
-              borderTop: "1px solid rgba(255,255,255,0.05)",
-              padding: "24px",
-              backgroundColor: "rgba(255,255,255,0.01)",
-              flex: 1,
-            }}
-          >
-            <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-              <h3
-                style={{
-                  fontSize: "16px",
-                  fontWeight: 600,
-                  color: "#C8A96A",
-                  marginBottom: "16px",
-                }}
-              >
-                Browse More Podcast Episodes
-              </h3>
+          {/* Miniature Progress Bar */}
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10 rounded-b-2xl overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-gold to-saffron transition-all duration-200"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+        </motion.div>
+      )}
 
-              {loadingCatalog ? (
-                <div style={{ color: "#a0a0a0", fontSize: "14px" }}>Loading episodes...</div>
-              ) : (
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-                    gap: "16px",
-                  }}
-                >
-                  {catalog
-                    .filter((ep) => ep.id !== currentEpisode.id)
-                    .map((ep) => {
-                      const epTitle = language === "hi" && ep.titleHi ? ep.titleHi : ep.title;
-                      return (
-                        <div
-                          key={ep.id}
-                          onClick={() => playEpisode(ep, language)}
-                          style={{
-                            display: "flex",
-                            gap: "12px",
-                            padding: "10px",
-                            backgroundColor: "rgba(255,255,255,0.03)",
-                            borderRadius: "12px",
-                            cursor: "pointer",
-                            transition: "background-color 0.2s",
-                            border: "1px solid rgba(255,255,255,0.04)",
-                          }}
-                          onMouseEnter={(e) =>
-                            (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.06)")
-                          }
-                          onMouseLeave={(e) =>
-                            (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.03)")
-                          }
-                        >
-                          <img
-                            src={ep.imageUrl}
-                            alt={epTitle || ""}
-                            style={{
-                              width: "60px",
-                              height: "60px",
-                              borderRadius: "8px",
-                              objectFit: "cover",
+      {/* ────────────────── FULL NOW PLAYING OVERLAY PAGE ────────────────── */}
+      <AnimatePresence>
+        {playerOpen && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed inset-0 z-[100000] bg-[#0a0a0c] text-white overflow-y-auto flex flex-col select-none"
+          >
+            {/* Ambient Background Glow */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(200,169,106,0.12),transparent_70%)] pointer-events-none" />
+
+            {/* ── Top Header Bar ── */}
+            <header className="relative z-10 flex items-center justify-between px-6 py-5 border-b border-white/10 bg-black/40 backdrop-blur-xl">
+              <button
+                type="button"
+                onClick={() => setPlayerOpen(false)}
+                className="flex items-center gap-2 text-xs font-sans font-bold uppercase tracking-wider text-white/70 hover:text-white bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full border border-white/10 transition-all cursor-pointer"
+              >
+                <ChevronDown className="size-4" />
+                <span>Minimize Player</span>
+              </button>
+
+              <div className="flex items-center gap-2">
+                <Radio className="size-4 text-gold animate-pulse" />
+                <span className="text-xs font-sans font-bold uppercase tracking-[0.25em] text-gold">
+                  Now Playing • Audio Story
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => stopEpisode()}
+                className="size-9 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                title="Close & Stop"
+              >
+                <X className="size-4" />
+              </button>
+            </header>
+
+            {/* ── Main Content Grid ── */}
+            <main className="relative z-10 flex-1 max-w-6xl w-full mx-auto px-6 py-8 flex flex-col lg:flex-row items-center gap-10 justify-center">
+              
+              {/* Left Column: Rotating Vinyl / Glowing Album Art */}
+              <div className="flex flex-col items-center gap-6 w-full max-w-sm">
+                <div className="relative group size-64 sm:size-80">
+                  {/* Outer Ambient Glow */}
+                  <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-gold/30 to-saffron/20 blur-2xl opacity-60 group-hover:opacity-100 transition-opacity" />
+                  
+                  {/* Vinyl Disc / Cover Frame */}
+                  <div className="relative size-full rounded-3xl border-2 border-white/15 overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.9)] bg-black">
+                    <img
+                      src={currentEpisode.imageUrl}
+                      alt={currentTitle || ""}
+                      className={`size-full object-cover ${isPlaying ? "scale-105" : "scale-100"} transition-transform duration-700`}
+                    />
+                    
+                    {/* Dark gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />
+
+                    {/* Playing Equalizer Overlay */}
+                    {isPlaying && (
+                      <div className="absolute bottom-4 left-4 right-4 flex items-end justify-center gap-1.5 h-8">
+                        {[40, 80, 60, 100, 75, 45, 90, 60, 85, 50].map((h, i) => (
+                          <motion.div
+                            key={i}
+                            className="w-1.5 bg-gold rounded-full"
+                            animate={{ height: [`${h * 0.3}%`, `${h}%`, `${h * 0.4}%`] }}
+                            transition={{
+                              duration: 0.6 + (i % 3) * 0.2,
+                              repeat: Infinity,
+                              repeatType: "reverse",
+                              ease: "easeInOut",
                             }}
                           />
-                          <div
-                            style={{
-                              flex: 1,
-                              minWidth: 0,
-                              display: "flex",
-                              flexDirection: "column",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <h4
-                              style={{
-                                fontSize: "13px",
-                                fontWeight: 600,
-                                margin: 0,
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                display: "-webkit-box",
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: "vertical",
-                                lineHeight: "1.3",
-                              }}
-                            >
-                              {epTitle}
-                            </h4>
-                            <span style={{ fontSize: "11px", color: "#a0a0a0", marginTop: "4px" }}>
-                              {ep.authorName}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+
+                {/* Badge tags */}
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1 rounded-full bg-gold/15 border border-gold/30 text-gold text-[10px] font-sans font-bold uppercase tracking-wider flex items-center gap-1">
+                    <Sparkles className="size-3" />
+                    HD Audio Narration
+                  </span>
+                  <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/70 text-[10px] font-sans font-bold uppercase tracking-wider">
+                    {language === "hi" ? "हिन्दी संस्करण" : "English Story"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Right Column: Information & Controls Panel */}
+              <div className="flex-1 w-full max-w-xl space-y-6">
+                {/* Title & Author */}
+                <div className="space-y-2">
+                  <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-white leading-tight">
+                    {currentTitle}
+                  </h1>
+                  <p className="text-sm font-sans text-gold/90 font-medium">
+                    Narrated for {currentEpisode.authorName || "India Story Project"}
+                  </p>
+                  {currentExcerpt && (
+                    <p className="text-xs sm:text-sm font-sans text-white/60 leading-relaxed line-clamp-3 pt-1">
+                      {currentExcerpt}
+                    </p>
+                  )}
+                </div>
+
+                {/* Main Player Glassmorphism Card */}
+                <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 backdrop-blur-md space-y-6 shadow-2xl">
+                  
+                  {/* Interactive Timeline Bar */}
+                  <div className="space-y-2">
+                    <div
+                      ref={timelineRef}
+                      onClick={handleTimelineClick}
+                      className="relative h-2.5 w-full bg-white/10 rounded-full cursor-pointer overflow-hidden group"
+                    >
+                      <div
+                        className="h-full bg-gradient-to-r from-gold via-saffron to-amber-400 rounded-full relative transition-all"
+                        style={{ width: `${progressPercent}%` }}
+                      >
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 size-3.5 bg-white rounded-full shadow-lg scale-0 group-hover:scale-100 transition-transform" />
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] font-mono text-white/50 font-medium">
+                      <span>{formatTime(currentTime)}</span>
+                      <span>{formatTime(duration || currentEpisode.duration)}</span>
+                    </div>
+                  </div>
+
+                  {/* Primary Playback Controls */}
+                  <div className="flex items-center justify-center gap-6">
+                    <button
+                      type="button"
+                      onClick={skipBackward}
+                      className="size-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 hover:text-white flex items-center justify-center transition-all hover:scale-105 cursor-pointer"
+                      title="10 Seconds Back"
+                    >
+                      <RotateCcw className="size-4" />
+                    </button>
+
+                    {/* Big Play / Pause Button */}
+                    <button
+                      type="button"
+                      onClick={togglePlay}
+                      className="size-16 rounded-full bg-gradient-to-r from-gold via-saffron to-amber-500 text-gold-foreground flex items-center justify-center hover:scale-105 active:scale-95 transition-transform shadow-[0_10px_30px_rgba(200,169,106,0.4)] cursor-pointer"
+                      title={isPlaying ? "Pause" : "Play"}
+                    >
+                      {isPlaying ? (
+                        <Pause className="size-7 fill-current" />
+                      ) : (
+                        <Play className="size-7 fill-current ml-1" />
+                      )}
+                    </button>
+
+                    {/* Instant Stop Button */}
+                    <button
+                      type="button"
+                      onClick={stopEpisode}
+                      className="size-10 rounded-full bg-white/5 hover:bg-red-500/20 border border-white/10 text-white/80 hover:text-red-400 flex items-center justify-center transition-all hover:scale-105 cursor-pointer"
+                      title="Stop Audio"
+                    >
+                      <Square className="size-4 fill-current" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={skipForward}
+                      className="size-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 hover:text-white flex items-center justify-center transition-all hover:scale-105 cursor-pointer"
+                      title="10 Seconds Forward"
+                    >
+                      <RotateCw className="size-4" />
+                    </button>
+                  </div>
+
+                  {/* Settings Control Strip: Speed, Voice, Language & Volume */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-white/10">
+                    
+                    {/* Language Switcher */}
+                    <div className="flex items-center justify-between bg-white/5 px-3 py-2 rounded-xl border border-white/5">
+                      <span className="text-[11px] font-sans font-bold text-white/60 flex items-center gap-1.5">
+                        <Languages className="size-3.5 text-gold" />
+                        Language:
+                      </span>
+                      <div className="flex gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setLanguage("en")}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-sans font-bold uppercase transition-all cursor-pointer ${
+                            language === "en"
+                              ? "bg-gold text-gold-foreground shadow"
+                              : "text-white/60 hover:text-white hover:bg-white/10"
+                          }`}
+                        >
+                          EN
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setLanguage("hi")}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-sans font-bold uppercase transition-all cursor-pointer ${
+                            language === "hi"
+                              ? "bg-gold text-gold-foreground shadow"
+                              : "text-white/60 hover:text-white hover:bg-white/10"
+                          }`}
+                        >
+                          हिन्दी
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Voice Switcher */}
+                    <div className="flex items-center justify-between bg-white/5 px-3 py-2 rounded-xl border border-white/5">
+                      <span className="text-[11px] font-sans font-bold text-white/60 flex items-center gap-1.5">
+                        <UserCheck className="size-3.5 text-gold" />
+                        Voice:
+                      </span>
+                      <div className="flex gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setVoice("female")}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-sans font-bold transition-all cursor-pointer ${
+                            voice === "female"
+                              ? "bg-gold text-gold-foreground shadow"
+                              : "text-white/60 hover:text-white hover:bg-white/10"
+                          }`}
+                        >
+                          Female (Priya)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setVoice("male")}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-sans font-bold transition-all cursor-pointer ${
+                            voice === "male"
+                              ? "bg-gold text-gold-foreground shadow"
+                              : "text-white/60 hover:text-white hover:bg-white/10"
+                          }`}
+                        >
+                          Male (Aarav)
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Playback Speed Selector */}
+                    <div className="flex items-center justify-between bg-white/5 px-3 py-2 rounded-xl border border-white/5">
+                      <span className="text-[11px] font-sans font-bold text-white/60 flex items-center gap-1.5">
+                        <Gauge className="size-3.5 text-gold" />
+                        Speed:
+                      </span>
+                      <div className="flex gap-1 overflow-x-auto">
+                        {SPEED_OPTIONS.map((spd) => (
+                          <button
+                            key={spd}
+                            type="button"
+                            onClick={() => setSpeed(spd)}
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-mono transition-all cursor-pointer ${
+                              playbackSpeed === spd
+                                ? "bg-gold text-gold-foreground font-bold"
+                                : "text-white/50 hover:text-white hover:bg-white/10"
+                            }`}
+                          >
+                            {spd}x
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Volume Slider */}
+                    <div className="flex items-center justify-between bg-white/5 px-3 py-2 rounded-xl border border-white/5 gap-2">
+                      <button
+                        type="button"
+                        onClick={toggleMute}
+                        className="text-white/70 hover:text-white transition-colors cursor-pointer"
+                        title={muted ? "Unmute" : "Mute"}
+                      >
+                        {muted || volume === 0 ? (
+                          <VolumeX className="size-4 text-red-400" />
+                        ) : (
+                          <Volume2 className="size-4 text-gold" />
+                        )}
+                      </button>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.05"
+                        value={muted ? 0 : volume}
+                        onChange={handleVolumeChange}
+                        className="w-full accent-gold bg-white/20 h-1.5 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </main>
+
+            {/* ── Bottom Section: Quick Episode Catalog Carousel ── */}
+            <footer className="relative z-10 border-t border-white/10 bg-black/60 backdrop-blur-md py-6 px-6">
+              <div className="max-w-6xl mx-auto space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-white/60 flex items-center gap-2">
+                    <Music className="size-3.5 text-gold" />
+                    More Podcast Episodes
+                  </h3>
+                  <span className="text-[10px] font-mono text-white/40">
+                    {catalog.length} Available
+                  </span>
+                </div>
+
+                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-white/10">
+                  {catalog.map((ep) => {
+                    const epTitle = language === "hi" && ep.titleHi ? ep.titleHi : ep.title;
+                    const isSelected = currentEpisode.id === ep.id;
+                    return (
+                      <div
+                        key={ep.id}
+                        onClick={() => playEpisode(ep)}
+                        className={`shrink-0 w-64 p-2.5 rounded-xl border transition-all cursor-pointer flex items-center gap-3 ${
+                          isSelected
+                            ? "bg-gold/15 border-gold/40 text-gold"
+                            : "bg-white/5 border-white/10 hover:bg-white/10 text-white"
+                        }`}
+                      >
+                        <img
+                          src={ep.imageUrl}
+                          alt={epTitle}
+                          className="size-12 rounded-lg object-cover shrink-0"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-sans font-bold truncate">{epTitle}</p>
+                          <p className="text-[10px] font-sans text-white/50 truncate mt-0.5">
+                            {ep.authorName || "India Story Project"}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </footer>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

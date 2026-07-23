@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { prisma } from "@/lib/repositories/prisma.server";
 import { json, authenticate } from "@/routes/api/-_utils";
+import { userInterestService } from "@/lib/services/user-interest.service";
 
 const db = prisma as any;
 
@@ -9,7 +10,7 @@ export const Route = createFileRoute("/api/collections")({
     handlers: {
       /**
        * GET /api/collections
-       * Fetch all collections for the authenticated user
+       * Fetch all collections for the authenticated user with their associated stories
        */
       GET: async ({ request }) => {
         const user = await authenticate(request);
@@ -25,8 +26,11 @@ export const Route = createFileRoute("/api/collections")({
                     select: {
                       id: true,
                       title: true,
+                      titleHi: true,
                       slug: true,
                       excerpt: true,
+                      readingTime: true,
+                      images: { take: 1, select: { imageUrl: true } },
                     },
                   },
                 },
@@ -68,7 +72,7 @@ export const Route = createFileRoute("/api/collections")({
 
         try {
           // Path A: Create new collection folder
-          if (name) {
+          if (name && !collectionId) {
             const collection = await db.collection.create({
               data: {
                 name: name.trim(),
@@ -81,12 +85,12 @@ export const Route = createFileRoute("/api/collections")({
           // Path B: Add story to collection
           if (collectionId && storyId) {
             // Verify ownership
-            const col = await db.collection.findUnique({
+            const col = await db.collection.findFirst({
               where: { id: collectionId, userId: user.id },
             });
             if (!col) return json({ error: "Collection not found" }, { status: 404 });
 
-            // Check if already in collection
+            // Check if story is already in collection
             const exists = await db.collectionStory.findUnique({
               where: {
                 collectionId_storyId: {
@@ -107,6 +111,20 @@ export const Route = createFileRoute("/api/collections")({
               },
             });
 
+            // Update user recommendation weights for homepage personalization
+            const targetStory = await db.story.findUnique({
+              where: { id: storyId },
+              select: { state: { select: { name: true } }, themes: { take: 1, select: { themeId: true } } },
+            });
+
+            if (targetStory) {
+              await userInterestService.trackInteraction(user.id, "BOOKMARK", {
+                targetId: storyId,
+                themeId: targetStory.themes[0]?.themeId,
+                stateName: targetStory.state?.name,
+              });
+            }
+
             return json({ success: true, item });
           }
 
@@ -114,6 +132,44 @@ export const Route = createFileRoute("/api/collections")({
         } catch (e: any) {
           console.error("[Collections API] POST error:", e);
           return json({ error: e.message || "Failed to edit collections" }, { status: 500 });
+        }
+      },
+
+      /**
+       * PATCH /api/collections
+       * Rename an existing collection
+       */
+      PATCH: async ({ request }) => {
+        const user = await authenticate(request);
+        if (!user) return json({ error: "Unauthorized" }, { status: 401 });
+
+        let body: any;
+        try {
+          body = await request.json();
+        } catch {
+          return json({ error: "Invalid JSON body" }, { status: 400 });
+        }
+
+        const { collectionId, name } = body;
+        if (!collectionId || !name || !name.trim()) {
+          return json({ error: "collectionId and non-empty name are required" }, { status: 400 });
+        }
+
+        try {
+          const col = await db.collection.findFirst({
+            where: { id: collectionId, userId: user.id },
+          });
+          if (!col) return json({ error: "Collection not found" }, { status: 404 });
+
+          const updated = await db.collection.update({
+            where: { id: collectionId },
+            data: { name: name.trim() },
+          });
+
+          return json({ success: true, collection: updated });
+        } catch (e: any) {
+          console.error("[Collections API] PATCH error:", e);
+          return json({ error: e.message || "Failed to rename collection" }, { status: 500 });
         }
       },
 
@@ -139,7 +195,7 @@ export const Route = createFileRoute("/api/collections")({
 
         try {
           // Verify ownership
-          const col = await db.collection.findUnique({
+          const col = await db.collection.findFirst({
             where: { id: collectionId, userId: user.id },
           });
           if (!col) return json({ error: "Collection not found" }, { status: 404 });

@@ -5,6 +5,7 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { useAuthStore } from "@/lib/auth-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 export const Route = createLazyFileRoute("/admin/themes/")({
   component: AdminThemesPage,
@@ -91,38 +92,39 @@ export default function AdminThemesPage() {
     const res = await fetch(`/api/admin/themes/${id}`, { method: "DELETE" });
     if (res.ok) {
       setThemes((p) => p.filter((t) => t.id !== id));
+      toast.success("Theme deleted successfully.");
     } else {
-      alert("Failed to delete theme.");
+      toast.error("Failed to delete theme.");
     }
   };
 
-  const inputCls = "h-10 rounded-sm bg-white/5 border-white/10 text-white/80 font-sans text-sm focus-visible:ring-primary/40";
+  const inputCls = "h-10 rounded-lg bg-background border-border text-foreground font-sans text-sm focus-visible:ring-primary/40";
 
   return (
     <AdminLayout title="Themes CMS" subtitle="Manage story themes and categories">
       <div className="max-w-4xl">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Main List */}
-          <div className="md:col-span-2 bg-[#161616] border border-white/10 rounded-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-white/10">
-              <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-white/40">
+          <div className="md:col-span-2 bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+            <div className="px-6 py-4 border-b border-border/60">
+              <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-muted-foreground">
                 All Themes
               </h3>
             </div>
             {loading ? (
-              <div className="p-8 text-white/20 text-xs font-sans text-center">Loading…</div>
+              <div className="p-8 text-muted-foreground text-xs font-sans text-center">Loading…</div>
             ) : (
-              <div className="divide-y divide-white/5">
+              <div className="divide-y divide-border/40">
                 {themes.map((t) => (
                   <div
                     key={t.id}
-                    className="flex items-center justify-between px-6 py-3 hover:bg-white/3 group"
+                    className="flex items-center justify-between px-6 py-3 hover:bg-muted/40 group"
                   >
                     <div className="flex items-center gap-3">
-                      <Compass className="size-4 text-white/20" />
+                      <Compass className="size-4 text-muted-foreground" />
                       <div>
-                        <p className="text-sm font-sans text-white/80">{t.name}</p>
-                        <p className="text-xs font-mono text-white/30">
+                        <p className="text-sm font-sans text-foreground font-semibold">{t.name}</p>
+                        <p className="text-xs font-mono text-muted-foreground">
                           {t.slug} ({t._count?.stories ?? 0} stories)
                         </p>
                       </div>
@@ -130,14 +132,14 @@ export default function AdminThemesPage() {
                     <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => handleEdit(t)}
-                        className="text-white/30 hover:text-primary transition-colors cursor-pointer"
+                        className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                         title="Edit Theme"
                       >
                         <Edit className="size-4" />
                       </button>
                       <button
                         onClick={() => void handleDelete(t.id)}
-                        className="text-white/30 hover:text-red-400 transition-colors cursor-pointer"
+                        className="text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
                         title="Delete Theme"
                       >
                         <Trash2 className="size-4" />
@@ -150,13 +152,13 @@ export default function AdminThemesPage() {
           </div>
 
           {/* Add/Edit Form */}
-          <div className="bg-[#161616] border border-white/10 rounded-sm p-6">
-            <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-white/40 mb-6">
+          <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+            <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-muted-foreground mb-6">
               {editId ? "Edit Theme" : "New Theme"}
             </h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-sans font-bold uppercase tracking-widest text-white/40 mb-2">
+                <label className="block text-xs font-sans font-bold uppercase tracking-widest text-muted-foreground mb-2">
                   Name
                 </label>
                 <Input
@@ -170,7 +172,7 @@ export default function AdminThemesPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-sans font-bold uppercase tracking-widest text-white/40 mb-2">
+                <label className="block text-xs font-sans font-bold uppercase tracking-widest text-muted-foreground mb-2">
                   Slug
                 </label>
                 <Input
@@ -183,13 +185,13 @@ export default function AdminThemesPage() {
                 />
               </div>
 
-              {error && <p className="text-xs text-red-400 font-sans">{error}</p>}
+              {error && <p className="text-xs text-destructive font-sans">{error}</p>}
 
               <div className="flex gap-2 pt-2">
                 <Button
                   id="theme-submit-btn"
                   type="submit"
-                  className="flex-1 h-10 rounded-sm bg-primary hover:bg-primary/90 text-white font-sans text-xs uppercase tracking-widest cursor-pointer"
+                  className="flex-1 h-10 rounded-lg bg-primary hover:bg-primary/95 text-primary-foreground font-sans text-xs uppercase tracking-widest font-bold cursor-pointer shadow-sm"
                 >
                   {editId ? "Update" : "Create"}
                 </Button>

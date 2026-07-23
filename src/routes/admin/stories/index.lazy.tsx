@@ -247,29 +247,29 @@ export default function AdminStoriesPage() {
       <div className="space-y-6 max-w-7xl mx-auto select-none">
         
         {/* Header Block */}
-        <div className="flex flex-col sm:flex-row justify-between sm:items-center border-b border-white/5 pb-5 gap-4">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center border-b border-border/60 pb-5 gap-4">
           <div>
-            <h1 className="font-display text-2xl font-bold text-white tracking-wide">
+            <h1 className="font-display text-2xl font-bold text-foreground tracking-wide">
               Stories Curation
             </h1>
-            <p className="text-[10px] font-sans text-white/40 uppercase tracking-widest mt-1.5 font-bold">
+            <p className="text-[10px] font-sans text-muted-foreground uppercase tracking-widest mt-1.5 font-bold">
               Manage dispatches catalog, set featured stories, duplicate drafts, and run bulk operations
             </p>
           </div>
           <Link to="/admin/stories/new" className="self-start sm:self-center">
-            <Button className="h-10 px-4 bg-[#C8A96A] hover:bg-[#C8A96A]/95 text-black font-sans text-xs uppercase tracking-widest font-black rounded-lg gap-2 cursor-pointer">
+            <Button className="h-10 px-4 bg-primary hover:bg-primary/95 text-primary-foreground font-sans text-xs uppercase tracking-widest font-bold rounded-lg gap-2 cursor-pointer shadow-sm">
               <Plus className="size-4 shrink-0" /> New Dispatch
             </Button>
           </Link>
         </div>
 
         {/* Toolbar & Filters */}
-        <div className="bg-[#121212] border border-white/5 p-4 rounded-lg space-y-4">
+        <div className="bg-card border border-border p-4 rounded-xl space-y-4 shadow-sm">
           <div className="flex flex-col md:flex-row items-center gap-4">
             
             {/* Search */}
             <div className="relative flex-1 w-full">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-white/30" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input
                 id="admin-stories-search"
                 type="text"
@@ -279,19 +279,19 @@ export default function AdminStoriesPage() {
                   setQuery(e.target.value);
                   setPage(1);
                 }}
-                className="pl-10 h-10 bg-[#161616] border-white/5 focus-visible:border-[#C8A96A]/45 rounded-lg text-xs placeholder:text-white/20 w-full"
+                className="pl-10 h-10 bg-background border-border focus-visible:border-primary/45 rounded-lg text-xs placeholder:text-muted-foreground/60 w-full text-foreground"
               />
             </div>
 
             {/* Sorting */}
             <div className="flex items-center gap-2.5 w-full md:w-auto">
-              <span className="text-[9px] uppercase font-bold text-white/30 whitespace-nowrap tracking-wider font-sans">
+              <span className="text-[9px] uppercase font-bold text-muted-foreground whitespace-nowrap tracking-wider font-sans">
                 Sort By
               </span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="h-10 bg-[#161616] border border-white/5 text-white/80 font-sans text-xs px-3 rounded-lg focus:outline-none focus:border-[#C8A96A]/40 w-full md:w-36 cursor-pointer"
+                className="h-10 bg-background border border-border text-foreground font-sans text-xs px-3 rounded-lg focus:outline-none focus:border-primary/40 w-full md:w-36 cursor-pointer"
               >
                 <option value="date">Date Created</option>
                 <option value="views">Total Views</option>
@@ -301,11 +301,11 @@ export default function AdminStoriesPage() {
           </div>
 
           {/* Filters */}
-          <div className="flex flex-wrap gap-4 items-center pt-3 border-t border-white/5 text-xs text-white/50">
+          <div className="flex flex-wrap gap-4 items-center pt-3 border-t border-border/40 text-xs text-muted-foreground">
             
             {/* Status filters */}
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[9px] uppercase font-bold text-white/30 mr-1 tracking-wider font-sans">
+              <span className="text-[9px] uppercase font-bold text-muted-foreground mr-1 tracking-wider font-sans">
                 Status
               </span>
               {["all", "Published", "Draft", "Archived"].map((s) => (
@@ -315,10 +315,10 @@ export default function AdminStoriesPage() {
                     setStatusFilter(s);
                     setPage(1);
                   }}
-                  className={`px-2.5 py-1 text-[10px] font-sans font-black uppercase tracking-wider rounded-md transition-colors cursor-pointer ${
+                  className={`px-2.5 py-1 text-[10px] font-sans font-bold uppercase tracking-wider rounded-md transition-colors cursor-pointer ${
                     statusFilter === s
-                      ? "bg-white text-black font-semibold"
-                      : "text-white/40 hover:text-white hover:bg-white/5"
+                      ? "bg-primary text-primary-foreground font-semibold shadow-sm"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   }`}
                 >
                   {s === "all" ? "All" : s}
@@ -328,14 +328,14 @@ export default function AdminStoriesPage() {
 
             {/* Theme filter */}
             <div className="flex items-center gap-2">
-              <span className="text-[9px] uppercase font-bold text-white/30 tracking-wider font-sans">Theme</span>
+              <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider font-sans">Theme</span>
               <select
                 value={themeFilter}
                 onChange={(e) => {
                   setThemeFilter(e.target.value);
                   setPage(1);
                 }}
-                className="bg-[#161616] border border-white/5 text-white/70 font-sans text-[11px] px-2 py-1 rounded-md focus:outline-none cursor-pointer"
+                className="bg-background border border-border text-foreground font-sans text-[11px] px-2 py-1 rounded-md focus:outline-none cursor-pointer"
               >
                 <option value="all">All Themes</option>
                 {themesList.map((t) => (
@@ -348,14 +348,14 @@ export default function AdminStoriesPage() {
 
             {/* State filter */}
             <div className="flex items-center gap-2">
-              <span className="text-[9px] uppercase font-bold text-white/30 tracking-wider font-sans">State</span>
+              <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider font-sans">State</span>
               <select
                 value={stateFilter}
                 onChange={(e) => {
                   setStateFilter(e.target.value);
                   setPage(1);
                 }}
-                className="bg-[#161616] border border-white/5 text-white/70 font-sans text-[11px] px-2 py-1 rounded-md focus:outline-none cursor-pointer"
+                className="bg-background border border-border text-foreground font-sans text-[11px] px-2 py-1 rounded-md focus:outline-none cursor-pointer"
               >
                 <option value="all">All States</option>
                 {states.map((s) => (
@@ -369,17 +369,17 @@ export default function AdminStoriesPage() {
         </div>
 
         {/* Stories list */}
-        <div className="bg-[#121212] border border-white/5 rounded-lg overflow-hidden">
+        <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-white/5 bg-white/2 text-white/40 uppercase tracking-wider text-[9px] font-bold">
+                <tr className="border-b border-border/60 bg-muted/30 text-muted-foreground uppercase tracking-wider text-[9px] font-bold">
                   <th className="p-4 w-12 text-center">
                     <input
                       type="checkbox"
                       checked={stories.length > 0 && selectedIds.length === stories.length}
                       onChange={handleSelectAll}
-                      className="cursor-pointer accent-[#C8A96A]"
+                      className="cursor-pointer accent-primary"
                     />
                   </th>
                   <th className="p-4">Dispatch Title</th>
@@ -391,12 +391,12 @@ export default function AdminStoriesPage() {
                   <th className="p-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5 text-white/70">
+              <tbody className="divide-y divide-border/40 text-foreground">
                 {loading ? (
                   Array.from({ length: 8 }).map((_, i) => <SkeletonRow key={i} />)
                 ) : stories.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="p-16 text-center text-white/20 font-sans italic">
+                    <td colSpan={8} className="p-16 text-center text-muted-foreground font-sans italic">
                       No story dispatches found matching current filters.
                     </td>
                   </tr>
@@ -406,39 +406,39 @@ export default function AdminStoriesPage() {
                     return (
                       <tr
                         key={story.id}
-                        className={`hover:bg-white/2 transition-colors duration-150 group ${isSelected ? "bg-[#C8A96A]/5" : ""}`}
+                        className={`hover:bg-muted/40 transition-colors duration-150 group ${isSelected ? "bg-primary/5" : ""}`}
                       >
                         <td className="p-4 text-center">
                           <input
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => handleSelectRow(story.id)}
-                            className="cursor-pointer accent-[#C8A96A]"
+                            className="cursor-pointer accent-primary"
                           />
                         </td>
-                        <td className="p-4 font-semibold text-white truncate max-w-xs">
+                        <td className="p-4 font-semibold text-foreground truncate max-w-xs">
                           <div className="flex items-center gap-2">
                             {story.featured && (
-                              <Star className="size-3.5 text-[#C8A96A] fill-[#C8A96A] shrink-0" />
+                              <Star className="size-3.5 text-primary fill-primary shrink-0" />
                             )}
-                            <span className="text-white group-hover:text-[#C8A96A] transition-colors">
+                            <span className="text-foreground group-hover:text-primary transition-colors font-medium">
                               {story.title}
                             </span>
                           </div>
                         </td>
-                        <td className="p-4 text-white/50">
+                        <td className="p-4 text-muted-foreground">
                           {Array.isArray(story.themes)
                             ? story.themes.join(", ")
                             : ((story as any).category ?? "—")}
                         </td>
-                        <td className="p-4 text-white/40">{story.region}</td>
+                        <td className="p-4 text-muted-foreground">{story.region}</td>
                         <td className="p-4">
                           <StatusBadge status={story.status} />
                         </td>
-                        <td className="p-4 font-mono font-bold text-white/60">
+                        <td className="p-4 font-mono font-bold text-foreground">
                           {story.viewCount.toLocaleString()}
                         </td>
-                        <td className="p-4 text-white/40 whitespace-nowrap">
+                        <td className="p-4 text-muted-foreground whitespace-nowrap">
                           {story.publishedAt
                             ? new Date(story.publishedAt).toLocaleDateString("en-IN")
                             : "—"}

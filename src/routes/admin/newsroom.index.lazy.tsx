@@ -194,19 +194,19 @@ function NewsroomConsolePage() {
 
   // Skeleton UI components
   const SkeletonKpi = () => (
-    <div className="bg-[#121212] border border-white/5 p-4 rounded-lg h-24 flex flex-col justify-between animate-pulse">
-      <div className="h-3 w-20 bg-white/5 rounded" />
-      <div className="h-7 w-12 bg-white/5 rounded mt-2" />
+    <div className="bg-card border border-border p-4 rounded-xl h-24 flex flex-col justify-between animate-pulse shadow-sm">
+      <div className="h-3 w-20 bg-muted/40 rounded" />
+      <div className="h-7 w-12 bg-muted/40 rounded mt-2" />
     </div>
   );
 
   const SkeletonCalendar = () => (
-    <div className="bg-[#121212] border border-white/5 p-6 rounded-lg space-y-4 animate-pulse">
+    <div className="bg-card border border-border p-6 rounded-xl space-y-4 animate-pulse shadow-sm">
       <div className="flex items-center justify-between">
-        <div className="h-4 w-40 bg-white/5 rounded" />
-        <div className="h-4 w-28 bg-white/5 rounded" />
+        <div className="h-4 w-40 bg-muted/40 rounded" />
+        <div className="h-4 w-28 bg-muted/40 rounded" />
       </div>
-      <div className="grid grid-cols-7 gap-1 h-32 bg-white/2 rounded" />
+      <div className="grid grid-cols-7 gap-1 h-32 bg-muted/20 rounded" />
     </div>
   );
 
@@ -215,12 +215,12 @@ function NewsroomConsolePage() {
       <div className="space-y-6 max-w-7xl mx-auto select-none">
         
         {/* Title Header */}
-        <div className="flex flex-col md:flex-row justify-between md:items-center border-b border-white/5 pb-5 gap-4">
+        <div className="flex flex-col md:flex-row justify-between md:items-center border-b border-border/60 pb-5 gap-4">
           <div>
-            <h1 className="font-display text-2xl font-bold text-white tracking-wide">
+            <h1 className="font-display text-2xl font-bold text-foreground tracking-wide">
               Enterprise Editorial Newsroom
             </h1>
-            <p className="text-[10px] font-sans text-white/40 uppercase tracking-widest mt-1.5 font-bold">
+            <p className="text-[10px] font-sans text-muted-foreground uppercase tracking-widest mt-1.5 font-bold">
               Manage dispatches review stages, scheduled releases, and editorial revisions logs
             </p>
           </div>
@@ -232,35 +232,35 @@ function NewsroomConsolePage() {
             Array.from({ length: 4 }).map((_, i) => <SkeletonKpi key={i} />)
           ) : (
             <>
-              <div className="bg-[#121212] border border-white/5 p-4 rounded-lg flex flex-col justify-between h-24 hover:border-white/10 transition-colors">
-                <span className="text-[9px] font-sans font-black uppercase tracking-wider text-amber-400">
+              <div className="bg-card border border-border p-4 rounded-xl flex flex-col justify-between h-24 hover:border-primary/40 transition-colors shadow-sm">
+                <span className="text-[9px] font-sans font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
                   Pending Review
                 </span>
-                <h2 className="font-display text-3xl font-bold text-white mt-auto">
+                <h2 className="font-display text-3xl font-bold text-foreground mt-auto">
                   {data?.pendingReview.length ?? 0}
                 </h2>
               </div>
-              <div className="bg-[#121212] border border-white/5 p-4 rounded-lg flex flex-col justify-between h-24 hover:border-white/10 transition-colors">
-                <span className="text-[9px] font-sans font-black uppercase tracking-wider text-indigo-400">
+              <div className="bg-card border border-border p-4 rounded-xl flex flex-col justify-between h-24 hover:border-primary/40 transition-colors shadow-sm">
+                <span className="text-[9px] font-sans font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
                   Needs Fact Check
                 </span>
-                <h2 className="font-display text-3xl font-bold text-white mt-auto">
+                <h2 className="font-display text-3xl font-bold text-foreground mt-auto">
                   {data?.needsFactCheck.length ?? 0}
                 </h2>
               </div>
-              <div className="bg-[#121212] border border-white/5 p-4 rounded-lg flex flex-col justify-between h-24 hover:border-white/10 transition-colors">
-                <span className="text-[9px] font-sans font-black uppercase tracking-wider text-teal-400">
+              <div className="bg-card border border-border p-4 rounded-xl flex flex-col justify-between h-24 hover:border-primary/40 transition-colors shadow-sm">
+                <span className="text-[9px] font-sans font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400">
                   Needs SEO
                 </span>
-                <h2 className="font-display text-3xl font-bold text-white mt-auto">
+                <h2 className="font-display text-3xl font-bold text-foreground mt-auto">
                   {data?.needsSEO.length ?? 0}
                 </h2>
               </div>
-              <div className="bg-[#121212] border border-white/5 p-4 rounded-lg flex flex-col justify-between h-24 hover:border-white/10 transition-colors">
-                <span className="text-[9px] font-sans font-black uppercase tracking-wider text-emerald-400">
+              <div className="bg-card border border-border p-4 rounded-xl flex flex-col justify-between h-24 hover:border-primary/40 transition-colors shadow-sm">
+                <span className="text-[9px] font-sans font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                   Scheduled Later
                 </span>
-                <h2 className="font-display text-3xl font-bold text-white mt-auto">
+                <h2 className="font-display text-3xl font-bold text-foreground mt-auto">
                   {data?.scheduled.length ?? 0}
                 </h2>
               </div>
@@ -272,27 +272,27 @@ function NewsroomConsolePage() {
         {loading && !data ? (
           <SkeletonCalendar />
         ) : (
-          <div className="bg-[#121212] border border-white/5 p-6 rounded-lg">
+          <div className="bg-card border border-border p-6 rounded-xl shadow-sm">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
-                <CalendarIcon className="size-4 text-[#C8A96A]" />
-                <h3 className="text-[10px] font-sans font-black text-white/40 uppercase tracking-widest">
+                <CalendarIcon className="size-4 text-primary" />
+                <h3 className="text-[10px] font-sans font-bold text-muted-foreground uppercase tracking-widest">
                   Editorial Calendar
                 </h3>
               </div>
               <div className="flex items-center gap-3">
                 <button
                   onClick={prevMonth}
-                  className="size-7 rounded-md bg-white/2 hover:bg-white/5 border border-white/5 flex items-center justify-center text-white/55 hover:text-white transition-colors cursor-pointer"
+                  className="size-7 rounded-md bg-muted/30 hover:bg-muted border border-border/40 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                 >
                   <ChevronLeft className="size-3.5" />
                 </button>
-                <span className="text-xs font-bold text-white font-sans uppercase tracking-widest">
+                <span className="text-xs font-bold text-foreground font-sans uppercase tracking-widest">
                   {currentDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
                 </span>
                 <button
                   onClick={nextMonth}
-                  className="size-7 rounded-md bg-white/2 hover:bg-white/5 border border-white/5 flex items-center justify-center text-white/55 hover:text-white transition-colors cursor-pointer"
+                  className="size-7 rounded-md bg-muted/30 hover:bg-muted border border-border/40 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                 >
                   <ChevronRight className="size-3.5" />
                 </button>

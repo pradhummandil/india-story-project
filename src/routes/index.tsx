@@ -11,9 +11,14 @@ import {
   TrendingUp,
   CheckCircle2,
   AlertCircle,
+  Youtube,
+  Play,
 } from "lucide-react";
 import { SiteLayout } from "@/components/site/Layout";
 import { StoryCard } from "@/components/site/StoryCard";
+import { YouTubeStoryCard, type YouTubeVideoItem } from "@/components/site/YouTubeStoryCard";
+import { YouTubeModalPlayer } from "@/components/site/YouTubeModalPlayer";
+import { YOUTUBE_STORY_VIDEOS } from "@/lib/youtube-videos";
 import { Hero } from "@/components/site/Hero";
 import { StoryMap } from "@/components/site/StoryMap";
 import { RecommendedForYou } from "@/components/site/RecommendedForYou";
@@ -139,6 +144,7 @@ function Home() {
   const [email, setEmail] = useState("");
   const [newsletterStatus, setNewsletterStatus] = useState<NewsletterStatus>("idle");
   const [newsletterMessage, setNewsletterMessage] = useState("");
+  const [selectedVideo, setSelectedVideo] = useState<YouTubeVideoItem | null>(null);
 
   const loaderData = Route.useLoaderData() as LoaderData;
   const lang = useI18nStore((s) => s.lang);
@@ -282,25 +288,25 @@ function Home() {
 
           {/* ── 2. TRENDING STORIES ── */}
           {trendingStories.length > 0 && (
-            <section className="container mx-auto px-6 py-16 md:py-24 border-b border-border/70 bg-card/10">
-              <div className="mb-12 flex items-center gap-3">
+            <section className="container mx-auto px-6 py-12 md:py-16 border-b border-border/70 bg-card/10">
+              <div className="mb-10 flex items-center gap-3">
                 <span className="p-2 rounded-full bg-primary/5 text-primary border border-primary/10">
                   <TrendingUp className="size-5" />
                 </span>
                 <div>
-                  <p className="text-xs uppercase tracking-widest text-gold font-sans font-bold">
+                  <p className={`text-xs text-gold font-sans font-bold mb-1 ${lang === "en" ? "uppercase tracking-widest" : ""}`}>
                     {lang === "en" ? "Popular Reading" : "लोकप्रिय पाठ"}
                   </p>
-                  <h2 className="font-display text-3xl md:text-5xl font-bold">
+                  <h2 className="font-display text-3xl md:text-5xl font-bold leading-tight">
                     {lang === "en" ? "Trending Stories" : "ट्रेंडिंग कहानियाँ"}
                   </h2>
                 </div>
               </div>
 
               <div className="relative">
-                <div className="flex gap-6 overflow-x-auto pb-6 scrollbar-none snap-x snap-mandatory touch-pan-x">
+                <div className="flex gap-6 items-stretch overflow-x-auto pb-6 scrollbar-none snap-x snap-mandatory touch-pan-x">
                   {trendingStories.map((s: any, i: number) => (
-                    <div key={s.id} className="w-[280px] sm:w-[320px] md:w-[350px] shrink-0 snap-start">
+                    <div key={s.id} className="w-[280px] sm:w-[320px] md:w-[350px] shrink-0 snap-start flex flex-col">
                       <StoryCard story={s} index={i} />
                     </div>
                   ))}
@@ -310,15 +316,48 @@ function Home() {
             </section>
           )}
 
+          {/* ── 2.5. STORIES VIDEO SECTION (Right Below Trending Stories) ── */}
+          <section className="container mx-auto px-6 py-12 md:py-16 border-b border-border/70 bg-card/30">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10 border-b border-border pb-6">
+              <div>
+                <p className={`text-xs font-sans font-bold text-red-500 mb-1 flex items-center gap-2 ${lang === "en" ? "uppercase tracking-[0.25em]" : ""}`}>
+                  <Youtube className="size-4 fill-red-500 text-red-500" />
+                  {lang === "en" ? "Official Cinema Dispatches & Shorts" : "आधिकारिक सिनेमा वीडियो और शॉर्ट्स"}
+                </p>
+                <h2 className="font-display text-3xl md:text-5xl font-bold leading-tight">
+                  {lang === "en" ? "Stories Video" : "वीडियो कहानियां"}
+                </h2>
+              </div>
+              <Link
+                to="/videos"
+                className="text-xs uppercase tracking-[0.15em] font-sans font-bold text-red-500 hover:text-red-400 inline-flex items-center gap-2 group transition-colors duration-300"
+              >
+                {lang === "en" ? "View All Videos & Shorts" : "सभी वीडियो देखें"}
+                <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+              {YOUTUBE_STORY_VIDEOS.slice(0, 4).map((v, idx) => (
+                <YouTubeStoryCard
+                  key={v.id}
+                  video={v}
+                  index={idx}
+                  onPlay={(selected) => setSelectedVideo(selected)}
+                />
+              ))}
+            </div>
+          </section>
+
           {/* ── 3. LATEST STORIES ── */}
           {latestStories.length > 0 && (
-            <section className="container mx-auto px-6 py-16 md:py-24 border-b border-border/70">
-              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12 border-b border-border pb-6">
+            <section className="container mx-auto px-6 py-12 md:py-16 border-b border-border/70">
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10 border-b border-border pb-6">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.25em] font-sans font-bold text-gold mb-2">
+                  <p className={`text-xs font-sans font-bold text-gold mb-1 ${lang === "en" ? "uppercase tracking-[0.25em]" : ""}`}>
                     {lang === "en" ? "Fresh Perspectives" : "नए दृष्टिकोण"}
                   </p>
-                  <h2 className="font-display text-3xl md:text-5xl font-bold">
+                  <h2 className="font-display text-3xl md:text-5xl font-bold leading-tight">
                     {lang === "en" ? "Latest Stories" : "नवीनतम कहानियाँ"}
                   </h2>
                 </div>
@@ -331,84 +370,35 @@ function Home() {
                 </Link>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {latestStories.map((s: any, i: number) => {
-                  // Use DB author directly — not the fake hash
-                  const authorName = (s as any).author || (s as any).authorName || "ISP Editorial";
-                  return (
-                    <motion.div
-                      key={s.id}
-                      initial={{ opacity: 0, y: 15 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.6, delay: i * 0.05 }}
-                      className="border border-border/60 bg-card p-4 hover:border-gold/30 hover:bg-card/70 transition-all duration-300 flex flex-col sm:flex-row gap-5 shadow-sm"
-                    >
-                      <div className="w-full sm:w-2/5 aspect-[16/10] sm:aspect-square overflow-hidden bg-muted border border-border/30 shrink-0">
-                        {s.image ? (
-                          <img
-                            src={getOptimizedImageUrl(s.image, 400)}
-                            srcSet={getResponsiveSrcSet(s.image, [240, 400, 600])}
-                            sizes="(max-width: 640px) 100vw, 20vw"
-                            alt={s.imageAlt ?? s.title}
-                            loading="lazy"
-                            decoding="async"
-                            width="300"
-                            height="225"
-                            className="w-full h-full object-cover filter saturate-[0.8] hover:scale-103 transition-transform duration-500"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-amber-950/40 to-stone-900 flex items-center justify-center">
-                            <span className="font-display italic text-xl text-gold/30">ISP</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex flex-col justify-between py-1 flex-1">
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between text-[9px] tracking-[0.2em] uppercase font-bold text-gold font-sans">
-                            <span>
-                              {Array.isArray((s as any).themes) && (s as any).themes.length > 0
-                                ? (s as any).themes[0]
-                                : ""}
-                            </span>
-                            <span className="text-muted-foreground">{s.region}</span>
-                          </div>
-                          <h4 className="font-display text-xl font-bold leading-tight hover:text-primary transition-colors">
-                            <Link to="/stories/$slug" params={{ slug: s.slug }}>
-                              {s.title}
-                            </Link>
-                          </h4>
-                          <p className="text-xs text-muted-foreground line-clamp-2 font-sans">
-                            {s.excerpt}
-                          </p>
-                        </div>
-                        <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/40 text-[10px] text-muted-foreground font-sans font-medium">
-                          <span>
-                            {lang === "en" ? `By ${authorName}` : `लेखक: ${authorName}`}
-                          </span>
-                          <span>{s.readTime || s.readingTime || "3 min read"}</span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4.5 items-stretch">
+                {latestStories.slice(0, 4).map((s: any, i: number) => (
+                  <motion.div
+                    key={s.id}
+                    initial={{ opacity: 0, y: 15 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: i * 0.05 }}
+                  >
+                    <StoryCard story={s} index={i} />
+                  </motion.div>
+                ))}
               </div>
             </section>
           )}
 
-          {/* ── 4. CONTINUE READING (client-only — reads localStorage) ── */}
+          {/* ── 4. CONTINUE READING ── */}
           <ClientOnly>
             <ContinueReading />
           </ClientOnly>
 
           {/* ── 5. FEATURED STORY ── */}
           {featuredStory && (
-            <section className="container mx-auto px-6 py-16 md:py-24 border-b border-border/70">
-              <div className="text-center mb-12 md:mb-16">
-                <p className="text-xs uppercase tracking-[0.25em] font-sans font-bold text-gold mb-3">
+            <section className="container mx-auto px-6 py-12 md:py-16 border-b border-border/70">
+              <div className="text-center mb-10 md:mb-12">
+                <p className={`text-xs font-sans font-bold text-gold mb-2 ${lang === "en" ? "uppercase tracking-[0.25em]" : ""}`}>
                   {lang === "en" ? "Featured Story" : "विशेष कहानी"}
                 </p>
-                <h2 className="font-display text-3xl md:text-5xl font-bold">
+                <h2 className="font-display text-3xl md:text-5xl font-bold leading-tight">
                   {commonText.featuredToday}
                 </h2>
                 <div className="w-12 h-[1px] bg-primary mx-auto mt-4" />
@@ -420,25 +410,25 @@ function Home() {
           {/* ── 6. EDITOR'S PICKS ── */}
           {editorsPicks.length > 0 && <EditorsPicks stories={editorsPicks} />}
 
-          {/* ── 7. WEEKLY STORIES (published in last 7 days) ── */}
+          {/* ── 7. WEEKLY STORIES ── */}
           {weeklyStories.length > 0 && (
-            <section className="container mx-auto px-6 py-16 md:py-20 border-b border-border/70 bg-card/5">
-              <div className="flex items-center justify-between mb-10">
+            <section className="container mx-auto px-6 py-12 md:py-16 border-b border-border/70 bg-card/5">
+              <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
                   <span className="p-2 rounded-full bg-saffron/10 text-saffron border border-saffron/20">
                     <Calendar className="size-4" />
                   </span>
                   <div>
-                    <p className="text-xs uppercase tracking-[0.25em] font-sans font-bold text-gold mb-1">
+                    <p className={`text-xs font-sans font-bold text-gold mb-1 ${lang === "en" ? "uppercase tracking-[0.25em]" : ""}`}>
                       {lang === "en" ? "This Week" : "इस सप्ताह"}
                     </p>
-                    <h2 className="font-display text-2xl md:text-4xl font-bold">
+                    <h2 className="font-display text-2xl md:text-4xl font-bold leading-tight">
                       {lang === "en" ? "Fresh from the Field" : "नई कहानियाँ"}
                     </h2>
                   </div>
                 </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4.5">
                 {weeklyStories.slice(0, 6).map((s: any, i: number) => (
                   <motion.div
                     key={s.id}
@@ -464,8 +454,8 @@ function Home() {
 
           {/* ── 10. HIDDEN GEMS ── */}
           {hiddenGems.length > 0 && (
-            <section className="container mx-auto px-6 py-16 md:py-20 border-b border-border/70">
-              <div className="flex items-center justify-between mb-10">
+            <section className="container mx-auto px-6 py-12 md:py-16 border-b border-border/70">
+              <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
                   <span className="p-2 rounded-full bg-gold/10 text-gold border border-gold/20">
                     <Sparkles className="size-4" />
@@ -487,7 +477,7 @@ function Home() {
                   <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {hiddenGems.slice(0, 4).map((s: any, i: number) => (
                   <motion.div
                     key={s.id}
@@ -504,8 +494,8 @@ function Home() {
           )}
 
           {/* ── 11. STORIES BY CATEGORY (Thematic Explorer) ── */}
-          <section className="container mx-auto px-6 py-16 md:py-24 border-b border-border/70">
-            <div className="text-center mb-12 md:mb-16">
+          <section className="container mx-auto px-6 py-12 md:py-16 border-b border-border/70">
+            <div className="text-center mb-10 md:mb-12">
               <p className="text-xs uppercase tracking-[0.25em] font-sans font-bold text-gold mb-3">
                 {lang === "en" ? "Thematic Explorer" : "विषय-आधारित अन्वेषक"}
               </p>
@@ -526,7 +516,7 @@ function Home() {
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6, delay: i * 0.05 }}
-                    className="group relative aspect-[3/4] overflow-hidden border border-border/40 bg-black cursor-pointer shadow-sm hover:border-gold/50"
+                    className="group relative aspect-[3/4] overflow-hidden border border-border/40 bg-black cursor-pointer shadow-sm hover:border-gold/50 rounded-2xl"
                   >
                     {/* Background image (from DB) or gradient fallback */}
                     {cat.image ? (
@@ -654,6 +644,7 @@ function Home() {
           </section>
         </>
       )}
+
     </SiteLayout>
   );
 }

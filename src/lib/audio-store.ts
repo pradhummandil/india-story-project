@@ -27,6 +27,7 @@ export type AudioState = {
   initialized: boolean;
 
   playEpisode: (episode: Episode, lang?: "en" | "hi", startFrom?: number) => void;
+  stopEpisode: () => void;
   togglePlay: () => void;
   seek: (time: number) => void;
   setSpeed: (speed: number) => void;
@@ -107,6 +108,20 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     audio.play().catch((err) => {
       console.warn("Failed to trigger audio autoplay:", err);
       set({ isPlaying: false });
+    });
+  },
+
+  stopEpisode: () => {
+    const { audio } = get();
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+    set({
+      currentEpisode: null,
+      isPlaying: false,
+      currentTime: 0,
+      playerOpen: false,
     });
   },
 

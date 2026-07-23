@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { json, checkRateLimit, getClientIp, sanitizeInput } from "@/routes/api/-_utils";
 import { prisma } from "@/lib/repositories/prisma.server";
+import { semanticSearchService } from "@/lib/services/semantic-search.service";
 
 // ============================================================
 // In-memory cache for search results (5-min TTL for trending/suggestions)
@@ -39,7 +40,7 @@ function buildOrderBy(sort: string | null): any {
 }
 
 // ============================================================
-// PostgreSQL FTS + ILIKE hybrid search
+// PostgreSQL FTS + AI Semantic Search
 // ============================================================
 async function searchStories(opts: {
   q: string;
@@ -55,7 +56,38 @@ async function searchStories(opts: {
   const { q, page, limit, sort, theme, state, author, minReadTime, maxReadTime } = opts;
   const skip = (page - 1) * limit;
 
-  // Build Prisma where clause for published stories
+  // 1. First attempt: AI Semantic Search via Gemini + concept expansion
+  if (q && q.trim() !== "") {
+    try {
+      const semanticResults = await semanticSearchService.searchSemantic(q);
+      if (semanticResults && semanticResults.length > 0) {
+        let filtered = semanticResults;
+        if (theme && theme.toLowerCase() !== "all") {
+          filtered = filtered.filter((s: any) =>
+            s.themes.some((t: any) => t.slug?.toLowerCase() === theme.toLowerCase() || t.name?.toLowerCase() === theme.toLowerCase())
+          );
+        }
+        if (state && state.toLowerCase() !== "all") {
+          filtered = filtered.filter((s: any) =>
+            s.state?.slug?.toLowerCase() === state.toLowerCase() || s.state?.name?.toLowerCase() === state.toLowerCase()
+          );
+        }
+        if (author) {
+          filtered = filtered.filter((s: any) =>
+            s.author?.name?.toLowerCase().includes(author.toLowerCase())
+          );
+        }
+        if (filtered.length > 0) {
+          const paginated = filtered.slice(skip, skip + limit);
+          return { stories: paginated, total: filtered.length };
+        }
+      }
+    } catch (e) {
+      console.warn("Semantic search failed, activating keyword fallback:", e);
+    }
+  }
+
+  // 2. Fallback: Multi-term token search across title, excerpt, content, tags, themes, state
   const baseWhere: any = {
     status: "Published",
     deleted: false,
@@ -97,24 +129,33 @@ async function searchStories(opts: {
     if (maxReadTime !== null) baseWhere.readingTime.lte = maxReadTime;
   }
 
-  // Search: Multi-field ILIKE across all important text fields
   if (q) {
-    const safeQ = escapeIlike(q);
-    baseWhere.OR = [
-      { title:         { contains: safeQ, mode: "insensitive" } },
-      { titleHi:       { contains: safeQ, mode: "insensitive" } },
-      { excerpt:       { contains: safeQ, mode: "insensitive" } },
-      { excerptHi:     { contains: safeQ, mode: "insensitive" } },
-      { slug:          { contains: safeQ, mode: "insensitive" } },
-      { seoTitle:      { contains: safeQ, mode: "insensitive" } },
-      { seoKeywords:   { contains: safeQ, mode: "insensitive" } },
-      { seoDescription:{ contains: safeQ, mode: "insensitive" } },
-      { author: { name: { contains: safeQ, mode: "insensitive" } } },
-      { state:  { name: { contains: safeQ, mode: "insensitive" } } },
-      { city:   { name: { contains: safeQ, mode: "insensitive" } } },
-      { tags:   { some: { tag: { name: { contains: safeQ, mode: "insensitive" } } } } },
-      { themes: { some: { theme: { name: { contains: safeQ, mode: "insensitive" } } } } },
-    ];
+    const tokens = q
+      .toLowerCase()
+      .replace(/[^a-zA-Z0-9\s]/g, "")
+      .split(/\s+/)
+      .filter((w) => w.length > 1);
+
+    const termsToMatch = tokens.length > 0 ? tokens : [q];
+
+    const orConditions = termsToMatch.flatMap((t) => {
+      const safeT = escapeIlike(t);
+      return [
+        { title: { contains: safeT, mode: "insensitive" } },
+        { titleHi: { contains: safeT, mode: "insensitive" } },
+        { excerpt: { contains: safeT, mode: "insensitive" } },
+        { excerptHi: { contains: safeT, mode: "insensitive" } },
+        { slug: { contains: safeT, mode: "insensitive" } },
+        { seoKeywords: { contains: safeT, mode: "insensitive" } },
+        { author: { name: { contains: safeT, mode: "insensitive" } } },
+        { state: { name: { contains: safeT, mode: "insensitive" } } },
+        { city: { name: { contains: safeT, mode: "insensitive" } } },
+        { tags: { some: { tag: { name: { contains: safeT, mode: "insensitive" } } } } },
+        { themes: { some: { theme: { name: { contains: safeT, mode: "insensitive" } } } } },
+      ];
+    });
+
+    baseWhere.OR = orConditions;
   }
 
   const orderBy = buildOrderBy(sort);

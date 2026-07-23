@@ -77,6 +77,17 @@ function hashCode(str: string): number {
 }
 
 export function deriveDNA(story: Story): StoryDNA {
+  if (!story) {
+    return {
+      theme: "All",
+      region: "India",
+      impactType: IMPACT_OPTIONS[0],
+      beneficiary: BENEFICIARY_OPTIONS[0],
+      emotion: EMOTION_OPTIONS[0],
+      sdgs: [ALL_SDGS[0]],
+      category: "All",
+    };
+  }
   const category =
     (Array.isArray(story.themes) && story.themes.length > 0
       ? story.themes[0]

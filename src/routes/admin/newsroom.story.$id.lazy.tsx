@@ -18,9 +18,11 @@ import {
   Cpu,
 } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { AIEditorialAssistant } from "@/components/admin/AIEditorialAssistant";
 import { useAuthStore } from "@/lib/auth-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 export const Route = createLazyFileRoute("/admin/newsroom/story/$id")({
   component: StoryWorkflowWorkspacePage,
@@ -243,7 +245,7 @@ function StoryWorkflowWorkspacePage() {
       });
       const out = await res.json();
       if (out.success) {
-        alert("Story version restored successfully!");
+        toast.success("Story version restored successfully!");
         setSelectedRevision(null);
         loadData();
       }
@@ -604,106 +606,18 @@ function StoryWorkflowWorkspacePage() {
           <div className="space-y-6">
             
             {/* AI Assistant */}
-            <div className="bg-[#121212] border border-white/5 p-6 rounded-lg space-y-4">
-              <div className="flex items-center gap-2 border-b border-white/5 pb-3">
-                <Sparkles className="size-4 text-[#C8A96A]" />
-                <h3 className="text-[10px] font-sans font-black text-white/40 uppercase tracking-widest">
-                  AI Editorial Assistant
-                </h3>
-              </div>
-
-              <div className="space-y-3.5 font-sans text-xs">
-                <div className="space-y-1.5">
-                  <label className="block font-bold text-white/50 uppercase tracking-wider text-[9px]">Select AI Utility</label>
-                  <select
-                    value={aiTask}
-                    onChange={(e) => setAiTask(e.target.value)}
-                    className="w-full bg-[#161616] text-white border border-white/10 px-3 py-2.5 rounded-lg text-xs focus:outline-none"
-                  >
-                    <option value="rewrite">Rewrite Story</option>
-                    <option value="grammar">Improve Grammar</option>
-                    <option value="readability">Improve Readability</option>
-                    <option value="seo-title">Generate SEO Title</option>
-                    <option value="meta">Generate Meta Description</option>
-                    <option value="keywords">Generate Keywords</option>
-                    <option value="slug">Generate Slug</option>
-                    <option value="summary">Generate Summary</option>
-                    <option value="social">Generate Social Captions</option>
-                    <option value="newsletter">Generate Newsletter Paragraph</option>
-                    <option value="suggest-themes">Suggest Themes</option>
-                    <option value="cover-prompt">Suggest Cover Prompt</option>
-                    <option value="fact-check">Fact Check Recommendations</option>
-                    <option value="duplicate">Duplicate Story Check</option>
-                    <option value="scores">Evaluate Editorial Scores</option>
-                    <option value="linguistics">Tone & Linguistics Scan</option>
-                  </select>
-                </div>
-
-                <Button
-                  onClick={handleAiAction}
-                  disabled={aiLoading || isLockedByOther}
-                  className="w-full h-10 bg-[#C8A96A] hover:bg-[#C8A96A]/95 text-black font-sans text-xs uppercase tracking-widest font-black rounded-lg cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
-                >
-                  <Cpu className="size-4 shrink-0" />
-                  {aiLoading ? "Gemini is writing..." : "Execute AI Prompt"}
-                </Button>
-
-                {/* AI Text output */}
-                {aiOutput && (
-                  <div className="bg-white/2 border border-white/5 p-4 rounded-lg space-y-2 mt-2">
-                    <p className="font-black text-[9px] text-[#C8A96A] uppercase tracking-wider">
-                      Response
-                    </p>
-                    <p className="text-white/80 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-white/5 pr-1">
-                      {aiOutput}
-                    </p>
-                  </div>
-                )}
-
-                {/* AI Scores display */}
-                {aiScores && (
-                  <div className="bg-white/2 border border-white/5 p-4 rounded-lg space-y-3 mt-2">
-                    <p className="font-black text-[9px] text-[#C8A96A] uppercase tracking-wider">
-                      Diagnostics Evaluations
-                    </p>
-                    <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
-                      <div className="bg-white/5 p-2 rounded-md">
-                        <span className="block text-[8px] text-white/40 mb-1">Headline</span>
-                        <span className="font-bold text-white font-mono">{aiScores.headlineScore}/100</span>
-                      </div>
-                      <div className="bg-white/5 p-2 rounded-md">
-                        <span className="block text-[8px] text-white/40 mb-1">SEO</span>
-                        <span className="font-bold text-white font-mono">{aiScores.seoScore}/100</span>
-                      </div>
-                      <div className="bg-white/5 p-2 rounded-md">
-                        <span className="block text-[8px] text-white/40 mb-1">Structure</span>
-                        <span className="font-bold text-white font-mono">{aiScores.readabilityScore}/100</span>
-                      </div>
-                    </div>
-                    <div className="text-[10px] space-y-1.5 text-white/70 pt-2 border-t border-white/5">
-                      <p><strong>Title:</strong> {aiScores.headlineFeedback}</p>
-                      <p><strong>SEO:</strong> {aiScores.seoFeedback}</p>
-                      <p><strong>Readability:</strong> {aiScores.readabilityFeedback}</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* AI Linguistics */}
-                {aiLinguistics && (
-                  <div className="bg-white/2 border border-white/5 p-4 rounded-lg space-y-2 mt-2">
-                    <p className="font-black text-[9px] text-[#C8A96A] uppercase tracking-wider">
-                      Linguistics scan
-                    </p>
-                    <div className="text-[10px] space-y-1.5 text-white/70">
-                      <p><strong>Tone:</strong> {aiLinguistics.toneSummary}</p>
-                      <p><strong>Bias Check:</strong> {aiLinguistics.biasRating}</p>
-                      <p><strong>Profanity:</strong> {aiLinguistics.profanityFlag ? "⚠️ Flagged" : "✅ Clean"}</p>
-                      <p className="mt-2 pt-2 border-t border-white/5 leading-relaxed italic text-white/50">{aiLinguistics.feedback}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
+            <AIEditorialAssistant
+              title={story?.title || ""}
+              excerpt={story?.excerpt || ""}
+              content={story?.content || ""}
+              sessionToken={session?.access_token}
+              onApplyTitle={(newTitle) => setStory((prev: any) => ({ ...prev, title: newTitle }))}
+              onApplyExcerpt={(newExcerpt) => setStory((prev: any) => ({ ...prev, excerpt: newExcerpt }))}
+              onApplyContent={(newContent) => setStory((prev: any) => ({ ...prev, content: newContent }))}
+              onApplySlug={(newSlug) => setStory((prev: any) => ({ ...prev, slug: newSlug }))}
+              onApplyMeta={(newMeta) => setNotes((prev) => prev ? `${prev}\n\nMeta Description: ${newMeta}` : `Meta Description: ${newMeta}`)}
+              onApplyKeywords={(newKw) => setNotes((prev) => prev ? `${prev}\n\nKeywords: ${newKw}` : `Keywords: ${newKw}`)}
+            />
 
             {/* Chat Board */}
             <div className="bg-[#121212] border border-white/5 p-6 rounded-lg space-y-4 flex flex-col max-h-[460px]">

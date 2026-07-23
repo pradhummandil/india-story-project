@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { SiteLayout } from "@/components/site/Layout";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { useI18nStore, uiText } from "@/lib/i18n";
 
 export const Route = createLazyFileRoute("/impact")({
   component: ImpactPage,
@@ -112,6 +113,9 @@ function ImpactPage() {
 
   const chartColors = ["#8B0000", "#C8A96A", "#9E2A2B", "#D4AF37", "#6A040F", "#9A031E", "#5C061D"];
 
+  const lang = useI18nStore((s) => s.lang);
+  const impText = uiText[lang].impactPage;
+
   return (
     <SiteLayout>
       <div className="bg-background min-h-screen py-24 md:py-32">
@@ -119,14 +123,14 @@ function ImpactPage() {
         <div className="container mx-auto px-6 border-b border-border/40 pb-10 mb-16">
           <div className="max-w-3xl">
             <p className="text-xs uppercase tracking-[0.3em] text-gold font-sans font-bold mb-3 flex items-center gap-2">
-              <Heart className="size-4 text-gold fill-gold" /> Editorial Mission
+              <Heart className="size-4 text-gold fill-gold" /> {impText.title}
             </p>
             <h1 className="font-display text-5xl md:text-7xl font-bold leading-none tracking-tight">
-              Stories that drive <span className="text-primary italic">Real Change.</span>
+              {lang === "hi" ? "कहानियाँ जो " : "Stories that drive "}
+              <span className="text-primary italic">{lang === "hi" ? "वास्तविक बदलाव लाती हैं।" : "Real Change."}</span>
             </h1>
             <p className="mt-4 text-muted-foreground text-sm md:text-base leading-relaxed font-sans font-medium">
-              We measure our success not in impressions, but in actions. Exploring the human,
-              ecological, and cultural impact of slow journalism across India.
+              {impText.subtitle}
             </p>
           </div>
         </div>

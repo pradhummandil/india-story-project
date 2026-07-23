@@ -3,11 +3,13 @@ import { AdminSidebar } from "./AdminSidebar";
 import { Bell, Search, Menu, LogOut, LayoutDashboard, ChevronRight } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 import { Link, useRouterState } from "@tanstack/react-router";
+import { LanguageToggle } from "@/components/site/LanguageToggle";
 
 interface AdminLayoutProps {
   children: ReactNode;
   title?: string;
   subtitle?: string;
+  activeNav?: string;
 }
 
 export function AdminLayout({ children, title, subtitle }: AdminLayoutProps) {
@@ -46,7 +48,7 @@ export function AdminLayout({ children, title, subtitle }: AdminLayoutProps) {
   });
 
   return (
-    <div className="min-h-screen bg-[#090909] text-white flex font-sans">
+    <div className="min-h-screen bg-background text-foreground flex font-sans">
       
       {/* Sidebar Navigation */}
       <AdminSidebar
@@ -63,31 +65,31 @@ export function AdminLayout({ children, title, subtitle }: AdminLayoutProps) {
         }`}
       >
         {/* Top Header */}
-        <header className="h-16 flex items-center justify-between px-4 md:px-6 border-b border-white/5 bg-[#090909]/95 backdrop-blur-md sticky top-0 z-30 select-none">
+        <header className="h-16 flex items-center justify-between px-4 md:px-6 border-b border-border/60 bg-card/90 backdrop-blur-md sticky top-0 z-30 select-none">
           <div className="flex items-center gap-3">
             {/* Mobile Menu Toggle Button */}
             <button
               onClick={() => setMobileOpen(true)}
-              className="lg:hidden p-1.5 rounded-md text-white/60 hover:text-white hover:bg-white/5 border border-white/5 transition-all cursor-pointer"
+              className="lg:hidden p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted border border-border/40 transition-all cursor-pointer"
               aria-label="Open navigation menu"
             >
               <Menu className="size-4.5" />
             </button>
 
             {/* Breadcrumbs / Page hierarchy */}
-            <div className="hidden sm:flex items-center gap-1.5 text-xs text-white/40 font-medium">
-              <Link to="/admin" className="hover:text-white transition-colors">
+            <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
+              <Link to="/admin" className="hover:text-foreground transition-colors">
                 Admin
               </Link>
               {breadcrumbs.length > 1 && (
                 <>
                   {breadcrumbs.slice(1).map((crumb, idx) => (
                     <div key={crumb.to} className="flex items-center gap-1.5">
-                      <ChevronRight className="size-3 text-white/20" />
+                      <ChevronRight className="size-3 text-muted-foreground/40" />
                       {idx === breadcrumbs.length - 2 ? (
-                        <span className="text-[#C8A96A] font-semibold">{crumb.label}</span>
+                        <span className="text-primary font-semibold">{crumb.label}</span>
                       ) : (
-                        <Link to={crumb.to} className="hover:text-white transition-colors">
+                        <Link to={crumb.to} className="hover:text-foreground transition-colors">
                           {crumb.label}
                         </Link>
                       )}
@@ -98,13 +100,14 @@ export function AdminLayout({ children, title, subtitle }: AdminLayoutProps) {
             </div>
             
             {/* Mobile-only page header */}
-            <span className="sm:hidden text-xs font-semibold text-[#C8A96A] truncate max-w-[150px]">
+            <span className="sm:hidden text-xs font-semibold text-primary truncate max-w-[150px]">
               {title || "Overview"}
             </span>
           </div>
 
           {/* Header Action Controls */}
           <div className="flex items-center gap-4">
+            <LanguageToggle />
             
             {/* Profile Popover / Dropdown info */}
             <div className="flex items-center gap-2.5">
@@ -116,20 +119,20 @@ export function AdminLayout({ children, title, subtitle }: AdminLayoutProps) {
                   <img
                     src={avatarUrl}
                     alt={displayName}
-                    className="size-8 rounded-full border border-white/10 object-cover shadow-md group-hover:border-[#C8A96A]/50 transition-colors"
+                    className="size-8 rounded-full border border-border object-cover shadow-sm group-hover:border-primary/50 transition-colors"
                   />
                 ) : (
-                  <div className="size-8 rounded-full bg-[#C8A96A]/10 border border-[#C8A96A]/20 flex items-center justify-center group-hover:border-[#C8A96A]/50 transition-colors">
-                    <span className="text-[11px] font-black text-[#C8A96A] uppercase">
+                  <div className="size-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center group-hover:border-primary/50 transition-colors">
+                    <span className="text-[11px] font-black text-primary uppercase">
                       {displayName.charAt(0)}
                     </span>
                   </div>
                 )}
                 <div className="hidden md:flex flex-col text-left">
-                  <span className="text-xs font-semibold text-white/90 group-hover:text-white transition-colors leading-tight">
+                  <span className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors leading-tight">
                     {displayName}
                   </span>
-                  <span className="text-[9px] uppercase tracking-wider font-bold text-white/30 leading-none mt-0.5">
+                  <span className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground leading-none mt-0.5">
                     {profile?.role || "Admin"}
                   </span>
                 </div>

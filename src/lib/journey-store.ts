@@ -62,10 +62,12 @@ export function useJourney() {
   }, []);
 
   const trackView = useCallback((story: Story, readMs = 4000) => {
+    if (!story || !story.id) return;
     const cur = read();
     const viewedIds = cur.viewedIds.includes(story.id)
       ? cur.viewedIds
       : [story.id, ...cur.viewedIds].slice(0, 50);
+    const regionKey = story.region || "India";
     const next: JourneyState = {
       ...cur,
       viewedIds,
@@ -80,13 +82,13 @@ export function useJourney() {
               : [];
         const updated = { ...cur.categoryCounts };
         storyThemes.forEach((t: string) => {
-          updated[t] = (updated[t] ?? 0) + 1;
+          if (t) updated[t] = (updated[t] ?? 0) + 1;
         });
         return updated;
       })(),
       regionCounts: {
         ...cur.regionCounts,
-        [story.region]: (cur.regionCounts[story.region] ?? 0) + 1,
+        [regionKey]: (cur.regionCounts[regionKey] ?? 0) + 1,
       },
     };
     write(next);
@@ -103,6 +105,7 @@ export function useJourney() {
 }
 
 export function scoreStory(s: Story, j: JourneyState): number {
+  if (!s || !s.id) return -1;
   if (j.viewedIds.includes(s.id)) return -1; // hide already-viewed
   const storyThemes =
     Array.isArray(s.themes) && s.themes.length > 0
@@ -111,24 +114,27 @@ export function scoreStory(s: Story, j: JourneyState): number {
         ? [(s as any).category]
         : [];
   const cat = storyThemes.reduce((sum: number, t: string) => sum + (j.categoryCounts[t] ?? 0), 0);
-  const reg = j.regionCounts[s.region] ?? 0;
+  const regKey = s.region || "India";
+  const reg = j.regionCounts[regKey] ?? 0;
   return cat * 3 + reg * 2 + Math.random() * 0.5;
 }
 
 export function getRecommendations(j: JourneyState, limit = 6, storiesList?: Story[]): Story[] {
   const list = storiesList && storiesList.length ? storiesList : stories;
   const scored = list
+    .filter((s) => s && s.id)
     .map((s) => ({ s, score: scoreStory(s, j) }))
     .filter((x) => x.score >= 0)
     .sort((a, b) => b.score - a.score);
-  if (scored.length === 0) return list.slice(0, limit);
+  if (scored.length === 0) return list.filter((s) => s && s.id).slice(0, limit);
   return scored.slice(0, limit).map((x) => x.s);
 }
 
 export function getSimilar(storyId: string, limit = 3, storiesList?: Story[]): Story[] {
   const list = storiesList && storiesList.length ? storiesList : stories;
-  const base = list.find((s) => s.id === storyId);
-  if (!base) return list.slice(0, limit);
+  if (!storyId) return list.filter((s) => s && s.id).slice(0, limit);
+  const base = list.find((s) => s && s.id === storyId);
+  if (!base) return list.filter((s) => s && s.id).slice(0, limit);
   const baseThemes =
     Array.isArray(base.themes) && base.themes.length > 0
       ? base.themes
@@ -136,7 +142,7 @@ export function getSimilar(storyId: string, limit = 3, storiesList?: Story[]): S
         ? [(base as any).category]
         : [];
   return list
-    .filter((s) => s.id !== storyId)
+    .filter((s) => s && s.id && s.id !== storyId)
     .map((s) => {
       const sThemes =
         Array.isArray(s.themes) && s.themes.length > 0
@@ -145,7 +151,7 @@ export function getSimilar(storyId: string, limit = 3, storiesList?: Story[]): S
             ? [(s as any).category]
             : [];
       const themeOverlap = sThemes.filter((t: string) => baseThemes.includes(t)).length;
-      return { s, score: themeOverlap * 3 + (s.region === base.region ? 2 : 0) };
+      return { s, score: themeOverlap * 3 + (s.region && base.region && s.region === base.region ? 2 : 0) };
     })
     .sort((a, b) => b.score - a.score)
     .slice(0, limit)

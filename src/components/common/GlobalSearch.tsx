@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 import { useI18nStore } from "@/lib/i18n";
+import { toast } from "sonner";
 import {
   CommandDialog,
   CommandInput,
@@ -229,7 +230,7 @@ export function GlobalSearch() {
   // ── Voice search ─────────────────────────────────────────
   const startVoiceSearch = () => {
     if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
-      alert("Voice search is not supported in this browser.");
+      toast.error("Voice search is not supported in this browser.");
       return;
     }
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;

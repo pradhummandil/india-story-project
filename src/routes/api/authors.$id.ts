@@ -74,6 +74,13 @@ export const Route = createFileRoute("/api/authors/$id")({
             where: { authorId: author.id },
           });
 
+          // Fetch related authors for recommendations
+          const relatedAuthors = await db.author.findMany({
+            where: { id: { not: author.id } },
+            take: 4,
+            select: { id: true, name: true, avatar: true, bio: true },
+          });
+
           return json({
             author: {
               id: author.id,
@@ -90,6 +97,7 @@ export const Route = createFileRoute("/api/authors/$id")({
             },
             stories: storiesMapped,
             videos: videosMapped,
+            relatedAuthors,
           });
         } catch (e: any) {
           return json({ error: e.message || "Failed to fetch author details" }, { status: 500 });

@@ -41,7 +41,6 @@ function addSecurityHeaders(response: Response): Response {
   const newResponse = new Response(response.body, response);
   const headers = newResponse.headers;
 
-  headers.set("X-Frame-Options", "DENY");
   headers.set("X-Content-Type-Options", "nosniff");
   headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   headers.set(
@@ -55,12 +54,12 @@ function addSecurityHeaders(response: Response): Response {
 
   const csp = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://*.vercel-scripts.com",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://*.vercel-scripts.com https://www.youtube.com https://s.ytimg.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
-    "img-src 'self' data: blob: https://res.cloudinary.com https://*.supabase.co",
-    "connect-src 'self' https://*.supabase.co https://va.vercel-insights.com https://va.vercel-scripts.com https://*.vercel-insights.com",
-    "frame-ancestors 'none'",
+    "img-src 'self' data: blob: https://res.cloudinary.com https://*.supabase.co https://i.ytimg.com https://img.youtube.com https://*.ytimg.com https://images.unsplash.com",
+    "connect-src 'self' https://*.supabase.co https://va.vercel-insights.com https://va.vercel-scripts.com https://*.vercel-insights.com https://www.youtube.com",
+    "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://*.youtube.com",
     "object-src 'none'",
     "base-uri 'self'",
   ].join("; ");

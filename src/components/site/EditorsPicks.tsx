@@ -40,9 +40,9 @@ export function EditorsPicks({ stories }: EditorsPicksProps) {
     : featured.readTime || "4 min read";
 
   return (
-    <section className="container mx-auto px-6 py-16 md:py-24 border-b border-border/70">
+    <section className="container mx-auto px-6 py-12 md:py-16 border-b border-border/70">
       {/* Section header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12 border-b border-border pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10 border-b border-border pb-6">
         <div className="flex items-center gap-3">
           <span className="p-2 rounded-full bg-gold/10 text-gold border border-gold/20">
             <Award className="size-5" />
@@ -73,7 +73,7 @@ export function EditorsPicks({ stories }: EditorsPicksProps) {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7 }}
-          className="lg:col-span-3 group relative overflow-hidden border border-border/50 bg-card hover:border-gold/30 transition-all duration-500"
+          className="lg:col-span-3 group relative overflow-hidden border border-border/50 bg-card hover:border-gold/30 rounded-2xl transition-all duration-500"
         >
           {/* Image */}
           <div className="relative aspect-[16/9] overflow-hidden bg-muted">

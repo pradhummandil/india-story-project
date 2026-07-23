@@ -39,7 +39,7 @@ export type PaginatedStories = {
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 12;
-const MAX_PAGE_SIZE = 60;
+const MAX_PAGE_SIZE = 1000;
 
 function recommendationScore(base: StoryCardCompatible, candidate: StoryCardCompatible) {
   let score = 0;
@@ -100,18 +100,22 @@ export class StoryService {
     return this.getPublishedStories({ ...pagination, query });
   }
 
-  async getRecommendedStories(slug: string, limit = 3): Promise<StoryCardCompatible[]> {
+  async getRecommendedStories(slug: string, limit = 4): Promise<StoryCardCompatible[]> {
     const base = await this.stories.findPublishedBySlug(slug);
-    if (!base) return [];
+    if (!base) {
+      return (await this.stories.listPublished(limit * 2)).slice(0, limit);
+    }
 
-    // Query database directly for candidates matching same theme or region
+    // Query database directly for candidates matching same theme, region, or author
     const candidates = await prisma.story.findMany({
       where: {
         status: StoryStatus.Published,
+        deleted: false,
         slug: { not: slug },
         OR: [
           { themes: { some: { theme: { name: { in: base.themes } } } } },
-          { state: { name: base.region } },
+          { state: { name: base.region ?? "" } },
+          { author: { name: base.authorName ?? "" } },
         ],
       },
       take: limit * 4,
@@ -119,11 +123,30 @@ export class StoryService {
     });
 
     const candidateCards = candidates.map(toStoryCardCompatible);
-    return candidateCards
+    const scoredCards = candidateCards
       .map((story) => ({ story, score: recommendationScore(base, story) }))
       .sort((a, b) => b.score - a.score || a.story.title.localeCompare(b.story.title))
-      .slice(0, limit)
       .map(({ story }) => story);
+
+    if (scoredCards.length >= limit) {
+      return scoredCards.slice(0, limit);
+    }
+
+    // Backfill with latest published stories to ensure we always return 'limit' stories
+    const existingIds = new Set([base.id, ...scoredCards.map((s) => s.id)]);
+    const fallbackStories = await prisma.story.findMany({
+      where: {
+        id: { notIn: Array.from(existingIds) },
+        status: StoryStatus.Published,
+        deleted: false,
+      },
+      orderBy: { publishedAt: "desc" },
+      take: limit - scoredCards.length,
+      select: storyCardSelect,
+    });
+
+    const fallbackCards = fallbackStories.map(toStoryCardCompatible);
+    return [...scoredCards, ...fallbackCards].slice(0, limit);
   }
 }
 

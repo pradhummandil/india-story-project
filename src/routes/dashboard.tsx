@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useMemo } from "react";
 import { useAuthStore } from "@/lib/auth-store";
+import { useI18nStore, uiText } from "@/lib/i18n";
 import { Forbidden403 } from "@/components/site/Forbidden403";
 import { SiteLayout } from "@/components/site/Layout";
 import {
@@ -11,7 +12,7 @@ import {
   AlertCircle,
   BarChart3,
   MessageSquare,
-  Image,
+  Image as ImageIcon,
   Award,
   User,
   Plus,
@@ -103,16 +104,19 @@ export function AuthorDashboardPage() {
     return <Forbidden403 />;
   }
 
+  const lang = useI18nStore((s) => s.lang);
+  const dashText = uiText[lang].dashboard;
+
   const navItems: { id: Tab; label: string; icon: any }[] = [
-    { id: "overview", label: "Overview", icon: LayoutDashboard },
-    { id: "drafts", label: "My Drafts", icon: Clock },
-    { id: "published", label: "Published", icon: CheckCircle },
-    { id: "pending", label: "Pending Review", icon: AlertCircle },
-    { id: "analytics", label: "Story Analytics", icon: BarChart3 },
-    { id: "comments", label: "Comments Feed", icon: MessageSquare },
-    { id: "media", label: "Media Library", icon: Image },
-    { id: "achievements", label: "Achievements", icon: Award },
-    { id: "profile", label: "Author Profile", icon: User },
+    { id: "overview", label: dashText.welcome, icon: LayoutDashboard },
+    { id: "drafts", label: dashText.myDrafts, icon: Clock },
+    { id: "published", label: dashText.published, icon: CheckCircle },
+    { id: "pending", label: dashText.pending, icon: AlertCircle },
+    { id: "analytics", label: dashText.analytics, icon: BarChart3 },
+    { id: "comments", label: dashText.comments, icon: MessageSquare },
+    { id: "media", label: dashText.media, icon: ImageIcon },
+    { id: "achievements", label: dashText.achievements, icon: Award },
+    { id: "profile", label: dashText.profile, icon: User },
   ];
 
   return (
@@ -138,7 +142,7 @@ export function AuthorDashboardPage() {
                 <h3 className="text-sm font-bold text-foreground truncate">{profile.fullName}</h3>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold flex items-center gap-1 mt-0.5">
                   <Shield className="size-3 text-gold" />
-                  Author Workspace
+                  {dashText.title}
                 </p>
               </div>
             </div>
@@ -151,7 +155,7 @@ export function AuthorDashboardPage() {
                   <button
                     key={item.id}
                     onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold tracking-wider uppercase rounded-none transition-all cursor-pointer ${
+                    className={`w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold tracking-wider rounded-none transition-all cursor-pointer ${
                       active
                         ? "bg-primary text-white"
                         : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
@@ -171,7 +175,7 @@ export function AuthorDashboardPage() {
                 className="w-full h-10 rounded-none bg-gold hover:bg-gold/90 text-white font-sans text-xs uppercase tracking-widest font-semibold flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Plus className="size-4" />
-                Write Story
+                {dashText.writeStory}
               </Button>
             </div>
           </aside>
@@ -189,19 +193,23 @@ export function AuthorDashboardPage() {
 
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   {[
-                    { label: "Total Stories", val: stats.total, icon: BookOpen },
-                    { label: "Published Stories", val: stats.publishedCount, icon: CheckCircle },
-                    { label: "Drafts", val: stats.draftsCount, icon: Clock },
-                    { label: "Total Reads", val: stats.views, icon: Eye },
+                    { label: dashText.totalStories, val: stats.total, icon: BookOpen },
+                    { label: dashText.published, val: stats.publishedCount, icon: CheckCircle },
+                    { label: dashText.totalReads, val: stats.views, icon: Eye },
+                    { label: dashText.estRevenue, val: `₹${(stats.views * 0.15).toFixed(2)}`, icon: BarChart3 },
+                    { label: dashText.authorLevel, val: `${lang === "hi" ? "स्तर" : "Level"} ${(profile as any)?.level || 1}`, icon: Award },
+                    { label: dashText.readingXP, val: `${(profile as any)?.totalXP || 0} XP`, icon: Shield },
+                    { label: dashText.readingStreak, val: `${(profile as any)?.readingStreak || 0} ${lang === "hi" ? "दिन" : "Days"}`, icon: Clock },
+                    { label: dashText.pendingSubmissions, val: submissions.filter(s => s.status === 'Pending').length, icon: AlertCircle },
                   ].map((card, i) => {
                     const Icon = card.icon;
                     return (
-                      <div key={i} className="border border-border/50 p-4 bg-muted/20">
+                      <div key={i} className="border border-border/50 p-4 bg-muted/20 hover:border-gold/50 transition-colors">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{card.label}</span>
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">{card.label}</span>
                           <Icon className="size-4 text-gold" />
                         </div>
-                        <h4 className="font-display text-2xl font-bold text-foreground mt-1">{card.val}</h4>
+                        <p className="font-display text-2xl font-bold text-foreground">{card.val}</p>
                       </div>
                     );
                   })}

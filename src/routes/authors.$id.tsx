@@ -19,6 +19,7 @@ import {
 import { SiteLayout } from "@/components/site/Layout";
 import { useAuthStore } from "@/lib/auth-store";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/authors/$id")({
   component: AuthorDetailPage,
@@ -112,7 +113,7 @@ function AuthorDetailPage() {
 
   const handleFollow = async () => {
     if (!user || !session) {
-      alert("Please log in to follow chroniclers.");
+      toast.warning("Please log in to follow chroniclers.");
       return;
     }
     setFollowLoading(true);

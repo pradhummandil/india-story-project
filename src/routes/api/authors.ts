@@ -39,12 +39,13 @@ export const Route = createFileRoute("/api/authors")({
             currentUserId
               ? db.follow.findMany({
                   where: { followerId: currentUserId },
-                  select: { authorId: true },
                 })
               : Promise.resolve([]),
           ]);
 
-          const userFollows = (follows as any[]).map((f: any) => f.authorId);
+          const userFollowedAuthorIds = (follows as any[]).map((f: any) => f.authorId).filter(Boolean);
+          const followedThemes = (follows as any[]).map((f: any) => f.themeId).filter(Boolean);
+          const followedStates = (follows as any[]).map((f: any) => f.stateName).filter(Boolean);
 
           const results = (authors as any[]).map((a: any) => {
             const storyCount = a.stories.length;
@@ -63,11 +64,21 @@ export const Route = createFileRoute("/api/authors")({
               totalViews,
               location: "India",
               joinedAt: a.createdAt.toISOString(),
-              followed: userFollows.includes(a.id),
+              followed: userFollowedAuthorIds.includes(a.id),
             };
           });
 
-          return json(results);
+          // Maintain backwards compatibility if client expects array directly
+          if (request.headers.get("x-raw-array") === "true") {
+            return json(results);
+          }
+
+          return json({
+            authors: results,
+            totalFollows: (follows as any[]).length,
+            followedThemes,
+            followedStates,
+          });
         } catch (e: any) {
           return json({ error: e.message || "Failed to fetch authors list" }, { status: 500 });
         }

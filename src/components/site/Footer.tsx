@@ -14,8 +14,8 @@ export function Footer() {
   const footerText = getFooterText(lang);
 
   return (
-    <footer className="relative border-t-2 border-primary bg-card mt-32 text-foreground">
-      <div className="container mx-auto px-6 py-16">
+    <footer className="relative border-t-2 border-primary bg-card mt-16 md:mt-24 text-foreground">
+      <div className="container mx-auto px-6 py-12 md:py-16">
         <div className="grid gap-12 md:grid-cols-4 border-b border-border/80 pb-12">
           {/* Logo & Description */}
           <div className="md:col-span-2 space-y-4">
@@ -40,7 +40,7 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className="flex items-center justify-center size-9 border border-border hover:border-primary hover:text-primary transition-colors text-muted-foreground"
+                  className="flex items-center justify-center size-9 rounded-full border border-border hover:border-primary hover:text-primary hover:bg-primary/10 transition-all text-muted-foreground"
                 >
                   <Icon className="size-4" />
                 </a>
@@ -51,12 +51,12 @@ export function Footer() {
           {/* Column 3: Sitemap Explore & Actions */}
           <div className="space-y-4">
             <h4 className="text-xs uppercase tracking-widest font-bold text-primary font-sans">
-              Explore & Community
+              {footerText.exploreSection}
             </h4>
             <ul className="space-y-2 text-sm font-sans font-medium">
               <li>
                 <Link to="/" className="text-muted-foreground hover:text-foreground transition-all">
-                  Home
+                  {footerText.home}
                 </Link>
               </li>
               <li>
@@ -64,15 +64,16 @@ export function Footer() {
                   to="/stories"
                   className="text-muted-foreground hover:text-foreground transition-all"
                 >
-                  Stories
+                  {footerText.stories}
                 </Link>
               </li>
               <li>
                 <Link
                   to="/explore"
+                  search={{ q: undefined, state: undefined, theme: undefined, era: undefined, collection: undefined }}
                   className="text-muted-foreground hover:text-foreground transition-all"
                 >
-                  Explore Hub
+                  {footerText.exploreHub}
                 </Link>
               </li>
               <li>
@@ -80,7 +81,7 @@ export function Footer() {
                   to="/map"
                   className="text-muted-foreground hover:text-foreground transition-all"
                 >
-                  Interactive Map
+                  {footerText.interactiveMap}
                 </Link>
               </li>
               <li>
@@ -88,7 +89,7 @@ export function Footer() {
                   to="/community"
                   className="text-muted-foreground hover:text-foreground transition-all"
                 >
-                  Community Forums
+                  {footerText.communityForums}
                 </Link>
               </li>
               <li>
@@ -96,7 +97,7 @@ export function Footer() {
                   to="/share-story"
                   className="text-muted-foreground hover:text-foreground transition-all"
                 >
-                  Share Your Story
+                  {footerText.shareYourStory}
                 </Link>
               </li>
               <li>
@@ -104,7 +105,7 @@ export function Footer() {
                   to="/rss"
                   className="text-muted-foreground hover:text-foreground transition-all"
                 >
-                  Podcast RSS Feed
+                  {footerText.podcastRss}
                 </Link>
               </li>
             </ul>
@@ -113,7 +114,7 @@ export function Footer() {
           {/* Column 4: Company & Compliance */}
           <div className="space-y-4">
             <h4 className="text-xs uppercase tracking-widest font-bold text-primary font-sans">
-              Company & Legal
+              {footerText.companySection}
             </h4>
             <ul className="space-y-2 text-sm font-sans font-medium">
               <li>
@@ -121,7 +122,7 @@ export function Footer() {
                   to="/about"
                   className="text-muted-foreground hover:text-foreground transition-all"
                 >
-                  About Us
+                  {footerText.aboutUs}
                 </Link>
               </li>
               <li>
@@ -129,7 +130,7 @@ export function Footer() {
                   to="/careers"
                   className="text-muted-foreground hover:text-foreground transition-all"
                 >
-                  Careers
+                  {footerText.careers}
                 </Link>
               </li>
               <li>
@@ -137,7 +138,7 @@ export function Footer() {
                   to="/impact"
                   className="text-muted-foreground hover:text-foreground transition-all"
                 >
-                  Impact Initiatives
+                  {footerText.impactInitiatives}
                 </Link>
               </li>
               <li>
@@ -145,7 +146,7 @@ export function Footer() {
                   to="/media-kit"
                   className="text-muted-foreground hover:text-foreground transition-all"
                 >
-                  Media & Press Kit
+                  {footerText.mediaKit}
                 </Link>
               </li>
               <li>
@@ -153,7 +154,7 @@ export function Footer() {
                   to="/privacy"
                   className="text-muted-foreground hover:text-foreground transition-all"
                 >
-                  Privacy Policy
+                  {footerText.privacyPolicy}
                 </Link>
               </li>
               <li>
@@ -161,7 +162,7 @@ export function Footer() {
                   to="/contact"
                   className="text-muted-foreground hover:text-foreground transition-all"
                 >
-                  Contact Support
+                  {footerText.contactSupport}
                 </Link>
               </li>
             </ul>

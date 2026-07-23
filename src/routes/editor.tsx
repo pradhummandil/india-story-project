@@ -4,6 +4,7 @@ import { useAuthStore } from "@/lib/auth-store";
 import { Forbidden403 } from "@/components/site/Forbidden403";
 import { SiteLayout } from "@/components/site/Layout";
 import { NotificationDropdown } from "@/components/site/NotificationDropdown";
+import { useI18nStore, uiText } from "@/lib/i18n";
 import {
   Layers,
   BookOpen,
@@ -646,15 +647,18 @@ export function EditorPanelPage() {
     return <Forbidden403 />;
   }
 
+  const lang = useI18nStore((s) => s.lang);
+  const editorText = uiText[lang].editor;
+
   const navItems: { id: Tab; label: string; icon: any }[] = [
-    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { id: "inbox", label: "Inbox", icon: Inbox },
-    { id: "pipeline", label: "Story Pipeline", icon: KanbanIcon },
-    { id: "published", label: "Published Stories", icon: FileText },
-    { id: "users", label: "Users & Roles", icon: Users },
-    { id: "media", label: "Media Library", icon: ImageIcon },
-    { id: "analytics", label: "Analytics", icon: BarChart3 },
-    { id: "settings", label: "Settings", icon: Settings },
+    { id: "dashboard", label: editorText.dashboard, icon: LayoutDashboard },
+    { id: "inbox", label: editorText.inbox, icon: Inbox },
+    { id: "pipeline", label: editorText.pipeline, icon: KanbanIcon },
+    { id: "published", label: editorText.published, icon: FileText },
+    { id: "users", label: editorText.users, icon: Users },
+    { id: "media", label: editorText.media, icon: ImageIcon },
+    { id: "analytics", label: editorText.analytics, icon: BarChart3 },
+    { id: "settings", label: editorText.settings, icon: Settings },
   ];
 
   return (
@@ -664,8 +668,8 @@ export function EditorPanelPage() {
         {/* Header bar with Notification bell */}
         <div className="max-w-7xl mx-auto flex items-center justify-between border-b border-border/40 pb-4 mb-6">
           <div>
-            <h1 className="font-display text-2xl md:text-3xl font-extrabold tracking-tight">Editorial Hub</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">Welcome back, {profile.fullName} ({role})</p>
+            <h1 className="font-display text-2xl md:text-3xl font-extrabold tracking-tight">{editorText.title}</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">{editorText.subtitle}</p>
           </div>
           
           {/* Notifications dropdown trigger */}
@@ -692,7 +696,7 @@ export function EditorPanelPage() {
                 <h3 className="text-sm font-bold text-foreground truncate">{profile.fullName}</h3>
                 <p className="text-[10px] text-primary font-bold uppercase tracking-widest flex items-center gap-1 mt-0.5">
                   <Shield className="size-3 text-primary" />
-                  Editor Workspace
+                  {editorText.title}
                 </p>
               </div>
             </div>
@@ -705,7 +709,7 @@ export function EditorPanelPage() {
                   <button
                     key={item.id}
                     onClick={() => { setEditingStory(null); setActiveTab(item.id); }}
-                    className={`w-full flex items-center gap-3 px-3 py-2 text-[11px] font-sans font-bold tracking-wider uppercase rounded-none transition-all cursor-pointer ${
+                    className={`w-full flex items-center gap-3 px-3 py-2 text-[11px] font-sans font-bold tracking-wider rounded-none transition-all cursor-pointer ${
                       active
                         ? "bg-primary text-white"
                         : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
@@ -733,17 +737,17 @@ export function EditorPanelPage() {
                 {!canUserEdit && (
                   <div className="bg-red-50 border border-red-200 text-red-700 text-[10px] p-3 font-bold uppercase tracking-widest flex items-center gap-2">
                     <AlertTriangle className="size-4 shrink-0 text-red-600" />
-                    <span>Locked: Only the assigned Editor can edit this story. Read-only Mode.</span>
+                    <span>{lang === "hi" ? "लॉक: केवल निर्दिष्ट संपादक इस कहानी को संपादित कर सकता है।" : "Locked: Only the assigned Editor can edit this story. Read-only Mode."}</span>
                   </div>
                 )}
                 <div className="flex items-center justify-between border-b border-border/50 pb-4">
                   <div>
                     <h2 className="font-display text-xl font-bold">
-                      {editingStory.id ? "Edit Story" : "Create New Story"}
+                      {editingStory.id ? (lang === "hi" ? "कहानी संपादित करें" : "Edit Story") : (lang === "hi" ? "नई कहानी बनाएँ" : "Create New Story")}
                     </h2>
                     {lastAutosave && canUserEdit && (
                       <p className="text-[10px] text-emerald-600 mt-1 font-semibold">
-                        ✓ Autosaved at {lastAutosave}
+                        ✓ {lang === "hi" ? "स्वचालित सहेजा गया:" : "Autosaved at"} {lastAutosave}
                       </p>
                     )}
                   </div>

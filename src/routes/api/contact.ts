@@ -46,7 +46,7 @@ export const Route = createFileRoute("/api/contact")({
             ipAddress: ipAddress ?? undefined,
             userAgent: userAgent ?? undefined,
             country: country ?? undefined,
-          }).catch((err) => console.error("[Contact API] Failed to send email alert:", err));
+          }).catch((err: any) => console.error("[Contact API] Failed to send email alert:", err));
 
           return json({ success: true, messageId: contact.id });
         } catch (error: any) {

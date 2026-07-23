@@ -96,3 +96,50 @@ export function MapSkeleton() {
     </div>
   );
 }
+
+export function TableSkeleton({ rows = 5 }: { rows?: number }) {
+  return (
+    <div className="w-full bg-card border border-border/40 rounded-xl overflow-hidden shadow-sm p-4 space-y-3">
+      <div className="flex justify-between items-center pb-3 border-b border-border/20">
+        <Skeleton className="h-4 w-1/4 rounded" />
+        <Skeleton className="h-4 w-1/6 rounded" />
+      </div>
+      {Array.from({ length: rows }).map((_, i) => (
+        <div key={i} className="flex items-center justify-between py-2 border-b border-border/10">
+          <div className="flex items-center gap-3 w-1/2">
+            <Skeleton className="size-8 rounded-full shrink-0" />
+            <div className="space-y-1 w-full">
+              <Skeleton className="h-4 w-3/4 rounded" />
+              <Skeleton className="h-3 w-1/2 rounded" />
+            </div>
+          </div>
+          <Skeleton className="h-4 w-1/6 rounded" />
+          <Skeleton className="h-6 w-16 rounded-full" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function ProfileSkeleton() {
+  return (
+    <div className="w-full max-w-4xl mx-auto space-y-6 p-6 bg-card border border-border/40 rounded-2xl">
+      <div className="flex flex-col md:flex-row items-center gap-6 pb-6 border-b border-border/20">
+        <Skeleton className="size-28 rounded-full" />
+        <div className="space-y-2 text-center md:text-left flex-1">
+          <Skeleton className="h-7 w-48 rounded mx-auto md:mx-0" />
+          <Skeleton className="h-4 w-32 rounded mx-auto md:mx-0" />
+          <Skeleton className="h-4 w-64 rounded mx-auto md:mx-0" />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="p-4 border border-border/20 rounded-xl space-y-2">
+            <Skeleton className="h-4 w-1/2 rounded" />
+            <Skeleton className="h-6 w-3/4 rounded" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

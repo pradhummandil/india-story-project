@@ -70,6 +70,9 @@ model UserProfile {
   notifications    Notification[]    @relation("UserNotifications")
   assignedStories  Story[]           @relation("StoryEditorAssignments")
   assignedSubmissions SubmittedStory[] @relation("EditorAssignments")
+  userInterests    UserInterest[]
+  userHistories    UserHistory[]
+  activityLogs     ActivityLog[]
 
   @@index([role])
   @@index([totalXP])
@@ -201,6 +204,10 @@ model Story {
   assignedEditorId  String?           @db.Uuid
   assignedEditor    UserProfile?      @relation("StoryEditorAssignments", fields: [assignedEditorId], references: [id])
   notifications     Notification[]
+  summary           StorySummary?
+  translations      StoryTranslation[]
+  audio             StoryAudio?
+  podcastEpisodes   PodcastEpisode[]
 
   @@index([slug])
   @@index([status])
@@ -480,12 +487,32 @@ model NewsletterSubscriber {
   status            String   @default("active")
   language          String   @default("en")
   verificationToken String?
+  unsubscribeToken  String?  @default(uuid())
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
   @@index([email])
   @@index([verified])
   @@index([status])
+}
+
+model NewsletterQueue {
+  id             String    @id @default(uuid()) @db.Uuid
+  recipientEmail String
+  subject        String
+  bodyHtml       String
+  type           String    @default("digest")
+  status         String    @default("pending")
+  attempts       Int       @default(0)
+  maxAttempts    Int       @default(3)
+  lastError      String?
+  scheduledFor   DateTime  @default(now())
+  sentAt         DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([recipientEmail])
+  @@index([status])
+  @@index([scheduledFor])
 }
 
 model ContactMessage {
@@ -570,13 +597,19 @@ model WebStoryPage {
 }
 
 model Follow {
+  id         String      @id @default(uuid()) @db.Uuid
   followerId String      @db.Uuid
-  authorId   String      @db.Uuid
+  authorId   String?     @db.Uuid
+  themeId    String?     @db.Uuid
+  stateName  String?
   createdAt  DateTime    @default(now())
-  author     Author      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  author     Author?     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   follower   UserProfile @relation("UserFollows", fields: [followerId], references: [id], onDelete: Cascade)
 
-  @@id([followerId, authorId])
+  @@index([followerId])
+  @@index([authorId])
+  @@index([themeId])
+  @@index([stateName])
 }
 
 model Collection {
@@ -944,4 +977,142 @@ model Notification {
 
   @@index([recipientId])
   @@index([isRead])
+}
+
+model UserInterest {
+  id        String      @id @default(uuid()) @db.Uuid
+  userId    String      @db.Uuid
+  themeId   String?     @db.Uuid
+  stateName String?
+  score     Float       @default(1.0)
+  updatedAt DateTime    @updatedAt
+  user      UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, themeId, stateName])
+  @@index([userId])
+}
+
+model UserHistory {
+  id         String      @id @default(uuid()) @db.Uuid
+  userId     String      @db.Uuid
+  actionType String
+  targetId   String?
+  metadata   String?
+  createdAt  DateTime    @default(now())
+  user       UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([actionType])
+  @@index([createdAt])
+}
+
+model StorySummary {
+  id             String   @id @default(uuid()) @db.Uuid
+  storyId        String   @unique @db.Uuid
+  summary30s     String
+  summary2m      String
+  bulletSummary  String[]
+  podcastSummary String?
+  version        Int      @default(1)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  story          Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@index([storyId])
+}
+
+model StoryTranslation {
+  id           String   @id @default(uuid()) @db.Uuid
+  storyId      String   @db.Uuid
+  language     String
+  title        String
+  excerpt      String
+  content      String
+  translatedAt DateTime @default(now())
+  story        Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@unique([storyId, language])
+  @@index([storyId])
+  @@index([language])
+}
+
+model StoryAudio {
+  id           String   @id @default(uuid()) @db.Uuid
+  storyId      String   @unique @db.Uuid
+  audioUrl     String
+  duration     Int      @default(0)
+  narratorType String   @default("ai-v1")
+  generatedAt  DateTime @default(now())
+  story        Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@index([storyId])
+}
+
+model ActivityLog {
+  id          String       @id @default(uuid()) @db.Uuid
+  userId      String?      @db.Uuid
+  action      String
+  entityId    String?
+  entityType  String?
+  entityTitle String?
+  metadata    String?
+  createdAt   DateTime     @default(now())
+  user        UserProfile? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([action])
+}
+
+model PodcastEpisode {
+  id              String   @id @default(uuid()) @db.Uuid
+  storyId         String?  @db.Uuid
+  title           String
+  slug            String   @unique
+  audioUrl        String
+  coverImage      String?
+  duration        Int      @default(0)
+  fileSizeBytes   Int      @default(10485760)
+  season          Int      @default(1)
+  episodeNumber   Int?
+  explicit        Boolean  @default(false)
+  playCount       Int      @default(0)
+  completionCount Int      @default(0)
+  transcript      String?
+  showNotes       String?
+  publishedAt     DateTime @default(now())
+  story           Story?   @relation(fields: [storyId], references: [id], onDelete: SetNull)
+
+  @@index([slug])
+  @@index([publishedAt])
+}
+
+model MediaAsset {
+  id         String   @id @default(uuid()) @db.Uuid
+  title      String
+  fileUrl    String
+  mimeType   String
+  sizeBytes  Int      @default(0)
+  folder     String   @default("general")
+  altText    String?
+  aiAltText  String?
+  hash       String?
+  version    Int      @default(1)
+  uploaderId String?  @db.Uuid
+  createdAt  DateTime @default(now())
+
+  @@index([folder])
+  @@index([mimeType])
+  @@index([createdAt])
+}
+
+model NewsletterDigest {
+  id              String   @id @default(uuid()) @db.Uuid
+  type            String
+  title           String
+  contentHtml     String
+  subscriberCount Int      @default(0)
+  sentAt          DateTime @default(now())
+
+  @@index([type])
+  @@index([sentAt])
 }

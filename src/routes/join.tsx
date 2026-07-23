@@ -16,6 +16,7 @@ import { SiteLayout } from "@/components/site/Layout";
 import { useAuthStore } from "@/lib/auth-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/join")({
   head: () => ({
@@ -127,7 +128,7 @@ function CommunityHubPage() {
   const handleCreateTopic = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !session) {
-      alert("Please log in to start a discussion.");
+      toast.warning("Please log in to start a discussion.");
       return;
     }
     if (!newTitle.trim() || !newContent.trim()) return;
@@ -157,7 +158,7 @@ function CommunityHubPage() {
   const handleAddReply = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !session || !selectedTopic) {
-      alert("Please log in to reply.");
+      toast.warning("Please log in to reply.");
       return;
     }
     if (!newReply.trim()) return;

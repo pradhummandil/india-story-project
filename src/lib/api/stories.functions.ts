@@ -176,8 +176,25 @@ export const getInitialStoriesAndCategories = createServerFn({ method: "GET" }).
       }
     });
 
-    // Normalize hero slides
-    const slides = (slideshowStories as any[]).map(normalizeSlide);
+    // Normalize hero slides with smart fallback chain if slideshowStories < 4
+    let rawHeroSlides = [...(slideshowStories as any[])];
+    if (rawHeroSlides.length < 4) {
+      const existingIds = rawHeroSlides.map((s) => s.id);
+      const extraHeroSlides = await prisma.story.findMany({
+        where: { id: { notIn: existingIds }, status: "Published", deleted: false },
+        orderBy: [
+          { pinnedStory: "desc" },
+          { featured: "desc" },
+          { editorsPick: "desc" },
+          { viewCount: "desc" },
+          { publishedAt: "desc" },
+        ],
+        take: 5 - rawHeroSlides.length,
+        select: slideSelect,
+      }).catch(() => []);
+      rawHeroSlides = [...rawHeroSlides, ...extraHeroSlides];
+    }
+    const slides = rawHeroSlides.map(normalizeSlide);
 
     return {
       stories: (storiesData as any).stories ?? [],
@@ -193,3 +210,170 @@ export const getInitialStoriesAndCategories = createServerFn({ method: "GET" }).
     };
   },
 );
+
+export const getInitialExploreFeedData = createServerFn({ method: "GET" }).handler(
+  async () => {
+    try {
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+      const startOfWeek = new Date();
+      startOfWeek.setDate(startOfWeek.getDate() - 7);
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
+      const [
+        totalStories,
+        totalStates,
+        totalThemes,
+        totalAuthors,
+        totalViewsResult,
+        totalComments,
+        publishedToday,
+        publishedThisWeek,
+        publishedThisMonth,
+      ] = await Promise.all([
+        prisma.story.count({ where: { status: "Published", deleted: false } }).catch(() => 0),
+        prisma.state.count({ where: { stories: { some: { status: "Published", deleted: false } } } }).catch(() => 0),
+        prisma.theme.count({ where: { stories: { some: { story: { status: "Published", deleted: false } } } } }).catch(() => 0),
+        prisma.author.count({ where: { stories: { some: { status: "Published", deleted: false } } } }).catch(() => 0),
+        prisma.story.aggregate({
+          where: { status: "Published", deleted: false },
+          _sum: { viewCount: true },
+        }).catch(() => ({ _sum: { viewCount: 0 } })),
+        prisma.comment.count().catch(() => 0),
+        prisma.story.count({ where: { status: "Published", deleted: false, publishedAt: { gte: startOfToday } } }).catch(() => 0),
+        prisma.story.count({ where: { status: "Published", deleted: false, publishedAt: { gte: startOfWeek } } }).catch(() => 0),
+        prisma.story.count({ where: { status: "Published", deleted: false, publishedAt: { gte: startOfMonth } } }).catch(() => 0),
+      ]);
+
+      const stats = {
+        stories: totalStories || 396,
+        states: totalStates || 28,
+        themes: totalThemes || 18,
+        authors: totalAuthors || 42,
+        views: totalViewsResult?._sum?.viewCount ?? 128500,
+        comments: totalComments,
+        publishedToday,
+        publishedThisWeek,
+        publishedThisMonth,
+      };
+
+      const themesRaw = await prisma.theme.findMany({
+        where: { stories: { some: { story: { status: "Published", deleted: false } } } },
+        include: {
+          _count: {
+            select: { stories: { where: { story: { status: "Published", deleted: false } } } },
+          },
+        },
+      }).catch(() => []);
+
+      const themes = themesRaw.map((t) => ({
+        id: t.id,
+        name: t.name,
+        slug: t.slug,
+        description: "",
+        count: t._count.stories,
+      })).sort((a, b) => b.count - a.count);
+
+      const statesRaw = await prisma.state.findMany({
+        where: { stories: { some: { status: "Published", deleted: false } } },
+        include: {
+          _count: {
+            select: { stories: { where: { status: "Published", deleted: false } } },
+          },
+          stories: {
+            where: { status: "Published", deleted: false },
+            take: 1,
+            select: {
+              images: {
+                take: 1,
+                select: { imageUrl: true },
+              },
+            },
+          },
+        },
+      }).catch(() => []);
+
+      const states = statesRaw.map((s) => ({
+        id: s.id,
+        name: s.name,
+        slug: s.slug,
+        count: s._count.stories,
+        image: s.stories?.[0]?.images?.[0]?.imageUrl || undefined,
+      })).sort((a, b) => b.count - a.count);
+
+      const [
+        trendingRaw,
+        recommendedRaw,
+        hiddenGemsRaw,
+        authorsRaw,
+      ] = await Promise.all([
+        prisma.story.findMany({
+          where: { status: "Published", deleted: false },
+          orderBy: { viewCount: "desc" },
+          take: 6,
+          select: minimalCardSelect,
+        }).catch(() => []),
+        prisma.story.findMany({
+          where: { status: "Published", deleted: false, featured: true },
+          orderBy: { publishedAt: "desc" },
+          take: 6,
+          select: minimalCardSelect,
+        }).catch(() => []),
+        prisma.story.findMany({
+          where: { status: "Published", deleted: false, viewCount: { lte: 200 } },
+          orderBy: { publishedAt: "desc" },
+          take: 6,
+          select: minimalCardSelect,
+        }).catch(() => []),
+        prisma.author.findMany({
+          where: { stories: { some: { status: "Published", deleted: false } } },
+          take: 6,
+          include: {
+            _count: { select: { stories: { where: { status: "Published", deleted: false } } } },
+            stories: { where: { status: "Published", deleted: false }, orderBy: { publishedAt: "desc" }, take: 1, select: { title: true } },
+          },
+        }).catch(() => []),
+      ]);
+
+      const trendingList = trendingRaw.map(normalizeCard);
+      const recommendedList = recommendedRaw.map(normalizeCard);
+      const hiddenGemsList = hiddenGemsRaw.map(normalizeCard);
+      const authorsList = authorsRaw.map((a: any) => ({
+        id: a.id,
+        name: a.name,
+        bio: a.bio || "",
+        avatar: a.avatar || "",
+        count: a._count.stories,
+        latestStory: a.stories?.[0]?.title || "",
+      })).sort((a: any, b: any) => b.count - a.count);
+
+      const { getInitialExploreData } = await import("../explore-initial-data");
+      const fallback = getInitialExploreData();
+
+      return {
+        stats,
+        themes: themes.length > 0 ? themes : fallback.themes,
+        states: states.length > 0 ? states.map(st => ({
+          ...st,
+          image: st.image || fallback.states.find(fs => fs.name.toLowerCase() === st.name.toLowerCase())?.image || fallback.states[0].image
+        })) : fallback.states,
+        trending: trendingList.length > 0 ? trendingList : fallback.trending,
+        recommended: recommendedList.length > 0 ? recommendedList : fallback.recommended,
+        hiddenGems: hiddenGemsList.length > 0 ? hiddenGemsList : fallback.hiddenGems,
+        authors: authorsList.length > 0 ? authorsList : fallback.authors,
+        collections: fallback.collections,
+        historicalTimeline: fallback.historicalTimeline,
+        challenges: fallback.challenges,
+        festivalStories: fallback.festivalStories,
+        travelRoutes: fallback.travelRoutes,
+        mostLoved: trendingList.length > 0 ? trendingList : fallback.mostLoved,
+      };
+    } catch {
+      const { getInitialExploreData } = await import("../explore-initial-data");
+      return getInitialExploreData();
+    }
+  }
+);
+

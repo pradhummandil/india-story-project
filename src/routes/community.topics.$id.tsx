@@ -14,6 +14,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/community/topics/$id")({
   component: TopicDetailPage,
@@ -113,7 +114,7 @@ export default function TopicDetailPage() {
         body: JSON.stringify({ reason: reportReason }),
       });
       if (res.ok) {
-        alert("Thank you. The reply has been reported for moderation.");
+        toast.success("Thank you. The reply has been reported for moderation.");
         setReportingPostId(null);
         loadTopic();
       }

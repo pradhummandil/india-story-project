@@ -20,9 +20,9 @@ export default function CommunityLayout() {
 
   return (
     <SiteLayout>
-      <div className="min-h-screen bg-[#0a0a0a] text-white">
+      <div className="min-h-screen bg-background text-foreground">
         {/* Community Nav Banner */}
-        <div className="bg-[#121212] border-b border-white/5 sticky top-16 z-40 backdrop-blur-md bg-opacity-85">
+        <div className="bg-card/90 border-b border-border sticky top-16 z-40 backdrop-blur-md">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-center justify-between h-14 overflow-x-auto scrollbar-none">
               <div className="flex space-x-1 sm:space-x-2">
@@ -36,10 +36,10 @@ export default function CommunityLayout() {
                     <Link
                       key={tab.path}
                       to={tab.path}
-                      className={`flex items-center gap-2 px-4 py-2 text-[11px] font-sans font-bold uppercase tracking-widest transition-all rounded-sm ${
+                      className={`flex items-center gap-2 px-4 py-2 text-[11px] font-sans font-bold uppercase tracking-widest transition-all rounded-md ${
                         isActive
-                          ? "bg-primary text-white"
-                          : "text-white/40 hover:bg-white/5 hover:text-white/80"
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                       }`}
                     >
                       <Icon className="size-3.5" />
@@ -48,7 +48,7 @@ export default function CommunityLayout() {
                   );
                 })}
               </div>
-              <div className="text-[10px] text-white/30 font-sans uppercase tracking-widest hidden md:block">
+              <div className="text-[10px] text-muted-foreground font-sans uppercase tracking-widest hidden md:block">
                 India Story Hub — Community Platform
               </div>
             </div>

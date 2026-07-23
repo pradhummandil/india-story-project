@@ -1,8 +1,10 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { StoryCard } from "@/components/site/StoryCard";
 import { useJourney, getSimilar, getRecommendations } from "@/lib/journey-store";
+import { useI18nStore } from "@/lib/i18n";
 
 export function YouMayAlsoLike() {
+  const lang = useI18nStore((s) => s.lang);
   const { state } = useJourney();
   if (!state.lastViewedId) return null;
 
@@ -21,9 +23,11 @@ export function YouMayAlsoLike() {
       >
         <div className="mb-8">
           <p className="text-xs uppercase tracking-widest text-gold mb-3">
-            Because you opened a story
+            {lang === "hi" ? "क्योंकि आपने एक कहानी खोली" : "Because you opened a story"}
           </p>
-          <h2 className="font-display text-3xl md:text-4xl">You May Also Like</h2>
+          <h2 className="font-display text-3xl md:text-4xl">
+            {lang === "hi" ? "आपको यह भी पसंद आ सकता है" : "You May Also Like"}
+          </h2>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {similar.map((s, i) => (
@@ -33,7 +37,9 @@ export function YouMayAlsoLike() {
 
         {continueExploring.length > 0 && (
           <div className="mt-16">
-            <h3 className="font-display text-2xl mb-6">Continue Exploring</h3>
+            <h3 className="font-display text-2xl mb-6">
+              {lang === "hi" ? "अन्वेषण जारी रखें" : "Continue Exploring"}
+            </h3>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {continueExploring.map((s, i) => (
                 <StoryCard key={s.id} story={s} index={i} />

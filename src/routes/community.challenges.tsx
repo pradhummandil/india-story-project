@@ -61,12 +61,12 @@ export default function ChallengesPage() {
   return (
     <div className="space-y-8">
       {/* ── Challenges Header ── */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/5 pb-5">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border/60 pb-5">
         <div>
-          <h1 className="font-display text-2xl font-bold text-white">
+          <h1 className="font-display text-2xl font-bold text-foreground">
             Editorial Writing Challenges
           </h1>
-          <p className="text-xs text-white/40 font-sans mt-1">
+          <p className="text-xs text-muted-foreground font-sans mt-1">
             Participate in storytelling challenges. Document unsung heroes to win unique profile
             badges, XP, and grants.
           </p>
@@ -74,7 +74,7 @@ export default function ChallengesPage() {
       </div>
 
       {/* ── Status Tabs ── */}
-      <div className="flex items-center gap-1.5 border-b border-white/5 pb-0.5">
+      <div className="flex items-center gap-1.5 border-b border-border/60 pb-0.5">
         {[
           { id: "active", label: "Active Challenges" },
           { id: "upcoming", label: "Upcoming" },
@@ -85,8 +85,8 @@ export default function ChallengesPage() {
             onClick={() => setStatusTab(tab.id)}
             className={`pb-2.5 px-4 text-[10px] font-sans font-bold uppercase tracking-widest border-b-2 transition-colors flex items-center gap-1.5 ${
               statusTab === tab.id
-                ? "border-primary text-white"
-                : "border-transparent text-white/35 hover:text-white/70"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             {tab.label}
@@ -96,7 +96,7 @@ export default function ChallengesPage() {
 
       {/* ── Featured active challenge ── */}
       {featured && (
-        <div className="bg-gradient-to-r from-primary/10 via-[#121212] to-[#121212] border border-white/8 p-8 relative overflow-hidden flex flex-col md:flex-row items-start justify-between gap-8 rounded-sm">
+        <div className="bg-card border border-border p-8 relative overflow-hidden flex flex-col md:flex-row items-start justify-between gap-8 rounded-2xl shadow-sm">
           <div className="space-y-4 max-w-xl z-10">
             <span className="flex items-center gap-1 bg-primary text-white text-[8px] font-sans font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm w-fit">
               <Star className="size-3 fill-white" /> Featured Competition
@@ -154,25 +154,25 @@ export default function ChallengesPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {loading ? (
           Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-44 bg-white/5 rounded-sm animate-pulse" />
+            <div key={i} className="h-44 bg-muted rounded-2xl animate-pulse" />
           ))
         ) : listChallenges.length === 0 && !featured ? (
-          <div className="text-center py-12 bg-[#121212] border border-white/5 rounded text-white/20 text-xs font-sans col-span-full">
-            No writing challenges active in this category. Check upcoming/past.
+          <div className="text-center py-12 bg-card border border-border rounded-2xl text-muted-foreground text-xs font-sans col-span-full shadow-sm">
+            No writing challenges active in this category. Check upcoming or archived challenges.
           </div>
         ) : (
           listChallenges.map((c) => (
             <div
               key={c.id}
-              className="bg-[#121212] border border-white/5 p-5 flex flex-col justify-between h-48 rounded-sm hover:border-white/10 transition-colors"
+              className="bg-card border border-border p-5 flex flex-col justify-between h-48 rounded-2xl hover:border-gold/40 shadow-sm transition-all"
             >
               <div className="space-y-2">
                 <div className="flex justify-between items-start">
-                  <span className="text-[8px] font-sans font-bold uppercase tracking-widest text-primary bg-primary/10 px-2 py-0.5">
+                  <span className="text-[8px] font-sans font-bold uppercase tracking-widest text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
                     {c.theme || "Writing Challenge"}
                   </span>
                   {statusTab === "active" && (
-                    <span className="text-[8px] font-sans font-bold text-emerald-400 flex items-center gap-1">
+                    <span className="text-[8px] font-sans font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                       <Clock className="size-2.5" />
                       <ChallengeTimer endAt={c.endAt} />
                     </span>
@@ -181,23 +181,23 @@ export default function ChallengesPage() {
                 <div className="space-y-1">
                   <Link
                     to={`/community/challenges/${c.id}` as any}
-                    className="text-xs font-sans font-bold text-white hover:text-primary transition-colors block truncate"
+                    className="text-xs font-sans font-bold text-foreground hover:text-primary transition-colors block truncate"
                   >
                     {c.title}
                   </Link>
-                  <p className="text-[10px] text-white/40 font-sans line-clamp-2 leading-relaxed">
+                  <p className="text-[10px] text-muted-foreground font-sans line-clamp-2 leading-relaxed">
                     {c.description}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-3 border-t border-white/5">
-                <span className="text-[9px] text-white/30 font-sans flex items-center gap-1">
-                  <Flame className="size-3" /> {c.entries?.length ?? 0} entries
+              <div className="flex items-center justify-between pt-3 border-t border-border/40">
+                <span className="text-[9px] text-muted-foreground font-sans flex items-center gap-1">
+                  <Flame className="size-3 text-primary" /> {c.entries?.length ?? 0} entries
                 </span>
                 <Link
                   to={`/community/challenges/${c.id}` as any}
-                  className="bg-white/5 border border-white/10 px-3 py-1 text-[9px] font-sans font-bold uppercase tracking-widest text-white/60 hover:text-white hover:bg-white/8 transition-colors rounded-sm"
+                  className="bg-background border border-border px-3 py-1 text-[9px] font-sans font-bold uppercase tracking-widest text-foreground hover:border-gold/50 transition-colors rounded-lg"
                 >
                   {statusTab === "past" ? "View Leaderboard" : "Enter"}
                 </Link>

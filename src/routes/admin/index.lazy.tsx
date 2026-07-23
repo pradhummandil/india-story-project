@@ -69,21 +69,21 @@ function MetricCard({
   isNegative?: boolean;
 }) {
   return (
-    <div className="bg-[#121212] border border-white/5 p-5 rounded-lg hover:border-white/15 transition-all shadow-sm flex flex-col justify-between h-32 group">
+    <div className="bg-card border border-border p-5 rounded-xl hover:border-primary/40 transition-all shadow-sm flex flex-col justify-between h-32 group">
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-sans font-black uppercase tracking-wider text-white/40">
+        <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-muted-foreground">
           {label}
         </span>
-        <div className="size-8 rounded-lg bg-[#C8A96A]/5 border border-[#C8A96A]/10 flex items-center justify-center text-[#C8A96A] group-hover:scale-105 transition-transform duration-200">
+        <div className="size-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary group-hover:scale-105 transition-transform duration-200">
           <Icon className="size-4" />
         </div>
       </div>
       <div className="flex items-baseline gap-2 mt-auto">
-        <h4 className="font-display text-2xl font-bold text-white tracking-tight">{value}</h4>
+        <h4 className="font-display text-2xl font-bold text-foreground tracking-tight">{value}</h4>
         {delta && (
           <span
-            className={`text-[9px] font-sans font-black uppercase tracking-wider flex items-center gap-0.5 ${
-              isNegative ? "text-red-400" : "text-emerald-400"
+            className={`text-[9px] font-sans font-bold uppercase tracking-wider flex items-center gap-0.5 ${
+              isNegative ? "text-destructive" : "text-emerald-600 dark:text-emerald-400"
             }`}
           >
             {isNegative ? <TrendingDown className="size-2.5" /> : <TrendingUp className="size-2.5" />}
@@ -113,7 +113,7 @@ export default function AdminDashboard() {
     })
       .then((r) => r.json())
       .then((data) => setStats(data as DashboardStats))
-      .catch(console.error)
+      .catch((err) => console.error("Failed to load admin stats:", err))
       .finally(() => setStatsLoading(false));
   }, [user, session]);
 
@@ -131,22 +131,13 @@ export default function AdminDashboard() {
   }
 
   const SkeletonMetricCard = () => (
-    <div className="bg-[#121212] border border-white/5 p-5 rounded-lg h-32 flex flex-col justify-between animate-pulse">
-      <div className="flex items-center justify-between">
-        <div className="h-3 w-16 bg-white/5 rounded" />
-        <div className="size-8 rounded-lg bg-white/5" />
-      </div>
-      <div className="h-6 w-12 bg-white/5 rounded mt-auto" />
-    </div>
+    <div className="bg-card/50 border border-border p-5 rounded-xl h-32 animate-pulse" />
   );
 
   const SkeletonList = () => (
-    <div className="space-y-4 py-1">
-      {[1, 2, 3, 4].map((n) => (
-        <div key={n} className="flex items-center justify-between animate-pulse">
-          <div className="h-3.5 w-32 bg-white/5 rounded" />
-          <div className="h-3.5 w-10 bg-white/5 rounded" />
-        </div>
+    <div className="space-y-3">
+      {[...Array(3)].map((_, i) => (
+        <div key={i} className="h-6 bg-muted/40 animate-pulse rounded" />
       ))}
     </div>
   );
@@ -164,21 +155,21 @@ export default function AdminDashboard() {
       <div className="space-y-6 max-w-7xl mx-auto select-none">
         
         {/* Title Header Banner */}
-        <div className="flex flex-col md:flex-row justify-between md:items-center border-b border-white/5 pb-5 gap-4">
+        <div className="flex flex-col md:flex-row justify-between md:items-center border-b border-border/60 pb-5 gap-4">
           <div>
-            <h1 className="font-display text-2xl font-bold text-white tracking-wide">
+            <h1 className="font-display text-2xl font-bold text-foreground tracking-wide">
               Overview Dashboard
             </h1>
-            <p className="text-[10px] font-sans text-white/40 uppercase tracking-widest mt-1.5 font-bold">
+            <p className="text-[10px] font-sans text-muted-foreground uppercase tracking-widest mt-1.5 font-bold">
               Real-time site metrics, editorial pipeline stats, and user logs
             </p>
           </div>
           
           {stats && (stats.notifications.pendingSubmissions > 0 || stats.notifications.flaggedCommentsCount > 0) && (
-            <div className="inline-flex items-center gap-2 bg-[#C8A96A]/10 border border-[#C8A96A]/20 rounded-lg px-3 py-1.5 text-xs text-[#C8A96A]">
+            <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-lg px-3 py-1.5 text-xs text-primary">
               <span className="relative flex size-2 shrink-0">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#C8A96A] opacity-75"></span>
-                <span className="relative inline-flex rounded-full size-2 bg-[#C8A96A]"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full size-2 bg-primary"></span>
               </span>
               <span className="font-sans font-bold tracking-wide text-[10px] uppercase">
                 {stats.notifications.pendingSubmissions + stats.notifications.flaggedCommentsCount} review items need moderation
@@ -222,36 +213,36 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Trend Chart */}
-          <div className="lg:col-span-2 bg-[#121212] border border-white/5 p-5 rounded-lg">
-            <h3 className="text-[10px] font-sans font-black text-white/40 uppercase tracking-widest mb-6">
+          <div className="lg:col-span-2 bg-card border border-border p-5 rounded-xl shadow-sm">
+            <h3 className="text-[10px] font-sans font-bold text-muted-foreground uppercase tracking-widest mb-6">
               Story Publishing Trend (Last 6 Months)
             </h3>
             <div className="h-64">
               {statsLoading || !stats ? (
-                <div className="h-full flex items-center justify-center text-white/20 text-xs font-sans animate-pulse">
+                <div className="h-full flex items-center justify-center text-muted-foreground text-xs font-sans animate-pulse">
                   Loading trend chart...
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={stats.growthCharts}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" />
-                    <XAxis dataKey="month" tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 10 }} stroke="rgba(255,255,255,0.1)" />
-                    <YAxis tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 10 }} stroke="rgba(255,255,255,0.1)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <XAxis dataKey="month" tick={{ fill: "currentColor", fontSize: 10 }} stroke="var(--border)" />
+                    <YAxis tick={{ fill: "currentColor", fontSize: 10 }} stroke="var(--border)" />
                     <RechartsTooltip
                       contentStyle={{
-                        background: "#161616",
-                        border: "1px solid rgba(255,255,255,0.08)",
+                        background: "var(--card)",
+                        border: "1px solid var(--border)",
                         borderRadius: 8,
-                        color: "white",
+                        color: "var(--foreground)",
                         fontSize: 12,
                       }}
                     />
                     <Line
                       type="monotone"
                       dataKey="count"
-                      stroke="#C8A96A"
+                      stroke="var(--primary)"
                       strokeWidth={2.5}
-                      dot={{ fill: "#C8A96A" }}
+                      dot={{ fill: "var(--primary)" }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -260,27 +251,27 @@ export default function AdminDashboard() {
           </div>
 
           {/* States list */}
-          <div className="bg-[#121212] border border-white/5 p-5 rounded-lg flex flex-col">
-            <h3 className="text-[10px] font-sans font-black text-white/40 uppercase tracking-widest mb-6">
+          <div className="bg-card border border-border p-5 rounded-xl shadow-sm flex flex-col">
+            <h3 className="text-[10px] font-sans font-bold text-muted-foreground uppercase tracking-widest mb-6">
               Trending States (By Views)
             </h3>
             <div className="space-y-4 my-auto">
               {statsLoading || !stats ? (
                 <SkeletonList />
               ) : stats.trendingStates.length === 0 ? (
-                <p className="text-xs text-white/30 font-sans italic py-4 text-center">
+                <p className="text-xs text-muted-foreground font-sans italic py-4 text-center">
                   No views registered.
                 </p>
               ) : (
                 stats.trendingStates.map((state, i) => (
                   <div key={state.name} className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
-                      <span className="text-xs text-[#C8A96A] font-bold w-4">#{i + 1}</span>
-                      <span className="text-xs text-white/80 font-sans font-medium">
+                      <span className="text-xs text-primary font-bold w-4">#{i + 1}</span>
+                      <span className="text-xs text-foreground font-sans font-semibold">
                         {state.name}
                       </span>
                     </div>
-                    <span className="text-[11px] text-white/40 font-mono">
+                    <span className="text-[11px] text-muted-foreground font-mono">
                       {state.viewCount.toLocaleString()} views
                     </span>
                   </div>
@@ -294,8 +285,8 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Top read */}
-          <div className="bg-[#121212] border border-white/5 p-5 rounded-lg">
-            <h3 className="text-[10px] font-sans font-black text-white/40 uppercase tracking-widest mb-6">
+          <div className="bg-card border border-border p-5 rounded-xl shadow-sm">
+            <h3 className="text-[10px] font-sans font-bold text-muted-foreground uppercase tracking-widest mb-6">
               Top Read Stories
             </h3>
             <div className="space-y-4">
@@ -304,10 +295,10 @@ export default function AdminDashboard() {
               ) : (
                 stats.topStories.map((story) => (
                   <div key={story.slug} className="flex items-center justify-between gap-3">
-                    <span className="text-xs font-sans text-white/80 font-medium truncate max-w-[200px]">
+                    <span className="text-xs font-sans text-foreground font-semibold truncate max-w-[200px]">
                       {story.title}
                     </span>
-                    <span className="text-xs text-[#C8A96A] font-bold font-mono">
+                    <span className="text-xs text-primary font-bold font-mono">
                       {story.viewCount.toLocaleString()} views
                     </span>
                   </div>
@@ -317,8 +308,8 @@ export default function AdminDashboard() {
           </div>
 
           {/* Authors list */}
-          <div className="bg-[#121212] border border-white/5 p-5 rounded-lg">
-            <h3 className="text-[10px] font-sans font-black text-white/40 uppercase tracking-widest mb-6">
+          <div className="bg-card border border-border p-5 rounded-xl shadow-sm">
+            <h3 className="text-[10px] font-sans font-bold text-muted-foreground uppercase tracking-widest mb-6">
               Top Authors
             </h3>
             <div className="space-y-4">
@@ -328,12 +319,12 @@ export default function AdminDashboard() {
                 stats.topAuthors.map((author) => (
                   <div key={author.name} className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-white/80 font-sans font-medium">{author.name}</p>
-                      <p className="text-[9px] text-white/30 mt-0.5">
+                      <p className="text-xs text-foreground font-sans font-semibold">{author.name}</p>
+                      <p className="text-[9px] text-muted-foreground mt-0.5">
                         {author.storiesCount} dispatches published
                       </p>
                     </div>
-                    <span className="text-xs text-white/50 font-mono font-medium">
+                    <span className="text-xs text-muted-foreground font-mono font-medium">
                       {author.viewCount.toLocaleString()} views
                     </span>
                   </div>
@@ -343,37 +334,37 @@ export default function AdminDashboard() {
           </div>
 
           {/* Actions & Alerts */}
-          <div className="bg-[#121212] border border-white/5 p-5 rounded-lg flex flex-col justify-between">
+          <div className="bg-card border border-border p-5 rounded-xl shadow-sm flex flex-col justify-between">
             <div>
-              <h3 className="text-[10px] font-sans font-black text-white/40 uppercase tracking-widest mb-6">
+              <h3 className="text-[10px] font-sans font-bold text-muted-foreground uppercase tracking-widest mb-6">
                 Moderation Action Items
               </h3>
               {statsLoading || !stats ? (
                 <div className="space-y-3 animate-pulse">
-                  <div className="h-14 bg-white/5 rounded-lg" />
-                  <div className="h-14 bg-white/5 rounded-lg" />
+                  <div className="h-14 bg-muted/40 rounded-lg" />
+                  <div className="h-14 bg-muted/40 rounded-lg" />
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3.5 rounded-lg bg-white/5 border border-white/5">
+                  <div className="flex items-center justify-between p-3.5 rounded-lg bg-background border border-border">
                     <div>
-                      <p className="text-xs text-white/80 font-sans font-semibold">
+                      <p className="text-xs text-foreground font-sans font-semibold">
                         Pending Submissions
                       </p>
-                      <p className="text-[9px] text-white/30">User contributions awaiting review</p>
+                      <p className="text-[9px] text-muted-foreground">User contributions awaiting review</p>
                     </div>
-                    <span className="size-6 rounded-full bg-[#C8A96A]/20 flex items-center justify-center text-xs text-[#C8A96A] font-bold">
+                    <span className="size-6 rounded-full bg-primary/20 flex items-center justify-center text-xs text-primary font-bold">
                       {stats.notifications.pendingSubmissions}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between p-3.5 rounded-lg bg-white/5 border border-white/5">
+                  <div className="flex items-center justify-between p-3.5 rounded-lg bg-background border border-border">
                     <div>
-                      <p className="text-xs text-white/80 font-sans font-semibold">
+                      <p className="text-xs text-foreground font-sans font-semibold">
                         Flagged Comments
                       </p>
-                      <p className="text-[9px] text-white/30">Comments flagged by readers</p>
+                      <p className="text-[9px] text-muted-foreground">Comments flagged by readers</p>
                     </div>
-                    <span className="size-6 rounded-full bg-red-500/20 flex items-center justify-center text-xs text-red-400 font-bold">
+                    <span className="size-6 rounded-full bg-destructive/20 flex items-center justify-center text-xs text-destructive font-bold">
                       {stats.notifications.flaggedCommentsCount}
                     </span>
                   </div>
@@ -382,7 +373,7 @@ export default function AdminDashboard() {
             </div>
             <button
               onClick={() => void navigate({ to: "/admin/community" })}
-              className="mt-6 w-full h-10 flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/8 text-xs font-sans text-white/85 rounded-lg transition-colors gap-1.5 cursor-pointer"
+              className="mt-6 w-full h-10 flex items-center justify-center bg-primary hover:bg-primary/95 text-primary-foreground font-sans text-xs font-semibold rounded-lg transition-colors gap-1.5 cursor-pointer shadow-sm"
             >
               Open Moderation Panel <ChevronRight className="size-3.5" />
             </button>
@@ -390,34 +381,34 @@ export default function AdminDashboard() {
         </div>
 
         {/* Activity log */}
-        <div className="bg-[#121212] border border-white/5 p-5 rounded-lg">
-          <h3 className="text-[10px] font-sans font-black text-white/40 uppercase tracking-widest mb-6">
+        <div className="bg-card border border-border p-5 rounded-xl shadow-sm">
+          <h3 className="text-[10px] font-sans font-bold text-muted-foreground uppercase tracking-widest mb-6">
             Recent System Activity
           </h3>
-          <div className="divide-y divide-white/5">
+          <div className="divide-y divide-border/60">
             {statsLoading || !stats ? (
               <div className="space-y-3 py-2">
                 {[1, 2, 3].map((n) => (
                   <div key={n} className="flex justify-between animate-pulse">
-                    <div className="h-3 w-48 bg-white/5 rounded" />
-                    <div className="h-3 w-12 bg-white/5 rounded" />
+                    <div className="h-3 w-48 bg-muted/40 rounded" />
+                    <div className="h-3 w-12 bg-muted/40 rounded" />
                   </div>
                 ))}
               </div>
             ) : stats.activities.length === 0 ? (
-              <p className="text-xs text-white/30 font-sans italic py-4 text-center">
+              <p className="text-xs text-muted-foreground font-sans italic py-4 text-center">
                 No activities logged.
               </p>
             ) : (
               stats.activities.map((act, i) => (
                 <div key={i} className="py-3 flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-xs text-white/85 font-sans leading-relaxed">{act.title}</p>
-                    <p className="text-[9px] text-white/30 mt-0.5">
+                    <p className="text-xs text-foreground font-sans leading-relaxed font-medium">{act.title}</p>
+                    <p className="text-[9px] text-muted-foreground mt-0.5">
                       {new Date(act.time).toLocaleString("en-IN")}
                     </p>
                   </div>
-                  <span className="text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded bg-white/5 border border-white/5 text-white/40">
+                  <span className="text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded bg-muted border border-border text-muted-foreground">
                     {act.meta}
                   </span>
                 </div>

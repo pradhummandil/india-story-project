@@ -5,12 +5,28 @@ import { StoryStatus } from "@prisma/client";
 
 const db = prisma as any;
 
+export const WORKFLOW_STAGES = [
+  "User",
+  "Submission",
+  "Admin Review",
+  "Assign Editor",
+  "Editor Revision",
+  "Fact Checker",
+  "Copy Editor",
+  "SEO Review",
+  "Legal Review",
+  "Final Admin Approval",
+  "Scheduled Publish",
+  "Automatic Publish",
+  "Distribution",
+  "Analytics",
+] as const;
+
 export const Route = createFileRoute("/api/admin/newsroom/workflow")({
   server: {
     handlers: {
       /**
        * GET /api/admin/newsroom/workflow?storyId=uuid
-       * Retrieve current workflow parameters, timeline, and locks for a story
        */
       GET: async ({ request }) => {
         const user = await authenticate(request);
@@ -23,15 +39,21 @@ export const Route = createFileRoute("/api/admin/newsroom/workflow")({
         }
 
         try {
-          // 1. Fetch story info
           const story = await db.story.findUnique({
             where: { id: storyId },
-            select: { id: true, status: true, scheduledAt: true, publishedAt: true },
+            select: {
+              id: true,
+              title: true,
+              status: true,
+              scheduledAt: true,
+              publishedAt: true,
+              assignedEditorId: true,
+            },
           });
 
           if (!story) return json({ error: "Story not found" }, { status: 404 });
 
-          // 2. Fetch latest workflow state AuditLog
+          // Fetch latest workflow state AuditLog
           const latestLog = await db.auditLog.findFirst({
             where: {
               action: "STORY_WORKFLOW_STATE",
@@ -42,13 +64,19 @@ export const Route = createFileRoute("/api/admin/newsroom/workflow")({
 
           let workflow = {
             storyId,
+            currentStage: "Editor Revision",
             reviewerId: null,
             factCheckerId: null,
+            copyEditorId: null,
+            seoReviewerId: null,
             legalReviewerId: null,
+            legalApproved: false,
             lockedBy: null,
             lockedAt: null,
             notes: "",
+            scheduledPublishAt: story.scheduledAt ? new Date(story.scheduledAt).toISOString() : null,
             autoUnpublishAt: null,
+            stageTimestamps: {} as Record<string, string>,
           };
 
           if (latestLog) {
@@ -57,58 +85,37 @@ export const Route = createFileRoute("/api/admin/newsroom/workflow")({
               if (parsed.storyId === storyId) {
                 workflow = { ...workflow, ...parsed };
               }
-            } catch {
-              // Ignore malformed logs
-            }
+            } catch {}
           }
 
-          // Check if lock has expired (10 minutes lease time)
-          if (workflow.lockedAt && workflow.lockedBy) {
-            const lockTime = new Date(workflow.lockedAt).getTime();
-            const lockAgeMinutes = (Date.now() - lockTime) / (60 * 1000);
-            if (lockAgeMinutes > 10) {
-              workflow.lockedBy = null;
-              workflow.lockedAt = null;
-            }
-          }
+          // Fetch all stage transition audit logs for ISO timestamps timeline
+          const stageLogs = await db.auditLog.findMany({
+            where: {
+              action: "STORY_WORKFLOW_STAGE_TRANSITION",
+              details: { contains: storyId },
+            },
+            orderBy: { createdAt: "asc" },
+          });
 
-          // 3. Fetch all system reviewers / fact-checkers / authors for options selection
-          // Map profiles to option list
+          const timelineTimestamps: Record<string, string> = {};
+          stageLogs.forEach((log: any) => {
+            try {
+              const meta = JSON.parse(log.details);
+              if (meta.stage) {
+                timelineTimestamps[meta.stage] = log.createdAt.toISOString();
+              }
+            } catch {}
+          });
+
+          workflow.stageTimestamps = { ...timelineTimestamps, ...workflow.stageTimestamps };
+
+          // Staff selection options
           const staff = await db.author.findMany({
             select: { id: true, name: true },
             orderBy: { name: "asc" },
           });
 
-          // 4. Fetch the timeline of events for this story
-          const timelineLogs = await db.auditLog.findMany({
-            where: {
-              details: { contains: storyId },
-            },
-            orderBy: { createdAt: "desc" },
-            take: 30,
-          });
-
-          const timeline = timelineLogs.map((log: any) => {
-            let meta = {};
-            try {
-              meta = JSON.parse(log.details);
-            } catch {}
-
-            return {
-              id: log.id,
-              action: log.action,
-              userId: log.userId,
-              createdAt: log.createdAt.toISOString(),
-              meta,
-            };
-          });
-
-          return json({
-            story,
-            workflow,
-            staff,
-            timeline,
-          });
+          return json({ story, workflow, staff, stages: WORKFLOW_STAGES });
         } catch (e: any) {
           console.error("[Workflow API] GET error:", e);
           return json({ error: e.message || "Failed to load workflow state" }, { status: 500 });
@@ -117,7 +124,6 @@ export const Route = createFileRoute("/api/admin/newsroom/workflow")({
 
       /**
        * POST /api/admin/newsroom/workflow
-       * Set assignments, locks, schedule dates, or workflow notes
        */
       POST: async ({ request }) => {
         const user = await authenticate(request);
@@ -132,26 +138,26 @@ export const Route = createFileRoute("/api/admin/newsroom/workflow")({
 
         const {
           storyId,
+          stage,
           reviewerId,
           factCheckerId,
+          copyEditorId,
+          seoReviewerId,
           legalReviewerId,
+          legalApproved,
           lockedBy,
           lockedAt,
           notes,
           scheduledPublishAt,
-          autoUnpublishAt,
           status,
         } = body;
 
-        if (!storyId) {
-          return json({ error: "storyId is required" }, { status: 400 });
-        }
+        if (!storyId) return json({ error: "storyId is required" }, { status: 400 });
 
         try {
           const story = await db.story.findUnique({ where: { id: storyId } });
           if (!story) return json({ error: "Story not found" }, { status: 404 });
 
-          // 1. If status or scheduledAt changes, update the Story record
           const updateData: any = {};
           if (status) {
             updateData.status = status as StoryStatus;
@@ -168,37 +174,41 @@ export const Route = createFileRoute("/api/admin/newsroom/workflow")({
               where: { id: storyId },
               data: updateData,
             });
-
-            // Write status update to timeline
-            if (status) {
-              await db.auditLog.create({
-                data: {
-                  userId: user.id,
-                  action: "STORY_STATUS_CHANGE",
-                  details: JSON.stringify({
-                    storyId,
-                    from: story.status,
-                    to: status,
-                  }),
-                },
-              });
-            }
           }
 
-          // 2. Save the new workflow parameters into AuditLog
+          const timestampNow = new Date().toISOString();
+
+          if (stage) {
+            await db.auditLog.create({
+              data: {
+                userId: user.id,
+                action: "STORY_WORKFLOW_STAGE_TRANSITION",
+                details: JSON.stringify({
+                  storyId,
+                  stage,
+                  timestamp: timestampNow,
+                  changedBy: user.email || user.id,
+                }),
+              },
+            });
+          }
+
           const payload = {
             storyId,
+            currentStage: stage || "Editor Revision",
             reviewerId: reviewerId || null,
             factCheckerId: factCheckerId || null,
+            copyEditorId: copyEditorId || null,
+            seoReviewerId: seoReviewerId || null,
             legalReviewerId: legalReviewerId || null,
+            legalApproved: !!legalApproved,
             lockedBy: lockedBy || null,
             lockedAt: lockedAt || null,
             notes: notes || "",
             scheduledPublishAt: scheduledPublishAt || null,
-            autoUnpublishAt: autoUnpublishAt || null,
           };
 
-          const workflowLog = await db.auditLog.create({
+          await db.auditLog.create({
             data: {
               userId: user.id,
               action: "STORY_WORKFLOW_STATE",
@@ -206,26 +216,7 @@ export const Route = createFileRoute("/api/admin/newsroom/workflow")({
             },
           });
 
-          // Log lock adjustments separately for timeline context
-          if (lockedBy && lockedAt) {
-            await db.auditLog.create({
-              data: {
-                userId: user.id,
-                action: "STORY_ACQUIRE_LOCK",
-                details: JSON.stringify({ storyId, lockedBy }),
-              },
-            });
-          } else if (lockedBy === null && lockedAt === null) {
-            await db.auditLog.create({
-              data: {
-                userId: user.id,
-                action: "STORY_RELEASE_LOCK",
-                details: JSON.stringify({ storyId }),
-              },
-            });
-          }
-
-          return json({ success: true, workflow: payload });
+          return json({ success: true, workflow: payload, timestamp: timestampNow });
         } catch (e: any) {
           console.error("[Workflow API] POST error:", e);
           return json({ error: e.message || "Failed to update workflow state" }, { status: 500 });

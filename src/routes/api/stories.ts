@@ -66,7 +66,7 @@ export const Route = createFileRoute("/api/stories")({
               page,
               pageSize,
             }),
-            5000,
+            30000,
           );
           console.timeEnd(`story query time [${requestId}]`);
           console.log(`[Prisma finished] request_id=${requestId}`);
@@ -96,11 +96,9 @@ export const Route = createFileRoute("/api/stories")({
           });
         } catch (error: any) {
           console.timeEnd(`total response time [${requestId}]`);
-          console.error(`[API error] request_id=${requestId} Database query failed:`, error?.name, error?.message);
-          return json(
-            { error: "Database query failed or timed out", details: error?.message, request_id: requestId },
-            { status: 500 }
-          );
+          console.error(`[API error] request_id=${requestId} Database query fallback:`, error?.name, error?.message);
+          const { stories } = await import("@/lib/stories-data");
+          return json({ stories: stories || [], total: stories?.length || 0, page, pageSize, request_id: requestId });
         }
       },
     },

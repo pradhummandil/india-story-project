@@ -149,19 +149,19 @@ export default function AdminMediaPage() {
     <AdminLayout title="Media Library" subtitle={`${files.length} files`}>
       <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-white/30" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
             id="media-search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search files…"
-            className="pl-10 h-10 rounded-sm bg-white/5 border-white/10 text-white/80 placeholder:text-white/20 font-sans text-sm focus-visible:ring-primary/45"
+            className="pl-10 h-10 rounded-lg bg-background border-border text-foreground placeholder:text-muted-foreground/60 font-sans text-sm focus-visible:ring-primary/45"
           />
         </div>
         <div className="flex gap-2">
           <Button
             variant="outline"
-            className="h-10 px-4 rounded-sm border-white/10 hover:bg-white/5 text-white/60 font-sans text-xs uppercase tracking-widest gap-2 bg-transparent"
+            className="h-10 px-4 rounded-lg border-border hover:bg-muted text-muted-foreground hover:text-foreground font-sans text-xs uppercase tracking-widest gap-2 bg-card"
             onClick={() => fetchFiles()}
             disabled={loading}
           >
@@ -169,7 +169,7 @@ export default function AdminMediaPage() {
           </Button>
           <Button
             id="media-upload-btn"
-            className="h-10 px-4 rounded-sm bg-primary hover:bg-primary/90 text-white font-sans text-xs uppercase tracking-widest gap-2"
+            className="h-10 px-4 rounded-lg bg-primary hover:bg-primary/95 text-primary-foreground font-sans text-xs uppercase tracking-widest gap-2 font-bold shadow-sm"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
           >
@@ -187,7 +187,7 @@ export default function AdminMediaPage() {
       </div>
 
       {error && (
-        <div className="mb-6 flex items-start gap-3 text-xs text-red-400 bg-red-500/10 border border-red-500/20 px-4 py-3 rounded-sm font-sans">
+        <div className="mb-6 flex items-start gap-3 text-xs text-destructive bg-destructive/10 border border-destructive/20 px-4 py-3 rounded-lg font-sans">
           <AlertCircle className="size-4 shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
@@ -205,27 +205,27 @@ export default function AdminMediaPage() {
           setDragOver(false);
           void handleUpload(e.dataTransfer.files);
         }}
-        className={`border-2 border-dashed rounded-sm mb-6 py-10 text-center transition-colors cursor-pointer ${
-          dragOver ? "border-primary/60 bg-primary/5" : "border-white/10 hover:border-white/20"
+        className={`border-2 border-dashed rounded-xl mb-6 py-10 text-center transition-colors cursor-pointer bg-card ${
+          dragOver ? "border-primary/60 bg-primary/5" : "border-border hover:border-primary/40"
         }`}
         onClick={() => fileInputRef.current?.click()}
       >
-        <Upload className="size-8 text-white/20 mx-auto mb-3" />
-        <p className="text-sm font-sans text-white/30">
+        <Upload className="size-8 text-muted-foreground/40 mx-auto mb-3" />
+        <p className="text-sm font-sans text-muted-foreground font-medium">
           Drag &amp; drop images here, or click to browse
         </p>
-        <p className="text-xs font-sans text-white/20 mt-1">PNG, JPG, WebP up to 10MB</p>
+        <p className="text-xs font-sans text-muted-foreground/60 mt-1">PNG, JPG, WebP up to 10MB</p>
       </div>
 
       {/* Grid */}
       {loading && files.length === 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
           {Array.from({ length: 12 }).map((_, i) => (
-            <div key={i} className="aspect-square bg-white/5 rounded-sm animate-pulse" />
+            <div key={i} className="aspect-square bg-muted/40 rounded-xl animate-pulse" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16 text-white/20 font-sans text-xs border border-dashed border-white/10 p-8">
+        <div className="text-center py-16 text-muted-foreground font-sans text-xs border border-dashed border-border p-8 rounded-xl bg-card">
           {files.length === 0
             ? "No media files yet. Upload images to get started."
             : "No files match your search."}
@@ -235,7 +235,7 @@ export default function AdminMediaPage() {
           {filtered.map((file) => (
             <div
               key={file.name}
-              className="group relative aspect-square bg-[#161616] border border-white/10 rounded-sm overflow-hidden hover:border-white/30 hover:shadow-elegant transition-all duration-300"
+              className="group relative aspect-square bg-card border border-border rounded-xl overflow-hidden hover:border-primary/40 shadow-sm transition-all duration-300"
             >
               <img
                 src={file.url}
