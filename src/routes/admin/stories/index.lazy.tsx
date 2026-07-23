@@ -449,14 +449,14 @@ export default function AdminStoriesPage() {
                               href={`/stories/${story.slug}`}
                               target="_blank"
                               rel="noreferrer"
-                              className="size-7 rounded-md border border-white/5 bg-white/2 text-white/30 hover:text-white hover:bg-white/5 transition-colors flex items-center justify-center cursor-pointer"
+                              className="p-1.5 rounded-md border border-border bg-muted/80 text-foreground hover:text-primary hover:bg-primary/10 transition-colors flex items-center justify-center cursor-pointer shadow-sm"
                               title="Preview story in live window"
                             >
                               <ExternalLink className="size-3.5" />
                             </a>
                             <button
                               onClick={() => void handleDuplicate(story.id)}
-                              className="size-7 rounded-md border border-white/5 bg-white/2 text-white/30 hover:text-[#C8A96A] hover:bg-[#C8A96A]/10 transition-colors flex items-center justify-center cursor-pointer"
+                              className="p-1.5 rounded-md border border-border bg-muted/80 text-foreground hover:text-amber-600 hover:bg-amber-500/10 transition-colors flex items-center justify-center cursor-pointer shadow-sm"
                               title="Duplicate Story Draft"
                               disabled={duplicatingId === story.id}
                             >
@@ -467,14 +467,15 @@ export default function AdminStoriesPage() {
                             <Link
                               to="/admin/stories/$id/edit"
                               params={{ id: story.id }}
-                              className="size-7 rounded-md border border-white/5 bg-white/2 text-white/30 hover:text-[#C8A96A] hover:bg-[#C8A96A]/10 transition-colors flex items-center justify-center cursor-pointer"
+                              className="px-2.5 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-1 text-xs font-bold shadow-sm cursor-pointer"
                               title="Edit content details"
                             >
                               <Edit className="size-3.5" />
+                              <span>Edit</span>
                             </Link>
                             <button
                               onClick={() => void handleDelete(story.id)}
-                              className="size-7 rounded-md border border-white/5 bg-white/2 text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-colors flex items-center justify-center cursor-pointer"
+                              className="p-1.5 rounded-md border border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive hover:text-white transition-colors flex items-center justify-center cursor-pointer shadow-sm"
                               title="Delete permanently"
                             >
                               <Trash2 className="size-3.5" />
@@ -491,25 +492,25 @@ export default function AdminStoriesPage() {
 
           {/* Pagination Footer */}
           {!loading && total > PAGE_SIZE && (
-            <div className="flex items-center justify-between p-4 border-t border-white/5 font-sans text-[11px]">
-              <span className="text-white/40 font-medium">
+            <div className="flex items-center justify-between p-4 border-t border-black/5 font-sans text-[11px]">
+              <span className="text-black/40 font-medium">
                 Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} of {total} stories
               </span>
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="px-2.5 py-1 text-white/40 hover:text-white disabled:opacity-20 transition-colors font-bold uppercase cursor-pointer"
+                  className="px-2.5 py-1 text-black/40 hover:text-black disabled:opacity-20 transition-colors font-bold uppercase cursor-pointer"
                 >
                   Prev
                 </button>
-                <span className="text-white/50 px-2 font-mono">
+                <span className="text-black/50 px-2 font-mono">
                   {page} / {Math.ceil(total / PAGE_SIZE)}
                 </span>
                 <button
                   onClick={() => setPage((p) => p + 1)}
                   disabled={page >= Math.ceil(total / PAGE_SIZE)}
-                  className="px-2.5 py-1 text-white/40 hover:text-white disabled:opacity-20 transition-colors font-bold uppercase cursor-pointer"
+                  className="px-2.5 py-1 text-black/40 hover:text-black disabled:opacity-20 transition-colors font-bold uppercase cursor-pointer"
                 >
                   Next
                 </button>
