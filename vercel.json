@@ -1,16 +1,18 @@
-{
-  "crons": [
-    {
-      "path": "/api/newsletter/cron?type=daily&secret=isp-cron-2025",
-      "schedule": "0 7 * * *"
-    },
-    {
-      "path": "/api/newsletter/cron?type=weekly&secret=isp-cron-2025",
-      "schedule": "0 8 * * 1"
-    },
-    {
-      "path": "/api/newsletter/cron?type=breaking&secret=isp-cron-2025",
-      "schedule": "0 */6 * * *"
-    }
-  ]
-}
+
+//{
+//  "crons": [
+//    {
+//      "path": "/api/newsletter/cron?type=daily&secret=isp-cron-2025",
+//      "schedule": "0 7 * * *"
+//    },
+//    {
+//      "path": "/api/newsletter/cron?type=weekly&secret=isp-cron-2025",
+//      "schedule": "0 8 * * 1"
+//    },
+//  {
+//      "path": "/api/newsletter/cron?type=breaking&secret=isp-cron-2025",
+//      "schedule": "0 */6 * * *"
+//    }
+//  ]
+//}
+
