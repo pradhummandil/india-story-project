@@ -12,11 +12,15 @@ import {
   Mail,
   Rss,
   Clock,
+  Check,
+  Plus,
 } from "lucide-react";
 import { SiteLayout } from "@/components/site/Layout";
 import { StoryCard } from "@/components/site/StoryCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuthStore } from "@/lib/auth-store";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/theme/$slug")({
   component: ThemePortalPage,
@@ -41,6 +45,9 @@ function ThemePortalPage() {
   const [email, setEmail] = useState("");
   const [subscribing, setSubscribing] = useState(false);
   const [subscribeMsg, setSubscribeMsg] = useState<string | null>(null);
+  const [isFollowed, setIsFollowed] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+  const { user, session } = useAuthStore();
 
   useEffect(() => {
     setLoading(true);
@@ -54,6 +61,43 @@ function ThemePortalPage() {
       .catch((err) => setError(err.message || "Failed to load theme portal"))
       .finally(() => setLoading(false));
   }, [slug]);
+
+  // Check follow status once theme data loads
+  useEffect(() => {
+    if (!user || !data?.theme?.id) return;
+    fetch(`/api/authors/follow?themeId=${data.theme.id}`, {
+      headers: session ? { Authorization: `Bearer ${session.access_token}` } : {},
+    })
+      .then((r) => r.json())
+      .then((d) => setIsFollowed(d.followed ?? false))
+      .catch(() => {});
+  }, [user, data?.theme?.id]);
+
+  const handleFollow = async () => {
+    if (!user) {
+      toast.warning("Please log in to follow this theme.");
+      return;
+    }
+    if (!data?.theme?.id) return;
+    setFollowLoading(true);
+    try {
+      const res = await fetch("/api/authors/follow", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: session ? `Bearer ${session.access_token}` : "",
+        },
+        body: JSON.stringify({ themeId: data.theme.id, themeName: data.theme.name }),
+      });
+      const d = await res.json();
+      setIsFollowed(d.followed);
+      toast.success(d.followed ? `Following ${data.theme.name}` : `Unfollowed ${data.theme.name}`);
+    } catch {
+      toast.error("Failed to update follow status.");
+    } finally {
+      setFollowLoading(false);
+    }
+  };
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,9 +172,27 @@ function ThemePortalPage() {
             <p className="text-xs uppercase tracking-[0.3em] text-gold font-sans font-bold mb-3 flex items-center gap-2">
               <Compass className="size-4" /> Topic Portal
             </p>
-            <h1 className="font-display text-5xl md:text-8xl font-bold leading-none tracking-tight capitalize">
-              {theme.name}
-            </h1>
+            <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+              <h1 className="font-display text-5xl md:text-8xl font-bold leading-none tracking-tight capitalize">
+                {theme.name}
+              </h1>
+              <button
+                onClick={handleFollow}
+                disabled={followLoading}
+                className={`mb-1 flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest font-sans border transition-all duration-200 cursor-pointer ${
+                  isFollowed
+                    ? "bg-gold/10 border-gold/40 text-gold hover:bg-destructive/10 hover:border-destructive/40 hover:text-destructive"
+                    : "bg-white/5 border-white/20 text-white hover:bg-gold/10 hover:border-gold/40 hover:text-gold"
+                }`}
+                title={isFollowed ? `Unfollow ${theme.name}` : `Follow ${theme.name}`}
+              >
+                {isFollowed ? (
+                  <><Check className="size-3.5" /> Following</>
+                ) : (
+                  <><Plus className="size-3.5" /> Follow Topic</>
+                )}
+              </button>
+            </div>
             <p className="mt-4 text-muted-foreground text-sm md:text-base max-w-2xl leading-relaxed font-sans font-medium">
               Curated articles, interviews, and deep-dives exploring the essence of{" "}
               {theme.name.toLowerCase()} across India.

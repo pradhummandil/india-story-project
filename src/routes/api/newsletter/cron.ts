@@ -11,6 +11,17 @@ export const Route = createFileRoute("/api/newsletter/cron")({
       GET: async ({ request }) => {
         const url = new URL(request.url);
         const digestType = url.searchParams.get("type") || "daily";
+
+        // Validate cron secret (supports Vercel Cron ?secret= param OR Authorization header)
+        const secretParam = url.searchParams.get("secret");
+        const authHeader = request.headers.get("Authorization");
+        const expectedSecret = process.env.CRON_SECRET || "isp-cron-2025";
+        const isVercelCron = request.headers.get("x-vercel-cron") === "1";
+
+        if (!isVercelCron && secretParam !== expectedSecret && authHeader !== `Bearer ${expectedSecret}`) {
+          return json({ error: "Unauthorized cron trigger" }, { status: 401 });
+        }
+
         return triggerNewsletterDigest(digestType);
       },
 

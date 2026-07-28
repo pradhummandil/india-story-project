@@ -251,7 +251,7 @@ export default function EditStoryPage() {
         <div className="flex items-center justify-between mb-8">
           <Link
             to="/admin/stories"
-            className="flex items-center gap-2 text-white/40 hover:text-white text-sm font-sans transition-colors"
+            className="flex items-center gap-2 text-black/60 hover:text-black text-sm font-sans transition-colors"
           >
             <ArrowLeft className="size-4" /> Back to Stories
           </Link>
@@ -259,7 +259,7 @@ export default function EditStoryPage() {
             <Button
               id="delete-story-btn"
               variant="outline"
-              className="h-10 px-4 rounded-sm border-red-500/20 text-red-400 hover:bg-red-500/10 font-sans text-xs uppercase tracking-widest gap-2 bg-transparent"
+              className="h-10 px-4 rounded-sm border-red-800/20 text-red-800 hover:bg-red-500/10 font-sans text-xs uppercase tracking-widest gap-2 bg-transparent"
               onClick={handleDelete}
               disabled={saving}
             >
@@ -268,7 +268,7 @@ export default function EditStoryPage() {
             <Button
               id="edit-save-draft-btn"
               variant="outline"
-              className="h-10 px-4 rounded-sm border-white/20 text-white/60 hover:text-white font-sans text-xs uppercase tracking-widest gap-2 bg-transparent"
+              className="h-10 px-4 rounded-sm border-white/20 text-black/60 hover:text-black font-sans text-xs uppercase tracking-widest gap-2 bg-transparent"
               onClick={() => void handleSave()}
               disabled={saving}
             >

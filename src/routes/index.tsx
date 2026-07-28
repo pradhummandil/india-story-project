@@ -26,6 +26,7 @@ import { FeaturedStoryCard } from "@/components/site/FeaturedStoryCard";
 import { EditorsPicks } from "@/components/site/EditorsPicks";
 import { ImpactNumbers } from "@/components/site/ImpactNumbers";
 import { ContinueReading } from "@/components/site/ContinueReading";
+import { LiveActivityTicker } from "@/components/site/LiveActivityTicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useI18nStore, translateStory, getCommonText } from "@/lib/i18n";
@@ -285,6 +286,9 @@ function Home() {
             }).length || 2}
             latestStoriesTitles={dbStories.slice(0, 5).map((s: any) => translateStory(s, lang).title)}
           />
+
+          {/* ── 1b. LIVE ACTIVITY TICKER ── */}
+          <LiveActivityTicker />
 
           {/* ── 2. TRENDING STORIES ── */}
           {trendingStories.length > 0 && (
