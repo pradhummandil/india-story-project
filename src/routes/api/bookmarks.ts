@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { json } from "@/routes/api/-_utils";
 import { prisma } from "@/lib/repositories/prisma.server";
 import { supabase } from "@/lib/supabase-client";
+import { awardXPAndSyncStats } from "@/lib/level-system.server";
 
 const FALLBACK_IMAGE = "/Logo-ISP.jpg";
 
@@ -66,7 +67,7 @@ export const Route = createFileRoute("/api/bookmarks")({
             };
           });
 
-          return json({ stories });
+          return json({ stories, bookmarks: stories });
         } catch (error: any) {
           console.error("[bookmarks] GET error:", error);
           // P2021 = table does not exist
@@ -102,6 +103,13 @@ export const Route = createFileRoute("/api/bookmarks")({
             data: { userId: user.id, storyId },
           });
 
+          // Sync UserStat count
+          await awardXPAndSyncStats({
+            userId: user.id,
+            xpDelta: 0,
+            incrementBookmarks: 1,
+          });
+
           return json({ bookmark, added: true });
         } catch (error: any) {
           console.error("[bookmarks] POST error:", error);
@@ -126,6 +134,13 @@ export const Route = createFileRoute("/api/bookmarks")({
 
           await prisma.bookmark.deleteMany({
             where: { userId: user.id, storyId },
+          });
+
+          // Sync UserStat count
+          await awardXPAndSyncStats({
+            userId: user.id,
+            xpDelta: 0,
+            incrementBookmarks: -1,
           });
 
           return json({ removed: true });

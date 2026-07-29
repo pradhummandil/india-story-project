@@ -3,6 +3,7 @@ import { json } from "@/routes/api/-_utils";
 import { prisma } from "@/lib/repositories/prisma.server";
 import { sendVerificationEmail } from "@/lib/email-service.server";
 import { randomUUID } from "crypto";
+import { createNotificationForMany, getAdminIds } from "@/lib/notifications.server";
 
 export const Route = createFileRoute("/api/newsletter/subscribe")({
   server: {
@@ -52,6 +53,17 @@ export const Route = createFileRoute("/api/newsletter/subscribe")({
 
           void sendVerificationEmail(email, verificationToken, language).catch((err) =>
             console.error("[Newsletter Subscribe API] Failed to send verification email:", err),
+          );
+
+          // Notify admins of new subscriber
+          void getAdminIds().then((adminIds) =>
+            createNotificationForMany(adminIds, {
+              type: "NEWSLETTER_SUBSCRIBE",
+              title: "New Newsletter Subscriber",
+              message: `${email} just subscribed to the newsletter.`,
+              actionUrl: "/admin",
+              priority: "normal",
+            })
           );
 
           return json({

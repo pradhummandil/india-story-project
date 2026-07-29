@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { prisma } from "@/lib/repositories/prisma.server";
 import { json, authenticate } from "@/routes/api/-_utils";
+import { createNotification } from "@/lib/notifications.server";
 
 const db = prisma as any;
 
@@ -85,9 +86,15 @@ export const Route = createFileRoute("/api/community/topics/$id/posts")({
             try {
               const mentionedUsers = await db.userProfile.findMany({
                 where: { name: { in: mentionedNames } },
-                select: { id: true },
+                select: { id: true, name: true },
               });
               if (mentionedUsers.length > 0) {
+                const posterProfile = await db.userProfile.findUnique({
+                  where: { id: user.id },
+                  select: { name: true },
+                });
+                const posterName = posterProfile?.name ?? "Someone";
+
                 await Promise.all(
                   mentionedUsers.map((mu: any) =>
                     db.userMention
@@ -98,6 +105,19 @@ export const Route = createFileRoute("/api/community/topics/$id/posts")({
                           mentioningUserId: user.id,
                         },
                       })
+                      .then(() =>
+                        mu.id !== user.id
+                          ? createNotification({
+                              recipientId: mu.id,
+                              senderId: user.id,
+                              type: "MENTION",
+                              title: "You Were Mentioned",
+                              message: `${posterName} mentioned you in a community discussion.`,
+                              actionUrl: `/community`,
+                              priority: "normal",
+                            })
+                          : Promise.resolve()
+                      )
                       .catch(() => {}),
                   ),
                 );

@@ -17,6 +17,7 @@ const storyIncludes: any = {
     },
   },
   images: { orderBy: [{ heroImage: "desc" }, { sortOrder: "asc" }] },
+  assignedEditor: { select: { id: true, name: true, email: true } },
 };
 
 function toAdminRow(story: any) {
@@ -58,6 +59,8 @@ function toAdminRow(story: any) {
         caption: img.caption,
         heroImage: img.heroImage,
       })) ?? [],
+    assignedEditorId: story.assignedEditorId ?? null,
+    assignedEditor: story.assignedEditor ?? null,
   };
 }
 

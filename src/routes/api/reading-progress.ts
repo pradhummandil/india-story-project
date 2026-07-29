@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { json, authenticate } from "@/routes/api/-_utils";
 import { prisma } from "@/lib/repositories/prisma.server";
+import { awardXPAndSyncStats } from "@/lib/level-system.server";
 
 export const Route = createFileRoute("/api/reading-progress")({
   server: {
@@ -140,31 +141,14 @@ export const Route = createFileRoute("/api/reading-progress")({
 
           // If time delta is passed, increment totalReadingTime and user stats
           const delta = timeDelta && timeDelta > 0 ? Math.min(timeDelta, 3600) : 0; // cap at 1 hour per session
-          if (delta > 0) {
-            await prisma.userProfile.update({
-              where: { id: user.id },
-              data: {
-                totalReadingTime: { increment: delta },
-                // Award XP based on reading time: +1 XP per 10 seconds of reading
-                totalXP: { increment: Math.floor(delta / 10) },
-              },
-            });
+          const xpGained = Math.floor(delta / 10);
 
-            await prisma.userStat.upsert({
-              where: { userId: user.id },
-              create: {
-                userId: user.id,
-                totalReadingTime: delta,
-                totalXP: Math.floor(delta / 10),
-                storiesRead: completed ? 1 : 0,
-              },
-              update: {
-                totalReadingTime: { increment: delta },
-                totalXP: { increment: Math.floor(delta / 10) },
-                ...(completed ? { storiesRead: { increment: 1 } } : {}),
-              },
-            });
-          }
+          await awardXPAndSyncStats({
+            userId: user.id,
+            xpDelta: xpGained,
+            incrementReadingTime: delta,
+            incrementStoriesRead: completed ?? false,
+          });
 
           return json({ progress });
         } catch (error: any) {

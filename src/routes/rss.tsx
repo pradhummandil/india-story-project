@@ -4,6 +4,7 @@ import { SiteLayout } from "@/components/site/Layout";
 import { Rss, Youtube, Headphones, Download, Film, Play, Pause, Volume2, Radio } from "lucide-react";
 import { YouTubeStoryCard, type YouTubeVideoItem } from "@/components/site/YouTubeStoryCard";
 import { YouTubeModalPlayer } from "@/components/site/YouTubeModalPlayer";
+import { LinkedInVideoCard, LINKEDIN_PODCAST_VIDEOS } from "@/components/site/LinkedInVideoCard";
 
 export const Route = createFileRoute("/rss")({
   head: () => ({
@@ -232,6 +233,29 @@ function RSSPage() {
                 index={idx}
                 onPlay={(selected) => setSelectedVideo(selected)}
               />
+            ))}
+          </div>
+        </div>
+
+        {/* LinkedIn Playable Podcast Episodes Section */}
+        <div className="container mx-auto px-6 mb-16 space-y-6 border-t border-border/60 pt-12">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/60 pb-4">
+            <div>
+              <h2 className="font-display text-2xl font-bold text-foreground flex items-center gap-2">
+                <Headphones className="size-5 text-gold" /> Playable Podcast Episodes
+              </h2>
+              <p className="text-xs text-muted-foreground font-sans mt-1">
+                Watch conversations, interviews and stories from the India Story Project Podcast.
+              </p>
+            </div>
+            <span className="text-xs font-sans font-semibold text-blue-500 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full w-fit">
+              LinkedIn Video Podcasts
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+            {LINKEDIN_PODCAST_VIDEOS.map((vid) => (
+              <LinkedInVideoCard key={vid.id} video={vid} showTitle />
             ))}
           </div>
         </div>

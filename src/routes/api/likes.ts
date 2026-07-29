@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { json, authenticate } from "@/routes/api/-_utils";
 import { prisma } from "@/lib/repositories/prisma.server";
+import { awardXPAndSyncStats } from "@/lib/level-system.server";
 
 export const Route = createFileRoute("/api/likes")({
   server: {
@@ -115,20 +116,14 @@ export const Route = createFileRoute("/api/likes")({
           }
 
           // Update user stat
-          const likesCount = await prisma.storyLike.count({ where: { userId: user.id } });
-          await prisma.userStat.upsert({
-            where: { userId: user.id },
-            create: {
-              userId: user.id,
-              storiesLiked: likesCount,
-            },
-            update: {
-              storiesLiked: likesCount,
-            },
+          const liked = !existing;
+          await awardXPAndSyncStats({
+            userId: user.id,
+            xpDelta: 0,
+            incrementStoriesLiked: liked ? 1 : -1,
           });
 
           const count = await prisma.storyLike.count({ where: { storyId } });
-          const liked = !existing;
 
           return json({ liked, count });
         } catch (error: any) {

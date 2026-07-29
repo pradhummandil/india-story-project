@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { json, authenticate, checkRateLimit, getClientIp } from "@/routes/api/-_utils";
 import { prisma } from "@/lib/repositories/prisma.server";
+import { createNotification, extractMentionRecipients } from "@/lib/notifications.server";
+import { awardXPAndSyncStats } from "@/lib/level-system.server";
+
 
 function sanitizeHtml(str: string): string {
   if (typeof str !== "string") return str;
@@ -179,25 +182,87 @@ export const Route = createFileRoute("/api/comments")({
 
           // Increment XP for commenting (+5 XP)
           try {
-            await prisma.userStat.upsert({
-              where: { userId: user.id },
-              create: {
-                userId: user.id,
-                totalXP: 5,
-              },
-              update: {
-                totalXP: { increment: 5 },
-              },
-            });
-            await prisma.userProfile.update({
-              where: { id: user.id },
-              data: {
-                totalXP: { increment: 5 },
-              },
+            await awardXPAndSyncStats({
+              userId: user.id,
+              xpDelta: 5,
             });
           } catch {
             /* ignore stats upsert errors */
           }
+
+          // ── Notifications ──────────────────────────────────────────────────
+          try {
+            const commenterProfile = await prisma.userProfile.findUnique({
+              where: { id: user.id },
+              select: { name: true },
+            });
+            const commenterName = commenterProfile?.name || "Someone";
+
+            if (parentId) {
+              // REPLY — notify the parent comment's author
+              const parentComment = await prisma.comment.findUnique({
+                where: { id: parentId },
+                include: { story: { select: { id: true, title: true, slug: true } } },
+              });
+              if (parentComment && parentComment.userId !== user.id) {
+                await createNotification({
+                  recipientId: parentComment.userId,
+                  senderId: user.id,
+                  type: "REPLY",
+                  title: "New Reply to Your Comment",
+                  message: `${commenterName} replied to your comment on "${parentComment.story.title}".`,
+                  storyId: storyId,
+                  actionUrl: `/stories/${parentComment.story.slug}#comment-${comment.id}`,
+                  priority: "normal",
+                });
+              }
+            } else {
+              // TOP-LEVEL COMMENT — notify the story author
+              const story = await prisma.story.findUnique({
+                where: { id: storyId },
+                include: { author: { select: { id: true, name: true } } },
+              });
+              // Story author may map to a UserProfile — look up by name
+              if (story) {
+                // Try to find a UserProfile whose name matches the story author
+                const authorProfile = await prisma.userProfile.findFirst({
+                  where: { name: story.author.name, NOT: { id: user.id } },
+                  select: { id: true },
+                });
+                if (authorProfile) {
+                  await createNotification({
+                    recipientId: authorProfile.id,
+                    senderId: user.id,
+                    type: "COMMENT",
+                    title: "New Comment on Your Story",
+                    message: `${commenterName} commented on "${story.title}": "${content.trim().substring(0, 80)}${content.length > 80 ? "…" : ""}"`,
+                    storyId: storyId,
+                    actionUrl: `/stories/${story.slug}#comment-${comment.id}`,
+                    priority: "normal",
+                  });
+                }
+              }
+            }
+
+            // @MENTIONS — notify each mentioned user
+            const mentionIds = await extractMentionRecipients(content, user.id);
+            const story2 = story ?? await prisma.story.findUnique({ where: { id: storyId }, select: { slug: true, title: true } });
+            for (const mentionId of mentionIds) {
+              await createNotification({
+                recipientId: mentionId,
+                senderId: user.id,
+                type: "MENTION",
+                title: "You Were Mentioned",
+                message: `${commenterName} mentioned you in a comment on "${story2?.title ?? "a story"}".`,
+                storyId: storyId,
+                actionUrl: story2 ? `/stories/${story2.slug}#comment-${comment.id}` : undefined,
+                priority: "normal",
+              });
+            }
+          } catch (notifErr) {
+            console.error("[comments] Notification error (non-fatal):", notifErr);
+          }
+          // ── End Notifications ─────────────────────────────────────────────
 
           return json({
             comment: {
@@ -215,6 +280,7 @@ export const Route = createFileRoute("/api/comments")({
               replies: [],
             },
           });
+
         } catch (e: any) {
           console.error("[comments] POST error:", e);
           return json({ error: "Internal server error" }, { status: 500 });

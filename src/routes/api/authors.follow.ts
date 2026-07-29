@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { prisma } from "@/lib/repositories/prisma.server";
 import { json, authenticate } from "@/routes/api/-_utils";
 import { userInterestService } from "@/lib/services/user-interest.service";
+import { createNotification } from "@/lib/notifications.server";
 
 const db = prisma as any;
 
@@ -84,16 +85,33 @@ export const Route = createFileRoute("/api/authors/follow")({
               },
             });
 
-            // Create notification for follow confirmation
-            const entityName = authorId ? "Author" : themeId ? "Theme" : `State (${stateName})`;
-            await db.notification.create({
-              data: {
-                userId: user.id,
-                type: "FOLLOW",
-                title: `Now Following ${entityName}`,
-                content: `You will now receive automatic updates and recommendations whenever stories are published for this ${entityName.toLowerCase()}.`,
-              },
-            }).catch(() => {});
+            // Notify the author being followed (if it's an author follow, not theme/state)
+            if (authorId) {
+              // Find the UserProfile of the author
+              const followedAuthor = await prisma.author.findUnique({
+                where: { id: authorId },
+                select: { name: true },
+              });
+              const followerProfile = await prisma.userProfile.findUnique({
+                where: { id: user.id },
+                select: { name: true },
+              });
+              const authorProfile = await prisma.userProfile.findFirst({
+                where: { name: followedAuthor?.name, NOT: { id: user.id } },
+                select: { id: true },
+              });
+              if (authorProfile) {
+                await createNotification({
+                  recipientId: authorProfile.id,
+                  senderId: user.id,
+                  type: "FOLLOW",
+                  title: "New Follower",
+                  message: `${followerProfile?.name ?? "Someone"} started following you.`,
+                  actionUrl: `/authors/${authorId}`,
+                  priority: "normal",
+                });
+              }
+            }
 
             // Update user recommendation weights for homepage personalization
             await userInterestService.trackInteraction(user.id, "LIKE", {

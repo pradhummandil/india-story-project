@@ -73,6 +73,7 @@ model UserProfile {
   userInterests    UserInterest[]
   userHistories    UserHistory[]
   activityLogs     ActivityLog[]
+  storyRevisions   StoryRevision[] @relation("RevisionEditor")
 
   @@index([role])
   @@index([totalXP])
@@ -631,15 +632,27 @@ model CollectionStory {
 }
 
 model StoryRevision {
-  id        String   @id @default(uuid()) @db.Uuid
-  storyId   String   @db.Uuid
-  title     String
-  excerpt   String
-  content   String
-  changedBy String   @db.Uuid
-  version   Int
-  createdAt DateTime @default(now())
-  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  id         String      @id @default(uuid()) @db.Uuid
+  storyId    String      @db.Uuid
+  title      String
+  excerpt    String
+  content    String
+  titleHi    String?
+  excerptHi  String?
+  contentHi  String?
+  changedBy  String      @db.Uuid
+  version    Int
+  status     String      @default("pending") // pending | approved | rejected | changes_requested
+  editorNote String?
+  adminNote  String?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  story      Story       @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  editor     UserProfile @relation("RevisionEditor", fields: [changedBy], references: [id], onDelete: Cascade)
+
+  @@index([storyId])
+  @@index([changedBy])
+  @@index([status])
 }
 
 model AuditLog {

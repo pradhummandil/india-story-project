@@ -18,6 +18,11 @@ import { SiteLayout } from "@/components/site/Layout";
 import { StoryCard } from "@/components/site/StoryCard";
 import { YouTubeStoryCard, type YouTubeVideoItem } from "@/components/site/YouTubeStoryCard";
 import { YouTubeModalPlayer } from "@/components/site/YouTubeModalPlayer";
+import {
+  LinkedInVideoCard,
+  LINKEDIN_PODCAST_VIDEOS,
+  LINKEDIN_STORY_VIDEOS,
+} from "@/components/site/LinkedInVideoCard";
 import { YOUTUBE_STORY_VIDEOS } from "@/lib/youtube-videos";
 import { Hero } from "@/components/site/Hero";
 import { StoryMap } from "@/components/site/StoryMap";
@@ -496,6 +501,63 @@ function Home() {
               </div>
             </section>
           )}
+
+          {/* ── 11. STORIES VIDEOS (LinkedIn Story Videos) ── */}
+          <section className="container mx-auto px-6 py-12 md:py-16 border-b border-border/70">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.25em] font-sans font-bold text-gold mb-2">
+                  {lang === "hi" ? "वीडियो कहानियां" : "Video Stories"}
+                </p>
+                <h2 className="font-display text-3xl md:text-5xl font-bold leading-tight">
+                  Stories Videos
+                </h2>
+              </div>
+              <Link
+                to="/videos"
+                className="text-xs uppercase tracking-[0.15em] font-sans font-bold text-primary hover:text-gold inline-flex items-center gap-2 group transition-colors cursor-pointer"
+              >
+                {lang === "hi" ? "सभी वीडियो देखें" : "View All Videos"}
+                <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+              {LINKEDIN_STORY_VIDEOS.map((v) => (
+                <LinkedInVideoCard key={v.id} video={v} />
+              ))}
+            </div>
+          </section>
+
+          {/* ── 12. PODCAST EPISODES (LinkedIn Podcast Section) ── */}
+          <section className="container mx-auto px-6 py-12 md:py-16 border-b border-border/70 bg-card/20">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.25em] font-sans font-bold text-gold mb-2">
+                  {lang === "hi" ? "पॉडकास्ट एपिसोड" : "Audio & Video Podcast"}
+                </p>
+                <h2 className="font-display text-3xl md:text-5xl font-bold leading-tight">
+                  Podcast Episodes
+                </h2>
+                <p className="text-xs text-muted-foreground font-sans mt-2">
+                  Latest conversations from the India Story Project Podcast.
+                </p>
+              </div>
+              <Link
+                to="/rss"
+                className="text-xs uppercase tracking-[0.15em] font-sans font-bold text-primary hover:text-gold inline-flex items-center gap-2 group transition-colors cursor-pointer"
+              >
+                {lang === "hi" ? "सभी पॉडकास्ट देखें" : "Listen & Watch All"}
+                <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+              {LINKEDIN_PODCAST_VIDEOS.map((vid) => (
+                <LinkedInVideoCard key={vid.id} video={vid} showTitle />
+              ))}
+            </div>
+          </section>
 
           {/* ── 11. STORIES BY CATEGORY (Thematic Explorer) ── */}
           <section className="container mx-auto px-6 py-12 md:py-16 border-b border-border/70">

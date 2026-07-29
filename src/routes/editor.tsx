@@ -136,6 +136,10 @@ export function EditorPanelPage() {
   const [editingWorkflow, setEditingWorkflow] = useState<any>(null);
   const [loadingWorkflow, setLoadingWorkflow] = useState(false);
 
+  // My Assignments (Editor-role: stories assigned to ME)
+  const [myAssignments, setMyAssignments] = useState<any[]>([]);
+  const [loadingAssignments, setLoadingAssignments] = useState(false);
+
   // Video Form
   const [videoFormOpen, setVideoFormOpen] = useState(false);
   const [newVideo, setNewVideo] = useState({
@@ -293,6 +297,26 @@ export function EditorPanelPage() {
     const interval = setInterval(fetchNotifications, 10000); // 10s poll
     return () => clearInterval(interval);
   }, [fetchNotifications]);
+
+  // ── Fetch My Assignments (for editors) ─────────────────
+  const fetchAssignments = useCallback(() => {
+    if (!session) return;
+    setLoadingAssignments(true);
+    fetch("/api/editor/assignments", {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    })
+      .then((r) => r.json())
+      .then((d) => setMyAssignments(d.assignments || []))
+      .catch(console.error)
+      .finally(() => setLoadingAssignments(false));
+  }, [session]);
+
+  useEffect(() => {
+    fetchAssignments();
+    // Poll every 12s so new assignments appear without refresh
+    const interval = setInterval(fetchAssignments, 12000);
+    return () => clearInterval(interval);
+  }, [fetchAssignments]);
 
   const unreadCount = useMemo(() => {
     return notifications.filter((n) => !n.read).length;
@@ -1043,6 +1067,69 @@ export function EditorPanelPage() {
                         </p>
                       </div>
                     </div>
+
+                    {/* ── My Assignments (Editor role) ── */}
+                    {myAssignments.length > 0 && (
+                      <div>
+                        <div className="flex items-center justify-between mb-3">
+                          <h3 className="font-display text-base font-bold text-foreground flex items-center gap-2">
+                            <UserCheck className="size-4 text-primary" />
+                            My Story Assignments
+                          </h3>
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                            {myAssignments.length} assigned
+                          </span>
+                        </div>
+                        <div className="space-y-2">
+                          {myAssignments.map((a: any) => {
+                            const rev = a.latestRevision;
+                            const badge: Record<string, string> = {
+                              pending: "bg-amber-100 text-amber-700 border-amber-300",
+                              approved: "bg-emerald-100 text-emerald-700 border-emerald-300",
+                              rejected: "bg-red-100 text-red-700 border-red-300",
+                              changes_requested: "bg-blue-100 text-blue-700 border-blue-300",
+                            };
+                            const label: Record<string, string> = {
+                              pending: "Pending Review",
+                              approved: "Approved",
+                              rejected: "Rejected",
+                              changes_requested: "Changes Needed",
+                            };
+                            return (
+                              <a
+                                key={a.id}
+                                href={`/editor/stories/${a.id}`}
+                                className="flex items-center justify-between p-3 border border-border/60 hover:border-primary/40 hover:bg-muted/30 transition-all group bg-card"
+                              >
+                                <div className="min-w-0">
+                                  <p className="text-sm font-sans font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                                    {a.title}
+                                  </p>
+                                  <p className="text-[10px] text-muted-foreground font-sans mt-0.5">
+                                    Story v{a.version} · {a.status} · Updated {new Date(a.updatedAt).toLocaleDateString("en-IN")}
+                                  </p>
+                                  {rev?.adminNote && (
+                                    <p className="text-[10px] text-blue-600 font-sans mt-0.5 italic">Admin: {rev.adminNote}</p>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0 ml-3">
+                                  {rev ? (
+                                    <span className={`text-[9px] px-2 py-0.5 border rounded-full font-bold uppercase tracking-wider font-sans ${badge[rev.status] ?? "bg-muted text-muted-foreground border-border"}`}>
+                                      {label[rev.status] ?? rev.status}
+                                    </span>
+                                  ) : (
+                                    <span className="text-[9px] px-2 py-0.5 border border-amber-300 bg-amber-100 text-amber-700 rounded-full font-bold uppercase tracking-wider font-sans">
+                                      Not Started
+                                    </span>
+                                  )}
+                                  <ChevronRight className="size-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+                                </div>
+                              </a>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Quick Action Navigation */}
                     <div className="flex flex-wrap items-center gap-3 p-4 bg-muted/20 border border-border/40">

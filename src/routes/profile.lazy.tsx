@@ -534,18 +534,53 @@ function ProfilePage() {
     }
   }, [activeTab, user, session, refetchData]);
 
-  // Sync on Cross-tab BroadcastChannel updates
+  // Sync on Cross-tab BroadcastChannel updates & Supabase Realtime
   useEffect(() => {
-    if (typeof window === "undefined" || typeof BroadcastChannel === "undefined") return;
-    const channel = new BroadcastChannel("isp-profile-updates");
-    channel.onmessage = () => {
-      refetchData();
-    };
+    if (typeof window === "undefined") return;
+    let channelBC: BroadcastChannel | null = null;
+    if (typeof BroadcastChannel !== "undefined") {
+      channelBC = new BroadcastChannel("isp-profile-updates");
+      channelBC.onmessage = () => {
+        refetchData();
+      };
+    }
+
+    if (!user?.id) return;
+
+    const channelRealtime = supabase
+      .channel(`profile-realtime:${user.id}`)
+      .on(
+        "postgres_changes" as any,
+        { event: "*", schema: "public", table: "UserStat", filter: `userId=eq.${user.id}` },
+        () => refetchData()
+      )
+      .on(
+        "postgres_changes" as any,
+        { event: "*", schema: "public", table: "UserProfile", filter: `id=eq.${user.id}` },
+        () => refetchData()
+      )
+      .on(
+        "postgres_changes" as any,
+        { event: "*", schema: "public", table: "Bookmark", filter: `userId=eq.${user.id}` },
+        () => refetchData()
+      )
+      .on(
+        "postgres_changes" as any,
+        { event: "*", schema: "public", table: "StoryLike", filter: `userId=eq.${user.id}` },
+        () => refetchData()
+      )
+      .on(
+        "postgres_changes" as any,
+        { event: "*", schema: "public", table: "ReadingProgress", filter: `userId=eq.${user.id}` },
+        () => refetchData()
+      )
+      .subscribe();
 
     return () => {
-      channel.close();
+      if (channelBC) channelBC.close();
+      void supabase.removeChannel(channelRealtime);
     };
-  }, [refetchData]);
+  }, [user?.id, refetchData]);
 
   if (!initialized && loading) {
     return <PremiumLoader />;
@@ -588,14 +623,17 @@ function ProfilePage() {
 
   const userEmail = user.email ?? "";
   const displayName = name || (userEmail ? userEmail.split("@")[0] : "User");
-  const xpToNextLevel = (stats?.level ?? 1) * 500;
-  const rawXP = stats?.totalXP ?? 0;
+  const rawXP = stats?.totalXP ?? profile?.totalXP ?? 0;
+  const currentLevel = Math.floor(rawXP / 500) + 1;
+  const xpToNextLevel = currentLevel * 500;
   const xpProgress = !isNaN(rawXP) ? Math.min(100, Math.max(0, ((rawXP % 500) / 500) * 100)) : 0;
+
+  const activeStats = stats ? { ...stats, level: currentLevel } : null;
 
   const role = profile?.role?.toLowerCase();
   const earnedBadges = BADGE_DEFINITIONS.filter((b) => {
-    if (!stats) return false;
-    const val = (stats[b.field as keyof UserStats] as number) ?? 0;
+    if (!activeStats) return false;
+    const val = (activeStats[b.field as keyof UserStats] as number) ?? 0;
     return val >= b.threshold;
   });
 
@@ -757,7 +795,7 @@ function ProfilePage() {
                 <div className="flex items-center gap-3 mt-2">
                   <span className="flex items-center gap-1.5 text-xs font-sans font-bold text-gold uppercase tracking-wider">
                     <Zap className="size-3.5" />
-                    Level {stats.level}
+                    Level {currentLevel}
                   </span>
                   <div className="flex-1 max-w-32 h-1.5 bg-border/50 rounded-full overflow-hidden">
                     <motion.div

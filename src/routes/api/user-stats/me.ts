@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { json } from "@/routes/api/-_utils";
 import { prisma } from "@/lib/repositories/prisma.server";
 import { supabase } from "@/lib/supabase-client";
+import { calculateLevel } from "@/lib/level-system.server";
 
 export const Route = createFileRoute("/api/user-stats/me")({
   server: {
@@ -58,6 +59,19 @@ export const Route = createFileRoute("/api/user-stats/me")({
               },
             });
           }
+          const totalXP = Math.max(userStat.totalXP || 0, userProfile.totalXP || 0);
+          const computedLevel = calculateLevel(totalXP);
+
+          if (userStat.level !== computedLevel || userStat.totalXP !== totalXP) {
+            userStat = await prisma.userStat.update({
+              where: { userId: user.id },
+              data: { totalXP, level: computedLevel },
+            });
+            await prisma.userProfile.update({
+              where: { id: user.id },
+              data: { totalXP, level: computedLevel },
+            }).catch(() => {});
+          }
 
           let badgeCount = 0;
           let commentsCount = 0;
@@ -95,7 +109,11 @@ export const Route = createFileRoute("/api/user-stats/me")({
           }
 
           return json({
-            stats: userStat,
+            stats: {
+              ...userStat,
+              bookmarksCount,
+              storiesLiked: likesCount,
+            },
             badgeCount,
             userProfile,
             commentsCount,

@@ -12,6 +12,7 @@ import {
 import { SiteLayout } from "@/components/site/Layout";
 import { YouTubeStoryCard, type YouTubeVideoItem, extractYouTubeId } from "@/components/site/YouTubeStoryCard";
 import { YOUTUBE_STORY_VIDEOS } from "@/lib/youtube-videos";
+import { LinkedInVideoCard, LINKEDIN_STORY_VIDEOS } from "@/components/site/LinkedInVideoCard";
 import { useI18nStore } from "@/lib/i18n";
 
 export const Route = createFileRoute("/videos/")({
@@ -21,7 +22,7 @@ export const Route = createFileRoute("/videos/")({
       {
         name: "description",
         content:
-          "Watch documentary dispatches and YouTube Shorts celebrating grassroots changemakers across India.",
+          "Watch documentary dispatches, LinkedIn videos, and YouTube Shorts celebrating grassroots changemakers across India.",
       },
     ],
   }),
@@ -31,7 +32,7 @@ export const Route = createFileRoute("/videos/")({
 function VideosPage() {
   const lang = useI18nStore((s) => s.lang);
   const [videos] = useState<YouTubeVideoItem[]>(YOUTUBE_STORY_VIDEOS);
-  const [activeTab, setActiveTab] = useState<"all" | "shorts" | "films" | "stories">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "shorts" | "films" | "stories" | "linkedin">("all");
   const [searchQuery] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("All");
   const [states, setStates] = useState<string[]>([]);
@@ -205,6 +206,19 @@ function VideosPage() {
                 <BookOpen className="size-3.5 text-gold" />
                 {lang === "hi" ? "वीडियो कहानियां" : "Video Stories"}
               </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab("linkedin")}
+                className={`px-5 py-2.5 rounded-full text-xs font-sans font-bold uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer ${
+                  activeTab === "linkedin"
+                    ? "bg-blue-600 text-white shadow-md"
+                    : "bg-card border border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Zap className="size-3.5 text-blue-400" />
+                {lang === "hi" ? "लिंक्डइन वीडियो (8)" : "LinkedIn Videos (8)"}
+              </button>
             </div>
 
             {/* Region Filter */}
@@ -227,24 +241,51 @@ function VideosPage() {
           </div>
         </div>
 
-        {/* Video Stories Grid */}
-        <div className="container mx-auto px-6 mb-16">
-          {filteredVideos.length === 0 ? (
-            <div className="text-center py-20 border border-dashed border-border/50 rounded-2xl text-muted-foreground text-xs uppercase tracking-widest font-sans font-bold">
-              {lang === "hi" ? "चयनित फ़िल्टर से मेल खाता कोई वीडियो नहीं मिला।" : "No YouTube videos matching your selected filter."}
+        {/* Video Stories Grid (YouTube) */}
+        {activeTab !== "linkedin" && (
+          <div className="container mx-auto px-6 mb-16">
+            {filteredVideos.length === 0 ? (
+              <div className="text-center py-20 border border-dashed border-border/50 rounded-2xl text-muted-foreground text-xs uppercase tracking-widest font-sans font-bold">
+                {lang === "hi" ? "चयनित फ़िल्टर से मेल खाता कोई वीडियो नहीं मिला।" : "No YouTube videos matching your selected filter."}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
+                {filteredVideos.map((video, idx) => (
+                  <YouTubeStoryCard
+                    key={video.id}
+                    video={video}
+                    index={idx}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* LinkedIn Videos Category Section */}
+        {(activeTab === "all" || activeTab === "linkedin") && (
+          <div className="container mx-auto px-6 mb-16 space-y-6 border-t border-border/60 pt-12">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/60 pb-4">
+              <div>
+                <h2 className="font-display text-2xl font-bold text-foreground flex items-center gap-2">
+                  <Zap className="size-5 text-blue-500" /> LinkedIn Videos
+                </h2>
+                <p className="text-xs text-muted-foreground font-sans mt-1">
+                  Exclusive story video dispatches hosted on LinkedIn.
+                </p>
+              </div>
+              <span className="text-xs font-sans font-semibold text-blue-500 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full w-fit">
+                8 Stories Videos
+              </span>
             </div>
-          ) : (
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
-              {filteredVideos.map((video, idx) => (
-                <YouTubeStoryCard
-                  key={video.id}
-                  video={video}
-                  index={idx}
-                />
+              {LINKEDIN_STORY_VIDEOS.map((v) => (
+                <LinkedInVideoCard key={v.id} video={v} />
               ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Channel Subscription Footer Banner */}
         <div className="container mx-auto px-6">
