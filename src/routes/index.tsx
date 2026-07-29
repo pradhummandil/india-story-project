@@ -71,6 +71,16 @@ export const Route = createFileRoute("/")(  {
 });
 
 // Category definitions WITHOUT hardcoded images — images will be resolved from DB stories
+import cultureVideo from "@/assets/stories/Culture.mp4";
+import heritageVideo from "@/assets/stories/Heritage.mp4";
+import foodVideo from "@/assets/stories/Food.mp4";
+import festivalVideo from "@/assets/stories/Festival.mp4";
+import innovationVideo from "@/assets/stories/Innovation.mp4";
+import scienceVideo from "@/assets/stories/Science.mp4";
+import environmentVideo from "@/assets/stories/Environment.mp4";
+import freedomVideo from "@/assets/stories/Freedom.mp4";
+
+// Category definitions with video loops
 const CATEGORY_DEFS = [
   {
     id: "Culture",
@@ -79,15 +89,17 @@ const CATEGORY_DEFS = [
       en: "Stories celebrating heritage, art, and identity",
       hi: "विरासत, कला और पहचान का जश्न मनाती कहानियां",
     },
+    video: cultureVideo,
     bgGradient: "from-amber-950/60 to-rose-950/70",
   },
   {
     id: "History",
-    title: { en: "History", hi: "इतिहास" },
+    title: { en: "Heritage", hi: "विरासत" },
     desc: {
-      en: "Deep dives into India's historic landscape",
+      en: "Deep dives into India's historic landscape & heritage",
       hi: "भारत के ऐतिहासिक परिदृश्य की गहरी खोज",
     },
+    video: heritageVideo,
     bgGradient: "from-stone-900 to-amber-950/50",
   },
   {
@@ -97,6 +109,7 @@ const CATEGORY_DEFS = [
       en: "Tracing culinary history across regions",
       hi: "विभिन्न क्षेत्रों में पाक कला के इतिहास का पता लगाना",
     },
+    video: foodVideo,
     bgGradient: "from-orange-950/60 to-stone-900",
   },
   {
@@ -106,6 +119,7 @@ const CATEGORY_DEFS = [
       en: "The colorful celebrations of change and unity",
       hi: "बदलाव और एकता के रंगीन उत्सव",
     },
+    video: festivalVideo,
     bgGradient: "from-yellow-950/50 to-rose-950/60",
   },
   {
@@ -115,12 +129,14 @@ const CATEGORY_DEFS = [
       en: "Stories of ideas becoming real change",
       hi: "वास्तविक बदलाव बनते विचारों की कहानियां",
     },
+    video: innovationVideo,
     bgGradient: "from-blue-950/50 to-stone-900",
   },
   {
     id: "Science",
     title: { en: "Science", hi: "विज्ञान" },
     desc: { en: "Discoveries that push boundaries", hi: "सीमाओं को पार करने वाली खोजें" },
+    video: scienceVideo,
     bgGradient: "from-indigo-950/60 to-stone-900",
   },
   {
@@ -130,6 +146,7 @@ const CATEGORY_DEFS = [
       en: "Stories exploring climate and sustainable futures",
       hi: "जलवायु और सतत भविष्य की खोज करती कहानियां",
     },
+    video: environmentVideo,
     bgGradient: "from-green-950/60 to-stone-900",
   },
   {
@@ -139,6 +156,7 @@ const CATEGORY_DEFS = [
       en: "Chronicles of struggles and independent paths",
       hi: "संघर्षों और स्वतंत्र रास्तों के इतिहास",
     },
+    video: freedomVideo,
     bgGradient: "from-primary/40 to-stone-900",
   },
 ];
@@ -236,31 +254,6 @@ function Home() {
       );
     }
   };
-
-  // Resolve category images from DB stories — picks the first matching story image per theme
-  const categoryMediasWithImages = useMemo(() => {
-    return CATEGORY_DEFS.map((cat) => {
-      // Find first DB story with a matching theme that has a real image
-      const matchingStory = dbStories.find((s: any) => {
-        const storyThemes: string[] = Array.isArray(s.themes)
-          ? s.themes
-          : Array.isArray(s.themes)
-            ? s.themes
-            : [];
-        const themeNames = storyThemes.map((t: any) =>
-          typeof t === "string" ? t : t?.name || t?.theme?.name || "",
-        );
-        return themeNames.some(
-          (t) =>
-            t.toLowerCase() === cat.id.toLowerCase() ||
-            (cat.id === "Festival" &&
-              (t.toLowerCase() === "festivals" || t.toLowerCase() === "त्योहार")),
-        );
-      });
-      const resolvedImage: string | null = (matchingStory as any)?.image || null;
-      return { ...cat, image: resolvedImage };
-    });
-  }, [dbStories]);
 
   return (
     <SiteLayout>
@@ -458,9 +451,6 @@ function Home() {
             <RecommendedForYou themes={themes} />
           </section>
 
-          {/* ── 9. STORIES BY STATE (3D India Map) ── */}
-          <StoryMap stateCounts={stateCounts} />
-
           {/* ── 10. HIDDEN GEMS ── */}
           {hiddenGems.length > 0 && (
             <section className="container mx-auto px-6 py-12 md:py-16 border-b border-border/70">
@@ -572,7 +562,7 @@ function Home() {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-              {categoryMediasWithImages.map((cat, i) => {
+              {CATEGORY_DEFS.map((cat, i) => {
                 const displayTitle = lang === "hi" ? cat.title.hi : cat.title.en;
                 const displayDesc = lang === "hi" ? cat.desc.hi : cat.desc.en;
                 return (
@@ -582,36 +572,27 @@ function Home() {
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6, delay: i * 0.05 }}
-                    className="group relative aspect-[3/4] overflow-hidden border border-border/40 bg-black cursor-pointer shadow-sm hover:border-gold/50 rounded-2xl"
+                    className="group relative aspect-[3/4] overflow-hidden border border-border/40 bg-black cursor-pointer shadow-sm hover:border-gold/60 rounded-2xl"
                   >
-                    {/* Background image (from DB) or gradient fallback */}
-                    {cat.image ? (
-                      <img
-                        src={getOptimizedImageUrl(cat.image, 400)}
-                        srcSet={getResponsiveSrcSet(cat.image, [240, 400, 600])}
-                        sizes="(max-width: 640px) 50vw, 25vw"
-                        alt={displayTitle}
-                        loading="lazy"
-                        decoding="async"
-                        width="300"
-                        height="400"
-                        className="absolute inset-0 w-full h-full object-cover filter saturate-[0.7] brightness-[0.55] group-hover:scale-105 group-hover:brightness-[0.45] transition-all duration-[1s] ease-out"
-                      />
-                    ) : (
-                      // Gradient fallback — unique per category
-                      <div
-                        className={`absolute inset-0 bg-gradient-to-br ${cat.bgGradient} group-hover:brightness-75 transition-all duration-700`}
-                      />
-                    )}
-                    {/* Overlay gradient */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent z-10" />
+                    {/* Background Video Loop */}
+                    <video
+                      src={cat.video}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="absolute inset-0 w-full h-full object-cover filter saturate-[0.85] brightness-[0.75] group-hover:scale-105 group-hover:brightness-[0.9] transition-all duration-[1s] ease-out pointer-events-none"
+                    />
+
+                    {/* Overlay gradient for text contrast */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent z-10 pointer-events-none" />
 
                     {/* Content */}
                     <div className="absolute inset-0 p-5 flex flex-col justify-end z-20">
-                      <h3 className="font-display text-2xl md:text-3xl text-white font-bold tracking-tight mb-2 group-hover:text-gold transition-colors duration-300">
+                      <h3 className="font-display text-2xl md:text-3xl text-white font-bold tracking-tight mb-1.5 group-hover:text-gold transition-colors duration-300 drop-shadow-md">
                         {displayTitle}
                       </h3>
-                      <p className="text-[10px] sm:text-xs text-white/70 font-sans leading-relaxed line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                      <p className="text-[10px] sm:text-xs text-white/85 font-sans leading-relaxed line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                         {displayDesc}
                       </p>
                       <Link

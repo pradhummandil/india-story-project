@@ -46,7 +46,7 @@ type DropdownOption = { id: string; name: string; slug: string };
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-xs font-sans font-bold uppercase tracking-widest text-white/40 mb-2">
+      <label className="block text-xs font-sans font-bold uppercase tracking-wider text-muted-foreground mb-2">
         {label}
       </label>
       {children}
@@ -359,17 +359,17 @@ export default function EditStoryPage() {
 
   // ─── CSS classes ──────────────────────────────────────────────────────────
   const inputCls =
-    "h-10 rounded-sm bg-white/5 border-white/10 text-white/80 placeholder:text-white/20 font-sans text-sm focus:border-primary/50";
+    "h-10 rounded-lg bg-background border border-border text-foreground placeholder:text-muted-foreground font-sans text-sm px-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all";
   const textareaCls =
-    "w-full rounded-sm bg-white/5 border border-white/10 text-white/80 placeholder:text-white/20 font-sans text-sm px-3 py-2 resize-none focus:outline-none focus:border-primary/50 transition-colors";
+    "w-full rounded-lg bg-background border border-border text-foreground placeholder:text-muted-foreground font-sans text-sm px-3.5 py-2.5 resize-none focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all";
   const selectCls =
-    "h-10 w-full rounded-sm bg-[#0F0F0F] border border-white/10 text-white/80 font-sans text-sm px-3 focus:outline-none focus:border-primary/50 transition-colors";
+    "h-10 w-full rounded-lg bg-background border border-border text-foreground font-sans text-sm px-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all";
 
   // ─── Loading state ────────────────────────────────────────────────────────
   if (loading || !story) {
     return (
       <AdminLayout title="Edit Story">
-        <div className="flex items-center justify-center h-64 text-white/20 font-sans text-xs animate-pulse">
+        <div className="flex items-center justify-center h-64 text-muted-foreground font-sans text-xs animate-pulse">
           Loading…
         </div>
       </AdminLayout>
@@ -384,7 +384,7 @@ export default function EditStoryPage() {
         <div className="flex items-center justify-between mb-8">
           <Link
             to="/admin/stories"
-            className="flex items-center gap-2 text-black/60 hover:text-black text-sm font-sans transition-colors"
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm font-sans transition-colors"
           >
             <ArrowLeft className="size-4" /> Back to Stories
           </Link>
@@ -392,7 +392,7 @@ export default function EditStoryPage() {
             <Button
               id="delete-story-btn"
               variant="outline"
-              className="h-10 px-4 rounded-sm border-red-800/20 text-red-800 hover:bg-red-500/10 font-sans text-xs uppercase tracking-widest gap-2 bg-transparent"
+              className="h-10 px-4 rounded-lg border-destructive/30 text-destructive hover:bg-destructive/10 font-sans text-xs uppercase tracking-wider gap-2 bg-transparent"
               onClick={handleDelete}
               disabled={saving}
             >
@@ -401,7 +401,7 @@ export default function EditStoryPage() {
             <Button
               id="edit-save-draft-btn"
               variant="outline"
-              className="h-10 px-4 rounded-sm border-white/20 text-black/60 hover:text-black font-sans text-xs uppercase tracking-widest gap-2 bg-transparent"
+              className="h-10 px-4 rounded-lg border-border text-foreground hover:bg-muted font-sans text-xs uppercase tracking-wider gap-2 bg-card shadow-sm"
               onClick={() => void handleSave()}
               disabled={saving}
             >
@@ -409,7 +409,7 @@ export default function EditStoryPage() {
             </Button>
             <Button
               id="edit-publish-btn"
-              className="h-10 px-4 rounded-sm bg-primary hover:bg-primary/90 text-white font-sans text-xs uppercase tracking-widest gap-2"
+              className="h-10 px-4 rounded-lg bg-primary hover:bg-primary/90 text-white font-sans text-xs uppercase tracking-wider gap-2 shadow-sm font-bold"
               onClick={() => void handleSave(true)}
               disabled={saving}
             >
@@ -420,13 +420,13 @@ export default function EditStoryPage() {
 
         {/* Draft recovery banner */}
         {hasDraft && (
-          <div className="mb-6 flex items-center justify-between bg-amber-500/10 border border-amber-500/30 px-4 py-3 rounded-sm">
-            <span className="text-xs text-amber-400 font-sans font-semibold">
+          <div className="mb-6 flex items-center justify-between bg-amber-500/10 border border-amber-500/30 px-4 py-3 rounded-xl">
+            <span className="text-xs text-amber-600 dark:text-amber-400 font-sans font-semibold">
               📝 Unsaved draft restored — your previous edits are shown below.
             </span>
             <button
               onClick={handleDiscardDraft}
-              className="text-xs text-amber-400/70 hover:text-amber-400 underline font-sans ml-4"
+              className="text-xs text-amber-600/80 dark:text-amber-400/80 hover:underline font-sans ml-4 font-bold"
             >
               Discard draft and load from database
             </button>
@@ -435,9 +435,9 @@ export default function EditStoryPage() {
 
         {/* Error banner */}
         {error && (
-          <div className="mb-6 text-xs text-red-400 bg-red-500/10 border border-red-500/20 px-4 py-3 rounded-sm font-sans flex items-center justify-between">
+          <div className="mb-6 text-xs text-destructive bg-destructive/10 border border-destructive/20 px-4 py-3 rounded-xl font-sans flex items-center justify-between">
             <span>{error}</span>
-            <button onClick={() => setError(null)} className="ml-4 text-red-400/60 hover:text-red-400">✕</button>
+            <button onClick={() => setError(null)} className="ml-4 text-destructive hover:opacity-80">✕</button>
           </div>
         )}
 
@@ -445,7 +445,7 @@ export default function EditStoryPage() {
           {/* ── Left column: content fields ── */}
           <div className="lg:col-span-2 space-y-6">
             {/* English content */}
-            <div className="bg-[#161616] border border-white/10 rounded-sm p-6 space-y-5">
+            <div className="bg-card border border-border/80 rounded-xl p-6 space-y-5 shadow-sm">
               <Field label="Title (English)">
                 <Input
                   value={story.title}
@@ -485,8 +485,8 @@ export default function EditStoryPage() {
             </div>
 
             {/* Hindi translation */}
-            <div className="bg-[#161616] border border-white/10 rounded-sm p-6 space-y-5">
-              <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-white/40">
+            <div className="bg-card border border-border/80 rounded-xl p-6 space-y-5 shadow-sm">
+              <h3 className="text-xs font-sans font-bold uppercase tracking-wider text-muted-foreground">
                 Hindi Translation
               </h3>
               <Field label="शीर्षक">
@@ -519,8 +519,8 @@ export default function EditStoryPage() {
             </div>
 
             {/* SEO metadata */}
-            <div className="bg-[#161616] border border-white/10 rounded-sm p-6 space-y-5">
-              <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-white/40">
+            <div className="bg-card border border-border/80 rounded-xl p-6 space-y-5 shadow-sm">
+              <h3 className="text-xs font-sans font-bold uppercase tracking-wider text-muted-foreground">
                 SEO Metadata
               </h3>
               <Field label="SEO Title">
@@ -549,8 +549,8 @@ export default function EditStoryPage() {
           {/* ── Right column: sidebar ── */}
           <div className="space-y-6">
             {/* Story details */}
-            <div className="bg-[#161616] border border-white/10 rounded-sm p-5 space-y-4">
-              <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-white/40">
+            <div className="bg-card border border-border/80 rounded-xl p-5 space-y-4 shadow-sm">
+              <h3 className="text-xs font-sans font-bold uppercase tracking-wider text-muted-foreground">
                 Story Details
               </h3>
               <Field label="Status">
@@ -610,8 +610,8 @@ export default function EditStoryPage() {
             </div>
 
             {/* Toggle options */}
-            <div className="bg-[#161616] border border-white/10 rounded-sm p-5 space-y-4">
-              <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-white/40">
+            <div className="bg-card border border-border/80 rounded-xl p-5 space-y-4 shadow-sm">
+              <h3 className="text-xs font-sans font-bold uppercase tracking-wider text-muted-foreground">
                 Options
               </h3>
               {(
@@ -624,15 +624,15 @@ export default function EditStoryPage() {
                 ] as const
               ).map(({ label, key }) => (
                 <label key={key} className="flex items-center justify-between cursor-pointer">
-                  <span className="text-sm font-sans text-white/60">{label}</span>
+                  <span className="text-sm font-sans text-foreground font-medium">{label}</span>
                   <button
                     id={`edit-${key}`}
                     type="button"
                     onClick={() => setField(key, !story[key] as any)}
-                    className={`relative w-10 h-5 rounded-full transition-colors ${story[key] ? "bg-primary" : "bg-white/10"}`}
+                    className={`relative w-10 h-5 rounded-full transition-colors ${story[key] ? "bg-primary" : "bg-muted-foreground/30"}`}
                   >
                     <span
-                      className={`absolute top-0.5 size-4 rounded-full bg-white transition-all ${story[key] ? "left-5" : "left-0.5"}`}
+                      className={`absolute top-0.5 size-4 rounded-full bg-white shadow transition-all ${story[key] ? "left-5" : "left-0.5"}`}
                     />
                   </button>
                 </label>

@@ -57,7 +57,13 @@ function MiniStoryCard({ story }: { story: Story }) {
   );
 }
 
-export function StoryMap({ stateCounts = {} }: { stateCounts?: Record<string, number> }) {
+export function StoryMap({
+  stateCounts = {},
+  compact = false,
+}: {
+  stateCounts?: Record<string, number>;
+  compact?: boolean;
+}) {
   const lang = useI18nStore((s) => s.lang);
   const commonText = getCommonText(lang);
 
@@ -143,21 +149,21 @@ export function StoryMap({ stateCounts = {} }: { stateCounts?: Record<string, nu
   if (!mounted) return null;
 
   return (
-    <section className="container mx-auto px-6 py-16 md:py-24 border-b border-border/70 relative">
-      <div className="text-center mb-12">
-        <p className="text-xs uppercase tracking-[0.25em] font-sans font-bold text-gold mb-3 inline-flex items-center gap-2">
+    <section className={`container mx-auto px-4 md:px-6 relative ${compact ? "py-4 md:py-6" : "py-12 md:py-16 border-b border-border/70"}`}>
+      <div className={`text-center ${compact ? "mb-4 md:mb-6" : "mb-10 md:mb-12"}`}>
+        <p className="text-xs uppercase tracking-[0.25em] font-sans font-bold text-gold mb-1.5 inline-flex items-center gap-2">
           <MapPin className="size-3" />
           {lang === "en" ? "Explore India in 3D" : "भारत का अन्वेषण"}
         </p>
-        <h2 className="font-display text-4xl md:text-5xl font-bold">
+        <h2 className="font-display text-3xl md:text-4xl font-bold">
           {lang === "en" ? "Stories by State" : "राज्यों के अनुसार कहानियाँ"}
         </h2>
-        <div className="w-12 h-[1px] bg-primary mx-auto mt-4" />
+        <div className="w-10 h-[1px] bg-primary mx-auto mt-2.5" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10 items-start">
         {/* Left Column: Map visualization */}
-        <div className="w-full relative bg-gradient-to-b from-card/10 to-card/40 border border-border/40 p-4 md:p-8 flex items-center justify-center overflow-hidden aspect-[9/10] sm:aspect-square md:aspect-[4/3] lg:aspect-[9/10]">
+        <div className={`w-full relative bg-gradient-to-b from-card/10 to-card/40 border border-border/40 p-3 md:p-6 flex items-center justify-center overflow-hidden rounded-2xl ${compact ? "h-[500px] lg:h-[540px]" : "aspect-[9/10] sm:aspect-square md:aspect-[4/3] lg:aspect-[9/10]"}`}>
           {/* Map Vector Graphic */}
           <svg
             viewBox="0 0 800 900"
@@ -275,7 +281,7 @@ export function StoryMap({ stateCounts = {} }: { stateCounts?: Record<string, nu
         </div>
 
         {/* Right Column: Stories Panel */}
-        <div className="h-[600px] bg-card border border-border/80 rounded-2xl p-6 overflow-hidden flex flex-col shadow-md text-foreground">
+        <div className={`${compact ? "h-[500px] lg:h-[540px]" : "h-[600px]"} bg-card border border-border/80 rounded-2xl p-5 md:p-6 overflow-hidden flex flex-col shadow-md text-foreground`}>
           <AnimatePresence mode="wait">
             {!selectedState ? (
               <motion.div

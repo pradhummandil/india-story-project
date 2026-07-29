@@ -145,7 +145,7 @@ export default function AdminCommentsPage() {
         )}
 
         {/* Tab switchers */}
-        <div className="flex bg-[#121212] border border-white/5 p-1 rounded-lg self-start max-w-lg gap-1">
+        <div className="flex bg-muted/40 border border-border/60 p-1 rounded-xl self-start max-w-lg gap-1">
           {(
             [
               { id: "all", label: "All" },
@@ -157,10 +157,10 @@ export default function AdminCommentsPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 text-[10px] font-black uppercase tracking-wider rounded-md transition-all cursor-pointer ${
+              className={`px-4 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all cursor-pointer ${
                 activeTab === tab.id
-                  ? "bg-white text-black shadow-md"
-                  : "text-white/40 hover:text-white"
+                  ? "bg-primary text-white font-bold shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
               }`}
             >
               {tab.label}
@@ -178,9 +178,9 @@ export default function AdminCommentsPage() {
           /* FLAGGED REPORTS CARD LIST */
           <div className="space-y-4">
             {reports.length === 0 ? (
-              <div className="bg-[#121212] border border-white/5 rounded-lg p-12 text-center flex flex-col items-center justify-center gap-3">
-                <ShieldAlert className="size-8 text-white/20" />
-                <p className="text-xs text-white/40 font-sans">
+              <div className="bg-card border border-border/80 rounded-xl p-12 text-center flex flex-col items-center justify-center gap-3 shadow-sm">
+                <ShieldAlert className="size-8 text-muted-foreground/40" />
+                <p className="text-xs text-muted-foreground font-sans font-medium">
                   No flagged comment reports. All clear!
                 </p>
               </div>
@@ -188,39 +188,39 @@ export default function AdminCommentsPage() {
               reports.map((rep) => (
                 <div
                   key={rep.id}
-                  className="bg-[#121212] border border-white/5 rounded-lg p-5 flex flex-col md:flex-row justify-between gap-6"
+                  className="bg-card border border-border/80 rounded-xl p-5 flex flex-col md:flex-row justify-between gap-6 shadow-sm"
                 >
                   <div className="space-y-3 flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2.5 text-xs text-white/40">
-                      <span className="font-bold text-red-400 flex items-center gap-1.5 uppercase tracking-wider text-[9px] bg-red-500/10 border border-red-500/20 px-2 py-0.5 rounded">
+                    <div className="flex flex-wrap items-center gap-2.5 text-xs text-muted-foreground">
+                      <span className="font-bold text-destructive flex items-center gap-1.5 uppercase tracking-wider text-[9px] bg-destructive/10 border border-destructive/20 px-2 py-0.5 rounded-full">
                         <ShieldAlert className="size-3" /> Flagged
                       </span>
                       <span className="font-sans">
-                        Reported by <span className="font-semibold text-white/70">{rep.reporterName}</span> · {rep.reporterEmail}
+                        Reported by <span className="font-semibold text-foreground">{rep.reporterName}</span> · {rep.reporterEmail}
                       </span>
                     </div>
-                    <div className="bg-black/30 border border-white/5 rounded-lg p-4 text-xs font-sans text-white/90 italic leading-relaxed">
+                    <div className="bg-background border border-border/60 rounded-xl p-4 text-xs font-sans text-foreground italic leading-relaxed">
                       "{rep.commentContent}"
                     </div>
-                    <div className="flex flex-wrap items-center gap-4 text-[10px] text-white/40 font-bold uppercase tracking-wider">
-                      <span>Author: <span className="text-white/60">{rep.commentAuthor}</span></span>
-                      <span>Dispatch: <span className="text-white/60">{rep.storyTitle}</span></span>
+                    <div className="flex flex-wrap items-center gap-4 text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
+                      <span>Author: <span className="text-foreground">{rep.commentAuthor}</span></span>
+                      <span>Dispatch: <span className="text-foreground">{rep.storyTitle}</span></span>
                     </div>
-                    <div className="bg-yellow-500/5 border border-yellow-500/15 text-yellow-400 text-[10px] font-bold uppercase tracking-widest rounded-lg px-3 py-1 inline-flex items-center gap-1.5">
+                    <div className="bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] font-bold uppercase tracking-wider rounded-lg px-3 py-1 inline-flex items-center gap-1.5">
                       ⚠️ Reason: {rep.reason}
                     </div>
                   </div>
                   <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row items-stretch md:items-start lg:items-center gap-2 shrink-0 justify-center">
                     <Button
                       size="sm"
-                      className="h-8 px-3 text-[10px] font-bold uppercase tracking-wider bg-emerald-600 hover:bg-emerald-700 text-white rounded-md cursor-pointer"
+                      className="h-8 px-3 text-[10px] font-bold uppercase tracking-wider bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg cursor-pointer shadow-xs"
                       onClick={() => handleAction(rep.commentId, "approve", rep.id)}
                     >
                       Approve Comment
                     </Button>
                     <Button
                       size="sm"
-                      className="h-8 px-3 text-[10px] font-bold uppercase tracking-wider bg-red-600 hover:bg-red-700 text-white rounded-md cursor-pointer"
+                      className="h-8 px-3 text-[10px] font-bold uppercase tracking-wider bg-destructive hover:bg-destructive/90 text-white rounded-lg cursor-pointer shadow-xs"
                       onClick={() => handleAction(rep.commentId, "delete", rep.id)}
                     >
                       Remove Comment
@@ -228,7 +228,7 @@ export default function AdminCommentsPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-8 px-3 text-[10px] font-bold uppercase tracking-wider border-white/10 text-white/60 hover:text-white rounded-md cursor-pointer"
+                      className="h-8 px-3 text-[10px] font-bold uppercase tracking-wider border-border text-muted-foreground hover:text-foreground rounded-lg cursor-pointer"
                       onClick={() => handleAction(null, "dismissReport", rep.id)}
                     >
                       Dismiss Report
@@ -240,11 +240,11 @@ export default function AdminCommentsPage() {
           </div>
         ) : (
           /* STANDARD COMMENTS LIST TABLE */
-          <div className="bg-[#121212] border border-white/5 rounded-lg overflow-hidden">
+          <div className="bg-card border border-border/80 rounded-xl overflow-hidden shadow-sm">
             {comments.length === 0 ? (
               <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
-                <MessageSquare className="size-8 text-white/20" />
-                <p className="text-xs text-white/40 font-sans">
+                <MessageSquare className="size-8 text-muted-foreground/40" />
+                <p className="text-xs text-muted-foreground font-sans font-medium">
                   No comments found in this queue.
                 </p>
               </div>
@@ -252,7 +252,7 @@ export default function AdminCommentsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left font-sans text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-white/5 bg-white/2 text-white/40 uppercase tracking-wider text-[9px] font-bold">
+                    <tr className="border-b border-border/60 bg-muted/40 text-muted-foreground uppercase tracking-wider text-[9px] font-bold">
                       <th className="p-4">Reader</th>
                       <th className="p-4">Comment</th>
                       <th className="p-4">Story Dispatch</th>
@@ -260,24 +260,24 @@ export default function AdminCommentsPage() {
                       <th className="p-4 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5 text-white/70">
+                  <tbody className="divide-y divide-border/40 text-foreground">
                     {comments.map((c) => (
-                      <tr key={c.id} className="hover:bg-white/2 transition-colors duration-150">
+                      <tr key={c.id} className="hover:bg-muted/30 transition-colors duration-150">
                         <td className="p-4">
                           <div className="flex items-center gap-3">
                             {c.authorAvatar ? (
                               <img
                                 src={c.authorAvatar}
-                                className="size-7 rounded-full object-cover border border-white/10"
+                                className="size-7 rounded-full object-cover border border-border"
                                 alt=""
                               />
                             ) : (
-                              <div className="size-7 rounded-full bg-[#C8A96A]/10 border border-[#C8A96A]/20 flex items-center justify-center font-bold text-[10px] text-[#C8A96A]">
+                              <div className="size-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center font-bold text-[10px] text-primary">
                                 {c.authorName?.charAt(0).toUpperCase()}
                               </div>
                             )}
                             <div>
-                              <p className="font-semibold text-white/90">{c.authorName}</p>
+                              <p className="font-semibold text-foreground">{c.authorName}</p>
                               <p className="text-[10px] text-white/30">{c.authorEmail}</p>
                             </div>
                           </div>

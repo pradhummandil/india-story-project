@@ -92,27 +92,27 @@ function MetricCard({
   loading?: boolean;
 }) {
   return (
-    <div className="bg-[#141414] border border-white/8 p-5 space-y-3 relative overflow-hidden group hover:border-white/15 transition-colors">
+    <div className="bg-card border border-border/80 p-5 space-y-3 relative overflow-hidden group hover:border-primary/40 transition-colors rounded-xl shadow-sm">
       <div className="flex items-center justify-between">
-        <p className="text-[10px] font-sans font-bold uppercase tracking-widest text-white/40">
+        <p className="text-[10px] font-sans font-bold uppercase tracking-wider text-muted-foreground">
           {label}
         </p>
         <Icon
-          className="size-4 text-white/20 group-hover:text-white/40 transition-colors"
+          className="size-4 text-muted-foreground group-hover:text-primary transition-colors"
           style={{ color }}
         />
       </div>
       {loading ? (
-        <div className="h-8 w-24 bg-white/5 rounded animate-pulse" />
+        <div className="h-8 w-24 bg-muted/60 rounded animate-pulse" />
       ) : (
-        <p className="font-display text-3xl font-bold text-white tabular-nums">
+        <p className="font-display text-3xl font-bold text-foreground tabular-nums">
           {typeof value === "number" ? value.toLocaleString("en-IN") : value}
         </p>
       )}
-      {sub && <p className="text-[10px] text-white/30 font-sans">{sub}</p>}
+      {sub && <p className="text-[10px] text-muted-foreground font-sans font-medium">{sub}</p>}
       <div
         className="absolute bottom-0 left-0 right-0 h-0.5"
-        style={{ backgroundColor: color, opacity: 0.3 }}
+        style={{ backgroundColor: color, opacity: 0.6 }}
       />
     </div>
   );
@@ -128,8 +128,8 @@ function SectionHeader({
 }) {
   return (
     <div className="flex items-center gap-2 mb-5">
-      <Icon className="size-4 text-gold" />
-      <h2 className="text-xs font-sans font-bold uppercase tracking-widest text-white/60">
+      <Icon className="size-4 text-primary" />
+      <h2 className="text-xs font-sans font-bold uppercase tracking-wider text-muted-foreground">
         {title}
       </h2>
     </div>
@@ -201,15 +201,15 @@ export default function EnterpriseAnalyticsPage() {
     >
       {/* ── Controls Row ── */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 bg-muted/40 p-1 border border-border/60 rounded-xl">
           {PERIODS.map((p) => (
             <button
               key={p.id}
               onClick={() => setPeriod(p.id)}
-              className={`px-4 py-2 text-[10px] font-sans font-bold uppercase tracking-widest transition-colors ${
+              className={`px-4 py-2 text-[10px] font-sans font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer ${
                 period === p.id
-                  ? "bg-primary text-white"
-                  : "bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/70"
+                  ? "bg-primary text-white shadow-xs"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
               }`}
             >
               {p.label}
@@ -218,21 +218,21 @@ export default function EnterpriseAnalyticsPage() {
         </div>
         <div className="flex items-center gap-3">
           {/* Live counter */}
-          <div className="flex items-center gap-2 bg-emerald-950/40 border border-emerald-500/20 px-3 py-1.5">
+          <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg">
             <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] font-sans font-bold text-emerald-400 uppercase tracking-widest">
+            <span className="text-[10px] font-sans font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
               {liveCount} Live
             </span>
           </div>
           <button
             onClick={() => void fetchData()}
             disabled={loading}
-            className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-3 py-1.5 text-[10px] font-sans font-bold text-white/50 uppercase tracking-widest hover:text-white/80 transition-colors"
+            className="flex items-center gap-1.5 bg-card border border-border px-3 py-1.5 text-[10px] font-sans font-bold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors rounded-lg cursor-pointer shadow-xs"
           >
             <RefreshCw className={`size-3 ${loading ? "animate-spin" : ""}`} />
             Refresh
           </button>
-          <span className="text-[9px] text-white/20 font-sans">
+          <span className="text-[9px] text-muted-foreground font-sans font-medium">
             Updated {lastRefresh.toLocaleTimeString()}
           </span>
         </div>
@@ -323,7 +323,7 @@ export default function EnterpriseAnalyticsPage() {
       </div>
 
       {/* ── Time Series Chart ── */}
-      <div className="bg-[#141414] border border-white/8 p-6 mb-6">
+      <div className="bg-card border border-border/80 p-6 mb-6 rounded-xl shadow-sm">
         <SectionHeader
           title={`Traffic Trends (${PERIODS.find((p) => p.id === period)?.label})`}
           icon={TrendingUp}
@@ -341,29 +341,31 @@ export default function EnterpriseAnalyticsPage() {
                   <stop offset="95%" stopColor="#6AB4C8" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
               <XAxis
                 dataKey="name"
-                tick={{ fill: "rgba(255,255,255,0.25)", fontSize: 10 }}
+                tick={{ fill: "#666666", fontSize: 10 }}
                 axisLine={false}
                 tickLine={false}
                 interval="preserveStartEnd"
               />
               <YAxis
-                tick={{ fill: "rgba(255,255,255,0.25)", fontSize: 10 }}
+                tick={{ fill: "#666666", fontSize: 10 }}
                 axisLine={false}
                 tickLine={false}
               />
               <Tooltip
                 contentStyle={{
-                  background: "#1a1a1a",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  color: "white",
+                  background: "#ffffff",
+                  border: "1px solid rgba(0,0,0,0.1)",
+                  color: "#1a1a1a",
                   fontSize: 11,
+                  borderRadius: 8,
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.08)"
                 }}
                 labelStyle={{ color: "#C8A96A", fontWeight: "bold" }}
               />
-              <Legend wrapperStyle={{ color: "rgba(255,255,255,0.4)", fontSize: 10 }} />
+              <Legend wrapperStyle={{ color: "#666666", fontSize: 10 }} />
               <Area
                 type="monotone"
                 dataKey="views"
@@ -385,7 +387,7 @@ export default function EnterpriseAnalyticsPage() {
             </AreaChart>
           </ResponsiveContainer>
         ) : (
-          <div className="h-60 flex items-center justify-center text-white/20 text-xs">
+          <div className="h-60 flex items-center justify-center text-muted-foreground text-xs font-sans">
             No time-series data available
           </div>
         )}
@@ -394,7 +396,7 @@ export default function EnterpriseAnalyticsPage() {
       {/* ── Row 2: Traffic Sources + Device Breakdown + Geo ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         {/* Traffic Sources */}
-        <div className="bg-[#141414] border border-white/8 p-6">
+        <div className="bg-card border border-border/80 p-6 rounded-xl shadow-sm">
           <SectionHeader title="Traffic Sources" icon={Share2} />
           {hasPV && pv.trafficSources?.length > 0 ? (
             <div className="space-y-2.5">
@@ -405,12 +407,12 @@ export default function EnterpriseAnalyticsPage() {
                 return (
                   <div key={s.source}>
                     <div className="flex justify-between text-[10px] font-sans mb-1">
-                      <span className="text-white/60 uppercase tracking-wider font-bold">
+                      <span className="text-foreground uppercase tracking-wider font-bold">
                         {s.source}
                       </span>
-                      <span className="text-white/40 tabular-nums">{s.count.toLocaleString()}</span>
+                      <span className="text-muted-foreground tabular-nums font-mono">{s.count.toLocaleString()}</span>
                     </div>
-                    <div className="h-1 bg-white/8 rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-muted/60 rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all"
                         style={{ width: `${pct}%`, backgroundColor: color }}
@@ -431,8 +433,8 @@ export default function EnterpriseAnalyticsPage() {
                 { source: "search", count: 0 },
               ].map((s) => (
                 <div key={s.source} className="flex justify-between text-[10px] font-sans">
-                  <span className="text-white/30 uppercase tracking-wider">{s.source}</span>
-                  <span className="text-white/15">Tracking active</span>
+                  <span className="text-muted-foreground uppercase tracking-wider font-semibold">{s.source}</span>
+                  <span className="text-muted-foreground/60 font-mono">Tracking active</span>
                 </div>
               ))}
             </div>
@@ -440,7 +442,7 @@ export default function EnterpriseAnalyticsPage() {
         </div>
 
         {/* Device Breakdown Pie */}
-        <div className="bg-[#141414] border border-white/8 p-6">
+        <div className="bg-card border border-border/80 p-6 rounded-xl shadow-sm">
           <SectionHeader title="Device Breakdown" icon={Monitor} />
           {hasPV && pv.devices?.length > 0 ? (
             <ResponsiveContainer width="100%" height={180}>
@@ -460,18 +462,20 @@ export default function EnterpriseAnalyticsPage() {
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    background: "#1a1a1a",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    color: "white",
+                    background: "#ffffff",
+                    border: "1px solid rgba(0,0,0,0.1)",
+                    color: "#1a1a1a",
                     fontSize: 11,
+                    borderRadius: 8,
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.08)"
                   }}
                 />
-                <Legend wrapperStyle={{ color: "rgba(255,255,255,0.4)", fontSize: 10 }} />
+                <Legend wrapperStyle={{ color: "#666666", fontSize: 10 }} />
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-44 flex flex-col items-center justify-center gap-3 text-white/20">
-              <Monitor className="size-8" />
+            <div className="h-44 flex flex-col items-center justify-center gap-3 text-muted-foreground">
+              <Monitor className="size-8 text-muted-foreground/40" />
               <div className="text-center space-y-1">
                 {[
                   { icon: Monitor, label: "Desktop" },
@@ -479,8 +483,8 @@ export default function EnterpriseAnalyticsPage() {
                 ].map(({ icon: I, label }) => (
                   <div key={label} className="flex items-center gap-2 text-[10px]">
                     <I className="size-3" />
-                    <span className="uppercase tracking-wider">{label}</span>
-                    <span className="text-white/15">— tracking active</span>
+                    <span className="uppercase tracking-wider font-semibold text-foreground">{label}</span>
+                    <span className="text-muted-foreground/60 font-mono">— tracking active</span>
                   </div>
                 ))}
               </div>
@@ -489,7 +493,7 @@ export default function EnterpriseAnalyticsPage() {
         </div>
 
         {/* Geographic — Countries */}
-        <div className="bg-[#141414] border border-white/8 p-6">
+        <div className="bg-card border border-border/80 p-6 rounded-xl shadow-sm">
           <SectionHeader title="Top Countries" icon={Globe} />
           {hasPV && pv.countries?.length > 0 ? (
             <div className="space-y-2.5">
@@ -499,12 +503,12 @@ export default function EnterpriseAnalyticsPage() {
                 return (
                   <div key={c.name || i}>
                     <div className="flex justify-between text-[10px] font-sans mb-1">
-                      <span className="text-white/60 font-bold">{c.name || "Unknown"}</span>
-                      <span className="text-white/40 tabular-nums">{c.count.toLocaleString()}</span>
+                      <span className="text-foreground font-bold">{c.name || "Unknown"}</span>
+                      <span className="text-muted-foreground tabular-nums font-mono">{c.count.toLocaleString()}</span>
                     </div>
-                    <div className="h-1 bg-white/8 rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-muted/60 rounded-full overflow-hidden">
                       <div
-                        className="h-full rounded-full bg-gold/60"
+                        className="h-full rounded-full bg-primary"
                         style={{ width: `${pct}%` }}
                       />
                     </div>
@@ -513,9 +517,9 @@ export default function EnterpriseAnalyticsPage() {
               })}
             </div>
           ) : (
-            <div className="text-[10px] text-white/20 space-y-1">
-              <p>Geo-IP tracking will populate once</p>
-              <p>the PageView table is migrated.</p>
+            <div className="text-[10px] text-muted-foreground font-sans space-y-1">
+              <p className="font-medium">Geo-IP tracking will populate once</p>
+              <p className="text-muted-foreground/60 font-mono">the PageView table is migrated.</p>
             </div>
           )}
         </div>

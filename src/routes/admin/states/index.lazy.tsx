@@ -83,31 +83,31 @@ export default function AdminStatesPage() {
     setStates((p) => p.filter((s) => s.id !== id));
   };
 
-  const inputCls = "h-10 rounded-sm bg-white/5 border-white/10 text-white/80 font-sans text-sm";
+  const inputCls = "h-10 rounded-lg bg-background border border-border text-foreground font-sans text-sm px-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20";
   return (
     <AdminLayout title="States" subtitle="Manage Indian states and regions">
       <div className="max-w-4xl">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 bg-[#161616] border border-white/10 rounded-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-white/10">
-              <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-white/40">
+          <div className="md:col-span-2 bg-card border border-border/80 rounded-xl overflow-hidden shadow-sm">
+            <div className="px-6 py-4 border-b border-border/60">
+              <h3 className="text-xs font-sans font-bold uppercase tracking-wider text-muted-foreground">
                 All States
               </h3>
             </div>
             {loading ? (
-              <div className="p-8 text-white/20 text-xs font-sans text-center">Loading…</div>
+              <div className="p-8 text-muted-foreground text-xs font-sans text-center">Loading…</div>
             ) : (
-              <div className="divide-y divide-white/5">
+              <div className="divide-y divide-border/40">
                 {states.map((s) => (
                   <div
                     key={s.id}
-                    className="flex items-center justify-between px-6 py-3 hover:bg-white/3 group"
+                    className="flex items-center justify-between px-6 py-3 hover:bg-muted/30 group"
                   >
                     <div className="flex items-center gap-3">
-                      <MapPin className="size-4 text-white/20" />
+                      <MapPin className="size-4 text-primary" />
                       <div>
-                        <p className="text-sm font-sans text-white/80">{s.name}</p>
-                        <p className="text-xs font-mono text-white/30">
+                        <p className="text-sm font-semibold font-sans text-foreground">{s.name}</p>
+                        <p className="text-xs font-mono text-muted-foreground">
                           {s.slug} {s.latitude ? `(${s.latitude}, ${s.longitude})` : ""}
                         </p>
                       </div>
@@ -115,13 +115,13 @@ export default function AdminStatesPage() {
                     <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => handleEdit(s)}
-                        className="text-white/30 hover:text-primary transition-colors"
+                        className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                       >
                         <Edit className="size-4" />
                       </button>
                       <button
                         onClick={() => void handleDelete(s.id)}
-                        className="text-white/30 hover:text-red-400 transition-colors"
+                        className="text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
                       >
                         <Trash2 className="size-4" />
                       </button>
@@ -131,8 +131,8 @@ export default function AdminStatesPage() {
               </div>
             )}
           </div>
-          <div className="bg-[#161616] border border-white/10 rounded-sm p-6">
-            <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-white/40 mb-6">
+          <div className="bg-card border border-border/80 rounded-xl p-6 shadow-sm">
+            <h3 className="text-xs font-sans font-bold uppercase tracking-wider text-muted-foreground mb-6">
               {editId ? "Edit State" : "New State"}
             </h3>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -145,7 +145,7 @@ export default function AdminStatesPage() {
                 ] as const
               ).map((f) => (
                 <div key={f.id}>
-                  <label className="block text-xs font-sans font-bold uppercase tracking-widest text-white/40 mb-2">
+                  <label className="block text-xs font-sans font-bold uppercase tracking-wider text-muted-foreground mb-2">
                     {f.label}
                   </label>
                   <Input
@@ -157,12 +157,12 @@ export default function AdminStatesPage() {
                   />
                 </div>
               ))}
-              {error && <p className="text-xs text-red-400 font-sans">{error}</p>}
-              <div className="flex gap-2">
+              {error && <p className="text-xs text-destructive font-sans">{error}</p>}
+              <div className="flex gap-2 pt-2">
                 <Button
                   id="state-submit-btn"
                   type="submit"
-                  className="flex-1 h-10 rounded-sm bg-primary hover:bg-primary/90 text-white font-sans text-xs uppercase tracking-widest"
+                  className={`rounded-lg bg-primary hover:bg-primary/90 text-white font-sans text-xs uppercase tracking-wider font-bold shadow-sm ${editId ? "w-1/2" : "w-full"}`}
                 >
                   {editId ? "Update" : "Create"}
                 </Button>
@@ -170,7 +170,7 @@ export default function AdminStatesPage() {
                   <Button
                     type="button"
                     variant="outline"
-                    className="h-10 px-3 rounded-sm border-white/10 text-white/40 bg-transparent font-sans text-xs"
+                    className="w-1/2 rounded-lg border-border text-muted-foreground hover:text-foreground"
                     onClick={() => {
                       setEditId(null);
                       setName("");

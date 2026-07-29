@@ -175,16 +175,16 @@ export default function AdminNewsletterPage() {
         </AnimatePresence>
 
         {/* Toolbar & Filters */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#161616] border border-white/10 p-5 rounded-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card border border-border/80 p-5 rounded-xl shadow-sm">
           <div className="flex flex-1 flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-2.5 size-4 text-white/30" />
+              <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder="Search emails..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 bg-black/40 border-white/10 text-xs font-sans placeholder:text-white/30"
+                className="pl-9 bg-background border-border text-xs font-sans placeholder:text-muted-foreground rounded-lg"
               />
             </div>
             <div className="flex gap-2">
@@ -195,10 +195,10 @@ export default function AdminNewsletterPage() {
                     setStatusFilter(status);
                     setPage(1);
                   }}
-                  className={`px-3 py-1.5 rounded-sm text-[10px] uppercase font-bold tracking-wider transition-colors border ${
+                  className={`px-3 py-1.5 rounded-lg text-[10px] uppercase font-bold tracking-wider transition-colors border ${
                     statusFilter === status
-                      ? "bg-primary/20 text-primary border-primary/30"
-                      : "bg-transparent text-white/40 border-white/5 hover:text-white"
+                      ? "bg-primary text-white border-primary shadow-xs"
+                      : "bg-muted/40 text-muted-foreground border-border/60 hover:text-foreground hover:bg-muted"
                   }`}
                 >
                   {status}
@@ -209,18 +209,18 @@ export default function AdminNewsletterPage() {
 
           <Button
             onClick={handleExportCSV}
-            className="bg-primary hover:bg-primary/95 text-white gap-2 text-xs font-semibold px-4 h-9 self-start md:self-auto"
+            className="bg-primary hover:bg-primary/90 text-white gap-2 text-xs font-semibold px-4 h-9 self-start md:self-auto rounded-lg shadow-sm"
           >
             <Download className="size-3.5" /> Export to CSV
           </Button>
         </div>
 
         {/* Table Area */}
-        <div className="bg-[#161616] border border-white/10 rounded-sm overflow-hidden">
+        <div className="bg-card border border-border/80 rounded-xl overflow-hidden shadow-sm">
           {loading ? (
             <table className="w-full text-left font-sans text-xs">
               <thead>
-                <tr className="border-b border-white/10 bg-white/5 text-white/40 uppercase tracking-widest text-[9px] font-bold">
+                <tr className="border-b border-border/60 bg-muted/40 text-muted-foreground uppercase tracking-wider text-[9px] font-bold">
                   <th className="p-3">Email</th>
                   <th className="p-3">Verified</th>
                   <th className="p-3">Status</th>
@@ -230,10 +230,10 @@ export default function AdminNewsletterPage() {
               </thead>
               <tbody>
                 {[...Array(5)].map((_, i) => (
-                  <tr key={i} className="border-b border-white/5 animate-pulse">
+                  <tr key={i} className="border-b border-border/40 animate-pulse">
                     {[...Array(5)].map((_, j) => (
                       <td key={j} className="p-3">
-                        <div className="h-4 bg-white/5 rounded w-3/4" />
+                        <div className="h-4 bg-muted/60 rounded w-3/4" />
                       </td>
                     ))}
                   </tr>
@@ -241,34 +241,34 @@ export default function AdminNewsletterPage() {
               </tbody>
             </table>
           ) : subscribers.length === 0 ? (
-            <div className="p-16 text-center text-xs text-white/30 flex flex-col items-center justify-center gap-2">
-              <Mail className="size-8 text-white/10" />
+            <div className="p-16 text-center text-xs text-muted-foreground flex flex-col items-center justify-center gap-2">
+              <Mail className="size-8 text-muted-foreground/40" />
               No subscribers found matching the filters.
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left font-sans text-xs border-collapse">
                 <thead>
-                  <tr className="border-b border-white/10 bg-white/5 text-white/60 uppercase tracking-wider text-[10px]">
-                    <th className="p-4 font-bold">Email</th>
-                    <th className="p-4 font-bold">Verified</th>
-                    <th className="p-4 font-bold">Status</th>
-                    <th className="p-4 font-bold">Lang</th>
-                    <th className="p-4 font-bold">Subscribed Date</th>
-                    <th className="p-4 font-bold text-right">Actions</th>
+                  <tr className="border-b border-border/60 bg-muted/40 text-muted-foreground uppercase tracking-wider text-[10px] font-bold">
+                    <th className="p-4">Email</th>
+                    <th className="p-4">Verified</th>
+                    <th className="p-4">Status</th>
+                    <th className="p-4">Lang</th>
+                    <th className="p-4">Subscribed Date</th>
+                    <th className="p-4 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5 text-white/80">
+                <tbody className="divide-y divide-border/40 text-foreground">
                   {subscribers.map((sub) => (
-                    <tr key={sub.id} className="hover:bg-white/5 transition-colors">
-                      <td className="p-4 font-medium text-white">{sub.email}</td>
+                    <tr key={sub.id} className="hover:bg-muted/40 transition-colors">
+                      <td className="p-4 font-medium text-foreground">{sub.email}</td>
                       <td className="p-4">
                         {sub.verified ? (
-                          <span className="flex items-center gap-1 text-emerald-400 font-semibold">
+                          <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
                             <CheckCircle className="size-3.5" /> Yes
                           </span>
                         ) : (
-                          <span className="flex items-center gap-1 text-yellow-400 font-semibold">
+                          <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-semibold">
                             <XCircle className="size-3.5" /> Pending
                           </span>
                         )}
@@ -277,22 +277,22 @@ export default function AdminNewsletterPage() {
                         <span
                           className={`px-2 py-0.5 rounded text-[9px] uppercase tracking-wider font-bold ${
                             sub.status === "active"
-                              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                              : "bg-red-500/10 text-red-400 border border-red-500/20"
+                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                              : "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20"
                           }`}
                         >
                           {sub.status}
                         </span>
                       </td>
-                      <td className="p-4 font-semibold uppercase text-white/60">{sub.language}</td>
-                      <td className="p-4 font-mono text-white/40">
+                      <td className="p-4 font-semibold uppercase text-muted-foreground">{sub.language}</td>
+                      <td className="p-4 font-mono text-muted-foreground">
                         {new Date(sub.createdAt).toLocaleDateString()}{" "}
                         {new Date(sub.createdAt).toLocaleTimeString()}
                       </td>
                       <td className="p-4 text-right">
                         <button
                           onClick={() => handleDelete(sub.id, sub.email)}
-                          className="p-1 text-white/30 hover:text-red-400 transition-colors inline-block"
+                          className="p-1 text-muted-foreground hover:text-destructive transition-colors inline-block cursor-pointer"
                           title="Delete Subscriber"
                         >
                           <Trash2 className="size-4" />

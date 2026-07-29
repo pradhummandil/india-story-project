@@ -31,6 +31,7 @@ export function Navbar() {
     { to: "/stories", label: navText.stories },
     { to: "/share-story", label: lang === "hi" ? "कहानी साझा करें" : "Share Story" },
     { to: "/explore", label: lang === "hi" ? "अन्वेषण" : "Explore" },
+    { to: "/map", label: lang === "hi" ? "मानचित्र" : "Map" },
     { to: "/about", label: navText.about },
     { to: "/contact", label: navText.contact },
   ];

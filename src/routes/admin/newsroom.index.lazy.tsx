@@ -299,7 +299,7 @@ function NewsroomConsolePage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-7 gap-1 text-center text-[9px] font-black text-white/30 uppercase tracking-widest mb-3 font-sans">
+            <div className="grid grid-cols-7 gap-1 text-center text-[9px] font-black text-muted-foreground uppercase tracking-wider mb-3 font-sans">
               <div>Sun</div>
               <div>Mon</div>
               <div>Tue</div>
@@ -323,9 +323,9 @@ function NewsroomConsolePage() {
                 return (
                   <div
                     key={formattedDate}
-                    className="bg-white/2 border border-white/5 h-16 p-1.5 text-left relative hover:border-white/15 transition-colors group rounded-md"
+                    className="bg-muted/30 border border-border/50 h-16 p-1.5 text-left relative hover:border-primary/40 transition-colors group rounded-lg"
                   >
-                    <span className="text-[9px] font-sans font-bold text-white/30">
+                    <span className="text-[9px] font-sans font-bold text-muted-foreground">
                       {day.getDate()}
                     </span>
                     <div className="space-y-1 mt-1 overflow-y-auto max-h-9 scrollbar-none">
@@ -334,7 +334,7 @@ function NewsroomConsolePage() {
                           key={story.id}
                           to="/admin/newsroom/story/$id"
                           params={{ id: story.id }}
-                          className="block text-[8px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/15 px-1.5 py-0.5 rounded truncate leading-tight hover:bg-emerald-500/20 font-sans font-semibold cursor-pointer"
+                          className="block text-[8px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded truncate leading-tight hover:bg-emerald-500/20 font-sans font-semibold cursor-pointer"
                           title={story.title}
                         >
                           {story.title}
@@ -355,7 +355,7 @@ function NewsroomConsolePage() {
           <div className="xl:col-span-2 space-y-4">
             
             {/* Sub-tabs List */}
-            <div className="flex bg-[#121212] border border-white/5 p-1 rounded-lg gap-1 overflow-x-auto">
+            <div className="flex bg-muted/40 border border-border/60 p-1 rounded-xl gap-1 overflow-x-auto">
               {(
                 [
                   { id: "pending", label: "Review", count: data?.pendingReview.length },
@@ -369,15 +369,15 @@ function NewsroomConsolePage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`px-3.5 py-2 text-[10px] font-black uppercase tracking-wider rounded-md transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+                  className={`px-3.5 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
                     activeTab === tab.id
-                      ? "bg-white text-black font-semibold shadow-md"
-                      : "text-white/40 hover:text-white"
+                      ? "bg-primary text-white font-bold shadow-sm"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                   }`}
                 >
                   {tab.label}
                   {("count" in tab && tab.count !== undefined) && (
-                    <span className={`px-1.5 py-0.2 rounded text-[8px] font-bold ${activeTab === tab.id ? "bg-black/10 text-black" : "bg-white/5 text-white/30"}`}>
+                    <span className={`px-1.5 py-0.2 rounded text-[8px] font-bold ${activeTab === tab.id ? "bg-white/20 text-white" : "bg-muted text-muted-foreground"}`}>
                       {tab.count}
                     </span>
                   )}
@@ -386,11 +386,11 @@ function NewsroomConsolePage() {
             </div>
 
             {/* Table */}
-            <div className="bg-[#121212] border border-white/5 rounded-lg overflow-hidden">
+            <div className="bg-card border border-border/80 rounded-xl overflow-hidden shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-white/5 bg-white/2 text-white/40 uppercase tracking-wider text-[9px] font-bold">
+                    <tr className="border-b border-border/60 bg-muted/40 text-muted-foreground uppercase tracking-wider text-[9px] font-bold">
                       <th className="p-3 w-8">
                         <input
                           type="checkbox"
@@ -404,7 +404,7 @@ function NewsroomConsolePage() {
                               setSelectedIds([]);
                             }
                           }}
-                          className="cursor-pointer"
+                          className="cursor-pointer rounded border-border"
                         />
                       </th>
                       <th className="p-3">Dispatch Title</th>
@@ -415,45 +415,45 @@ function NewsroomConsolePage() {
                       <th className="p-3 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5 text-white/70">
+                  <tbody className="divide-y divide-border/40 text-foreground">
                     {activeStories.length > 0 ? (
                       activeStories.map((story) => (
                         <tr
                           key={story.id}
-                          className="hover:bg-white/2 transition-colors duration-150"
+                          className="hover:bg-muted/30 transition-colors duration-150"
                         >
                           <td className="p-3">
                             <input
                               type="checkbox"
                               checked={selectedIds.includes(story.id)}
                               onChange={() => toggleSelect(story.id)}
-                              className="cursor-pointer"
+                              className="cursor-pointer rounded border-border"
                             />
                           </td>
-                          <td className="p-3 font-semibold text-white truncate max-w-xs">
+                          <td className="p-3 font-semibold text-foreground truncate max-w-xs">
                             {story.title}
                           </td>
-                          <td className="p-3 text-white/55 font-medium">{story.authorName}</td>
-                          <td className="p-3 text-white/50">{story.region}</td>
+                          <td className="p-3 text-muted-foreground font-medium">{story.authorName}</td>
+                          <td className="p-3 text-muted-foreground">{story.region}</td>
                           <td className="p-3">
                             <span
                               className={`px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider font-bold border ${
                                 story.status === "Published"
-                                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/15"
-                                  : "bg-amber-500/10 text-amber-400 border-amber-500/15"
+                                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                                  : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
                               }`}
                             >
                               {story.status}
                             </span>
                           </td>
-                          <td className="p-3 text-right font-mono font-bold text-white/90">
+                          <td className="p-3 text-right font-mono font-bold text-foreground">
                             {story.viewCount.toLocaleString()}
                           </td>
                           <td className="p-3 text-right">
                             <Link
                               to="/admin/newsroom/story/$id"
                               params={{ id: story.id }}
-                              className="inline-flex items-center gap-1 text-[9px] font-black text-[#C8A96A] uppercase tracking-widest hover:underline cursor-pointer"
+                              className="inline-flex items-center gap-1 text-[9px] font-bold text-primary uppercase tracking-wider hover:underline cursor-pointer"
                             >
                               Workspace <ArrowRight className="size-3 shrink-0" />
                             </Link>
@@ -462,7 +462,7 @@ function NewsroomConsolePage() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={7} className="p-12 text-center text-white/20 italic font-sans">
+                        <td colSpan={7} className="p-12 text-center text-muted-foreground italic font-sans">
                           No stories currently in this review queue.
                         </td>
                       </tr>
@@ -474,27 +474,27 @@ function NewsroomConsolePage() {
           </div>
 
           {/* Bulk operation box */}
-          <div className="bg-[#121212] border border-white/5 p-6 rounded-lg space-y-4 h-fit">
+          <div className="bg-card border border-border/80 p-6 rounded-xl space-y-4 h-fit shadow-sm">
             <div className="flex items-center gap-2">
-              <Sliders className="size-4 text-[#C8A96A]" />
-              <h3 className="text-[10px] font-sans font-black text-white/40 uppercase tracking-widest">
+              <Sliders className="size-4 text-primary" />
+              <h3 className="text-[10px] font-sans font-bold text-muted-foreground uppercase tracking-wider">
                 Bulk Operations
               </h3>
             </div>
-            <p className="text-xs text-white/40 font-sans leading-relaxed">
+            <p className="text-xs text-muted-foreground font-sans leading-relaxed">
               Select multiple stories from the review queues, pick a workflow operation, and apply.
             </p>
 
             <div className="space-y-4 font-sans text-xs pt-2">
-              <div className="flex items-center justify-between bg-white/5 border border-white/5 rounded-lg p-3">
-                <span className="font-bold text-white/60">Selections</span>
-                <span className="font-bold text-[#C8A96A] bg-[#C8A96A]/10 border border-[#C8A96A]/20 px-2.5 py-0.5 rounded text-[10px] uppercase">
+              <div className="flex items-center justify-between bg-muted/40 border border-border/60 rounded-lg p-3">
+                <span className="font-bold text-foreground">Selections</span>
+                <span className="font-bold text-primary bg-primary/10 border border-primary/20 px-2.5 py-0.5 rounded text-[10px] uppercase">
                   {selectedIds.length} dispatches
                 </span>
               </div>
 
               <div className="space-y-1.5">
-                <label className="block font-bold text-white/50 uppercase tracking-wider text-[9px]">Select Batch Task</label>
+                <label className="block font-bold text-muted-foreground uppercase tracking-wider text-[9px]">Select Batch Task</label>
                 <select
                   value={bulkAction}
                   onChange={(e) => {

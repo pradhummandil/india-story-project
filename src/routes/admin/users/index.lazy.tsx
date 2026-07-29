@@ -100,37 +100,37 @@ export default function AdminUsersPage() {
       <div className="max-w-5xl">
         <div className="mb-6">
           <div className="relative max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-white/30" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
               id="users-search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by email or name…"
-              className="pl-10 h-10 rounded-sm bg-white/5 border-white/10 text-white/80 placeholder:text-white/20 font-sans text-sm"
+              className="pl-10 h-10 rounded-lg bg-background border-border text-foreground placeholder:text-muted-foreground font-sans text-sm"
             />
           </div>
         </div>
-        <div className="bg-[#161616] border border-white/10 rounded-sm overflow-hidden">
+        <div className="bg-card border border-border/80 rounded-xl overflow-hidden shadow-sm">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/10">
+              <tr className="border-b border-border/60 bg-muted/40 text-muted-foreground uppercase tracking-wider text-[10px] font-bold">
                 {["User", "Role", "Status", "Joined"].map((h) => (
                   <th
                     key={h}
-                    className="text-left px-4 py-3 text-[10px] font-sans font-bold uppercase tracking-widest text-white/30"
+                    className="text-left px-4 py-3 font-sans"
                   >
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-border/40 text-foreground font-sans">
               {loading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <tr key={i}>
                     {Array.from({ length: 4 }).map((_, j) => (
                       <td key={j} className="px-4 py-3">
-                        <div className="h-4 bg-white/5 rounded animate-pulse" />
+                        <div className="h-4 bg-muted/60 rounded animate-pulse" />
                       </td>
                     ))}
                   </tr>
@@ -139,22 +139,22 @@ export default function AdminUsersPage() {
                 <tr>
                   <td
                     colSpan={4}
-                    className="px-4 py-12 text-center text-white/20 font-sans text-xs"
+                    className="px-4 py-12 text-center text-muted-foreground font-sans text-xs"
                   >
                     No users found.
                   </td>
                 </tr>
               ) : (
                 users.map((u) => (
-                  <tr key={u.id} className="hover:bg-white/3 transition-colors">
+                  <tr key={u.id} className="hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="size-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
-                          <User className="size-4 text-primary/60" />
+                          <User className="size-4 text-primary" />
                         </div>
                         <div>
-                          <p className="text-sm font-sans text-white/80">{u.name || "Anonymous"}</p>
-                          <p className="text-xs text-white/30 font-sans">{u.email}</p>
+                          <p className="text-sm font-semibold text-foreground">{u.name || "Anonymous"}</p>
+                          <p className="text-xs text-muted-foreground font-sans">{u.email}</p>
                         </div>
                       </div>
                     </td>
@@ -162,7 +162,7 @@ export default function AdminUsersPage() {
                       <select
                         value={u.role}
                         onChange={(e) => void handleRoleChange(u.id, e.target.value as RoleType)}
-                        className="bg-[#0F0F0F] border border-white/10 text-white/70 font-sans text-xs px-2 py-1 rounded-sm focus:outline-none focus:border-primary/50"
+                        className="bg-background border border-border text-foreground font-sans text-xs px-2.5 py-1 rounded-lg focus:outline-none focus:border-primary capitalize font-medium"
                       >
                         {ROLES.map((r) => (
                           <option key={r} value={r}>
@@ -174,7 +174,7 @@ export default function AdminUsersPage() {
                     <td className="px-4 py-3">
                       <button
                         onClick={() => void handleToggleActive(u.id, u.active)}
-                        className={`flex items-center gap-1.5 text-xs font-sans font-semibold ${u.active ? "text-emerald-400" : "text-white/30"}`}
+                        className={`flex items-center gap-1.5 text-xs font-sans font-semibold cursor-pointer ${u.active ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"}`}
                       >
                         {u.active ? (
                           <ToggleRight className="size-4" />
@@ -184,7 +184,7 @@ export default function AdminUsersPage() {
                         {u.active ? "Active" : "Inactive"}
                       </button>
                     </td>
-                    <td className="px-4 py-3 text-white/30 font-sans text-xs">
+                    <td className="px-4 py-3 text-muted-foreground font-sans text-xs font-mono">
                       {new Date(u.createdAt).toLocaleDateString("en-IN")}
                     </td>
                   </tr>
@@ -195,25 +195,25 @@ export default function AdminUsersPage() {
 
           {/* Pagination Footer */}
           {total > PAGE_SIZE && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-white/10 font-sans text-xs">
-              <span className="text-white/30">
+            <div className="flex items-center justify-between px-4 py-3 border-t border-border/60 font-sans text-xs">
+              <span className="text-muted-foreground">
                 Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} of {total}
               </span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="px-3 py-1 text-white/40 hover:text-white disabled:opacity-20 transition-colors"
+                  className="px-3 py-1 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors font-semibold cursor-pointer"
                 >
                   Prev
                 </button>
-                <span className="text-white/40">
+                <span className="text-foreground font-semibold">
                   {page} / {Math.ceil(total / PAGE_SIZE)}
                 </span>
                 <button
                   onClick={() => setPage((p) => p + 1)}
                   disabled={page >= Math.ceil(total / PAGE_SIZE)}
-                  className="px-3 py-1 text-white/40 hover:text-white disabled:opacity-20 transition-colors"
+                  className="px-3 py-1 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors font-semibold cursor-pointer"
                 >
                   Next
                 </button>

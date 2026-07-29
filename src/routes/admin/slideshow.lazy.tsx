@@ -248,35 +248,35 @@ export default function AdminSlideshowPage() {
         </AnimatePresence>
 
         {/* Add New Slide Search Section */}
-        <div className="bg-[#161616] border border-white/10 p-6 rounded-sm space-y-4">
-          <h2 className="text-base font-sans font-semibold text-white">Add Story to Slideshow</h2>
+        <div className="bg-card border border-border/80 p-6 rounded-xl space-y-4 shadow-sm">
+          <h2 className="text-base font-sans font-semibold text-foreground">Add Story to Slideshow</h2>
           <div className="relative">
-            <Search className="absolute left-3 top-3 size-4 text-white/30" />
+            <Search className="absolute left-3 top-3 size-4 text-muted-foreground" />
             <Input
               type="text"
               placeholder="Search stories by title or slug to add..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-black/40 border-white/10 text-white placeholder:text-white/30 text-sm"
+              className="pl-10 bg-background border-border text-foreground placeholder:text-muted-foreground text-sm rounded-lg"
             />
           </div>
 
-          {searching && <p className="text-xs text-white/40">Searching...</p>}
+          {searching && <p className="text-xs text-muted-foreground">Searching...</p>}
 
           {searchResults.length > 0 && (
-            <div className="border border-white/10 rounded-sm divide-y divide-white/5 max-h-60 overflow-y-auto bg-black/20">
+            <div className="border border-border/60 rounded-lg divide-y divide-border/40 max-h-60 overflow-y-auto bg-background/50">
               {searchResults.map((story) => (
                 <div
                   key={story.id}
-                  className="p-3 flex items-center justify-between hover:bg-white/5 transition-colors"
+                  className="p-3 flex items-center justify-between hover:bg-muted/40 transition-colors"
                 >
-                  <span className="text-sm font-sans text-white/80 font-medium truncate pr-4">
+                  <span className="text-sm font-sans text-foreground font-medium truncate pr-4">
                     {story.title}
                   </span>
                   <Button
                     size="sm"
                     onClick={() => handleAdd(story)}
-                    className="h-8 gap-1 text-xs bg-primary/20 text-primary hover:bg-primary/30"
+                    className="h-8 gap-1 text-xs bg-primary/10 text-primary hover:bg-primary/20 font-bold border border-primary/20"
                   >
                     <Plus className="size-3" /> Add
                   </Button>
@@ -287,13 +287,13 @@ export default function AdminSlideshowPage() {
         </div>
 
         {/* Slideshow Manager List */}
-        <div className="bg-[#161616] border border-white/10 p-6 rounded-sm space-y-6">
-          <div className="flex items-center justify-between border-b border-white/10 pb-4">
-            <h2 className="text-base font-sans font-semibold text-white">Current Slides</h2>
+        <div className="bg-card border border-border/80 p-6 rounded-xl space-y-6 shadow-sm">
+          <div className="flex items-center justify-between border-b border-border/60 pb-4">
+            <h2 className="text-base font-sans font-semibold text-foreground">Current Slides</h2>
             <Button
               disabled={saving || slides.length === 0}
               onClick={handleSaveOrder}
-              className="h-9 px-4 gap-2 text-sm bg-primary hover:bg-primary/90 text-white font-medium"
+              className="h-9 px-4 gap-2 text-sm bg-primary hover:bg-primary/90 text-white font-semibold rounded-lg shadow-sm"
             >
               <Save className="size-4" /> {saving ? "Saving..." : "Save Order"}
             </Button>
@@ -301,12 +301,12 @@ export default function AdminSlideshowPage() {
 
           {loading ? (
             <div className="py-12 flex justify-center items-center">
-              <span className="text-sm text-white/40 animate-pulse">Loading slideshow...</span>
+              <span className="text-sm text-muted-foreground animate-pulse">Loading slideshow...</span>
             </div>
           ) : slides.length === 0 ? (
-            <div className="py-12 border border-dashed border-white/10 rounded-sm text-center">
-              <p className="text-sm text-white/40">No stories added to the slideshow yet.</p>
-              <p className="text-xs text-white/20 mt-1">
+            <div className="py-12 border border-dashed border-border/60 rounded-lg text-center">
+              <p className="text-sm text-muted-foreground font-medium">No stories added to the slideshow yet.</p>
+              <p className="text-xs text-muted-foreground/70 mt-1">
                 Use the search above to add stories to the homepage slideshow.
               </p>
             </div>
@@ -319,19 +319,19 @@ export default function AdminSlideshowPage() {
                 return (
                   <div
                     key={slide.id}
-                    className="flex items-center gap-4 bg-black/40 border border-white/5 rounded-sm p-3 hover:border-white/10 transition-colors"
+                    className="flex items-center gap-4 bg-background border border-border/60 rounded-xl p-3 hover:border-primary/40 transition-colors shadow-xs"
                   >
-                    <div className="text-center font-mono text-sm text-white/40 w-8">
+                    <div className="text-center font-mono text-sm text-muted-foreground font-bold w-8">
                       #{index + 1}
                     </div>
                     <img
                       src={imageUrl}
                       alt={slide.title}
-                      className="size-12 rounded-sm object-cover border border-white/10"
+                      className="size-12 rounded-lg object-cover border border-border"
                     />
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-medium text-white truncate">{slide.title}</h4>
-                      <p className="text-xs text-white/40 truncate font-mono">/{slide.slug}</p>
+                      <h4 className="text-sm font-medium text-foreground truncate">{slide.title}</h4>
+                      <p className="text-xs text-muted-foreground truncate font-mono">/{slide.slug}</p>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Button
@@ -339,7 +339,7 @@ export default function AdminSlideshowPage() {
                         variant="ghost"
                         disabled={index === 0}
                         onClick={() => handleMove(index, "up")}
-                        className="size-8 text-white/40 hover:text-white hover:bg-white/5"
+                        className="size-8 text-muted-foreground hover:text-foreground hover:bg-muted"
                         title="Move Up"
                       >
                         <ArrowUp className="size-4" />
@@ -349,17 +349,17 @@ export default function AdminSlideshowPage() {
                         variant="ghost"
                         disabled={index === slides.length - 1}
                         onClick={() => handleMove(index, "down")}
-                        className="size-8 text-white/40 hover:text-white hover:bg-white/5"
+                        className="size-8 text-muted-foreground hover:text-foreground hover:bg-muted"
                         title="Move Down"
                       >
                         <ArrowDown className="size-4" />
                       </Button>
-                      <span className="w-px h-6 bg-white/10 mx-1" />
+                      <span className="w-px h-6 bg-border mx-1" />
                       <Button
                         size="icon"
                         variant="ghost"
                         onClick={() => handleRemove(slide.id)}
-                        className="size-8 text-red-400/60 hover:text-red-400 hover:bg-red-500/10"
+                        className="size-8 text-destructive/70 hover:text-destructive hover:bg-destructive/10"
                         title="Remove from Slideshow"
                       >
                         <Trash2 className="size-4" />

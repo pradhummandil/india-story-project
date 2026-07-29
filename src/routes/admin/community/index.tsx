@@ -385,7 +385,7 @@ export default function AdminCommunityPage() {
     >
       <div className="space-y-6">
         {/* Tabs Bar */}
-        <div className="flex border-b border-white/10 overflow-x-auto pb-px">
+        <div className="flex border-b border-border/60 overflow-x-auto pb-px gap-1">
           {(
             [
               { id: "reports", label: "Abuse Reports" },
@@ -403,10 +403,10 @@ export default function AdminCommunityPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-3 text-xs uppercase tracking-widest font-sans font-semibold border-b-2 whitespace-nowrap transition-colors ${
+              className={`px-4 py-3 text-xs uppercase tracking-wider font-sans font-semibold border-b-2 whitespace-nowrap transition-colors rounded-t-lg cursor-pointer ${
                 activeTab === tab.id
-                  ? "border-primary text-white bg-primary/5"
-                  : "border-transparent text-white/40 hover:text-white"
+                  ? "border-primary text-primary font-bold bg-primary/10"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/40"
               }`}
             >
               {tab.label}
@@ -420,7 +420,7 @@ export default function AdminCommunityPage() {
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="h-16 bg-white/5 animate-pulse rounded border border-white/5"
+                className="h-16 bg-muted/40 animate-pulse rounded-xl border border-border/40"
               />
             ))}
           </div>
@@ -428,46 +428,46 @@ export default function AdminCommunityPage() {
           <div className="space-y-4 font-sans text-xs">
             {/* 1. REPORTS TAB */}
             {activeTab === "reports" && (
-              <div className="bg-[#141414] border border-white/8 rounded overflow-hidden">
+              <div className="bg-card border border-border/80 rounded-xl overflow-hidden shadow-sm">
                 {reports.length === 0 ? (
-                  <div className="p-8 text-center text-white/30 italic">
+                  <div className="p-8 text-center text-muted-foreground italic font-sans text-xs">
                     No reported posts at this time.
                   </div>
                 ) : (
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="border-b border-white/10 bg-white/5 text-white/50 uppercase tracking-widest text-[9px]">
-                        <th className="p-4 font-bold">Reporter</th>
-                        <th className="p-4 font-bold">Post Author</th>
-                        <th className="p-4 font-bold">Reason</th>
-                        <th className="p-4 font-bold">Topic/Content Preview</th>
-                        <th className="p-4 font-bold text-right">Actions</th>
+                      <tr className="border-b border-border/60 bg-muted/40 text-muted-foreground uppercase tracking-wider text-[9px] font-bold">
+                        <th className="p-4">Reporter</th>
+                        <th className="p-4">Post Author</th>
+                        <th className="p-4">Reason</th>
+                        <th className="p-4">Topic/Content Preview</th>
+                        <th className="p-4 text-right">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5 text-white/85">
+                    <tbody className="divide-y divide-border/40 text-foreground">
                       {reports.map((r) => (
-                        <tr key={r.id} className="hover:bg-white/3">
-                          <td className="p-4 font-bold text-white/60">
+                        <tr key={r.id} className="hover:bg-muted/30">
+                          <td className="p-4 font-bold text-foreground">
                             {r.user?.name || "Member"}
                           </td>
-                          <td className="p-4 font-bold text-white/60">
+                          <td className="p-4 font-bold text-foreground">
                             {r.post?.user?.name || "Member"}
                           </td>
                           <td className="p-4">
-                            <span className="bg-red-950/20 border border-red-500/20 text-red-400 font-bold uppercase tracking-wider text-[8px] px-2 py-0.5 rounded-full">
+                            <span className="bg-destructive/10 border border-destructive/20 text-destructive font-bold uppercase tracking-wider text-[8px] px-2 py-0.5 rounded-full">
                               {r.reason}
                             </span>
                           </td>
                           <td className="p-4 max-w-xs truncate">
-                            <p className="font-bold text-white/40 mb-0.5">
+                            <p className="font-bold text-muted-foreground mb-0.5">
                               Topic: {r.post?.topic?.title}
                             </p>
-                            <p className="italic text-white/70">"{r.post?.content}"</p>
+                            <p className="italic text-foreground">"{r.post?.content}"</p>
                           </td>
                           <td className="p-4 text-right space-x-2 whitespace-nowrap">
                             <button
                               onClick={() => handleModerateAction("mark_spam", "post", r.post?.id)}
-                              className="bg-red-950 text-red-400 hover:bg-red-900 px-2 py-1 uppercase tracking-wider text-[8px] font-bold"
+                              className="bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/20 px-2 py-1 uppercase tracking-wider text-[8px] font-bold rounded"
                             >
                               Mark Spam
                             </button>
