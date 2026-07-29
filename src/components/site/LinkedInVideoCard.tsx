@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Linkedin, Play, ExternalLink, Sparkles, Film, Headphones } from "lucide-react";
+import { Linkedin, Play, ExternalLink } from "lucide-react";
 
 export interface LinkedInVideoItem {
   id: string;
@@ -139,81 +138,52 @@ interface LinkedInVideoCardProps {
 }
 
 export function LinkedInVideoCard({ video, className = "", showTitle = false }: LinkedInVideoCardProps) {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [embedBlocked, setEmbedBlocked] = useState(false);
+  const openLinkedInPost = () => {
+    window.open(video.linkedinUrl, "_blank", "noopener,noreferrer");
+  };
 
   return (
     <div
       className={`group relative bg-card border border-border/80 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:border-gold/50 transition-all duration-300 flex flex-col justify-between ${className}`}
     >
-      {/* Media Box */}
-      <div className="relative w-full aspect-video bg-black overflow-hidden rounded-t-2xl shrink-0 border-b border-border/40">
-        {!isPlaying ? (
-          /* High-Res Video Poster with Play Overlay */
-          <div className="relative size-full group cursor-pointer" onClick={() => setIsPlaying(true)}>
-            <img
-              src={video.thumbnail}
-              alt={video.title}
-              className="size-full object-cover brightness-[0.75] group-hover:scale-105 group-hover:brightness-[0.65] transition-all duration-500"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+      {/* High-Res Video Poster Box */}
+      <div
+        className="relative w-full aspect-video bg-black overflow-hidden rounded-t-2xl shrink-0 border-b border-border/40 cursor-pointer group"
+        onClick={openLinkedInPost}
+      >
+        <img
+          src={video.thumbnail}
+          alt={video.title}
+          className="size-full object-cover brightness-[0.75] group-hover:scale-105 group-hover:brightness-[0.65] transition-all duration-500"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
 
-            {/* LinkedIn Badge */}
-            <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 bg-blue-600/90 text-white px-2.5 py-1 rounded-full text-[10px] font-sans font-bold uppercase tracking-wider shadow-md backdrop-blur-sm">
-              <Linkedin className="size-3 fill-current" />
-              <span>{video.isPodcast ? "LinkedIn Podcast" : "LinkedIn Video"}</span>
-            </div>
+        {/* LinkedIn Badge */}
+        <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 bg-blue-600/90 text-white px-2.5 py-1 rounded-full text-[10px] font-sans font-bold uppercase tracking-wider shadow-md backdrop-blur-sm">
+          <Linkedin className="size-3 fill-current" />
+          <span>{video.isPodcast ? "LinkedIn Podcast" : "LinkedIn Video"}</span>
+        </div>
 
-            {/* Duration Tag */}
-            {video.duration && (
-              <div className="absolute top-3 right-3 z-10 bg-black/70 text-white/90 px-2 py-0.5 rounded text-[10px] font-mono font-semibold">
-                {video.duration}
-              </div>
-            )}
-
-            {/* Play Button Overlay */}
-            <div className="absolute inset-0 flex items-center justify-center z-10">
-              <div className="size-14 rounded-full bg-blue-600/90 text-white flex items-center justify-center shadow-2xl group-hover:scale-110 group-hover:bg-blue-600 transition-all duration-300">
-                <Play className="size-6 fill-white text-white ml-1" />
-              </div>
-            </div>
-
-            {/* Title Overlay in Poster */}
-            <div className="absolute bottom-3 left-3 right-3 z-10">
-              <h4 className="font-display text-sm font-bold text-white line-clamp-1 group-hover:text-gold transition-colors">
-                {video.title}
-              </h4>
-            </div>
-          </div>
-        ) : (
-          /* Interactive Embed Player */
-          <div className="relative size-full bg-black">
-            {!embedBlocked ? (
-              <iframe
-                src={video.embedUrl}
-                title={video.title}
-                className="size-full border-0 rounded-t-2xl"
-                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-                allowFullScreen
-                onError={() => setEmbedBlocked(true)}
-              />
-            ) : (
-              /* Fallback if LinkedIn returns X-Frame-Options block */
-              <div className="size-full bg-slate-950 p-4 flex flex-col items-center justify-center text-center space-y-2">
-                <Linkedin className="size-8 text-blue-500" />
-                <p className="text-xs text-slate-300 font-sans font-semibold">Watch directly on LinkedIn</p>
-                <a
-                  href={video.linkedinUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold rounded-full uppercase tracking-wider inline-flex items-center gap-1"
-                >
-                  Open Post <ExternalLink className="size-3" />
-                </a>
-              </div>
-            )}
+        {/* Duration Tag */}
+        {video.duration && (
+          <div className="absolute top-3 right-3 z-10 bg-black/75 text-white/90 px-2 py-0.5 rounded text-[10px] font-mono font-semibold backdrop-blur-sm">
+            {video.duration}
           </div>
         )}
+
+        {/* Play Button Overlay */}
+        <div className="absolute inset-0 flex items-center justify-center z-10">
+          <div className="size-14 rounded-full bg-blue-600/90 text-white flex items-center justify-center shadow-2xl group-hover:scale-110 group-hover:bg-blue-600 transition-all duration-300">
+            <Play className="size-6 fill-white text-white ml-1" />
+          </div>
+        </div>
+
+        {/* Title Overlay in Poster */}
+        <div className="absolute bottom-3 left-3 right-3 z-10">
+          <h4 className="font-display text-sm font-bold text-white line-clamp-1 group-hover:text-gold transition-colors">
+            {video.title}
+          </h4>
+        </div>
       </div>
 
       {/* Card Content & Action Bar */}
@@ -231,17 +201,11 @@ export function LinkedInVideoCard({ video, className = "", showTitle = false }: 
 
         <div className="pt-2 border-t border-border/40 flex items-center justify-between">
           <button
-            onClick={() => setIsPlaying(!isPlaying)}
+            onClick={openLinkedInPost}
             className="text-[11px] font-bold font-sans uppercase tracking-wider text-primary hover:text-gold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
           >
-            {isPlaying ? (
-              <span>Close Player</span>
-            ) : (
-              <>
-                <Play className="size-3 fill-current text-primary" />
-                <span>Play Dispatch</span>
-              </>
-            )}
+            <Play className="size-3 fill-current text-primary" />
+            <span>Play Dispatch</span>
           </button>
 
           <a
