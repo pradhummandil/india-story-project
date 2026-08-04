@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /editor
+Disallow: /login
+Disallow: /signup
+Disallow: /reset-password
+Disallow: /forgot-password
+Disallow: /verify-email
+
+# Allow API routes used for public content
+Allow: /api/sitemap
+Allow: /api/rss
+
+Sitemap: https://indiastoryproject.com/api/sitemap
+
+# Crawl-delay for polite bots
+Crawl-delay: 1

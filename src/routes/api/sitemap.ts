@@ -16,14 +16,26 @@ export const Route = createFileRoute("/api/sitemap")({
           prisma.state.findMany({ select: { slug: true } }),
         ]);
 
-        const staticPages = ["", "/explore", "/about", "/contact", "/community", "/share-story"];
+        const staticPages = [
+          { path: "", priority: "1.0", changefreq: "daily" },
+          { path: "/stories", priority: "0.9", changefreq: "daily" },
+          { path: "/explore", priority: "0.85", changefreq: "daily" },
+          { path: "/about", priority: "0.7", changefreq: "monthly" },
+          { path: "/contact", priority: "0.6", changefreq: "monthly" },
+          { path: "/community", priority: "0.75", changefreq: "weekly" },
+          { path: "/share-story", priority: "0.8", changefreq: "monthly" },
+          { path: "/careers", priority: "0.6", changefreq: "monthly" },
+          { path: "/impact", priority: "0.7", changefreq: "monthly" },
+          { path: "/media-kit", priority: "0.5", changefreq: "monthly" },
+          { path: "/authors", priority: "0.75", changefreq: "weekly" },
+        ];
 
         const urls = [
           ...staticPages.map((p) => `
   <url>
-    <loc>${origin}${p}</loc>
-    <changefreq>daily</changefreq>
-    <priority>${p === "" ? "1.0" : "0.8"}</priority>
+    <loc>${origin}${p.path}</loc>
+    <changefreq>${p.changefreq}</changefreq>
+    <priority>${p.priority}</priority>
   </url>`),
           ...themes.map((t) => `
   <url>
