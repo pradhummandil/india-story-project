@@ -85,9 +85,21 @@ export const Route = createFileRoute("/api/admin/users")({
         });
 
         try {
-          await prisma.userProfile.update({
+          const roleLabel =
+            role === "admin" || role === "superadmin"
+              ? "Admin"
+              : role === "editor"
+                ? "Editor"
+                : "Reader";
+          await (prisma as any).userProfile.upsert({
             where: { id: userId },
-            data: { role: role === "admin" || role === "superadmin" ? "Admin" : role === "editor" ? "Editor" : "Reader" },
+            update: { role: roleLabel },
+            create: {
+              id: userId,
+              email: updatedProfile.email,
+              name: updatedProfile.fullName || updatedProfile.email.split("@")[0],
+              role: roleLabel,
+            },
           });
         } catch {}
 

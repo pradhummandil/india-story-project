@@ -5,7 +5,6 @@ import {
   ShieldCheck,
   HeartHandshake,
   Award,
-  Cpu,
   Github,
   Linkedin,
   Twitter,
@@ -14,10 +13,7 @@ import {
   Users,
   MapPin,
   Feather,
-  Zap,
   Eye,
-  Code2,
-  Brain,
   Instagram,
   Mail,
 } from "lucide-react";
@@ -120,28 +116,7 @@ const processSteps = [
   },
 ];
 
-const techStack = [
-  {
-    name: "React & TanStack",
-    icon: Code2,
-    desc: "Type-safe client with high-performance routing and state management",
-  },
-  {
-    name: "Prisma & PostgreSQL",
-    icon: Cpu,
-    desc: "Relational data modeling with migration-safe schema management",
-  },
-  {
-    name: "Supabase",
-    icon: Zap,
-    desc: "Real-time auth, storage, and serverless database at the edge",
-  },
-  {
-    name: "Gemini AI",
-    icon: Brain,
-    desc: "Context-aware AI chatbot trained on India's story database",
-  },
-];
+
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -567,42 +542,6 @@ function About() {
           </div>
         </section>
 
-        {/* ─── Technology Stack ─── */}
-        <section className="py-20 border-b border-border/40 bg-card/5">
-          <div className="container mx-auto px-6 max-w-5xl">
-            <div className="text-center mb-12">
-              <span className="text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-gold">
-                Architecture
-              </span>
-              <h2 className="font-display text-2xl md:text-3xl font-bold mt-3">
-                Technology Powering the Platform
-              </h2>
-            </div>
-
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {techStack.map((tech, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.08, duration: 0.5 }}
-                  className="glass rounded-xl p-6 border border-white/5 hover:border-gold/20 group transition-all duration-300"
-                >
-                  <div className="size-10 rounded-lg bg-gold/8 border border-gold/15 flex items-center justify-center text-gold mb-4 group-hover:bg-gold/15 transition-colors">
-                    <tech.icon className="size-4.5" />
-                  </div>
-                  <h4 className="font-sans font-bold text-sm text-foreground mb-1.5">
-                    {tech.name}
-                  </h4>
-                  <p className="text-[11px] text-muted-foreground font-sans leading-relaxed">
-                    {tech.desc}
-                  </p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
 
         {/* ─── Final CTA ─── */}
         <section className="py-20">

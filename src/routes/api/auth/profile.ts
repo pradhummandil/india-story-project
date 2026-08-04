@@ -38,12 +38,22 @@ export const Route = createFileRoute("/api/auth/profile")({
             // ignore empty body
           }
 
-          // Load existing profile from database to preserve its values
-          const existingProfile = await db.profile.findUnique({
-            where: { id: user.id },
+          // Load existing profile from database to preserve its values (search by ID or Email)
+          const existingProfile = await db.profile.findFirst({
+            where: {
+              OR: [
+                { id: user.id },
+                { email: { equals: email, mode: "insensitive" } },
+              ],
+            },
           });
-          const existingUserProfile = await db.userProfile.findUnique({
-            where: { id: user.id },
+          const existingUserProfile = await db.userProfile.findFirst({
+            where: {
+              OR: [
+                { id: user.id },
+                { email: { equals: email, mode: "insensitive" } },
+              ],
+            },
           });
 
           const rawName =
@@ -82,20 +92,25 @@ export const Route = createFileRoute("/api/auth/profile")({
           const favoriteTheme = body.favoriteTheme || null;
           const favoriteState = body.favoriteState || null;
 
-          // Determine if we should set admin role
+          // Determine role — ALWAYS preserve existing assigned role (e.g. editor, admin) if set in DB!
           let roleToAssign = "user";
-          if (email.toLowerCase() === "indiastoryprojectmanager21@gmail.com") {
+          if (existingProfile?.role) {
+            roleToAssign = existingProfile.role.toLowerCase();
+          } else if (email.toLowerCase() === "indiastoryprojectmanager21@gmail.com") {
             roleToAssign = "admin";
           }
 
+          const targetId = existingProfile?.id || user.id;
+
           // Upsert profile in database
           const profile = await db.profile.upsert({
-            where: { id: user.id },
+            where: { id: targetId },
             update: {
+              id: user.id,
               email,
               fullName,
               avatarUrl,
-              ...(roleToAssign === "admin" ? { role: "admin" } : {}),
+              role: roleToAssign,
             },
             create: {
               id: user.id,

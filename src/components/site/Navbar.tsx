@@ -203,7 +203,7 @@ export function Navbar() {
                         {navText.adminCms}
                       </Link>
                     )}
-                    {role === "editor" && (
+                    {(role === "editor" || role === "admin" || role === "superadmin") && (
                       <Link
                         to="/editor"
                         preload="intent"
@@ -343,7 +343,7 @@ export function Navbar() {
                       Admin CMS
                     </Link>
                   )}
-                  {role === "editor" && (
+                  {(role === "editor" || role === "admin" || role === "superadmin") && (
                     <Link
                       to="/editor"
                       onClick={() => setOpen(false)}

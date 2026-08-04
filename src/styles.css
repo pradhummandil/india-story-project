@@ -2,7 +2,28 @@
 @source "../src";
 @import "tw-animate-css";
 
+/* ── AMS Kashi & AMS Shloka (Devanagari / Hindi) ── */
+/* Self-hosted: place font files in /public/fonts/ directory */
+@font-face {
+  font-family: "AMS Kashi";
+  src: url("/fonts/AMSKashi.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0900-097F, U+1CD0-1CFF, U+200C-200D, U+20A8, U+2212, U+A8E0-A8FB;
+}
+
+@font-face {
+  font-family: "AMS Shloka";
+  src: url("/fonts/AMSShloka.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0900-097F, U+1CD0-1CFF, U+200C-200D, U+20A8, U+2212, U+A8E0-A8FB;
+}
+
 @custom-variant dark (&:is(.dark *));
+
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -35,8 +56,11 @@
   --color-gold-foreground: var(--gold-foreground);
   --color-saffron: var(--saffron);
 
-  --font-display: "Cormorant Garamond", "Playfair Display", Georgia, serif;
-  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  /* Font stacks — AMS Kashi auto-activates for Devanagari via unicode-range */
+  --font-display: "Cormorant Garamond", "Playfair Display", "AMS Shloka", "Noto Sans Devanagari", Georgia, serif;
+  --font-sans: "Inter", "AMS Kashi", "Noto Sans Devanagari", system-ui, -apple-system, sans-serif;
+  --font-hindi: "AMS Kashi", "Noto Sans Devanagari", "Mangal", sans-serif;
+  --font-shloka: "AMS Shloka", "Noto Sans Devanagari", "Mangal", serif;
 
   --shadow-glow: 0 0 60px -10px color-mix(in oklab, var(--gold) 40%, transparent);
   --shadow-elegant: 0 30px 80px -20px oklch(0 0 0 / 0.6);
@@ -354,5 +378,57 @@
   }
   header.fixed-header.is-transparent {
     border-bottom: 1px solid rgba(255, 255, 255, 0.18) !important;
+  }
+  /* ── Hindi / Devanagari Font Utilities ── */
+
+  /* Utility class: apply AMS Kashi to specific Hindi text elements */
+  .font-hindi {
+    font-family: "AMS Kashi", "Noto Sans Devanagari", "Mangal", sans-serif;
+    font-feature-settings: "kern" 1;
+  }
+
+  /* Utility class: AMS Shloka for decorative Sanskrit / shloka / quotes */
+  .font-shloka {
+    font-family: "AMS Shloka", "Noto Sans Devanagari", "Mangal", serif;
+    font-feature-settings: "kern" 1;
+  }
+
+  /* ════════════════════════════════════════════════════
+     HINDI MODE — applied when .lang-hi class is on <html>
+     Added reactively by RootComponent via useI18nStore
+     ════════════════════════════════════════════════════ */
+
+  /* All body text, paragraphs, spans, nav, UI labels → AMS Kashi */
+  .lang-hi body,
+  .lang-hi *:not(h1):not(h2):not(h3):not(h4):not(h5):not(.font-display):not([class*="font-display"]) {
+    font-family: "AMS Kashi", "Noto Sans Devanagari", "Mangal", sans-serif;
+  }
+
+  /* Headings + display font elements → AMS Shloka */
+  .lang-hi h1,
+  .lang-hi h2,
+  .lang-hi h3,
+  .lang-hi h4,
+  .lang-hi h5,
+  .lang-hi .font-display,
+  .lang-hi [class*="font-display"] {
+    font-family: "AMS Shloka", "AMS Kashi", "Noto Sans Devanagari", serif;
+  }
+
+  /* Story article reading content → AMS Kashi with comfortable reading line-height */
+  .lang-hi article p,
+  .lang-hi article li,
+  .lang-hi .prose p,
+  .lang-hi .prose li,
+  .lang-hi .story-body {
+    font-family: "AMS Kashi", "Noto Sans Devanagari", "Mangal", sans-serif;
+    line-height: 1.85;
+    letter-spacing: 0.01em;
+  }
+
+  /* Hero headline in Hindi → AMS Shloka */
+  .lang-hi [class*="font-display"],
+  .lang-hi .text-gradient-gold {
+    font-family: "AMS Shloka", "AMS Kashi", "Noto Sans Devanagari", serif;
   }
 }

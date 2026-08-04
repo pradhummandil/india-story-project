@@ -27,8 +27,13 @@ export async function verifyUserRole(request: Request, allowedRoles: string[]) {
       return null;
     }
 
-    const profile = await prisma.profile.findUnique({
-      where: { id: user.id },
+    const profile = await prisma.profile.findFirst({
+      where: {
+        OR: [
+          { id: user.id },
+          ...(user.email ? [{ email: { equals: user.email, mode: "insensitive" as const } }] : []),
+        ],
+      },
     });
 
     if (!profile || !allowedRoles.includes(profile.role.toLowerCase())) {
@@ -43,6 +48,10 @@ export async function verifyUserRole(request: Request, allowedRoles: string[]) {
 
 export async function verifyAdmin(request: Request) {
   return verifyUserRole(request, ["admin", "superadmin"]);
+}
+
+export async function verifyEditor(request: Request) {
+  return verifyUserRole(request, ["editor", "admin", "superadmin"]);
 }
 
 export async function authenticate(request: Request) {

@@ -86,6 +86,7 @@ export function MegaMenuDrawer({ isOpen, onClose }: MegaMenuDrawerProps) {
           label: lang === "hi" ? "समुदाय और फ़ोरम" : "Grassroots Community & Forums",
           desc: lang === "hi" ? "लेखकों और पाठकों का नेटवर्क" : "Engage with chroniclers and readers",
           icon: Users,
+          hidden: true,
         },
       ],
     },
@@ -99,6 +100,7 @@ export function MegaMenuDrawer({ isOpen, onClose }: MegaMenuDrawerProps) {
           label: lang === "hi" ? "आंदोलन से जुड़ें (फ़ेलोशिप)" : "Join the Movement (Fellowships)",
           desc: lang === "hi" ? "हमारे क्षेत्रीय नेटवर्क में शामिल हों" : "Join our field chroniclers network",
           icon: HeartHandshake,
+          hidden: true,
         },
         {
           to: "/impact",
@@ -123,6 +125,7 @@ export function MegaMenuDrawer({ isOpen, onClose }: MegaMenuDrawerProps) {
           label: lang === "hi" ? "मीडिया और प्रेस किट" : "Press & Official Media Kit",
           desc: lang === "hi" ? "आधिकारिक संपत्तियां और प्रेस संपर्क" : "Logos, brand guidelines, and press assets",
           icon: Award,
+          hidden: true,
         },
       ],
     },
@@ -259,7 +262,7 @@ export function MegaMenuDrawer({ isOpen, onClose }: MegaMenuDrawerProps) {
                   </div>
 
                   <div className="grid grid-cols-1 gap-2.5">
-                    {cat.links.map((link) => (
+                    {cat.links.filter((link) => !(link as any).hidden).map((link) => (
                       <Link
                         key={link.to}
                         to={link.to}

@@ -10,6 +10,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { useI18nStore } from "../lib/i18n";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -132,7 +133,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap",
       },
     ],
   }),
@@ -198,9 +199,21 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const lang = useI18nStore((s) => s.lang);
 
   // Subscribe to stories-data updates
   useStoriesData();
+
+  // Sync language to document for CSS selectors and font switching
+  useEffect(() => {
+    const html = document.documentElement;
+    html.setAttribute("lang", lang);
+    if (lang === "hi") {
+      html.classList.add("lang-hi");
+    } else {
+      html.classList.remove("lang-hi");
+    }
+  }, [lang]);
 
   // Initialize auth listener and Service Worker
   useEffect(() => {

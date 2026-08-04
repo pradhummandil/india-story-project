@@ -64,7 +64,7 @@ export const UniversalImage = React.memo(function UniversalImage({
         decoding="async"
         onLoad={() => setLoaded(true)}
         onError={handleError}
-        className={`w-full h-full object-cover transition-opacity duration-300 ${
+        className={`w-full h-full object-cover object-top transition-opacity duration-300 ${
           loaded ? "opacity-100" : "opacity-0"
         } ${className}`}
         {...props}

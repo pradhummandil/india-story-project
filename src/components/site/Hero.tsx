@@ -183,7 +183,8 @@ export function CinematicHero({
             srcSet={getResponsiveSrcSet(slide.image, [640, 1024, 1920])}
             sizes="100vw"
             alt={title}
-            className="w-full h-full object-cover filter saturate-[0.88] brightness-[0.72]"
+            className="w-full h-full object-cover"
+            style={{ objectPosition: "center 20%" }}
             loading="eager"
             fetchPriority="high"
             decoding="sync"

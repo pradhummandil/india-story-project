@@ -87,7 +87,7 @@ export function SearchResultCard({ story, query, index = 0 }: Props) {
       <Link
         to="/stories/$slug"
         params={{ slug: story.slug }}
-        className="block w-full sm:w-48 md:w-56 shrink-0 aspect-[16/10] sm:aspect-auto overflow-hidden bg-muted border-b sm:border-b-0 sm:border-r border-border/40"
+        className="block w-full sm:w-48 md:w-56 shrink-0 aspect-[4/3] sm:aspect-auto sm:h-44 md:h-48 overflow-hidden bg-[#1a1a1a] border-b sm:border-b-0 sm:border-r border-border/40 relative"
         aria-label={`Read ${title}`}
         tabIndex={-1}
       >
@@ -97,11 +97,11 @@ export function SearchResultCard({ story, query, index = 0 }: Props) {
             alt={story.imageCaption ?? title}
             loading="lazy"
             decoding="async"
-            className="w-full h-full object-cover filter saturate-[0.85] group-hover:scale-105 transition-transform duration-700"
+            className="w-full h-full object-contain filter saturate-[0.85] group-hover:scale-[1.02] transition-transform duration-700"
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-amber-950/40 to-stone-900 flex items-center justify-center">
-            <span className="font-display italic text-xl text-gold/25">ISP</span>
+            <img src="/Logo-ISP.jpg" alt="ISP" className="w-20 h-20 object-contain opacity-60" />
           </div>
         )}
       </Link>
