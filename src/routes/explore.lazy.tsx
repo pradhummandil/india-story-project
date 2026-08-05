@@ -26,7 +26,7 @@ import {
 import { useState, useMemo, useEffect } from "react";
 import { SiteLayout } from "@/components/site/Layout";
 import { StoryCard } from "@/components/site/StoryCard";
-import { useI18nStore, translateStory, uiText, translateStateName } from "@/lib/i18n";
+import { useI18nStore, translateStory, uiText, translateStateName, translateThemeName } from "@/lib/i18n";
 import { useAuthStore } from "@/lib/auth-store";
 import { getInitialExploreData } from "@/lib/explore-initial-data";
 import { Input } from "@/components/ui/input";
@@ -770,13 +770,14 @@ function RouteComponent() {
                     <div className="flex items-center gap-2">
                       <Filter className="size-4.5 text-gold" />
                       <h2 className="font-display text-lg sm:text-xl font-bold text-foreground">
-                        Explore by Theme
+                        {lang === "hi" ? "विषय अनुसार खोजें" : "Explore by Theme"}
                       </h2>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
                       {exploreData?.themes?.map((t: any) => {
                         const emoji = THEME_EMOJIS[t.name.toLowerCase()] || "✨";
                         const gradient = THEME_GRADIENTS[t.name.toLowerCase()] || "from-neutral-900 to-neutral-950";
+                        const displayThemeName = translateThemeName(t.name, lang);
                         return (
                            <div
                              key={t.id || t.slug || t.name}
@@ -785,9 +786,11 @@ function RouteComponent() {
                            >
                              <span className="text-3xl">{emoji}</span>
                              <span className="font-sans font-bold text-xs text-white leading-tight mt-1">
-                               {t.name}
+                               {displayThemeName}
                              </span>
-                             <span className="text-[10px] text-neutral-300 font-sans font-semibold">{t.count} stories</span>
+                             <span className="text-[10px] text-neutral-300 font-sans font-semibold">
+                               {t.count} {lang === "hi" ? "कहानियाँ" : "stories"}
+                             </span>
                            </div>
                         );
                       })}
@@ -800,39 +803,43 @@ function RouteComponent() {
                       <div className="flex items-center gap-2">
                         <Award className="size-4.5 text-gold" />
                         <h2 className="font-display text-lg sm:text-xl font-bold text-foreground">
-                          Featured Collections
+                          {lang === "hi" ? "विशेष संग्रह" : "Featured Collections"}
                         </h2>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
-                        {exploreData?.collections?.map((item: any) => (
-                          <div
-                            key={item.slug || item.id || item.name || item.title}
-                            onClick={() => handleCollectionSelect(item.slug || item.id)}
-                            className="group relative rounded-2xl border border-border overflow-hidden aspect-[4/3] cursor-pointer hover:border-gold/50 shadow-sm transition-all duration-500"
-                          >
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent z-10" />
-                            {item.image ? (
-                              <img
-                                src={item.image}
-                                alt={item.name || item.title}
-                                className="w-full h-full object-cover absolute inset-0 group-hover:scale-105 transition-transform duration-700"
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-gradient-to-br from-amber-950/20 to-stone-900 absolute inset-0" />
-                            )}
-                            <div className="absolute bottom-4 left-4 right-4 z-20 space-y-1">
-                              <h3 className="font-display font-bold text-sm sm:text-base text-white tracking-wide group-hover:text-gold transition-colors line-clamp-1">
-                                {item.name || item.title}
-                              </h3>
-                              <p className="text-[10px] text-white/80 font-sans line-clamp-2 leading-tight">
-                                {item.description || item.desc}
-                              </p>
-                              <div className="text-[9px] text-gold font-sans flex items-center gap-1.5 uppercase font-bold tracking-wider pt-1.5">
-                                Browse Collection <ChevronRight className="size-3" />
+                        {exploreData?.collections?.map((item: any) => {
+                          const title = lang === "hi" && item.titleHi ? item.titleHi : (item.name || item.title);
+                          const desc = lang === "hi" && item.descriptionHi ? item.descriptionHi : (item.description || item.desc);
+                          return (
+                            <div
+                              key={item.slug || item.id || item.name || item.title}
+                              onClick={() => handleCollectionSelect(item.slug || item.id)}
+                              className="group relative rounded-2xl border border-border overflow-hidden aspect-[4/3] cursor-pointer hover:border-gold/50 shadow-sm transition-all duration-500"
+                            >
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent z-10" />
+                              {item.image ? (
+                                <img
+                                  src={item.image}
+                                  alt={title}
+                                  className="w-full h-full object-cover absolute inset-0 group-hover:scale-105 transition-transform duration-700"
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-gradient-to-br from-amber-950/20 to-stone-900 absolute inset-0" />
+                              )}
+                              <div className="absolute bottom-4 left-4 right-4 z-20 space-y-1">
+                                <h3 className="font-display font-bold text-sm sm:text-base text-white tracking-wide group-hover:text-gold transition-colors line-clamp-1">
+                                  {title}
+                                </h3>
+                                <p className="text-[10px] text-white/80 font-sans line-clamp-2 leading-tight">
+                                  {desc}
+                                </p>
+                                <div className="text-[9px] text-gold font-sans flex items-center gap-1.5 uppercase font-bold tracking-wider pt-1.5">
+                                  {lang === "hi" ? "संग्रह देखें" : "Browse Collection"} <ChevronRight className="size-3" />
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </section>
                   )}
@@ -844,11 +851,11 @@ function RouteComponent() {
                         <div className="flex items-center gap-2">
                           <Calendar className="size-5 text-gold" />
                           <h2 className="font-display text-xl font-bold text-foreground">
-                            Historical Era Timeline
+                            {lang === "hi" ? "ऐतिहासिक कालक्रम" : "Historical Era Timeline"}
                           </h2>
                         </div>
                         <span className="text-[10px] uppercase font-sans tracking-widest text-muted-foreground font-bold">
-                          Chronicles of India
+                          {lang === "hi" ? "भारत के इतिहास की झलक" : "Chronicles of India"}
                         </span>
                       </div>
 
@@ -861,6 +868,7 @@ function RouteComponent() {
                         />
                         {exploreData.historicalTimeline.map((item: any, idx: number) => {
                           const isActive = activeTimelineEra === idx;
+                          const eraLabel = lang === "hi" && item.eraHi ? item.eraHi : item.era;
                           return (
                             <button
                               key={item.era}
@@ -881,7 +889,7 @@ function RouteComponent() {
                                   isActive ? "text-primary font-bold" : "text-muted-foreground group-hover:text-foreground"
                                 }`}
                               >
-                                {item.era}
+                                {eraLabel}
                               </span>
                             </button>
                           );
@@ -900,37 +908,42 @@ function RouteComponent() {
                             className="space-y-4"
                           >
                             <p className="text-xs text-muted-foreground font-sans max-w-lg italic">
-                              {exploreData.historicalTimeline[activeTimelineEra]?.desc}
+                              {lang === "hi" && exploreData.historicalTimeline[activeTimelineEra]?.descHi
+                                ? exploreData.historicalTimeline[activeTimelineEra].descHi
+                                : exploreData.historicalTimeline[activeTimelineEra]?.desc}
                             </p>
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                              {exploreData.historicalTimeline[activeTimelineEra]?.stories?.map((story: any) => (
-                                <Link
-                                  key={story.id}
-                                  to="/stories/$slug"
-                                  params={{ slug: story.slug }}
-                                  className="group bg-background border border-border hover:border-gold/40 rounded-2xl overflow-hidden shadow-sm transition-all duration-300 flex flex-col"
-                                >
-                                  <div className="aspect-[16/10] overflow-hidden bg-muted">
-                                    {story.image ? (
-                                      <img
-                                        src={story.image}
-                                        alt={story.title}
-                                        className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
-                                      />
-                                    ) : (
-                                      <div className="w-full h-full bg-gradient-to-br from-amber-950/20 to-stone-900" />
-                                    )}
-                                  </div>
-                                  <div className="p-4 flex-1 flex flex-col justify-between space-y-2">
-                                    <h3 className="font-display font-bold text-xs text-foreground group-hover:text-primary line-clamp-2 leading-snug transition-colors">
-                                      {story.title}
-                                    </h3>
-                                    <span className="text-[9px] uppercase font-bold tracking-wider text-primary font-sans block">
-                                      {story.region}
-                                    </span>
-                                  </div>
-                                </Link>
-                              ))}
+                              {exploreData.historicalTimeline[activeTimelineEra]?.stories?.map((story: any) => {
+                                const localized = translateStory(story, lang);
+                                return (
+                                  <Link
+                                    key={story.id}
+                                    to="/stories/$slug"
+                                    params={{ slug: story.slug }}
+                                    className="group bg-background border border-border hover:border-gold/40 rounded-2xl overflow-hidden shadow-sm transition-all duration-300 flex flex-col"
+                                  >
+                                    <div className="aspect-[16/10] overflow-hidden bg-muted">
+                                      {story.image ? (
+                                        <img
+                                          src={story.image}
+                                          alt={localized.title}
+                                          className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
+                                        />
+                                      ) : (
+                                        <div className="w-full h-full bg-gradient-to-br from-amber-950/20 to-stone-900" />
+                                      )}
+                                    </div>
+                                    <div className="p-4 flex-1 flex flex-col justify-between space-y-2">
+                                      <h3 className="font-display font-bold text-xs text-foreground group-hover:text-primary line-clamp-2 leading-snug transition-colors">
+                                        {localized.title}
+                                      </h3>
+                                      <span className="text-[9px] uppercase font-bold tracking-wider text-primary font-sans block">
+                                        {localized.region}
+                                      </span>
+                                    </div>
+                                  </Link>
+                                );
+                              })}
                             </div>
                           </motion.div>
                         </AnimatePresence>
@@ -944,55 +957,59 @@ function RouteComponent() {
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-4">
                         <div className="space-y-1">
                           <span className="text-[9px] uppercase tracking-widest text-primary bg-primary/10 px-2.5 py-0.5 rounded border border-primary/20 font-sans font-bold">
-                            Community Writing Streak
+                            {lang === "hi" ? "सामुदायिक लेखन अभियान" : "Community Writing Streak"}
                           </span>
                           <h2 className="font-display text-xl font-bold text-foreground flex items-center gap-2">
                             <Flame className="size-5 text-gold animate-pulse" />
-                            Active Story Challenges
+                            {lang === "hi" ? "सक्रिय कहानी चुनौतियाँ" : "Active Story Challenges"}
                           </h2>
                         </div>
                         <span className="text-xs text-muted-foreground font-sans">
-                          Join, contribute, and win badges
+                          {lang === "hi" ? "शामिल हों, योगदान दें और बैज जीतें" : "Join, contribute, and win badges"}
                         </span>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {exploreData.challenges.map((challenge: any) => (
-                          <div
-                            key={challenge.id}
-                            className="bg-background border border-border rounded-2xl p-6 flex flex-col justify-between gap-4 hover:border-gold/40 transition-all duration-300"
-                          >
-                            <div className="space-y-2">
-                              <h3 className="font-display font-bold text-base text-foreground">
-                                {challenge.title}
-                              </h3>
-                              <p className="text-xs text-muted-foreground font-sans leading-relaxed">
-                                {challenge.description}
-                              </p>
-                              <div className="text-[10px] text-muted-foreground font-sans space-y-1 pt-1.5">
-                                {challenge.prize && <div><span className="font-semibold text-primary">Prize:</span> {challenge.prize}</div>}
-                                {challenge.rules && <div><span className="font-semibold text-primary">Rules:</span> {challenge.rules}</div>}
-                                {challenge.endAt && (
-                                  <div>
-                                    <span className="font-semibold text-primary">Ends:</span>{" "}
-                                    {!isNaN(new Date(challenge.endAt).getTime())
-                                      ? new Date(challenge.endAt).toLocaleDateString()
-                                      : "Ongoing"}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-
-                            <Button
-                              asChild
-                              className="w-full bg-primary hover:bg-primary/95 text-primary-foreground font-sans uppercase tracking-widest text-xs h-10 rounded-xl"
+                        {exploreData.challenges.map((challenge: any) => {
+                          const title = lang === "hi" && challenge.titleHi ? challenge.titleHi : challenge.title;
+                          const desc = lang === "hi" && challenge.descriptionHi ? challenge.descriptionHi : challenge.description;
+                          return (
+                            <div
+                              key={challenge.id}
+                              className="bg-background border border-border rounded-2xl p-6 flex flex-col justify-between gap-4 hover:border-gold/40 transition-all duration-300"
                             >
-                              <Link to="/share-story" search={{ challenge: challenge.slug }}>
-                                Submit Your Entry
-                              </Link>
-                            </Button>
-                          </div>
-                        ))}
+                              <div className="space-y-2">
+                                <h3 className="font-display font-bold text-base text-foreground">
+                                  {title}
+                                </h3>
+                                <p className="text-xs text-muted-foreground font-sans leading-relaxed">
+                                  {desc}
+                                </p>
+                                <div className="text-[10px] text-muted-foreground font-sans space-y-1 pt-1.5">
+                                  {challenge.prize && <div><span className="font-semibold text-primary">{lang === "hi" ? "पुरस्कार:" : "Prize:"}</span> {challenge.prize}</div>}
+                                  {challenge.rules && <div><span className="font-semibold text-primary">{lang === "hi" ? "नियम:" : "Rules:"}</span> {challenge.rules}</div>}
+                                  {challenge.endAt && (
+                                    <div>
+                                      <span className="font-semibold text-primary">{lang === "hi" ? "समाप्ति:" : "Ends:"}</span>{" "}
+                                      {!isNaN(new Date(challenge.endAt).getTime())
+                                        ? new Date(challenge.endAt).toLocaleDateString()
+                                        : (lang === "hi" ? "जारी है" : "Ongoing")}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              <Button
+                                asChild
+                                className="w-full bg-primary hover:bg-primary/95 text-primary-foreground font-sans uppercase tracking-widest text-xs h-10 rounded-xl"
+                              >
+                                <Link to="/share-story" search={{ challenge: challenge.slug }}>
+                                  {lang === "hi" ? "अपनी प्रविष्टि जमा करें" : "Submit Your Entry"}
+                                </Link>
+                              </Button>
+                            </div>
+                          );
+                        })}
                       </div>
                     </section>
                   )}
@@ -1004,11 +1021,11 @@ function RouteComponent() {
                         <div className="flex items-center gap-2">
                           <Sparkles className="size-4.5 text-gold" />
                           <h2 className="font-display text-lg sm:text-xl font-bold text-foreground">
-                            Festival Calendar & Celebrations
+                            {lang === "hi" ? "त्योहार कैलेंडर और उत्सव" : "Festival Calendar & Celebrations"}
                           </h2>
                         </div>
                         <span className="text-[10px] uppercase font-sans tracking-widest text-muted-foreground font-bold">
-                          Spiritual Harmony
+                          {lang === "hi" ? "आध्यात्मिक सद्भाव" : "Spiritual Harmony"}
                         </span>
                       </div>
                       <div className="flex gap-5 overflow-x-auto pb-4 scrollbar-thin snap-x snap-mandatory">
@@ -1032,7 +1049,7 @@ function RouteComponent() {
                                   <div className="w-full h-full bg-gradient-to-br from-amber-950/20 to-stone-900" />
                                 )}
                                 <span className="absolute top-2.5 left-2.5 bg-primary text-primary-foreground text-[9px] uppercase font-bold tracking-widest px-2.5 py-1 font-sans rounded shadow-md">
-                                  Festival Special
+                                  {lang === "hi" ? "त्योहार विशेष" : "Festival Special"}
                                 </span>
                               </div>
                               <div className="p-4 space-y-1.5">
@@ -1057,58 +1074,67 @@ function RouteComponent() {
                         <div className="flex items-center gap-2">
                           <Compass className="size-4.5 text-gold" />
                           <h2 className="font-display text-lg sm:text-xl font-bold text-foreground">
-                            Scenic Travel Routes & Trails
+                            {lang === "hi" ? "मनोरम यात्रा मार्ग और ट्रेल्स" : "Scenic Travel Routes & Trails"}
                           </h2>
                         </div>
                         <span className="text-[10px] uppercase font-sans tracking-widest text-muted-foreground font-bold">
-                          Road-trip routes
+                          {lang === "hi" ? "यात्रा मार्ग" : "Road-trip routes"}
                         </span>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {exploreData?.travelRoutes?.map((route: any) => (
-                          <div
-                            key={route.name || route.title || route.id}
-                            className="bg-card border border-border rounded-2xl p-6 space-y-4 shadow-sm hover:border-gold/40 transition-all duration-300 flex flex-col justify-between"
-                          >
-                            <div className="space-y-2">
-                              <h3 className="font-display font-bold text-base text-foreground hover:text-primary transition-colors">
-                                {route.name || route.title}
-                              </h3>
-                              <p className="text-xs text-muted-foreground font-sans leading-relaxed">
-                                {route.desc || route.description}
-                              </p>
-                              {/* State flow dots */}
-                              {route.states && route.states.length > 0 && (
-                                <div className="flex items-center gap-2 pt-2 text-[9px] font-sans font-bold text-primary tracking-widest uppercase">
-                                  {route.states.map((st: string, idx: number) => (
-                                    <span key={st} className="flex items-center gap-2">
-                                      {st}
-                                      {idx < route.states.length - 1 && <span className="text-gold font-bold">→</span>}
-                                    </span>
-                                  ))}
+                        {exploreData?.travelRoutes?.map((route: any) => {
+                          const title = lang === "hi" && route.titleHi ? route.titleHi : (route.name || route.title);
+                          const desc = lang === "hi" && route.descHi ? route.descHi : (route.desc || route.description);
+                          return (
+                            <div
+                              key={route.name || route.title || route.id}
+                              className="bg-card border border-border rounded-2xl p-6 space-y-4 shadow-sm hover:border-gold/40 transition-all duration-300 flex flex-col justify-between"
+                            >
+                              <div className="space-y-2">
+                                <h3 className="font-display font-bold text-base text-foreground hover:text-primary transition-colors">
+                                  {title}
+                                </h3>
+                                <p className="text-xs text-muted-foreground font-sans leading-relaxed">
+                                  {desc}
+                                </p>
+                                {/* State flow dots */}
+                                {route.states && route.states.length > 0 && (
+                                  <div className="flex items-center gap-2 pt-2 text-[9px] font-sans font-bold text-primary tracking-widest uppercase">
+                                    {route.states.map((st: string, idx: number) => (
+                                      <span key={st} className="flex items-center gap-2">
+                                        {translateStateName(st, lang)}
+                                        {idx < route.states.length - 1 && <span className="text-gold font-bold">→</span>}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Stories list under the trail */}
+                              {route.stories && route.stories.length > 0 && (
+                                <div className="space-y-2 pt-2 border-t border-border/40">
+                                  <span className="text-[9px] uppercase tracking-wider font-sans font-semibold text-muted-foreground">
+                                    {lang === "hi" ? "इस मार्ग पर कहानियाँ:" : "Stories on this route:"}
+                                  </span>
+                                  {route.stories.map((story: any) => {
+                                    const localized = translateStory(story, lang);
+                                    return (
+                                      <Link
+                                        key={story.id}
+                                        to="/stories/$slug"
+                                        params={{ slug: story.slug }}
+                                        className="flex items-center justify-between text-xs text-foreground hover:text-primary transition-colors py-0.5 group/link"
+                                      >
+                                        <span className="truncate max-w-[85%]">{localized.title}</span>
+                                        <ChevronRight className="size-3 text-gold opacity-0 group-hover/link:opacity-100 transition-opacity" />
+                                      </Link>
+                                    );
+                                  })}
                                 </div>
                               )}
                             </div>
-
-                            {/* Stories list under the trail */}
-                            {route.stories && route.stories.length > 0 && (
-                              <div className="space-y-2 pt-2 border-t border-border/40">
-                                <span className="text-[9px] uppercase tracking-wider font-sans font-semibold text-muted-foreground">Stories on this route:</span>
-                                {route.stories.map((story: any) => (
-                                  <Link
-                                    key={story.id}
-                                    to="/stories/$slug"
-                                    params={{ slug: story.slug }}
-                                    className="flex items-center justify-between text-xs text-foreground hover:text-primary transition-colors py-0.5 group/link"
-                                  >
-                                    <span className="truncate max-w-[85%]">{story.title}</span>
-                                    <ChevronRight className="size-3 text-gold opacity-0 group-hover/link:opacity-100 transition-opacity" />
-                                  </Link>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </section>
                   )}
@@ -1119,7 +1145,7 @@ function RouteComponent() {
                       <div className="flex items-center gap-2">
                         <User className="size-4.5 text-gold" />
                         <h2 className="font-display text-lg sm:text-xl font-bold text-foreground">
-                          Contributor Spotlight
+                          {lang === "hi" ? "योगदानकर्ता स्पॉटलाइट" : "Contributor Spotlight"}
                         </h2>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
@@ -1146,11 +1172,11 @@ function RouteComponent() {
                                 {author.name}
                               </h3>
                               <p className="text-[10px] text-muted-foreground font-sans line-clamp-2">
-                                {author.bio || "Storyteller of India's cultural roots."}
+                                {author.bio || (lang === "hi" ? "भारत की सांस्कृतिक जड़ों के कहानीकार।" : "Storyteller of India's cultural roots.")}
                               </p>
                               <div className="text-[9px] text-primary font-sans font-bold flex items-center gap-1 pt-1 uppercase">
                                 <BookOpen className="size-3 text-primary" />
-                                {author.count} published {author.count === 1 ? "story" : "stories"}
+                                {author.count} {lang === "hi" ? "प्रकाशित कहानी" : (author.count === 1 ? "published story" : "published stories")}
                               </div>
                             </div>
                           </div>
@@ -1166,11 +1192,11 @@ function RouteComponent() {
                         <div className="flex items-center gap-2">
                           <Award className="size-4.5 text-gold" />
                           <h2 className="font-display text-lg sm:text-xl font-bold text-foreground">
-                            Most Loved Stories
+                            {lang === "hi" ? "सर्वाधिक पसंदीदा कहानियाँ" : "Most Loved Stories"}
                           </h2>
                         </div>
                         <span className="text-[10px] uppercase font-sans tracking-widest text-muted-foreground font-bold">
-                          Top reader ratings
+                          {lang === "hi" ? "पाठकों की पहली पसंद" : "Top reader ratings"}
                         </span>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -1199,8 +1225,8 @@ function RouteComponent() {
                                   {localized.title}
                                 </h3>
                                 <div className="flex items-center justify-between text-[9px] text-muted-foreground font-sans">
-                                  <span>By {story.authorName || "ISP"}</span>
-                                  <span className="text-primary font-bold">❤️ {story.likesCount} likes</span>
+                                  <span>{lang === "hi" ? "लेखक:" : "By"} {story.authorName || "ISP"}</span>
+                                  <span className="text-primary font-bold">❤️ {story.likesCount} {lang === "hi" ? "पसंद" : "likes"}</span>
                                 </div>
                               </div>
                             </Link>

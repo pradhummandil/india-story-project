@@ -6,6 +6,7 @@ import { useRef, useEffect, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import { BookOpen, MapPin, Users, Globe2, TrendingUp, Feather } from "lucide-react";
 import { useI18nStore } from "@/lib/i18n";
+import { RevealHeading } from "@/components/common/RevealHeading";
 
 type LucideIcon = React.FC<{ className?: string }>;
 
@@ -190,9 +191,13 @@ export function ImpactNumbers() {
           <p className="text-xs uppercase tracking-[0.28em] font-sans font-bold text-gold mb-3">
             {lang === "en" ? "Our Impact" : "हमारा प्रभाव"}
           </p>
-          <h2 className="font-display text-3xl md:text-5xl font-bold">
+          <RevealHeading
+            as="h2"
+            className="font-display text-3xl md:text-5xl font-bold"
+            delay={0.1}
+          >
             {lang === "en" ? "India's Story, in Numbers" : "भारत की कहानी, संख्याओं में"}
-          </h2>
+          </RevealHeading>
           <p className="mt-4 text-sm text-muted-foreground max-w-xl mx-auto font-sans leading-relaxed">
             {lang === "en"
               ? "Every number represents a story that changed how we see India."

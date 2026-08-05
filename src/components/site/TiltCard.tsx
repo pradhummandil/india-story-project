@@ -1,17 +1,36 @@
 import { useRef, type ReactNode, type MouseEvent } from "react";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import {
+  motion,
+  useMotionValue,
+  useSpring,
+  useTransform,
+  useMotionTemplate,
+} from "framer-motion";
 
 interface TiltCardProps {
   children: ReactNode;
   className?: string;
+  /** Degrees of tilt at card edge. Keep 6–8 for cards, 4–5 for hero images. */
   intensity?: number;
+  /** Disable tilt entirely (e.g. on touch/coarse-pointer devices) */
+  disabled?: boolean;
 }
 
 /**
- * Subtle 3D tilt on hover with a moving glass reflection highlight.
- * Disabled gracefully on touch (no hover events fire).
+ * Subtle 3D tilt on hover with a reactive glass-shimmer highlight.
+ *
+ * Fixed: the shine position now uses useMotionTemplate so it updates
+ * reactively with the motion values — previously shineX.get() was a
+ * static snapshot captured at render time.
+ *
+ * Disabled gracefully on touch devices (no hover events fire anyway).
  */
-export function TiltCard({ children, className = "", intensity = 8 }: TiltCardProps) {
+export function TiltCard({
+  children,
+  className = "",
+  intensity = 8,
+  disabled = false,
+}: TiltCardProps) {
   const ref = useRef<HTMLDivElement>(null);
   const rx = useMotionValue(0);
   const ry = useMotionValue(0);
@@ -21,10 +40,11 @@ export function TiltCard({ children, className = "", intensity = 8 }: TiltCardPr
   const srx = useSpring(rx, { stiffness: 200, damping: 20 });
   const sry = useSpring(ry, { stiffness: 200, damping: 20 });
 
-  const shineX = useTransform(mx, (v) => `${v}%`);
-  const shineY = useTransform(my, (v) => `${v}%`);
+  // Reactive gradient string — updates on every frame when mouse moves
+  const shineGradient = useMotionTemplate`radial-gradient(220px circle at ${mx}% ${my}%, rgba(200,169,106,0.18), transparent 60%)`;
 
   const onMove = (e: MouseEvent<HTMLDivElement>) => {
+    if (disabled) return;
     const el = ref.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
@@ -48,17 +68,22 @@ export function TiltCard({ children, className = "", intensity = 8 }: TiltCardPr
       ref={ref}
       onMouseMove={onMove}
       onMouseLeave={onLeave}
-      style={{ rotateX: srx, rotateY: sry, transformStyle: "preserve-3d" }}
-      className={`relative [perspective:1200px] ${className}`}
+      style={
+        disabled
+          ? {}
+          : { rotateX: srx, rotateY: sry, transformStyle: "preserve-3d" }
+      }
+      className={`relative ${disabled ? "" : "[perspective:1200px]"} ${className}`}
     >
       {children}
-      <motion.div
-        aria-hidden
-        style={{
-          background: `radial-gradient(220px circle at ${shineX.get()} ${shineY.get()}, color-mix(in oklab, var(--gold) 18%, transparent), transparent 60%)`,
-        }}
-        className="pointer-events-none absolute inset-0 rounded-[inherit] opacity-0 transition-opacity duration-300 group-hover:opacity-100 mix-blend-screen"
-      />
+      {/* Reactive glass shimmer — only visible on hover via CSS group */}
+      {!disabled && (
+        <motion.div
+          aria-hidden
+          style={{ background: shineGradient }}
+          className="pointer-events-none absolute inset-0 rounded-[inherit] opacity-0 group-hover:opacity-100 transition-opacity duration-300 mix-blend-screen"
+        />
+      )}
     </motion.div>
   );
 }

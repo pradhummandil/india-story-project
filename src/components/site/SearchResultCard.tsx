@@ -96,7 +96,7 @@ export function SearchResultCard({ story, query, index = 0 }: Props) {
       <Link
         to="/stories/$slug"
         params={{ slug: story.slug }}
-        className="block w-full sm:w-48 md:w-56 shrink-0 aspect-[4/3] sm:aspect-auto sm:h-44 md:h-48 overflow-hidden bg-[#1a1a1a] border-b sm:border-b-0 sm:border-r border-border/40 relative"
+        className="block w-full sm:w-64 md:w-72 lg:w-80 shrink-0 aspect-[16/10] overflow-hidden bg-[#1a1a1a] border-b sm:border-b-0 sm:border-r border-border/40 relative"
         aria-label={`Read ${title}`}
         tabIndex={-1}
       >
@@ -104,8 +104,9 @@ export function SearchResultCard({ story, query, index = 0 }: Props) {
           <UniversalImage
             src={imageUrl}
             alt={story.imageCaption ?? title}
-            width={400}
-            aspectRatio="w-full h-full"
+            width={600}
+            aspectRatio="aspect-[16/10]"
+            objectFit="cover"
             className="group-hover:scale-105 transition-transform duration-300"
           />
         ) : null}

@@ -361,14 +361,15 @@ function About() {
           <div className="container mx-auto px-6 max-w-5xl">
             <div className="text-center mb-16">
               <span className="text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-gold">
-                Our Process
+                {lang === "hi" ? "हमारी प्रक्रिया" : "Our Process"}
               </span>
               <h2 className="font-display text-3xl md:text-5xl font-bold mt-3 leading-tight">
-                Story Selection Process
+                {lang === "hi" ? "कहानी चयन प्रक्रिया" : "Story Selection Process"}
               </h2>
               <p className="mt-4 text-muted-foreground font-sans max-w-xl mx-auto text-sm">
-                Every story goes through a transparent, rigorous editorial pipeline before reaching
-                our readers.
+                {lang === "hi"
+                  ? "प्रत्येक कहानी हमारे पाठकों तक पहुँचने से पहले एक पारदर्शी, कठोर संपादकीय प्रक्रिया से होकर गुजरती है।"
+                  : "Every story goes through a transparent, rigorous editorial pipeline before reaching our readers."}
               </p>
             </div>
 
@@ -377,7 +378,36 @@ function About() {
               <div className="hidden lg:block absolute top-8 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
 
               <div className="grid sm:grid-cols-3 lg:grid-cols-5 gap-6">
-                {processSteps.map((step, i) => (
+                {(lang === "hi"
+                  ? [
+                      {
+                        num: "01",
+                        title: "प्रविष्टि जमा",
+                        desc: "योगदानकर्ता छवियों, संदर्भ और स्रोत लिंक के साथ हमारे सुरक्षित पोर्टल के माध्यम से कहानियां प्रस्तुत करते हैं।",
+                      },
+                      {
+                        num: "02",
+                        title: "संपादकीय समीक्षा",
+                        desc: "हमारे संपादक कहानी के प्रभाव, मौलिकता और सामुदायिक प्रासंगिकता का आकलन करते हैं।",
+                      },
+                      {
+                        num: "03",
+                        title: "तथ्य सत्यापन",
+                        desc: "स्वतंत्र तथ्य-जांचकर्ता प्राथमिक डेटा का उपयोग करके लोगों, स्थानों और दावों की पुष्टि करते हैं।",
+                      },
+                      {
+                        num: "04",
+                        title: "कहानी का चयन",
+                        desc: "हमारे संपादकीय मानकों को पूरा करने वाली कहानियों को प्रकाशन हेतु चुना जाता है।",
+                      },
+                      {
+                        num: "05",
+                        title: "प्रकाशन",
+                        desc: "स्वीकृत कहानियां पूर्ण लेखक श्रेय, छवियों और एसईओ अनुकूलन के साथ प्रकाशित की जाती हैं।",
+                      },
+                    ]
+                  : processSteps
+                ).map((step, i) => (
                   <motion.div
                     key={i}
                     initial={{ opacity: 0, y: 20 }}
@@ -405,143 +435,149 @@ function About() {
           <div className="container mx-auto px-6 max-w-6xl">
             <div className="text-center mb-16">
               <span className="text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-gold">
-                Team India Story Project
+                {lang === "hi" ? "टीम इंडिया स्टोरी प्रोजेक्ट" : "Team India Story Project"}
               </span>
               <h2 className="font-display text-3xl md:text-5xl font-bold mt-3 leading-tight">
-                Team India Story Project
+                {lang === "hi" ? "टीम इंडिया स्टोरी प्रोजेक्ट" : "Team India Story Project"}
               </h2>
               <p className="mt-4 text-muted-foreground font-sans max-w-xl mx-auto text-sm">
-                The people preserving India's stories through technology, culture, research and design.
+                {lang === "hi"
+                  ? "प्रौद्योगिकी, संस्कृति, अनुसंधान और डिजाइन के माध्यम से भारत की कहानियों को सहेजने वाले लोग।"
+                  : "The people preserving India's stories through technology, culture, research and design."}
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {teamMembers.map((member, i) => (
-                <motion.div
-                  key={member.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                  className="group relative overflow-hidden rounded-2xl border border-border/30 bg-card/10 hover:border-gold/30 hover:bg-card/25 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col items-center p-6 text-center"
-                >
-                  {/* Circular Avatar / Placeholder */}
-                  <div className="relative mb-6">
-                    <div className="size-28 rounded-full overflow-hidden border border-gold/20 flex items-center justify-center bg-gradient-to-br from-gold/15 to-saffron/10 relative shadow-inner group-hover:scale-105 transition-transform duration-500">
-                      {member.photo ? (
-                        <img
-                          src={member.photo}
-                          alt={member.name}
-                          loading="lazy"
-                          className="size-full object-cover"
-                        />
-                      ) : (
-                        <span className="font-display text-2xl md:text-3xl font-black text-gradient-gold tracking-wider select-none">
-                          {member.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")
-                            .substring(0, 2)
-                            .toUpperCase()}
-                        </span>
+              {teamMembers.map((member, i) => {
+                const displayRole = lang === "hi" && member.roleHi ? member.roleHi : member.role;
+                const displayBio = lang === "hi" && member.bioHi ? member.bioHi : member.bio;
+                return (
+                  <motion.div
+                    key={member.id}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                    className="group relative overflow-hidden rounded-2xl border border-border/30 bg-card/10 hover:border-gold/30 hover:bg-card/25 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col items-center p-6 text-center"
+                  >
+                    {/* Circular Avatar / Placeholder */}
+                    <div className="relative mb-6">
+                      <div className="size-28 rounded-full overflow-hidden border border-gold/20 flex items-center justify-center bg-gradient-to-br from-gold/15 to-saffron/10 relative shadow-inner group-hover:scale-105 transition-transform duration-500">
+                        {member.photo ? (
+                          <img
+                            src={member.photo}
+                            alt={member.name}
+                            loading="lazy"
+                            className="size-full object-cover"
+                          />
+                        ) : (
+                          <span className="font-display text-2xl md:text-3xl font-black text-gradient-gold tracking-wider select-none">
+                            {member.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")
+                              .substring(0, 2)
+                              .toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Name & Role */}
+                    <h3 className="font-display text-lg font-bold text-foreground group-hover:text-primary transition-colors duration-300">
+                      {member.name}
+                    </h3>
+                    <p className="text-xs uppercase tracking-wider font-sans font-bold text-gold mt-1.5 mb-3">
+                      {displayRole}
+                    </p>
+
+                    {/* Bio */}
+                    <p className="text-xs text-muted-foreground font-sans leading-relaxed flex-1 mb-4">
+                      {displayBio}
+                    </p>
+
+                    {/* Location if available */}
+                    {member.location && (
+                      <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground/60 font-sans mb-5 flex items-center gap-1">
+                        <MapPin className="size-3 text-gold/60" />
+                        {member.location}
+                      </p>
+                    )}
+
+                    {/* Social Links */}
+                    <div className="flex flex-wrap items-center justify-center gap-2 mt-auto pt-4 border-t border-border/40 w-full">
+                      {member.linkedin && (
+                        <a
+                          href={member.linkedin}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1.5 rounded-lg bg-blue-600/15 border border-blue-500/30 text-blue-400 hover:bg-blue-600 hover:text-white transition-all duration-300 flex items-center gap-1.5 text-xs font-bold font-sans shadow-sm"
+                          aria-label={`${member.name}'s LinkedIn profile`}
+                        >
+                          <Linkedin className="size-3.5" />
+                          <span>LinkedIn</span>
+                        </a>
+                      )}
+                      {member.github && (
+                        <a
+                          href={member.github}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 rounded-lg bg-muted border border-border text-foreground hover:text-gold hover:border-gold/40 transition-all duration-300"
+                          aria-label={`${member.name}'s GitHub profile`}
+                        >
+                          <Github className="size-4" />
+                        </a>
+                      )}
+                      {member.instagram && (
+                        <a
+                          href={member.instagram}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 rounded-lg bg-muted border border-border text-foreground hover:text-gold hover:border-gold/40 transition-all duration-300"
+                          aria-label={`${member.name}'s Instagram profile`}
+                        >
+                          <Instagram className="size-4" />
+                        </a>
+                      )}
+                      {member.twitter && (
+                        <a
+                          href={member.twitter}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 rounded-lg bg-muted border border-border text-foreground hover:text-gold hover:border-gold/40 transition-all duration-300"
+                          aria-label={`${member.name}'s X/Twitter profile`}
+                        >
+                          <Twitter className="size-4" />
+                        </a>
+                      )}
+                      {member.website && (
+                        <a
+                          href={member.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 rounded-lg bg-white/4 border border-white/5 hover:border-gold/30 hover:bg-gold/8 text-white/50 hover:text-gold transition-all duration-300"
+                          aria-label={`${member.name}'s official website`}
+                        >
+                          <Globe className="size-4" />
+                        </a>
+                      )}
+                      {member.email && (
+                        <a
+                          href={`mailto:${member.email}`}
+                          className="p-2 rounded-lg bg-white/4 border border-white/5 hover:border-gold/30 hover:bg-gold/8 text-white/50 hover:text-gold transition-all duration-300"
+                          aria-label={`Email ${member.name}`}
+                        >
+                          <Mail className="size-4" />
+                        </a>
                       )}
                     </div>
-                  </div>
-
-                  {/* Name & Role */}
-                  <h3 className="font-display text-lg font-bold text-foreground group-hover:text-primary transition-colors duration-300">
-                    {member.name}
-                  </h3>
-                  <p className="text-xs uppercase tracking-wider font-sans font-bold text-gold mt-1.5 mb-3">
-                    {member.role}
-                  </p>
-
-                  {/* Bio */}
-                  <p className="text-xs text-muted-foreground font-sans leading-relaxed flex-1 mb-4">
-                    {member.bio}
-                  </p>
-
-                  {/* Location if available */}
-                  {member.location && (
-                    <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground/60 font-sans mb-5 flex items-center gap-1">
-                      <MapPin className="size-3 text-gold/60" />
-                      {member.location}
-                    </p>
-                  )}
-
-                  {/* Social Links */}
-                  <div className="flex items-center justify-center gap-3 mt-auto pt-4 border-t border-border/40 w-full">
-                    {member.linkedin && (
-                      <a
-                        href={member.linkedin}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 rounded-lg bg-white/4 border border-white/5 hover:border-gold/30 hover:bg-gold/8 text-white/50 hover:text-gold transition-all duration-300"
-                        aria-label={`${member.name}'s LinkedIn profile`}
-                      >
-                        <Linkedin className="size-4" />
-                      </a>
-                    )}
-                    {member.github && (
-                      <a
-                        href={member.github}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 rounded-lg bg-white/4 border border-white/5 hover:border-gold/30 hover:bg-gold/8 text-white/50 hover:text-gold transition-all duration-300"
-                        aria-label={`${member.name}'s GitHub profile`}
-                      >
-                        <Github className="size-4" />
-                      </a>
-                    )}
-                    {member.instagram && (
-                      <a
-                        href={member.instagram}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 rounded-lg bg-white/4 border border-white/5 hover:border-gold/30 hover:bg-gold/8 text-white/50 hover:text-gold transition-all duration-300"
-                        aria-label={`${member.name}'s Instagram profile`}
-                      >
-                        <Instagram className="size-4" />
-                      </a>
-                    )}
-                    {member.twitter && (
-                      <a
-                        href={member.twitter}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 rounded-lg bg-white/4 border border-white/5 hover:border-gold/30 hover:bg-gold/8 text-white/50 hover:text-gold transition-all duration-300"
-                        aria-label={`${member.name}'s X/Twitter profile`}
-                      >
-                        <Twitter className="size-4" />
-                      </a>
-                    )}
-                    {member.website && (
-                      <a
-                        href={member.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 rounded-lg bg-white/4 border border-white/5 hover:border-gold/30 hover:bg-gold/8 text-white/50 hover:text-gold transition-all duration-300"
-                        aria-label={`${member.name}'s official website`}
-                      >
-                        <Globe className="size-4" />
-                      </a>
-                    )}
-                    {member.email && (
-                      <a
-                        href={`mailto:${member.email}`}
-                        className="p-2 rounded-lg bg-white/4 border border-white/5 hover:border-gold/30 hover:bg-gold/8 text-white/50 hover:text-gold transition-all duration-300"
-                        aria-label={`Email ${member.name}`}
-                      >
-                        <Mail className="size-4" />
-                      </a>
-                    )}
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
         </section>
-
 
         {/* ─── Final CTA ─── */}
         <section className="py-20">
@@ -554,17 +590,26 @@ function About() {
             >
               <Feather className="size-7 text-gold mx-auto" />
               <h2 className="font-display text-3xl md:text-4xl font-bold leading-tight">
-                Be Part of <span className="text-gradient-gold italic">India's Story</span>
+                {lang === "hi" ? (
+                  <>
+                    भारत की कहानी का <span className="text-gradient-gold italic">हिस्सा बनें</span>
+                  </>
+                ) : (
+                  <>
+                    Be Part of <span className="text-gradient-gold italic">India's Story</span>
+                  </>
+                )}
               </h2>
               <p className="text-muted-foreground font-sans text-sm max-w-md mx-auto leading-relaxed">
-                Whether you're a reader, a storyteller, or a community builder — this platform is
-                built for you.
+                {lang === "hi"
+                  ? "चाहे आप पाठक हों, कहानीकार हों, या समुदाय निर्माता — यह मंच आपके लिए ही बना है।"
+                  : "Whether you're a reader, a storyteller, or a community builder — this platform is built for you."}
               </p>
               <a
                 href="/share-story"
                 className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-sans font-bold text-sm uppercase tracking-widest h-12 px-8 rounded-full shadow-glow transition-all duration-300 btn-premium"
               >
-                Share Your Story
+                {lang === "hi" ? "अपनी कहानी साझा करें" : "Share Your Story"}
               </a>
             </motion.div>
           </div>

@@ -10,6 +10,7 @@ interface UniversalImageProps extends Omit<React.ImgHTMLAttributes<HTMLImageElem
   sizes?: string;
   widths?: number[];
   aspectRatio?: string;
+  objectFit?: "cover" | "contain" | "fill";
   className?: string;
   containerClassName?: string;
 }
@@ -22,6 +23,7 @@ export const UniversalImage = React.memo(function UniversalImage({
   height = 500,
   sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw",
   aspectRatio = "aspect-[16/10]",
+  objectFit = "cover",
   className = "",
   containerClassName = "",
   loading = "lazy",
@@ -47,6 +49,13 @@ export const UniversalImage = React.memo(function UniversalImage({
 
   const finalSrc = error || !src ? fallbackSrc : primarySrc;
 
+  const fitClass =
+    objectFit === "contain"
+      ? "object-contain object-center bg-black/90"
+      : objectFit === "fill"
+        ? "object-fill"
+        : "object-cover object-center";
+
   return (
     <div
       className={`relative overflow-hidden bg-muted/40 ${aspectRatio} ${containerClassName}`}
@@ -64,7 +73,7 @@ export const UniversalImage = React.memo(function UniversalImage({
         decoding="async"
         onLoad={() => setLoaded(true)}
         onError={handleError}
-        className={`w-full h-full object-cover object-top transition-opacity duration-200 ${className}`}
+        className={`w-full h-full ${fitClass} transition-opacity duration-200 ${className}`}
         {...props}
       />
     </div>

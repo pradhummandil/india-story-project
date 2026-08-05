@@ -10,6 +10,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { useLenisSetup } from "../lib/lenis";
 import { useI18nStore } from "../lib/i18n";
 
 import appCss from "../styles.css?url";
@@ -200,6 +201,9 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const lang = useI18nStore((s) => s.lang);
+
+  // Initialise Lenis smooth scroll + sync with Framer Motion RAF
+  useLenisSetup();
 
   // Subscribe to stories-data updates
   useStoriesData();

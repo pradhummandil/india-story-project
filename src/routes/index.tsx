@@ -32,6 +32,9 @@ import { EditorsPicks } from "@/components/site/EditorsPicks";
 import { ImpactNumbers } from "@/components/site/ImpactNumbers";
 import { ContinueReading } from "@/components/site/ContinueReading";
 import { LiveActivityTicker } from "@/components/site/LiveActivityTicker";
+import { TiltCard } from "@/components/site/TiltCard";
+import { RevealHeading } from "@/components/common/RevealHeading";
+import { StorySkeleton } from "@/components/common/StorySkeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useI18nStore, translateStory, getCommonText } from "@/lib/i18n";
@@ -299,9 +302,9 @@ function Home() {
                   <p className={`text-xs text-gold font-sans font-bold mb-1 ${lang === "en" ? "uppercase tracking-widest" : ""}`}>
                     {lang === "en" ? "Popular Reading" : "लोकप्रिय पाठ"}
                   </p>
-                  <h2 className="font-display text-3xl md:text-5xl font-bold leading-tight">
+                  <RevealHeading as="h2" className="font-display text-3xl md:text-5xl font-bold leading-tight">
                     {lang === "en" ? "Trending Stories" : "ट्रेंडिंग कहानियाँ"}
-                  </h2>
+                  </RevealHeading>
                 </div>
               </div>
 
@@ -359,9 +362,9 @@ function Home() {
                   <p className={`text-xs font-sans font-bold text-gold mb-1 ${lang === "en" ? "uppercase tracking-[0.25em]" : ""}`}>
                     {lang === "en" ? "Fresh Perspectives" : "नए दृष्टिकोण"}
                   </p>
-                  <h2 className="font-display text-3xl md:text-5xl font-bold leading-tight">
+                  <RevealHeading as="h2" className="font-display text-3xl md:text-5xl font-bold leading-tight">
                     {lang === "en" ? "Latest Stories" : "नवीनतम कहानियाँ"}
-                  </h2>
+                  </RevealHeading>
                 </div>
                 <Link
                   to="/stories"
@@ -555,13 +558,14 @@ function Home() {
               <p className="text-xs uppercase tracking-[0.25em] font-sans font-bold text-gold mb-3">
                 {lang === "en" ? "Thematic Explorer" : "विषय-आधारित अन्वेषक"}
               </p>
-              <h2 className="font-display text-3xl md:text-5xl font-bold">
+              <RevealHeading as="h2" className="font-display text-3xl md:text-5xl font-bold">
                 {commonText.exploreByTheme}
-              </h2>
+              </RevealHeading>
               <div className="w-12 h-[1px] bg-primary mx-auto mt-4" />
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            {/* Desktop: horizontal scroll-snap. Mobile: 2-column grid */}
+            <div className="hidden md:flex gap-5 overflow-x-auto pb-4 scrollbar-none snap-x snap-mandatory">
               {CATEGORY_DEFS.map((cat, i) => {
                 const displayTitle = lang === "hi" ? cat.title.hi : cat.title.en;
                 const displayDesc = lang === "hi" ? cat.desc.hi : cat.desc.en;
@@ -572,35 +576,69 @@ function Home() {
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6, delay: i * 0.05 }}
+                    className="shrink-0 snap-start w-[260px]"
+                  >
+                    {/* 3D tilt on video cards */}
+                    <TiltCard intensity={7} className="group relative aspect-[3/4] overflow-hidden border border-border/40 bg-black cursor-pointer hover:border-gold/60 rounded-2xl shadow-sm">
+                      <video
+                        src={cat.video}
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="absolute inset-0 w-full h-full object-cover filter saturate-[0.85] brightness-[0.75] group-hover:scale-105 group-hover:brightness-[0.9] transition-all duration-[1s] ease-out pointer-events-none"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent z-10 pointer-events-none" />
+                      <div className="absolute inset-0 p-5 flex flex-col justify-end z-20">
+                        <h3 className="font-display text-2xl text-white font-bold tracking-tight mb-1.5 group-hover:text-gold transition-colors duration-300 drop-shadow-md">
+                          {displayTitle}
+                        </h3>
+                        <motion.p
+                          className="text-[10px] sm:text-xs text-white/85 font-sans leading-relaxed line-clamp-2"
+                          initial={{ opacity: 0, y: 4 }}
+                          whileHover={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          {displayDesc}
+                        </motion.p>
+                        <Link
+                          to="/stories"
+                          search={{ category: cat.id }}
+                          className="absolute inset-0 z-30"
+                          aria-label={`Explore ${displayTitle} stories`}
+                        />
+                      </div>
+                    </TiltCard>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {/* Mobile: 2-column grid fallback */}
+            <div className="md:hidden grid grid-cols-2 gap-4">
+              {CATEGORY_DEFS.map((cat, i) => {
+                const displayTitle = lang === "hi" ? cat.title.hi : cat.title.en;
+                return (
+                  <motion.div
+                    key={cat.id}
+                    initial={{ opacity: 0, scale: 0.96 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6, delay: i * 0.05 }}
                     className="group relative aspect-[3/4] overflow-hidden border border-border/40 bg-black cursor-pointer shadow-sm hover:border-gold/60 rounded-2xl"
                   >
-                    {/* Background Video Loop */}
                     <video
                       src={cat.video}
                       autoPlay
                       loop
                       muted
                       playsInline
-                      className="absolute inset-0 w-full h-full object-cover filter saturate-[0.85] brightness-[0.75] group-hover:scale-105 group-hover:brightness-[0.9] transition-all duration-[1s] ease-out pointer-events-none"
+                      className="absolute inset-0 w-full h-full object-cover filter saturate-[0.85] brightness-[0.75] transition-all duration-[1s] ease-out pointer-events-none"
                     />
-
-                    {/* Overlay gradient for text contrast */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent z-10 pointer-events-none" />
-
-                    {/* Content */}
-                    <div className="absolute inset-0 p-5 flex flex-col justify-end z-20">
-                      <h3 className="font-display text-2xl md:text-3xl text-white font-bold tracking-tight mb-1.5 group-hover:text-gold transition-colors duration-300 drop-shadow-md">
-                        {displayTitle}
-                      </h3>
-                      <p className="text-[10px] sm:text-xs text-white/85 font-sans leading-relaxed line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                        {displayDesc}
-                      </p>
-                      <Link
-                        to="/stories"
-                        search={{ category: cat.id }}
-                        className="absolute inset-0 z-30"
-                        aria-label={`Explore ${displayTitle} stories`}
-                      />
+                    <div className="absolute inset-0 p-4 flex flex-col justify-end z-20">
+                      <h3 className="font-display text-xl text-white font-bold tracking-tight mb-1 group-hover:text-gold transition-colors duration-300">{displayTitle}</h3>
+                      <Link to="/stories" search={{ category: cat.id }} className="absolute inset-0 z-30" aria-label={`Explore ${displayTitle} stories`} />
                     </div>
                   </motion.div>
                 );

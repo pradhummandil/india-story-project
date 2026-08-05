@@ -1122,10 +1122,12 @@ function ShareStoryPage() {
                   </div>
                   <div className="space-y-2">
                     <h3 className="font-display text-xl font-bold text-white">
-                      Sign in to Continue
+                      {lang === "hi" ? "जारी रखने के लिए साइन इन करें" : "Sign in to Continue"}
                     </h3>
                     <p className="text-xs text-neutral-450 font-sans max-w-xs mx-auto leading-relaxed">
-                      Only authenticated contributors can submit stories to our living archive.
+                      {lang === "hi"
+                        ? "केवल प्रमाणित योगदानकर्ता ही हमारे जीवंत संग्रह में कहानियां जमा कर सकते हैं।"
+                        : "Only authenticated contributors can submit stories to our living archive."}
                     </p>
                   </div>
 
@@ -1148,13 +1150,13 @@ function ShareStoryPage() {
                       ) : (
                         <Chrome className="size-4" />
                       )}
-                      Continue with Google
+                      {lang === "hi" ? "गूगल के साथ जारी रखें" : "Continue with Google"}
                     </Button>
 
                     <div className="relative flex items-center gap-3">
                       <div className="flex-grow border-t border-neutral-850" />
                       <span className="text-[9px] text-neutral-500 uppercase tracking-widest font-sans font-bold">
-                        or email
+                        {lang === "hi" ? "या ईमेल द्वारा" : "or email"}
                       </span>
                       <div className="flex-grow border-t border-neutral-850" />
                     </div>
@@ -1162,7 +1164,7 @@ function ShareStoryPage() {
                     <form onSubmit={handleEmailLogin} className="space-y-3.5">
                       <div className="space-y-1.5 text-left">
                         <Label htmlFor="email" className="text-[10px] uppercase font-bold tracking-wider text-neutral-400">
-                          Email Address
+                          {lang === "hi" ? "ईमेल पता" : "Email Address"}
                         </Label>
                         <Input
                           id="email"
@@ -1175,7 +1177,7 @@ function ShareStoryPage() {
                       </div>
                       <div className="space-y-1.5 text-left">
                         <Label htmlFor="password" className="text-[10px] uppercase font-bold tracking-wider text-neutral-400">
-                          Password
+                          {lang === "hi" ? "पासवर्ड" : "Password"}
                         </Label>
                         <Input
                           id="password"
@@ -1192,14 +1194,14 @@ function ShareStoryPage() {
                         disabled={loginLoading}
                       >
                         {loginLoading && <Loader2 className="size-4 animate-spin mr-2" />}
-                        Sign In
+                        {lang === "hi" ? "साइन इन करें" : "Sign In"}
                       </Button>
                     </form>
 
                     <p className="text-xs text-neutral-450 font-sans">
-                      Don't have an account?{" "}
+                      {lang === "hi" ? "खाता नहीं है?" : "Don't have an account?"}{" "}
                       <Link to="/login" className="text-red-500 hover:underline">
-                        Create one
+                        {lang === "hi" ? "नया बनाएं" : "Create one"}
                       </Link>
                     </p>
                   </div>
@@ -2034,12 +2036,38 @@ function ShareStoryPage() {
         <section className="py-20 border-t border-neutral-900 relative z-10 max-w-3xl mx-auto px-6">
           <div className="text-center mb-10 space-y-2">
             <span className="text-[10px] uppercase tracking-widest font-sans font-bold text-red-500">
-              Questions
+              {lang === "hi" ? "प्रश्न" : "Questions"}
             </span>
-            <h2 className="font-display text-2xl md:text-4xl font-bold">Frequently Asked</h2>
+            <h2 className="font-display text-2xl md:text-4xl font-bold">
+              {lang === "hi" ? "अक्सर पूछे जाने वाले प्रश्न" : "Frequently Asked"}
+            </h2>
           </div>
           <div className="bg-neutral-900/90 rounded-2xl border border-neutral-850 px-6 py-2 shadow-lg">
-            {faqs.map((faq, i) => (
+            {(lang === "hi"
+              ? [
+                  {
+                    q: "समीक्षा प्रक्रिया में कितना समय लगता है?",
+                    a: "हमारी संपादकीय टीम 5-7 कार्य दिवसों के भीतर प्रविष्टियों की समीक्षा करती है। कहानी की स्थिति बदलने पर आपको ईमेल अधिसूचना प्राप्त होगी।",
+                  },
+                  {
+                    q: "क्या मैं हिंदी या अन्य क्षेत्रीय भाषाओं में कहानियां प्रस्तुत कर सकता हूं?",
+                    a: "हां! हम अंग्रेजी और हिंदी में कहानियां स्वीकार करते हैं। जल्द ही और अधिक भारतीय भाषाओं का समर्थन करने के लिए हमारे मंच का विस्तार किया जा रहा है।",
+                  },
+                  {
+                    q: "क्या मुझे लेखक के रूप में श्रेय दिया जाएगा?",
+                    a: "बिल्कुल। आपके द्वारा योगदान की गई प्रत्येक कहानी पर आपका नाम दिखाई देता है। आपको योगदानकर्ता XP अंक और बैज भी प्राप्त होंगे।",
+                  },
+                  {
+                    q: "आप किस प्रकार की कहानियों की तलाश में हैं?",
+                    a: "हम पूरे भारत में अनसुने नायकों, जमीनी स्तर के नवाचारों, सांस्कृतिक विरासत, टिकाऊ प्रथाओं और सामुदायिक परिवर्तनों का जश्न मनाते हैं।",
+                  },
+                  {
+                    q: "क्या मैं अपनी कहानी के साथ फोटो और वीडियो जमा कर सकता हूं?",
+                    a: "हां। आप कवर छवि, गैलरी तस्वीरें, और एक वीडियो लिंक या फ़ाइल अपलोड कर सकते हैं। उच्च गुणवत्ता वाले दृश्य प्रकाशन की संभावनाओं को बढ़ाते हैं।",
+                  },
+                ]
+              : faqs
+            ).map((faq, i) => (
               <FaqItem key={i} q={faq.q} a={faq.a} />
             ))}
           </div>
@@ -2056,19 +2084,23 @@ function ShareStoryPage() {
           >
             <Feather className="size-8 text-red-500 mx-auto" />
             <h2 className="font-display text-3xl md:text-5xl font-bold leading-tight">
-              Every Story Matters.
+              {lang === "hi" ? "हर कहानी मायने रखती है।" : "Every Story Matters."}
               <br />
-              <span className="text-gradient-gold italic font-serif">Yours Does Too.</span>
+              <span className="text-gradient-gold italic font-serif">
+                {lang === "hi" ? "आपकी भी।" : "Yours Does Too."}
+              </span>
             </h2>
             <p className="text-neutral-350 font-sans text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
-              Don't let the stories of real India go untold. Join hundreds of contributors who are building the most authentic digital archive of Bharat.
+              {lang === "hi"
+                ? "वास्तविक भारत की कहानियों को अनकहा न रहने दें। भारत का सबसे प्रामाणिक डिजिटल संग्रह बनाने वाले सैकड़ों योगदानकर्ताओं से जुड़ें।"
+                : "Don't let the stories of real India go untold. Join hundreds of contributors who are building the most authentic digital archive of Bharat."}
             </p>
             <a
               href="#submission-form"
               className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-sans font-bold text-xs uppercase tracking-widest h-12 px-8 rounded-full shadow-lg transition-all duration-300"
             >
               <PenLine className="size-4" />
-              Start Writing Now
+              {lang === "hi" ? "अभी लिखना शुरू करें" : "Start Writing Now"}
             </a>
           </motion.div>
         </section>
