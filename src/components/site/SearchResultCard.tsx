@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { MapPin, Clock, Eye, Calendar, Bookmark, ArrowUpRight } from "lucide-react";
 import { useI18nStore } from "@/lib/i18n";
 import { getOptimizedImageUrl } from "@/lib/utils";
+import { UniversalImage } from "@/components/common/UniversalImage";
 
 export type SearchStory = {
   id: string;
@@ -39,11 +40,11 @@ function highlightText(text: string, query?: string): React.ReactNode {
       <>
         {parts.map((part, i) =>
           part.toLowerCase() === query.toLowerCase() ? (
-            <mark key={i} className="bg-gold/20 text-gold font-bold rounded-sm px-0.5 not-italic">
+            <mark key={i} className="bg-primary/20 text-primary font-bold px-0.5 rounded">
               {part}
             </mark>
           ) : (
-            part
+            <span key={i}>{part}</span>
           ),
         )}
       </>
@@ -60,7 +61,7 @@ function formatDate(d?: string | Date | null): string {
 }
 
 function formatViews(n?: number): string {
-  if (!n) return "";
+  if (!n) return "0";
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
   return String(n);
@@ -73,7 +74,15 @@ export function SearchResultCard({ story, query, index = 0 }: Props) {
   const primaryTheme = story.themes?.[0]?.name ?? "";
   const stateName    = story.state?.name ?? "";
   const cityName     = story.city?.name ?? "";
-  const authorName   = story.author?.name ?? "";
+  const rawAuthorName = story.author?.name;
+  const isRealAuthor = !!(
+    rawAuthorName &&
+    rawAuthorName.trim() !== "" &&
+    rawAuthorName.toLowerCase() !== "india story project" &&
+    rawAuthorName.toLowerCase() !== "not identifiable" &&
+    rawAuthorName.toLowerCase() !== "unknown"
+  );
+  const displayAuthorName = isRealAuthor ? rawAuthorName : "India Story Project";
   const imageUrl     = story.image ? getOptimizedImageUrl(story.image, 600) : null;
 
   return (
@@ -92,76 +101,78 @@ export function SearchResultCard({ story, query, index = 0 }: Props) {
         tabIndex={-1}
       >
         {imageUrl ? (
-          <img
+          <UniversalImage
             src={imageUrl}
             alt={story.imageCaption ?? title}
-            loading="lazy"
-            decoding="async"
-            className="w-full h-full object-contain filter saturate-[0.85] group-hover:scale-[1.02] transition-transform duration-700"
+            width={400}
+            aspectRatio="w-full h-full"
+            className="group-hover:scale-105 transition-transform duration-300"
           />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-amber-950/40 to-stone-900 flex items-center justify-center">
-            <img src="/Logo-ISP.jpg" alt="ISP" className="w-20 h-20 object-contain opacity-60" />
-          </div>
-        )}
+        ) : null}
       </Link>
 
-      {/* Content */}
-      <div className="flex flex-col justify-between p-4 md:p-5 flex-1 min-w-0">
-        {/* Top meta row */}
-        <div className="flex flex-wrap items-center gap-2 mb-2">
-          {primaryTheme && (
-            <span className="inline-flex items-center gap-1 text-[9px] tracking-[0.15em] uppercase font-bold text-gold bg-gold/8 border border-gold/20 px-2 py-0.5 rounded-sm font-sans">
-              {primaryTheme}
-            </span>
-          )}
-          {stateName && (
-            <span className="inline-flex items-center gap-1 text-[9px] tracking-[0.15em] uppercase font-semibold text-muted-foreground font-sans">
-              <MapPin className="size-2.5" />
-              {cityName ? `${cityName}, ${stateName}` : stateName}
-            </span>
-          )}
-          {story.featured && (
-            <span className="inline-flex text-[9px] font-bold text-primary/90 border border-primary/20 bg-primary/5 px-2 py-0.5 rounded-sm tracking-widest font-sans uppercase">
-              Featured
-            </span>
+      {/* Main details */}
+      <div className="flex-1 flex flex-col justify-between space-y-3 min-w-0">
+        <div>
+          {/* Metadata tags: State + City + Theme */}
+          <div className="flex flex-wrap items-center gap-2 text-[10px] font-sans font-bold text-gold uppercase tracking-wider mb-1.5">
+            {primaryTheme && (
+              <span className="bg-primary/10 border border-primary/20 text-primary px-2 py-0.5 rounded text-[9px]">
+                {primaryTheme}
+              </span>
+            )}
+            {stateName && (
+              <span className="flex items-center gap-1 text-muted-foreground font-normal text-[11px] lowercase first-letter:capitalize">
+                <MapPin className="size-3 text-gold/80" />
+                {stateName}
+                {cityName ? `, ${cityName}` : ""}
+              </span>
+            )}
+          </div>
+
+          {/* Title */}
+          <h3 className="font-display text-base sm:text-lg font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+            <Link to="/stories/$slug" params={{ slug: story.slug }}>
+              {title}
+            </Link>
+          </h3>
+
+          {/* Excerpt */}
+          <p className="text-xs text-muted-foreground font-sans line-clamp-2 leading-relaxed mt-1">
+            {excerpt}
+          </p>
+
+          {/* Tags */}
+          {story.tags && story.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {story.tags.slice(0, 4).map((tag) => (
+                <span
+                  key={tag.slug || tag.name}
+                  className="inline-flex items-center gap-0.5 text-[9px] font-sans text-muted-foreground/80 bg-muted px-1.5 py-0.5 rounded border border-border/40"
+                >
+                  #{tag.name}
+                </span>
+              ))}
+            </div>
           )}
         </div>
-
-        {/* Title */}
-        <h3 className="font-display text-base md:text-lg lg:text-xl font-bold leading-tight mb-2 group-hover:text-primary transition-colors">
-          <Link to="/stories/$slug" params={{ slug: story.slug }} className="focus:outline-none focus:ring-2 focus:ring-primary/50 rounded">
-            {highlightText(title, query)}
-          </Link>
-        </h3>
-
-        {/* Excerpt */}
-        <p className="text-xs md:text-sm text-muted-foreground font-sans line-clamp-2 leading-relaxed mb-3">
-          {highlightText(excerpt, query)}
-        </p>
-
-        {/* Tags */}
-        {story.tags && story.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-3">
-            {story.tags.slice(0, 4).map((tag) => (
-              <span
-                key={tag.name}
-                className="text-[9px] font-sans font-semibold px-2 py-0.5 bg-muted text-muted-foreground border border-border/50 rounded-full"
-              >
-                #{tag.name}
-              </span>
-            ))}
-          </div>
-        )}
 
         {/* Bottom row: author + stats + CTA */}
         <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/40">
           <div className="flex items-center gap-3 text-[10px] text-muted-foreground font-sans font-medium">
-            {authorName && (
-              <span className="truncate max-w-[100px]">
-                {lang === "en" ? `By ${authorName}` : `लेखक: ${authorName}`}
-              </span>
-            )}
+            <span className="truncate max-w-[140px]">
+              {isRealAuthor && story.author?.id ? (
+                <Link
+                  to="/authors/$id"
+                  params={{ id: story.author.id }}
+                  className="hover:text-gold hover:underline transition-colors font-bold text-foreground"
+                >
+                  {lang === "en" ? `By ${displayAuthorName}` : `लेखक: ${displayAuthorName}`}
+                </Link>
+              ) : (
+                lang === "en" ? `By ${displayAuthorName}` : `लेखक: ${displayAuthorName}`
+              )}
+            </span>
             {story.readingTime && (
               <span className="flex items-center gap-1 shrink-0">
                 <Clock className="size-3" />

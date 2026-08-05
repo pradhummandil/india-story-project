@@ -300,11 +300,33 @@ export function CinematicHero({
           </h1>
 
           {/* Author */}
-          <p className="text-[10px] sm:text-xs uppercase tracking-[0.28em] text-white/75 font-sans font-semibold">
-            {lang === "en"
-              ? `By ${slide.author || "ISP Editorial"}`
-              : `लेखक: ${slide.author || "आईएसपी एडिटोरियल"}`}
-          </p>
+          {(() => {
+            const rawAuthor = slide.author;
+            const isRealAuthor = !!(
+              rawAuthor &&
+              rawAuthor.trim() !== "" &&
+              rawAuthor.toLowerCase() !== "india story project" &&
+              rawAuthor.toLowerCase() !== "not identifiable" &&
+              rawAuthor.toLowerCase() !== "isp editorial" &&
+              rawAuthor.toLowerCase() !== "unknown"
+            );
+            const authorName = isRealAuthor ? rawAuthor : "India Story Project";
+            return (
+              <p className="text-[10px] sm:text-xs uppercase tracking-[0.28em] text-white/75 font-sans font-semibold">
+                {isRealAuthor && (slide as any).authorId ? (
+                  <Link
+                    to="/authors/$id"
+                    params={{ id: (slide as any).authorId }}
+                    className="hover:text-gold transition-colors cursor-pointer underline"
+                  >
+                    {lang === "en" ? `By ${authorName}` : `लेखक: ${authorName}`}
+                  </Link>
+                ) : (
+                  lang === "en" ? `By ${authorName}` : `लेखक: ${authorName}`
+                )}
+              </p>
+            );
+          })()}
 
           {/* Excerpt — clean teaser, max 2 lines */}
           {excerpt && (

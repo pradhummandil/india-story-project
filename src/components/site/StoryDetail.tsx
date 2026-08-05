@@ -128,11 +128,15 @@ export function StoryDetail({ story }: { story: Story }) {
   const [qaResponse, setQaResponse] = useState("");
   const [qaLoading, setQaLoading] = useState(false);
 
-  const rawAuthor = story.authorName || getStoryAuthor(story.slug);
-  const authorName =
-    !rawAuthor || rawAuthor.toLowerCase().includes("unknown") || rawAuthor.trim() === ""
-      ? "Pradhum Mandil"
-      : rawAuthor;
+  const rawAuthor = story.authorName;
+  const isRealAuthor = !!(
+    rawAuthor &&
+    rawAuthor.trim() !== "" &&
+    rawAuthor.toLowerCase() !== "india story project" &&
+    rawAuthor.toLowerCase() !== "not identifiable" &&
+    rawAuthor.toLowerCase() !== "unknown"
+  );
+  const authorName = isRealAuthor ? rawAuthor : "India Story Project";
   const dateStr = lang === "en" ? "India Dispatch" : "भारतीय प्रेषण";
 
   const loadComments = useCallback(async () => {
@@ -920,7 +924,7 @@ export function StoryDetail({ story }: { story: Story }) {
         <div className="max-w-5xl mx-auto px-6 flex flex-wrap items-center justify-between gap-6 text-[10px] text-muted-foreground font-sans uppercase font-bold tracking-wider">
           <div className="flex flex-wrap items-center gap-6">
             <div className="flex items-center gap-2 text-foreground/90">
-              {story.authorId ? (
+              {isRealAuthor && story.authorId ? (
                 <Link
                   to="/authors/$id"
                   params={{ id: story.authorId }}
@@ -929,12 +933,12 @@ export function StoryDetail({ story }: { story: Story }) {
                   {story.authorAvatar ? (
                     <img
                       src={story.authorAvatar}
-                      alt={story.authorName || authorName}
+                      alt={authorName}
                       className="size-5 rounded-full object-cover border border-border"
                     />
                   ) : (
                     <div className="size-5 rounded-full bg-primary/10 flex items-center justify-center text-[8px] font-black text-primary border border-primary/20">
-                      {(story.authorName || authorName || "A")
+                      {authorName
                         .split(" ")
                         .map((n) => n[0])
                         .join("")
@@ -942,12 +946,12 @@ export function StoryDetail({ story }: { story: Story }) {
                         .slice(0, 2)}
                     </div>
                   )}
-                  <span>By {story.authorName || authorName}</span>
+                  <span>By {authorName}</span>
                 </Link>
               ) : (
                 <div className="flex items-center gap-2">
                   <User className="size-3.5 text-gold" />
-                  <span>By {story.authorName || authorName}</span>
+                  <span>By {authorName}</span>
                 </div>
               )}
             </div>
@@ -1492,16 +1496,16 @@ export function StoryDetail({ story }: { story: Story }) {
                 )}
                 <div className="space-y-2">
                   <h4 className="font-display text-xl font-bold">
-                    {story.authorId ? (
+                    {isRealAuthor && story.authorId ? (
                       <Link
                         to="/authors/$id"
                         params={{ id: story.authorId }}
                         className="hover:text-gold transition-colors cursor-pointer"
                       >
-                        {story.authorName || authorName}
+                        {authorName}
                       </Link>
                     ) : (
-                      story.authorName || authorName
+                      authorName
                     )}
                   </h4>
                   <p className="text-sm text-muted-foreground leading-relaxed font-sans">

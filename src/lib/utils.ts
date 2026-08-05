@@ -19,25 +19,11 @@ const AUTHORS = [
 ];
 
 export function getStoryAuthor(slug: string): string {
-  if (!slug) return "ISP Editorial";
-  let hash = 0;
-  for (let i = 0; i < slug.length; i++) {
-    hash = (hash << 5) - hash + slug.charCodeAt(i);
-    hash |= 0;
-  }
-  return AUTHORS[Math.abs(hash) % AUTHORS.length];
+  return "India Story Project";
 }
 
-export function getOptimizedImageUrl(url: string | undefined | null, width = 600): string {
+export function getOptimizedImageUrl(url: string | undefined | null, _width = 600): string {
   if (!url) return "";
-  if (url.includes("supabase.co/storage/v1/object/public")) {
-    // Add format=webp for modern format support on Supabase storage if it supports it
-    return `${url}?width=${width}&quality=80&resize=contain&format=webp`;
-  }
-  if (url.includes("res.cloudinary.com")) {
-    // Make sure we include f_auto, q_auto, dpr_auto and the requested width
-    return url.replace("/upload/", `/upload/f_auto,q_auto,dpr_auto,w_${width}/`);
-  }
   return url;
 }
 

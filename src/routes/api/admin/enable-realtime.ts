@@ -19,9 +19,8 @@ export const Route = createFileRoute("/api/admin/enable-realtime")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const user = await authenticate(request);
-        if (!user) return json({ error: "Unauthorized" }, { status: 401 });
-        await verifyAdmin(user.id);
+        const adminUser = await verifyAdmin(request);
+        if (!adminUser) return json({ error: "Unauthorized" }, { status: 401 });
 
         const results: string[] = [];
 

@@ -6,6 +6,8 @@ import {
   Search,
   Trash2,
   Check,
+  CheckCircle,
+  Send,
   Inbox,
   MessageSquare,
   Reply,

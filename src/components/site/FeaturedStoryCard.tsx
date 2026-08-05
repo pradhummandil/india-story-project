@@ -13,7 +13,15 @@ interface FeaturedStoryCardProps {
 export function FeaturedStoryCard({ story }: FeaturedStoryCardProps) {
   const lang = useI18nStore((s) => s.lang);
   const commonText = getCommonText(lang);
-  const authorName = getStoryAuthor(story.slug);
+  const rawAuthor = story.authorName;
+  const isRealAuthor = !!(
+    rawAuthor &&
+    rawAuthor.trim() !== "" &&
+    rawAuthor.toLowerCase() !== "india story project" &&
+    rawAuthor.toLowerCase() !== "not identifiable" &&
+    rawAuthor.toLowerCase() !== "unknown"
+  );
+  const authorName = isRealAuthor ? rawAuthor : "India Story Project";
 
   return (
     <div className="max-w-4xl mx-auto border border-border/80 bg-card/40 hover:border-gold/30 transition-all duration-500 overflow-hidden shadow-xl flex flex-col md:flex-row items-stretch">
@@ -48,9 +56,17 @@ export function FeaturedStoryCard({ story }: FeaturedStoryCardProps) {
 
         <div className="flex items-center gap-2 text-xs text-muted-foreground font-sans font-medium">
           <span>
-            {lang === "en"
-              ? `By ${authorName}`
-              : `लेखक: ${authorName}`}
+            {isRealAuthor && story.authorId ? (
+              <Link
+                to="/authors/$id"
+                params={{ id: story.authorId }}
+                className="hover:text-gold hover:underline transition-colors font-bold text-foreground"
+              >
+                {lang === "en" ? `By ${authorName}` : `लेखक: ${authorName}`}
+              </Link>
+            ) : (
+              lang === "en" ? `By ${authorName}` : `लेखक: ${authorName}`
+            )}
           </span>
           <span>•</span>
           <span>{story.readTime || "4 min read"}</span>

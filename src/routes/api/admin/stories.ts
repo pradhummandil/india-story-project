@@ -50,6 +50,7 @@ function toAdminRow(story: any) {
     themeIds: story.themes?.map((t: any) => t.themeId) ?? [],
     stateId: story.stateId,
     authorId: story.authorId,
+    authorName: story.author?.name && story.author.name.toLowerCase() !== "not identifiable" ? story.author.name : "India Story Project",
     images:
       story.images?.map((img: any) => ({
         id: img.id,

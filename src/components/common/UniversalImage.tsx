@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { getOptimizedImageUrl, getResponsiveSrcSet } from "@/lib/utils";
+import React, { useState, useRef, useEffect } from "react";
+import { getOptimizedImageUrl } from "@/lib/utils";
 
 interface UniversalImageProps extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, "src"> {
   src?: string | null;
@@ -21,52 +21,50 @@ export const UniversalImage = React.memo(function UniversalImage({
   width = 800,
   height = 500,
   sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw",
-  widths = [320, 480, 640, 800, 1200],
   aspectRatio = "aspect-[16/10]",
   className = "",
   containerClassName = "",
+  loading = "lazy",
   ...props
 }: UniversalImageProps) {
+  const imgRef = useRef<HTMLImageElement>(null);
   const [error, setError] = useState(false);
-  const [retried, setRetried] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
-  const primarySrc = src ? getOptimizedImageUrl(src, width) : fallbackSrc;
-  const srcSet = src && !error ? getResponsiveSrcSet(src, widths) : undefined;
+  // Check if image is already cached/complete on mount
+  useEffect(() => {
+    if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
+      setLoaded(true);
+    }
+  }, [src]);
+
+  const primarySrc = src && !error ? getOptimizedImageUrl(src, width) : fallbackSrc;
 
   const handleError = () => {
-    if (!retried && src && !src.startsWith("data:")) {
-      setRetried(true);
-      // Force reload once
-      setError(false);
-    } else {
-      setError(true);
-    }
+    setError(true);
+    setLoaded(true);
   };
 
   const finalSrc = error || !src ? fallbackSrc : primarySrc;
 
   return (
     <div
-      className={`relative overflow-hidden bg-muted/60 ${aspectRatio} ${containerClassName}`}
+      className={`relative overflow-hidden bg-muted/40 ${aspectRatio} ${containerClassName}`}
     >
-      {/* Skeleton Blur Background until image finishes loading */}
+      {/* Background placeholder while image is fetching */}
       {!loaded && (
-        <div className="absolute inset-0 bg-gradient-to-r from-card/60 via-muted/80 to-card/60 animate-pulse pointer-events-none z-10" />
+        <div className="absolute inset-0 bg-muted/60 animate-pulse pointer-events-none z-0" />
       )}
 
       <img
+        ref={imgRef}
         src={finalSrc}
-        srcSet={error ? undefined : srcSet}
-        sizes={sizes}
         alt={alt}
-        loading="lazy"
+        loading={loading}
         decoding="async"
         onLoad={() => setLoaded(true)}
         onError={handleError}
-        className={`w-full h-full object-cover object-top transition-opacity duration-300 ${
-          loaded ? "opacity-100" : "opacity-0"
-        } ${className}`}
+        className={`w-full h-full object-cover object-top transition-opacity duration-200 ${className}`}
         {...props}
       />
     </div>

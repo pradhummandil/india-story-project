@@ -64,7 +64,15 @@ export const StoryCard = React.memo(function StoryCard({
   const lang = useI18nStore((s) => s.lang);
   const localizedStory = translateStory(story, lang);
   const commonText = getCommonText(lang);
-  const authorName = getStoryAuthor(story.slug || "");
+  const rawAuthorName = story.authorName;
+  const isRealAuthor = !!(
+    rawAuthorName &&
+    rawAuthorName.trim() !== "" &&
+    rawAuthorName.toLowerCase() !== "india story project" &&
+    rawAuthorName.toLowerCase() !== "not identifiable" &&
+    rawAuthorName.toLowerCase() !== "unknown"
+  );
+  const authorName = isRealAuthor ? rawAuthorName : "India Story Project";
 
   const onEnter = () => {
     hoverStart.current = Date.now();
@@ -133,6 +141,8 @@ export const StoryCard = React.memo(function StoryCard({
               alt={story.imageAlt ?? story.title}
               width={500}
               aspectRatio="aspect-[16/10]"
+              loading={index < 4 ? "eager" : "lazy"}
+              fetchPriority={index < 4 ? "high" : "auto"}
               className="filter saturate-[0.9] group-hover:scale-105 group-hover:saturate-100 transition-all duration-500 ease-out"
             />
             <div className="absolute inset-0 bg-black/5 pointer-events-none group-hover/card:bg-transparent transition-colors duration-300" />
@@ -157,7 +167,18 @@ export const StoryCard = React.memo(function StoryCard({
             <div className="flex items-center gap-1.5 truncate">
               <span className="flex items-center gap-1 text-foreground/80 truncate">
                 <User className="size-3 text-gold/80" />
-                <span className="truncate">{story.authorName || authorName}</span>
+                {isRealAuthor && story.authorId ? (
+                  <Link
+                    to="/authors/$id"
+                    params={{ id: story.authorId }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="truncate hover:text-gold hover:underline transition-colors font-bold cursor-pointer"
+                  >
+                    By {authorName}
+                  </Link>
+                ) : (
+                  <span className="truncate">By {authorName}</span>
+                )}
                 <CheckCircle2 className="size-3 text-blue-500 fill-blue-500/10 shrink-0" />
               </span>
               <span className="text-muted-foreground/30">•</span>

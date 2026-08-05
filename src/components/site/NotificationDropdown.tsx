@@ -81,7 +81,7 @@ export function NotificationDropdown() {
   const previousIdsRef = useRef<Set<string>>(new Set());
 
   const authHeaders = useCallback(
-    () =>
+    (): Record<string, string> =>
       session ? { Authorization: `Bearer ${session.access_token}` } : {},
     [session]
   );

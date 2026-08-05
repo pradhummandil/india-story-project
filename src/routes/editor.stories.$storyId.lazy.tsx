@@ -64,7 +64,7 @@ function EditorStoryWorkspace() {
     editorNote: string;
   } | null>(null);
   const initializedRef = useRef(false);
-  const authHeader = session ? { Authorization: `Bearer ${session.access_token}` } : {};
+  const authHeader: Record<string, string> = session ? { Authorization: `Bearer ${session.access_token}` } : {};
 
   // ─── Auth guard ──────────────────────────────────────────────────────────
   useEffect(() => {

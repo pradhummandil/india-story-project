@@ -1,7 +1,7 @@
 [
   {
     "title": "'Afroz' became 'Afroz' after enduring hardships",
-    "author": "India Story Project",
+    "author": "Afroz",
     "publishedDate": "",
     "state": "Uttar Pradesh",
     "theme": "Environment | Food",
@@ -111,7 +111,7 @@
   },
   {
     "title": "A survivor like none",
-    "author": "India Story Project",
+    "author": "Paulomi Patel",
     "publishedDate": "",
     "state": "Andhra Pradesh",
     "theme": "Heritage",
@@ -141,17 +141,7 @@
   },
   {
     "title": "Actors were shown the path by martyred 'Bhakt'.",
-    "author": "India Story Project",
-    "publishedDate": "",
-    "state": "Gujarat",
-    "theme": "Heritage | Science | Culture | Spirituality | Environment",
-    "storyId": "b921cef3-daf3-40f0-b461-95bbfda3a4e1",
-    "status": "Published",
-    "deleted": "No"
-  },
-  {
-    "title": "Actors were shown the path by martyred 'Bhakt'.",
-    "author": "India Story Project",
+    "author": "Deepak",
     "publishedDate": "",
     "state": "Gujarat",
     "theme": "Heritage | Science | Culture | Spirituality | Environment",
@@ -160,8 +150,18 @@
     "deleted": "No"
   },
   {
+    "title": "Actors were shown the path by martyred 'Bhakt'.",
+    "author": "Deepak",
+    "publishedDate": "",
+    "state": "Gujarat",
+    "theme": "Heritage | Science | Culture | Spirituality | Environment",
+    "storyId": "b921cef3-daf3-40f0-b461-95bbfda3a4e1",
+    "status": "Published",
+    "deleted": "No"
+  },
+  {
     "title": "Aditya on the journey of change",
-    "author": "India Story Project",
+    "author": "Aditya",
     "publishedDate": "",
     "state": "Maharashtra",
     "theme": "General",
@@ -191,7 +191,7 @@
   },
   {
     "title": "Air warrior turned activist",
-    "author": "India Story Project",
+    "author": "Sunil",
     "publishedDate": "",
     "state": "Rajasthan",
     "theme": "Heritage | Spirituality | Literature | Art | Environment",
@@ -201,7 +201,7 @@
   },
   {
     "title": "Ali Mir is an example",
-    "author": "India Story Project",
+    "author": "Aalia Mir",
     "publishedDate": "",
     "state": "Jammu and Kashmir",
     "theme": "Heritage | Wildlife | Environment | Food",
@@ -221,7 +221,7 @@
   },
   {
     "title": "An effort for green energy",
-    "author": "India Story Project",
+    "author": "Numan",
     "publishedDate": "",
     "state": "Punjab",
     "theme": "Heritage",
@@ -241,7 +241,7 @@
   },
   {
     "title": "An inspiring athlete like none",
-    "author": "India Story Project",
+    "author": "Bhagwani Devi",
     "publishedDate": "",
     "state": "Haryana",
     "theme": "Freedom Fighters | Architecture | Art | Environment | Food",
@@ -251,7 +251,7 @@
   },
   {
     "title": "An inspiring teacher",
-    "author": "India Story Project",
+    "author": "Manu Gulati",
     "publishedDate": "",
     "state": "Punjab",
     "theme": "Science | Innovation | Architecture | Spirituality | Art | Environment",
@@ -261,7 +261,7 @@
   },
   {
     "title": "An orphan who is brewing success",
-    "author": "India Story Project",
+    "author": "The Chai Wallah",
     "publishedDate": "",
     "state": "Assam",
     "theme": "Culture | Spirituality | Art | Environment | Technology | Food",
@@ -271,7 +271,7 @@
   },
   {
     "title": "Another name for passion and humanity is Bhagsetu.",
-    "author": "India Story Project",
+    "author": "Bhargsetu Sharma",
     "publishedDate": "",
     "state": "Gujarat",
     "theme": "Wildlife | Art | Food",
@@ -291,7 +291,7 @@
   },
   {
     "title": "Anything for education",
-    "author": "India Story Project",
+    "author": "Sandeep",
     "publishedDate": "",
     "state": "Gujarat",
     "theme": "Spirituality | Art",
@@ -301,7 +301,7 @@
   },
   {
     "title": "Archit is dedicated to the earth",
-    "author": "India Story Project",
+    "author": "Archit",
     "publishedDate": "",
     "state": "Bihar",
     "theme": "Heritage | Science | History | Wildlife | Spirituality | Environment | Technology | Food",
@@ -311,7 +311,7 @@
   },
   {
     "title": "Babita of change",
-    "author": "India Story Project",
+    "author": "Babita",
     "publishedDate": "",
     "state": "Chhattisgarh",
     "theme": "Heritage | Wildlife | Environment | Technology",
@@ -331,7 +331,7 @@
   },
   {
     "title": "became an example",
-    "author": "India Story Project",
+    "author": "Akanksha",
     "publishedDate": "",
     "state": "Rajasthan",
     "theme": "History",
@@ -341,7 +341,7 @@
   },
   {
     "title": "Becoming a source of green life",
-    "author": "India Story Project",
+    "author": "Gitanjali",
     "publishedDate": "",
     "state": "Karnataka",
     "theme": "Science | Culture | Architecture | Spirituality | Art | Environment | Food",
@@ -351,7 +351,7 @@
   },
   {
     "title": "Betrayed in love, destiny changed through hard work",
-    "author": "India Story Project",
+    "author": "Anie Siva",
     "publishedDate": "",
     "state": "Gujarat",
     "theme": "Innovation | Art",
@@ -361,7 +361,7 @@
   },
   {
     "title": "Big step for the environment",
-    "author": "India Story Project",
+    "author": "Vani Murthy",
     "publishedDate": "",
     "state": "Punjab",
     "theme": "Heritage | Wildlife | Environment",
@@ -371,7 +371,7 @@
   },
   {
     "title": "Bino Devi, example of survival",
-    "author": "India Story Project",
+    "author": "Bino Devi",
     "publishedDate": "",
     "state": "Manipur",
     "theme": "Heritage | Culture | History | Wildlife | Spirituality | Literature | Art | Environment | Technology",
@@ -381,7 +381,7 @@
   },
   {
     "title": "Blogger with a mission",
-    "author": "India Story Project",
+    "author": "Harpreet Suri",
     "publishedDate": "",
     "state": "Delhi",
     "theme": "Heritage | History | Freedom Fighters | Wildlife | Spirituality | Environment | Technology",
@@ -411,7 +411,7 @@
   },
   {
     "title": "breave heart",
-    "author": "India Story Project",
+    "author": "Rashmi",
     "publishedDate": "",
     "state": "Jharkhand",
     "theme": "Heritage | Science | Culture | History | Freedom Fighters | Wildlife | Spirituality | Literature | Art | Environment",
@@ -441,7 +441,7 @@
   },
   {
     "title": "Campaign to advance common heritage",
-    "author": "India Story Project",
+    "author": "Nalandaway",
     "publishedDate": "",
     "state": "Jammu and Kashmir",
     "theme": "Heritage | History | Freedom Fighters | Literature | Art | Food",
@@ -501,7 +501,7 @@
   },
   {
     "title": "change is the biggest rule",
-    "author": "India Story Project",
+    "author": "Tukaram",
     "publishedDate": "",
     "state": "Gujarat",
     "theme": "Culture | History | Spirituality | Environment | Technology | Food",
@@ -541,7 +541,7 @@
   },
   {
     "title": "Coming Out as a Role Model",
-    "author": "India Story Project",
+    "author": "Dr. Vibha Radhakrishnan",
     "publishedDate": "",
     "state": "Kerala",
     "theme": "Heritage | Architecture | Spirituality | Literature | Environment | Technology",
@@ -561,7 +561,7 @@
   },
   {
     "title": "Connecting nature and health with local food",
-    "author": "India Story Project",
+    "author": "Krishna McKenzie",
     "publishedDate": "",
     "state": "Tamil Nadu",
     "theme": "Culture | Spirituality | Art | Environment | Technology | Food | Festivals",
@@ -591,7 +591,7 @@
   },
   {
     "title": "Conserving a river and its people",
-    "author": "India Story Project",
+    "author": "Kartik Sapre",
     "publishedDate": "",
     "state": "Madhya Pradesh",
     "theme": "Heritage | Culture | Architecture | Wildlife | Literature | Art | Environment",
@@ -601,7 +601,7 @@
   },
   {
     "title": "Conserving Culture and Generations",
-    "author": "India Story Project",
+    "author": "Prof. Kiran Seth",
     "publishedDate": "",
     "state": "Jammu and Kashmir",
     "theme": "Heritage | Science | Culture | Freedom Fighters | Wildlife | Spirituality | Literature | Art | Environment | Technology",
@@ -611,7 +611,7 @@
   },
   {
     "title": "Constable Than Singh: Example for society",
-    "author": "India Story Project",
+    "author": "Than Singh",
     "publishedDate": "",
     "state": "Delhi",
     "theme": "Heritage | Literature",
@@ -621,7 +621,7 @@
   },
   {
     "title": "Creating an Inclusive World",
-    "author": "India Story Project",
+    "author": "Ashaita Mahajan",
     "publishedDate": "",
     "state": "Maharashtra",
     "theme": "Heritage | Science | Culture | Spirituality | Art | Environment",
@@ -631,7 +631,7 @@
   },
   {
     "title": "Cricket Guru Drona Gurcharan Singh",
-    "author": "India Story Project",
+    "author": "Gurcharan Singh",
     "publishedDate": "",
     "state": "Punjab",
     "theme": "History",
@@ -651,7 +651,7 @@
   },
   {
     "title": "Cycling to the path of glory",
-    "author": "India Story Project",
+    "author": "Ronaldo Singh",
     "publishedDate": "",
     "state": "Manipur",
     "theme": "History | Freedom Fighters | Environment | Technology",
@@ -681,7 +681,7 @@
   },
   {
     "title": "Devotion showed the way to change",
-    "author": "India Story Project",
+    "author": "Bhakti Sharma",
     "publishedDate": "",
     "state": "Madhya Pradesh",
     "theme": "Architecture | Environment",
@@ -691,7 +691,7 @@
   },
   {
     "title": "Diamond, carrier of Indian culture",
-    "author": "India Story Project",
+    "author": "Heera Koranne-Kulkarni",
     "publishedDate": "",
     "state": "Chhattisgarh",
     "theme": "Heritage | Science | Culture | Innovation | Freedom Fighters | Spirituality | Literature | Art | Festivals",
@@ -701,7 +701,7 @@
   },
   {
     "title": "Dr. S.P. Mukherjee's story of a doctor who became a messiah",
-    "author": "India Story Project",
+    "author": "Dr. S. P. Mukherjee",
     "publishedDate": "",
     "state": "Kerala",
     "theme": "History | Art | Environment",
@@ -711,7 +711,7 @@
   },
   {
     "title": "Duniya Murid Dilshad's",
-    "author": "India Story Project",
+    "author": "Dilshad Hussain",
     "publishedDate": "",
     "state": "Uttar Pradesh",
     "theme": "Spirituality | Art",
@@ -721,7 +721,7 @@
   },
   {
     "title": "Education for transgenders in India",
-    "author": "India Story Project",
+    "author": "Dr. Prof. Rajesh",
     "publishedDate": "",
     "state": "Delhi",
     "theme": "Heritage | Science | Wildlife | Spirituality | Art | Environment | Technology",
@@ -731,7 +731,7 @@
   },
   {
     "title": "Empowerment with fairtrade",
-    "author": "India Story Project",
+    "author": "Atram",
     "publishedDate": "",
     "state": "Andhra Pradesh",
     "theme": "Heritage | Science | Culture | Freedom Fighters | Architecture | Spirituality | Art | Environment | Technology | Food",
@@ -791,7 +791,7 @@
   },
   {
     "title": "Fighting against menstrual stigma",
-    "author": "India Story Project",
+    "author": "Anisha Bhatia",
     "publishedDate": "",
     "state": "Assam",
     "theme": "Science | Spirituality | Literature | Art | Environment",
@@ -821,7 +821,7 @@
   },
   {
     "title": "final resolution ashish ashish",
-    "author": "India Story Project",
+    "author": "Ashish",
     "publishedDate": "",
     "state": "Haryana",
     "theme": "Science | Environment",
@@ -831,7 +831,7 @@
   },
   {
     "title": "Flying high with confidence",
-    "author": "India Story Project",
+    "author": "Ayesha",
     "publishedDate": "",
     "state": "Jammu and Kashmir",
     "theme": "History | Environment | Technology",
@@ -851,7 +851,7 @@
   },
   {
     "title": "Foundation of education is strong engineer",
-    "author": "India Story Project",
+    "author": "Neeraj",
     "publishedDate": "",
     "state": "Gujarat",
     "theme": "Heritage | Environment | Food",
@@ -871,7 +871,7 @@
   },
   {
     "title": "Gaurav Gambhir",
-    "author": "India Story Project",
+    "author": "Gaurav Gambhir",
     "publishedDate": "",
     "state": "Bihar",
     "theme": "Heritage | Wildlife | Spirituality | Environment",
@@ -881,7 +881,7 @@
   },
   {
     "title": "Goldenweir of the Commonwealth Games",
-    "author": "India Story Project",
+    "author": "Archita",
     "publishedDate": "",
     "state": "West Bengal",
     "theme": "General",
@@ -895,7 +895,7 @@
     "publishedDate": "",
     "state": "Maharashtra",
     "theme": "Culture | History | Freedom Fighters | Spirituality | Art",
-    "storyId": "7ca7ed04-bcfb-4ebc-a5c5-4467088bac2f",
+    "storyId": "f9d76461-0a65-49d3-8aaf-d8484c178125",
     "status": "Published",
     "deleted": "No"
   },
@@ -905,7 +905,7 @@
     "publishedDate": "",
     "state": "Maharashtra",
     "theme": "Culture | History | Freedom Fighters | Spirituality | Art",
-    "storyId": "f9d76461-0a65-49d3-8aaf-d8484c178125",
+    "storyId": "7ca7ed04-bcfb-4ebc-a5c5-4467088bac2f",
     "status": "Published",
     "deleted": "No"
   },
@@ -921,7 +921,7 @@
   },
   {
     "title": "great gift for knowledge",
-    "author": "India Story Project",
+    "author": "Vijay Kumar Chansoria",
     "publishedDate": "",
     "state": "Gujarat",
     "theme": "General",
@@ -931,7 +931,7 @@
   },
   {
     "title": "Growing forests in busy urban jungles",
-    "author": "India Story Project",
+    "author": "Pradeep",
     "publishedDate": "",
     "state": "Gujarat",
     "theme": "Heritage | Science | History | Wildlife | Spirituality | Art | Environment | Food | Festivals",
@@ -951,7 +951,7 @@
   },
   {
     "title": "Hari Singh Gond Ka Pahad Jhoot Jazbaa",
-    "author": "India Story Project",
+    "author": "Hari Singh Gond",
     "publishedDate": "",
     "state": "Madhya Pradesh",
     "theme": "Food",
@@ -1021,7 +1021,7 @@
   },
   {
     "title": "If both hands are cut off then ask the tribals to write their destiny.",
-    "author": "India Story Project",
+    "author": "Sunita Malhan",
     "publishedDate": "",
     "state": "Haryana",
     "theme": "Environment",
@@ -1041,7 +1041,7 @@
   },
   {
     "title": "India’s finest shotgun shooter",
-    "author": "India Story Project",
+    "author": "Ahmed Khan",
     "publishedDate": "",
     "state": "Uttar Pradesh",
     "theme": "History | Spirituality | Art | Environment",
@@ -1061,7 +1061,7 @@
   },
   {
     "title": "India’s Millet Queen",
-    "author": "India Story Project",
+    "author": "Lahari Bai",
     "publishedDate": "",
     "state": "Madhya Pradesh",
     "theme": "Heritage | Science | Wildlife | Art | Environment | Technology | Food",
@@ -1091,7 +1091,7 @@
   },
   {
     "title": "Indian motorsports queen",
-    "author": "India Story Project",
+    "author": "Aishwarya Pissay",
     "publishedDate": "",
     "state": "Karnataka",
     "theme": "History | Art | Technology",
@@ -1101,7 +1101,7 @@
   },
   {
     "title": "Indian YouTubers Standup for Africa",
-    "author": "India Story Project",
+    "author": "Group of YouTubers",
     "publishedDate": "",
     "state": "Kerala",
     "theme": "Heritage | Literature | Art | Environment",
@@ -1131,7 +1131,7 @@
   },
   {
     "title": "Innovative farmer from Rajasthan",
-    "author": "India Story Project",
+    "author": "Fasuram",
     "publishedDate": "",
     "state": "Rajasthan",
     "theme": "Science | Culture | Innovation | Wildlife | Spirituality | Art | Environment | Technology | Food",
@@ -1141,7 +1141,7 @@
   },
   {
     "title": "Instilling confidence in kids",
-    "author": "India Story Project",
+    "author": "Vivek Kumar Singh",
     "publishedDate": "",
     "state": "Madhya Pradesh",
     "theme": "Heritage | Science | Spirituality | Literature | Art | Environment | Technology",
@@ -1171,7 +1171,7 @@
   },
   {
     "title": "journey from kitchen to business",
-    "author": "India Story Project",
+    "author": "Geeta Patil",
     "publishedDate": "",
     "state": "Maharashtra",
     "theme": "Science | Environment | Food",
@@ -1181,7 +1181,7 @@
   },
   {
     "title": "Journey of an acclaimed photographer",
-    "author": "India Story Project",
+    "author": "Vicky Roy",
     "publishedDate": "",
     "state": "Kerala",
     "theme": "History | Art | Environment | Technology | Food | Festivals",
@@ -1191,7 +1191,7 @@
   },
   {
     "title": "Kashmiri youth’s new world record",
-    "author": "India Story Project",
+    "author": "Mustafa",
     "publishedDate": "",
     "state": "Jammu and Kashmir",
     "theme": "Literature | Art | Environment",
@@ -1211,7 +1211,7 @@
   },
   {
     "title": "Lady Zakir Hussain Anuradha",
-    "author": "India Story Project",
+    "author": "Anuradha Pal",
     "publishedDate": "",
     "state": "Karnataka",
     "theme": "Culture | Innovation | Art",
@@ -1221,7 +1221,7 @@
   },
   {
     "title": "Milestone in women's constitution",
-    "author": "India Story Project",
+    "author": "Chetna Sinha",
     "publishedDate": "",
     "state": "Bihar",
     "theme": "Science | History | Spirituality | Art | Food",
@@ -1231,7 +1231,7 @@
   },
   {
     "title": "Nilofar who fights against difficulties",
-    "author": "India Story Project",
+    "author": "Nilofer",
     "publishedDate": "",
     "state": "Jammu and Kashmir",
     "theme": "Innovation | Spirituality | Food",
@@ -1251,7 +1251,7 @@
   },
   {
     "title": "Pallavi who raised the name of India",
-    "author": "India Story Project",
+    "author": "Dr. Pallavi Tiwari",
     "publishedDate": "",
     "state": "Madhya Pradesh",
     "theme": "Science | Innovation | Spirituality | Literature | Technology",
@@ -1261,7 +1261,7 @@
   },
   {
     "title": "Reality is following Pallavi's footsteps",
-    "author": "India Story Project",
+    "author": "Dr. Pallavi",
     "publishedDate": "",
     "state": "Assam",
     "theme": "Heritage | Innovation | Spirituality",
@@ -1291,7 +1291,7 @@
   },
   {
     "title": "Spreading Kindness and Altruism",
-    "author": "India Story Project",
+    "author": "Palam Kalyanasundaram",
     "publishedDate": "",
     "state": "Tamil Nadu",
     "theme": "Science | Spirituality | Literature | Art | Environment | Technology | Food",
@@ -1301,7 +1301,7 @@
   },
   {
     "title": "strings of life related to friendship",
-    "author": "India Story Project",
+    "author": "Amritansh",
     "publishedDate": "",
     "state": "Gujarat",
     "theme": "Spirituality | Literature",
@@ -1321,7 +1321,7 @@
   },
   {
     "title": "The creation of destiny has its own name “Bhagyashree”",
-    "author": "India Story Project",
+    "author": "Bhagyashree",
     "publishedDate": "",
     "state": "Madhya Pradesh",
     "theme": "Heritage | Spirituality | Art",
@@ -1331,7 +1331,7 @@
   },
   {
     "title": "The woman who got command of the combat unit",
-    "author": "India Story Project",
+    "author": "Group Captain Shailza Dhami",
     "publishedDate": "",
     "state": "Maharashtra",
     "theme": "History | Art | Environment",
@@ -1381,7 +1381,7 @@
   },
   {
     "title": "Victory of the hero of the seed revolution",
-    "author": "India Story Project",
+    "author": "Vijay",
     "publishedDate": "",
     "state": "Uttarakhand",
     "theme": "Heritage | History | Freedom Fighters | Wildlife | Spirituality | Environment | Food",
@@ -1401,7 +1401,7 @@
   },
   {
     "title": "Youth resolution for water conservation",
-    "author": "India Story Project",
+    "author": "Garvita",
     "publishedDate": "",
     "state": "Jharkhand",
     "theme": "Heritage | Wildlife | Spirituality | Environment",
@@ -1411,7 +1411,7 @@
   },
   {
     "title": "Zindagi Rang Management Amritlansh",
-    "author": "India Story Project",
+    "author": "Amritansh",
     "publishedDate": "",
     "state": "Andhra Pradesh",
     "theme": "Architecture | Literature",
@@ -1421,7 +1421,7 @@
   },
   {
     "title": "Kindling imagination with a mobile library",
-    "author": "India Story Project",
+    "author": "Usha",
     "publishedDate": "2026-08-03 17:34:22",
     "state": "Madhya Pradesh",
     "theme": "Heritage",
@@ -1431,7 +1431,7 @@
   },
   {
     "title": "'Light' of knowledge",
-    "author": "India Story Project",
+    "author": "Prakash Ghosh",
     "publishedDate": "2026-08-03 17:25:12",
     "state": "West Bengal",
     "theme": "Spirituality",
@@ -1451,7 +1451,7 @@
   },
   {
     "title": "Lily- The Girl Girl",
-    "author": "India Story Project",
+    "author": "Lily",
     "publishedDate": "2026-08-03 16:43:56",
     "state": "Haryana",
     "theme": "History",
@@ -1471,7 +1471,7 @@
   },
   {
     "title": "Friendship of friends, great war with mafia - know the greenery revolution of Jamuna Tudu!",
-    "author": "India Story Project",
+    "author": "Jamuna Tudu",
     "publishedDate": "2026-08-03 16:17:09",
     "state": "Jharkhand",
     "theme": "Heritage",
@@ -1501,7 +1501,7 @@
   },
   {
     "title": "Madhavi got her position through hard work",
-    "author": "India Story Project",
+    "author": "Madhavi Pal",
     "publishedDate": "2026-07-30 10:15:15",
     "state": "Jharkhand",
     "theme": "Culture",
@@ -1531,7 +1531,7 @@
   },
   {
     "title": "Making destiny smile with hard work",
-    "author": "India Story Project",
+    "author": "Ilma Afroz",
     "publishedDate": "2026-07-30 09:52:03",
     "state": "Uttar Pradesh",
     "theme": "Food",
@@ -1541,7 +1541,7 @@
   },
   {
     "title": "Man behind Cheetah reintroduction",
-    "author": "India Story Project",
+    "author": "M. K. Ranjitsinh",
     "publishedDate": "2026-07-30 09:37:53",
     "state": "Madhya Pradesh",
     "theme": "Heritage",
@@ -1561,7 +1561,7 @@
   },
   {
     "title": "Battalion Manjula in UP High Temple Service",
-    "author": "India Story Project",
+    "author": "Manjula",
     "publishedDate": "2026-07-30 09:24:54",
     "state": "Haryana",
     "theme": "Heritage",
@@ -1571,7 +1571,7 @@
   },
   {
     "title": "Manjusha's seeker Manoj",
-    "author": "India Story Project",
+    "author": "Manoj",
     "publishedDate": "2026-07-30 09:15:14",
     "state": "Bihar",
     "theme": "Heritage",
@@ -1581,7 +1581,7 @@
   },
   {
     "title": "Marriage hall on wheels",
-    "author": "India Story Project",
+    "author": "Darekar",
     "publishedDate": "2026-07-30 09:08:12",
     "state": "Maharashtra",
     "theme": "Science",
@@ -1591,7 +1591,7 @@
   },
   {
     "title": "Mentoring success with frames",
-    "author": "India Story Project",
+    "author": "Sandeep",
     "publishedDate": "2026-07-30 08:52:10",
     "state": "Delhi",
     "theme": "Culture",
@@ -1611,7 +1611,7 @@
   },
   {
     "title": "Mirabai-a bright ray of hope",
-    "author": "India Story Project",
+    "author": "Mirabai",
     "publishedDate": "2026-07-30 08:29:12",
     "state": "Rajasthan",
     "theme": "Environment",
@@ -1631,7 +1631,7 @@
   },
   {
     "title": "Mitti cool regime",
-    "author": "India Story Project",
+    "author": "Mansukhbhai Prajapati",
     "publishedDate": "2026-07-29 18:03:37",
     "state": "Gujarat",
     "theme": "Food",
@@ -1641,7 +1641,7 @@
   },
   {
     "title": "Mixed media magic",
-    "author": "India Story Project",
+    "author": "Aditya Pande",
     "publishedDate": "2026-07-29 17:53:16",
     "state": "Gujarat",
     "theme": "Architecture",
@@ -1651,7 +1651,7 @@
   },
   {
     "title": "Mohit who works in connection with nature",
-    "author": "India Story Project",
+    "author": "Mohit",
     "publishedDate": "2026-07-29 17:43:46",
     "state": "Delhi",
     "theme": "Food",
@@ -1661,7 +1661,7 @@
   },
   {
     "title": "Mountaineering prodigy of India",
-    "author": "India Story Project",
+    "author": "Kaamya Karthikeyan",
     "publishedDate": "2026-07-29 17:29:05",
     "state": "Maharashtra",
     "theme": "Heritage",
@@ -1671,7 +1671,7 @@
   },
   {
     "title": "Munni Devi's art journey",
-    "author": "India Story Project",
+    "author": "Munni Devi",
     "publishedDate": "2026-07-29 17:22:44",
     "state": "Bihar",
     "theme": "Culture",
@@ -1681,7 +1681,7 @@
   },
   {
     "title": "Music educates us to be one",
-    "author": "India Story Project",
+    "author": "Anwar Khan",
     "publishedDate": "2026-07-29 17:16:40",
     "state": "Rajasthan",
     "theme": "Festivals",
@@ -1691,7 +1691,7 @@
   },
   {
     "title": "Noor's story that breaks myths",
-    "author": "India Story Project",
+    "author": "Nusrat Noor",
     "publishedDate": "2026-07-29 17:11:31",
     "state": "Jharkhand",
     "theme": "Science",
@@ -1711,7 +1711,7 @@
   },
   {
     "title": "'Salute' to new thinking",
-    "author": "India Story Project",
+    "author": "Naman",
     "publishedDate": "2026-07-29 08:39:45",
     "state": "Telangana",
     "theme": "Environment",
@@ -1721,7 +1721,7 @@
   },
   {
     "title": "Namma is the friend of both the rider and the car.",
-    "author": "India Story Project",
+    "author": "Namma Yatri",
     "publishedDate": "2026-07-29 08:32:10",
     "state": "Karnataka",
     "theme": "General",
@@ -1731,7 +1731,7 @@
   },
   {
     "title": "Narendra Modi's struggle for sparrow",
-    "author": "India Story Project",
+    "author": "Narendra Singh Yadav",
     "publishedDate": "2026-07-29 08:22:29",
     "state": "Jammu and Kashmir",
     "theme": "Heritage",
@@ -1741,7 +1741,7 @@
   },
   {
     "title": "Necessity is the mother of inventions",
-    "author": "India Story Project",
+    "author": "Narendra",
     "publishedDate": "2026-07-29 08:14:29",
     "state": "Madhya Pradesh",
     "theme": "Food",
@@ -1761,7 +1761,7 @@
   },
   {
     "title": "Neo's Tone Sadhna",
-    "author": "India Story Project",
+    "author": "Neha",
     "publishedDate": "2026-07-29 08:02:19",
     "state": "Assam",
     "theme": "Festivals",
@@ -1771,7 +1771,7 @@
   },
   {
     "title": "New dawn in society: Shubham",
-    "author": "India Story Project",
+    "author": "Shubham",
     "publishedDate": "2026-07-29 07:56:49",
     "state": "Bihar",
     "theme": "Culture",
@@ -1791,7 +1791,7 @@
   },
   {
     "title": "new path made from sand",
-    "author": "India Story Project",
+    "author": "Sudarsan",
     "publishedDate": "2026-07-29 07:41:41",
     "state": "Gujarat",
     "theme": "Festivals",
@@ -1801,7 +1801,7 @@
   },
   {
     "title": "New story of women power",
-    "author": "India Story Project",
+    "author": "Maina Solanki",
     "publishedDate": "2026-07-29 07:35:48",
     "state": "Madhya Pradesh",
     "theme": "Environment",
@@ -1811,7 +1811,7 @@
   },
   {
     "title": "New beginning of the fund",
-    "author": "India Story Project",
+    "author": "Nidhi",
     "publishedDate": "2026-07-29 07:31:22",
     "state": "Gujarat",
     "theme": "Culture",
@@ -1821,7 +1821,7 @@
   },
   {
     "title": "World champion again",
-    "author": "India Story Project",
+    "author": "Nitu Ganghas",
     "publishedDate": "2026-07-29 07:27:16",
     "state": "Haryana",
     "theme": "History",
@@ -1831,7 +1831,7 @@
   },
   {
     "title": "No obstacle is big enough",
-    "author": "India Story Project",
+    "author": "Jayant",
     "publishedDate": "2026-07-29 07:21:37",
     "state": "Maharashtra",
     "theme": "Food",
@@ -1841,7 +1841,7 @@
   },
   {
     "title": "On a van life to experience India closely",
-    "author": "India Story Project",
+    "author": "Abhey",
     "publishedDate": "2026-07-29 07:15:49",
     "state": "Delhi",
     "theme": "Food",
@@ -1851,7 +1851,7 @@
   },
   {
     "title": "Outsmarting fate to create many destinies",
-    "author": "India Story Project",
+    "author": "Rashmin Tiwary",
     "publishedDate": "2026-07-28 09:39:48",
     "state": "Bihar",
     "theme": "Technology",
@@ -1881,7 +1881,7 @@
   },
   {
     "title": "Patriotism awakened by the parade",
-    "author": "India Story Project",
+    "author": "Vanshika",
     "publishedDate": "2026-07-28 09:10:17",
     "state": "Chhattisgarh",
     "theme": "History",
@@ -1891,7 +1891,7 @@
   },
   {
     "title": "The nose is alive in every smile",
-    "author": "India Story Project",
+    "author": "Neha",
     "publishedDate": "2026-07-28 09:03:54",
     "state": "Haryana",
     "theme": "Heritage",
@@ -1901,7 +1901,7 @@
   },
   {
     "title": "path of change swami policeman",
-    "author": "India Story Project",
+    "author": "Pooja",
     "publishedDate": "2026-07-28 08:59:06",
     "state": "Madhya Pradesh",
     "theme": "Heritage",
@@ -1911,7 +1911,7 @@
   },
   {
     "title": "Pooja is showing the path of change to women",
-    "author": "India Story Project",
+    "author": "Satish Patel",
     "publishedDate": "2026-07-28 08:47:07",
     "state": "Bihar",
     "theme": "Culture",
@@ -1921,7 +1921,7 @@
   },
   {
     "title": "Poonam's step towards change",
-    "author": "India Story Project",
+    "author": "Poonam",
     "publishedDate": "2026-07-28 08:40:51",
     "state": "Jammu and Kashmir",
     "theme": "Heritage",
@@ -1931,7 +1931,7 @@
   },
   {
     "title": "Pothole Dada: A Powerful Personality",
-    "author": "India Story Project",
+    "author": "Pothole Dada",
     "publishedDate": "2026-07-28 08:30:30",
     "state": "Maharashtra",
     "theme": "Environment",
@@ -1951,7 +1951,7 @@
   },
   {
     "title": "Prem bags wings to dreams",
-    "author": "India Story Project",
+    "author": "Prem",
     "publishedDate": "2026-07-28 08:18:48",
     "state": "Assam",
     "theme": "Culture",
@@ -1981,7 +1981,7 @@
   },
   {
     "title": "Professor Alok Sagar: Surprising but true",
-    "author": "India Story Project",
+    "author": "Prof. Alok Sagar",
     "publishedDate": "2026-07-28 08:04:30",
     "state": "Madhya Pradesh",
     "theme": "Spirituality",
@@ -1991,7 +1991,7 @@
   },
   {
     "title": "Stork Sister who saves the stork from trouble",
-    "author": "India Story Project",
+    "author": "Purnima Devi Barman",
     "publishedDate": "2026-07-28 07:39:44",
     "state": "Assam",
     "theme": "Heritage",
@@ -2011,7 +2011,7 @@
   },
   {
     "title": "Radio Characters: A New Hope",
-    "author": "India Story Project",
+    "author": "Radio Axis",
     "publishedDate": "2026-07-28 07:29:19",
     "state": "Rajasthan",
     "theme": "Spirituality",
@@ -2021,7 +2021,7 @@
   },
   {
     "title": "Rahul giving the message of return from nature",
-    "author": "India Story Project",
+    "author": "Rahul",
     "publishedDate": "2026-07-28 07:23:53",
     "state": "Gujarat",
     "theme": "Heritage",
@@ -2031,7 +2031,7 @@
   },
   {
     "title": "Rajenchay: Roshan Roshan is unemployed",
-    "author": "India Story Project",
+    "author": "Rajendra Srivastava",
     "publishedDate": "2026-07-28 07:15:51",
     "state": "Bihar",
     "theme": "Culture",
@@ -2041,7 +2041,7 @@
   },
   {
     "title": "Ramveer is the restaurant in Shiksha Sadhana",
-    "author": "India Story Project",
+    "author": "Ramveer",
     "publishedDate": "2026-07-26 19:28:41",
     "state": "Haryana",
     "theme": "History",
@@ -2051,7 +2051,7 @@
   },
   {
     "title": "Ramveer's water meditation",
-    "author": "India Story Project",
+    "author": "Ramveer",
     "publishedDate": "2026-07-26 19:20:04",
     "state": "Haryana",
     "theme": "Heritage",
@@ -2061,7 +2061,7 @@
   },
   {
     "title": "Riya's new place in Ranchi",
-    "author": "India Story Project",
+    "author": "Riya Tirkey",
     "publishedDate": "2026-07-26 19:11:31",
     "state": "Jharkhand",
     "theme": "Heritage",
@@ -2081,7 +2081,7 @@
   },
   {
     "title": "Recharging young lives with theatre",
-    "author": "India Story Project",
+    "author": "Dimpy Mishra",
     "publishedDate": "2026-07-26 18:51:05",
     "state": "Goa",
     "theme": "Science",
@@ -2111,7 +2111,7 @@
   },
   {
     "title": "Restoring traditions for the future generation",
-    "author": "India Story Project",
+    "author": "Victor",
     "publishedDate": "2026-07-26 18:30:06",
     "state": "Goa",
     "theme": "Heritage",
@@ -2121,7 +2121,7 @@
   },
   {
     "title": "Retrieving the lost legacy",
-    "author": "India Story Project",
+    "author": "Mohan Singh Negi",
     "publishedDate": "2026-07-26 18:23:43",
     "state": "Uttarakhand",
     "theme": "Heritage",
@@ -2141,7 +2141,7 @@
   },
   {
     "title": "Reviving ponds and lives",
-    "author": "India Story Project",
+    "author": "Ramveer Tawar",
     "publishedDate": "2026-07-26 18:12:25",
     "state": "Uttar Pradesh",
     "theme": "Food",
@@ -2161,7 +2161,7 @@
   },
   {
     "title": "struggle path of samyak",
-    "author": "India Story Project",
+    "author": "Samyak",
     "publishedDate": "2026-07-26 17:59:46",
     "state": "Maharashtra",
     "theme": "Science",
@@ -2171,7 +2171,7 @@
   },
   {
     "title": "From struggle to peak, Rinku Gallery",
-    "author": "India Story Project",
+    "author": "Rinku Hooda",
     "publishedDate": "2026-07-26 17:53:48",
     "state": "Haryana",
     "theme": "Food",
@@ -2181,7 +2181,7 @@
   },
   {
     "title": "Father was Kunal Delivery, son became cricket star",
-    "author": "India Story Project",
+    "author": "Rinku Singh",
     "publishedDate": "2026-07-26 17:47:43",
     "state": "Punjab",
     "theme": "Environment",
@@ -2191,7 +2191,7 @@
   },
   {
     "title": "Role model for generations",
-    "author": "India Story Project",
+    "author": "Pappammal",
     "publishedDate": "2026-07-26 17:36:16",
     "state": "Tamil Nadu",
     "theme": "Food",
@@ -2201,7 +2201,7 @@
   },
   {
     "title": "clay art, clay art",
-    "author": "India Story Project",
+    "author": "Sagar Naik Mule",
     "publishedDate": "2026-07-26 17:26:23",
     "state": "Bihar",
     "theme": "Festivals",
@@ -2221,7 +2221,7 @@
   },
   {
     "title": "Sarita's resolution path",
-    "author": "India Story Project",
+    "author": "Sarita",
     "publishedDate": "2026-07-26 11:50:32",
     "state": "Bihar",
     "theme": "History",
@@ -2251,7 +2251,7 @@
   },
   {
     "title": "Savita is the name of courage",
-    "author": "India Story Project",
+    "author": "Savita",
     "publishedDate": "2026-07-26 11:28:02",
     "state": "Arunachal Pradesh",
     "theme": "Environment",
@@ -2261,7 +2261,7 @@
   },
   {
     "title": "silk sculpture",
-    "author": "India Story Project",
+    "author": "Jithin",
     "publishedDate": "2026-07-26 11:21:31",
     "state": "Gujarat",
     "theme": "Food",
@@ -2271,7 +2271,7 @@
   },
   {
     "title": "trust life innings",
-    "author": "India Story Project",
+    "author": "Karta Singh Saunkhala",
     "publishedDate": "2026-07-26 11:15:10",
     "state": "Himachal Pradesh",
     "theme": "Heritage",
@@ -2281,7 +2281,7 @@
   },
   {
     "title": "warrior farmer of unrighteousness",
-    "author": "India Story Project",
+    "author": "Seth Pal Singh",
     "publishedDate": "2026-07-26 11:07:48",
     "state": "Delhi",
     "theme": "Food",
@@ -2301,7 +2301,7 @@
   },
   {
     "title": "live education cool",
-    "author": "India Story Project",
+    "author": "Shivdasiya",
     "publishedDate": "2026-07-26 10:51:04",
     "state": "Gujarat",
     "theme": "Environment",
@@ -2311,7 +2311,7 @@
   },
   {
     "title": "Shining light in the diaspora",
-    "author": "India Story Project",
+    "author": "Heera",
     "publishedDate": "2026-07-26 10:46:02",
     "state": "Gujarat",
     "theme": "Culture",
@@ -2321,7 +2321,7 @@
   },
   {
     "title": "Sikki artist's diamond-Madhubani's Meera",
-    "author": "India Story Project",
+    "author": "Meera",
     "publishedDate": "2026-07-26 10:23:19",
     "state": "Bihar",
     "theme": "Culture",
@@ -2341,7 +2341,7 @@
   },
   {
     "title": "Youth who give life to water sources",
-    "author": "India Story Project",
+    "author": "Sneha Shahi",
     "publishedDate": "2026-07-26 10:13:15",
     "state": "Gujarat",
     "theme": "Heritage",
@@ -2371,7 +2371,7 @@
   },
   {
     "title": "Sooraj, a new dawn of hope",
-    "author": "India Story Project",
+    "author": "Sooraj",
     "publishedDate": "2026-07-26 09:13:20",
     "state": "Maharashtra",
     "theme": "Food",
@@ -2381,7 +2381,7 @@
   },
   {
     "title": "Creating value from trash",
-    "author": "India Story Project",
+    "author": "Monisha",
     "publishedDate": "2026-07-26 08:58:55",
     "state": "Maharashtra",
     "theme": "Science",
@@ -2391,7 +2391,7 @@
   },
   {
     "title": "Showing the natural way",
-    "author": "India Story Project",
+    "author": "Ritesh Agarwal",
     "publishedDate": "2026-07-26 08:47:33",
     "state": "Chhattisgarh",
     "theme": "Heritage",
@@ -2431,7 +2431,7 @@
   },
   {
     "title": "Spreading the light of education",
-    "author": "India Story Project",
+    "author": "Jithin",
     "publishedDate": "2026-07-25 08:44:20",
     "state": "Karnataka",
     "theme": "Spirituality",
@@ -2471,7 +2471,7 @@
   },
   {
     "title": "Striving to save water for future",
-    "author": "India Story Project",
+    "author": "Garvita",
     "publishedDate": "2026-07-25 07:41:26",
     "state": "Gujarat",
     "theme": "Heritage",
@@ -2481,7 +2481,7 @@
   },
   {
     "title": "Studying Soil Stability",
-    "author": "India Story Project",
+    "author": "Subhashish Das",
     "publishedDate": "2026-07-25 07:36:18",
     "state": "Arunachal Pradesh",
     "theme": "Architecture",
@@ -2491,7 +2491,7 @@
   },
   {
     "title": "Success with Perseverance",
-    "author": "India Story Project",
+    "author": "Capt. Rakesh Walia",
     "publishedDate": "2026-07-25 07:15:57",
     "state": "Delhi",
     "theme": "Spirituality",
@@ -2501,7 +2501,7 @@
   },
   {
     "title": "Country's Super Grandmother",
-    "author": "India Story Project",
+    "author": "Bhagwani Devi Dagar",
     "publishedDate": "2026-07-25 07:10:59",
     "state": "Delhi",
     "theme": "History",
@@ -2511,7 +2511,7 @@
   },
   {
     "title": "Lost a Leg in an Accident, But Never Lost His Determination",
-    "author": "India Story Project",
+    "author": "Neha Bhatt",
     "publishedDate": "2026-07-24 12:41:06",
     "state": "Gujarat",
     "theme": "Art",
@@ -2521,7 +2521,7 @@
   },
   {
     "title": "Lost an Arm and a Leg in an Accident, Cleared the UPSC and Became an Inspiration",
-    "author": "India Story Project",
+    "author": "Suraj Tiwari",
     "publishedDate": "2026-07-24 12:39:17",
     "state": "Uttar Pradesh",
     "theme": "Science",
@@ -2531,7 +2531,7 @@
   },
   {
     "title": "The Champion Who Turned Defeat into Victory",
-    "author": "India Story Project",
+    "author": "Abhishek",
     "publishedDate": "2026-07-24 12:38:12",
     "state": "Bihar",
     "theme": "Innovation",
@@ -2541,7 +2541,7 @@
   },
   {
     "title": "A Story of Never Giving Up",
-    "author": "India Story Project",
+    "author": "Khetaram",
     "publishedDate": "2026-07-24 12:35:34",
     "state": "Maharashtra",
     "theme": "History",
@@ -2561,7 +2561,7 @@
   },
   {
     "title": "Humans of Bhopal",
-    "author": "India Story Project",
+    "author": "Humans of Bhopal",
     "publishedDate": "2026-07-24 12:30:10",
     "state": "Mizoram",
     "theme": "Spirituality",
@@ -2581,7 +2581,7 @@
   },
   {
     "title": "flag of women power",
-    "author": "India Story Project",
+    "author": "Surekha Yadav",
     "publishedDate": "2026-07-24 09:41:37",
     "state": "Maharashtra",
     "theme": "Technology",
@@ -2591,7 +2591,7 @@
   },
   {
     "title": "Swapnil Soni: The Monkey Man",
-    "author": "India Story Project",
+    "author": "Swapnil Soni",
     "publishedDate": "2026-07-24 09:32:21",
     "state": "Bihar",
     "theme": "Wildlife",
@@ -2601,7 +2601,7 @@
   },
   {
     "title": "Taking to the skies",
-    "author": "India Story Project",
+    "author": "Sayeda Salva Fatima",
     "publishedDate": "2026-07-24 09:28:38",
     "state": "Andhra Pradesh",
     "theme": "Heritage",
@@ -2631,7 +2631,7 @@
   },
   {
     "title": "Baga painter Maharathi Jodhiya",
-    "author": "India Story Project",
+    "author": "Jodhaiya Bai Baiga",
     "publishedDate": "2026-07-24 09:09:28",
     "state": "Gujarat",
     "theme": "Culture",
@@ -2641,7 +2641,7 @@
   },
   {
     "title": "The biggest disease, are virtuous people",
-    "author": "India Story Project",
+    "author": "Modal Chai Wali",
     "publishedDate": "2026-07-24 09:02:04",
     "state": "Delhi",
     "theme": "Art",
@@ -2651,7 +2651,7 @@
   },
   {
     "title": "Education is the basis of change in society – Sagarat Rai",
-    "author": "India Story Project",
+    "author": "Sarita Rai",
     "publishedDate": "2026-07-24 08:55:14",
     "state": "Uttar Pradesh",
     "theme": "Culture",
@@ -2671,7 +2671,7 @@
   },
   {
     "title": "​The Folk Star of India",
-    "author": "India Story Project",
+    "author": "Mame Khan",
     "publishedDate": "2026-07-24 08:46:31",
     "state": "Rajasthan",
     "theme": "Culture",
@@ -2711,7 +2711,7 @@
   },
   {
     "title": "The Echo of Education in the Lives of Marginalized Children",
-    "author": "India Story Project",
+    "author": "Gunjan",
     "publishedDate": "2026-07-24 08:13:36",
     "state": "Chhattisgarh",
     "theme": "Heritage",
@@ -2741,7 +2741,7 @@
   },
   {
     "title": "The lady artisan creating livelihood",
-    "author": "India Story Project",
+    "author": "Ruma Devi",
     "publishedDate": "2026-07-24 07:58:30",
     "state": "Rajasthan",
     "theme": "Architecture",
@@ -2751,7 +2751,7 @@
   },
   {
     "title": "The land of civil disobedience set to bloom again",
-    "author": "India Story Project",
+    "author": "Sunil Kumar",
     "publishedDate": "2026-07-24 07:53:59",
     "state": "Bihar",
     "theme": "Heritage",
@@ -2811,7 +2811,7 @@
   },
   {
     "title": "The richness of simplicity",
-    "author": "India Story Project",
+    "author": "Haldhar",
     "publishedDate": "2026-07-24 07:23:43",
     "state": "Odisha",
     "theme": "Food",
@@ -2821,7 +2821,7 @@
   },
   {
     "title": "The school under the bridge",
-    "author": "India Story Project",
+    "author": "Rajesh Kumar",
     "publishedDate": "2026-07-24 07:18:47",
     "state": "Delhi",
     "theme": "Science",
@@ -2851,7 +2851,7 @@
   },
   {
     "title": "The Teacher Billionaire",
-    "author": "India Story Project",
+    "author": "Alakh (Unconfirmed)",
     "publishedDate": "2026-07-24 07:07:23",
     "state": "Uttar Pradesh",
     "theme": "Technology",
@@ -2861,7 +2861,7 @@
   },
   {
     "title": "The spirit of victory by defeating difficulties",
-    "author": "India Story Project",
+    "author": "Anjali Madhwani",
     "publishedDate": "2026-07-24 07:02:29",
     "state": "Madhya Pradesh",
     "theme": "Environment",
@@ -2871,7 +2871,7 @@
   },
   {
     "title": "The world knows and angina",
-    "author": "India Story Project",
+    "author": "Anjina",
     "publishedDate": "2026-07-24 06:59:04",
     "state": "Karnataka",
     "theme": "Spirituality",
@@ -2891,7 +2891,7 @@
   },
   {
     "title": "Tiffany: A glimpse of light in the darkness",
-    "author": "India Story Project",
+    "author": "Tiffany",
     "publishedDate": "2026-07-24 06:52:39",
     "state": "Assam",
     "theme": "Art",
@@ -2901,7 +2901,7 @@
   },
   {
     "title": "Toilets need not be dirty",
-    "author": "India Story Project",
+    "author": "Abhishek Nath",
     "publishedDate": "2026-07-24 06:48:20",
     "state": "Andhra Pradesh",
     "theme": "Technology",
@@ -2921,7 +2921,7 @@
   },
   {
     "title": "Transforming parched villages",
-    "author": "India Story Project",
+    "author": "Crispino",
     "publishedDate": "2026-07-24 06:35:12",
     "state": "Maharashtra",
     "theme": "Food",
@@ -2941,7 +2941,7 @@
   },
   {
     "title": "An Effort to Live in Harmony with Nature",
-    "author": "India Story Project",
+    "author": "Shreeja",
     "publishedDate": "2026-07-23 18:22:56",
     "state": "Telangana",
     "theme": "Science",
@@ -2971,7 +2971,7 @@
   },
   {
     "title": "Understanding the Sun",
-    "author": "India Story Project",
+    "author": "Dr. Sudeshna Boro Saikia",
     "publishedDate": "2026-07-23 17:24:59",
     "state": "Assam",
     "theme": "Science",
@@ -2981,7 +2981,7 @@
   },
   {
     "title": "Half one Guruji",
-    "author": "India Story Project",
+    "author": "Dr. Seema Rao",
     "publishedDate": "2026-07-23 17:21:24",
     "state": "Uttar Pradesh",
     "theme": "Science",
@@ -3001,7 +3001,7 @@
   },
   {
     "title": "Vertigo healing made easier and cheaper",
-    "author": "India Story Project",
+    "author": "Srinivas",
     "publishedDate": "2026-07-23 17:06:30",
     "state": "Karnataka",
     "theme": "History",
@@ -3051,7 +3051,7 @@
   },
   {
     "title": "Walking along the rivers",
-    "author": "India Story Project",
+    "author": "Sidharth Agarwal",
     "publishedDate": "2026-07-23 15:50:55",
     "state": "Madhya Pradesh",
     "theme": "Heritage",
@@ -3061,7 +3061,7 @@
   },
   {
     "title": "Waterpreneur with a difference",
-    "author": "India Story Project",
+    "author": "Amit Doshi",
     "publishedDate": "2026-07-23 15:37:43",
     "state": "Goa",
     "theme": "Heritage",
@@ -3081,7 +3081,7 @@
   },
   {
     "title": "Winning Back Life Emphatically",
-    "author": "India Story Project",
+    "author": "Ritu Saini",
     "publishedDate": "2026-07-23 15:17:45",
     "state": "Haryana",
     "theme": "Science",
@@ -3101,7 +3101,7 @@
   },
   {
     "title": "Wonder woman of India",
-    "author": "India Story Project",
+    "author": "Dr. Seema Rao",
     "publishedDate": "2026-07-22 12:04:21",
     "state": "Delhi",
     "theme": "Festivals",
@@ -3111,7 +3111,7 @@
   },
   {
     "title": "The world recognized the strength of friends",
-    "author": "India Story Project",
+    "author": "Vadivel Gopal & Masi Sadaiyan",
     "publishedDate": "2026-07-22 11:49:35",
     "state": "Kerala",
     "theme": "Technology",
@@ -3191,7 +3191,7 @@
   },
   {
     "title": "Young climate champion from Meerut",
-    "author": "India Story Project",
+    "author": "Hina",
     "publishedDate": "2026-07-20 14:55:08",
     "state": "Uttar Pradesh",
     "theme": "Technology",
@@ -3201,7 +3201,7 @@
   },
   {
     "title": "Young Biofertilizer Scientist",
-    "author": "India Story Project",
+    "author": "Dr. Evelin Heikham",
     "publishedDate": "2026-07-20 14:51:46",
     "state": "Arunachal Pradesh",
     "theme": "Food",
@@ -3211,7 +3211,7 @@
   },
   {
     "title": "Young grassroot innovator",
-    "author": "India Story Project",
+    "author": "Vinisha",
     "publishedDate": "2026-07-20 14:46:01",
     "state": "Tamil Nadu",
     "theme": "Architecture",
@@ -3241,7 +3241,7 @@
   },
   {
     "title": "A passion inspired by his profession",
-    "author": "India Story Project",
+    "author": "Dr. Pravin",
     "publishedDate": "2026-07-20 13:46:26",
     "state": "Kerala",
     "theme": "Heritage",
@@ -3251,7 +3251,7 @@
   },
   {
     "title": "A thoughtful business model",
-    "author": "India Story Project",
+    "author": "Shruti Shibulal",
     "publishedDate": "2026-07-20 13:36:45",
     "state": "Goa",
     "theme": "Heritage",
@@ -3261,7 +3261,7 @@
   },
   {
     "title": "A true warrior",
-    "author": "India Story Project",
+    "author": "Annie Shiva",
     "publishedDate": "2026-07-20 13:33:51",
     "state": "Kerala",
     "theme": "Heritage",
@@ -3281,7 +3281,7 @@
   },
   {
     "title": "A man who cares for the suffering",
-    "author": "India Story Project",
+    "author": "Harakchand Sawla",
     "publishedDate": "2026-07-20 13:30:20",
     "state": "Maharashtra",
     "theme": "Heritage",
@@ -3311,7 +3311,7 @@
   },
   {
     "title": "A radio jockey speaking for the environment",
-    "author": "India Story Project",
+    "author": "Varsha",
     "publishedDate": "2026-07-20 13:14:12",
     "state": "Madhya Pradesh",
     "theme": "Heritage",
@@ -3331,7 +3331,7 @@
   },
   {
     "title": "The Doctor Who Became a Messiah",
-    "author": "India Story Project",
+    "author": "Dr. S. P. Mukherjee",
     "publishedDate": "2026-07-20 03:41:14",
     "state": "Arunachal Pradesh",
     "theme": "History",
@@ -3351,7 +3351,7 @@
   },
   {
     "title": "Winds of Change in Kashmir",
-    "author": "India Story Project",
+    "author": "Wani Siblings",
     "publishedDate": "2026-07-20 03:37:18",
     "state": "Jammu and Kashmir",
     "theme": "Art",
@@ -3361,7 +3361,7 @@
   },
   {
     "title": "Recognise Ability, Not Disability",
-    "author": "India Story Project",
+    "author": "Arushi",
     "publishedDate": "2026-07-20 03:35:37",
     "state": "Daman and Diu",
     "theme": "Spirituality",
@@ -3371,7 +3371,7 @@
   },
   {
     "title": "Kanika's Flight to New Heights",
-    "author": "India Story Project",
+    "author": "Kanika Tekriwal",
     "publishedDate": "2026-07-20 03:31:45",
     "state": "Delhi",
     "theme": "Innovation",
@@ -3381,7 +3381,7 @@
   },
   {
     "title": "Fighting Cancer Through Kathak",
-    "author": "India Story Project",
+    "author": "Alaknanda",
     "publishedDate": "2026-07-20 03:30:02",
     "state": "Haryana",
     "theme": "Culture",
@@ -3431,7 +3431,7 @@
   },
   {
     "title": "The Man Who Brought Historic Stepwells Back to Life: 'Pagal Saab'",
-    "author": "India Story Project",
+    "author": "Pagal Saab",
     "publishedDate": "2026-07-20 03:19:02",
     "state": "Rajasthan",
     "theme": "Heritage",
@@ -3451,7 +3451,7 @@
   },
   {
     "title": "A School Teacher's Agricultural Revolution",
-    "author": "India Story Project",
+    "author": "Trinity Saioo",
     "publishedDate": "2026-07-20 03:15:30",
     "state": "Meghalaya",
     "theme": "History",
@@ -3471,7 +3471,7 @@
   },
   {
     "title": "The Story of a Water Warrior",
-    "author": "India Story Project",
+    "author": "Nimal Raghvan",
     "publishedDate": "2026-07-20 03:10:26",
     "state": "Andhra Pradesh",
     "theme": "Heritage",
@@ -3481,7 +3481,7 @@
   },
   {
     "title": "Once There Was Rangamma",
-    "author": "India Story Project",
+    "author": "Rangamma",
     "publishedDate": "2026-07-20 03:07:25",
     "state": "Delhi",
     "theme": "History",
@@ -3521,7 +3521,7 @@
   },
   {
     "title": "Zero-waste campaigner",
-    "author": "India Story Project",
+    "author": "Vani Murthy",
     "publishedDate": "2026-07-17 14:11:08",
     "state": "Andhra Pradesh",
     "theme": "Heritage",
@@ -3531,7 +3531,7 @@
   },
   {
     "title": "An IPS Officer's Fitness Journey",
-    "author": "India Story Project",
+    "author": "Vivek Raj",
     "publishedDate": "2026-07-17 07:15:39",
     "state": "Madhya Pradesh",
     "theme": "Spirituality",
@@ -3551,7 +3551,7 @@
   },
   {
     "title": "Uma's Flight",
-    "author": "India Story Project",
+    "author": "Uma",
     "publishedDate": "2026-07-17 07:10:31",
     "state": "Arunachal Pradesh",
     "theme": "Literature",
@@ -3571,7 +3571,7 @@
   },
   {
     "title": "Humans can communicate with animals!",
-    "author": "India Story Project",
+    "author": "Radha",
     "publishedDate": "2026-07-17 07:07:33",
     "state": "Goa",
     "theme": "Wildlife",
@@ -3581,7 +3581,7 @@
   },
   {
     "title": "The story of a teacher's duty",
-    "author": "India Story Project",
+    "author": "Aruna Mahale",
     "publishedDate": "2026-07-17 07:05:53",
     "state": "Madhya Pradesh",
     "theme": "General",
@@ -3591,7 +3591,7 @@
   },
   {
     "title": "The Engineer Beekeeper",
-    "author": "India Story Project",
+    "author": "Nimit",
     "publishedDate": "2026-07-17 07:04:03",
     "state": "Andhra Pradesh",
     "theme": "Spirituality",
@@ -3611,7 +3611,7 @@
   },
   {
     "title": "Ashok lighting the lamp of hope",
-    "author": "India Story Project",
+    "author": "Ashok",
     "publishedDate": "2026-07-17 07:00:54",
     "state": "Maharashtra",
     "theme": "Heritage",
@@ -3651,7 +3651,7 @@
   },
   {
     "title": "A 'Shravan Kumar' to 500 elderly people",
-    "author": "India Story Project",
+    "author": "Udit Modi",
     "publishedDate": "2026-07-17 06:41:57",
     "state": "Gujarat",
     "theme": "Food",
@@ -3681,7 +3681,7 @@
   },
   {
     "title": "Wing Commander Deepika",
-    "author": "India Story Project",
+    "author": "Wing Commander Deepika",
     "publishedDate": "2026-07-17 06:31:41",
     "state": "Madhya Pradesh",
     "theme": "Science",
@@ -3711,7 +3711,7 @@
   },
   {
     "title": "Young Tigress: Ashtam Oraon",
-    "author": "India Story Project",
+    "author": "Ashtam Oraon",
     "publishedDate": "2026-07-17 06:24:39",
     "state": "Jharkhand",
     "theme": "Food",
@@ -3731,7 +3731,7 @@
   },
   {
     "title": "Srijan Mithila: A Beginning",
-    "author": "India Story Project",
+    "author": "Putul Choudhary",
     "publishedDate": "2026-07-17 04:43:47",
     "state": "Bihar",
     "theme": "Innovation",
@@ -3751,7 +3751,7 @@
   },
   {
     "title": " Arthling Trust: Giving a ‘New Life’",
-    "author": "India Story Project",
+    "author": "Earthling Trust",
     "publishedDate": "2026-07-17 04:35:16",
     "state": "Delhi",
     "theme": "Culture",
@@ -3771,7 +3771,7 @@
   },
   {
     "title": "A dropout who became a world champion",
-    "author": "India Story Project",
+    "author": "Umadevi",
     "publishedDate": "2026-07-16 10:13:19",
     "state": "Karnataka",
     "theme": "Heritage",
@@ -3821,7 +3821,7 @@
   },
   {
     "title": "Two engineers prepared the history of the Golden Temple in the village.",
-    "author": "India Story Project",
+    "author": "Manish",
     "publishedDate": "2026-07-16 08:33:27",
     "state": "Jharkhand",
     "theme": "Food",
@@ -3831,7 +3831,7 @@
   },
   {
     "title": "A change agent who lives by example",
-    "author": "India Story Project",
+    "author": "Malvika",
     "publishedDate": "2026-07-16 08:27:55",
     "state": "Rajasthan",
     "theme": "Heritage",
@@ -3841,7 +3841,7 @@
   },
   {
     "title": "A Bureaucrat Helping Survive Tribal Artform",
-    "author": "India Story Project",
+    "author": "Suchitra Sinha",
     "publishedDate": "2026-07-16 07:56:46",
     "state": "Jharkhand",
     "theme": "Heritage",

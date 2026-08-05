@@ -623,7 +623,7 @@ function ProfilePage() {
 
   const userEmail = user.email ?? "";
   const displayName = name || (userEmail ? userEmail.split("@")[0] : "User");
-  const rawXP = stats?.totalXP ?? profile?.totalXP ?? 0;
+  const rawXP = stats?.totalXP ?? (profile as any)?.totalXP ?? 0;
   const currentLevel = Math.floor(rawXP / 500) + 1;
   const xpToNextLevel = currentLevel * 500;
   const xpProgress = !isNaN(rawXP) ? Math.min(100, Math.max(0, ((rawXP % 500) / 500) * 100)) : 0;

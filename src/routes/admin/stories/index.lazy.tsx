@@ -26,6 +26,7 @@ type StoryRow = {
   id: string;
   slug: string;
   title: string;
+  authorName?: string;
   status: string;
   featured: boolean;
   themes: string[];
@@ -383,6 +384,7 @@ export default function AdminStoriesPage() {
                     />
                   </th>
                   <th className="p-4">Dispatch Title</th>
+                  <th className="p-4">Author</th>
                   <th className="p-4">Themes</th>
                   <th className="p-4">State</th>
                   <th className="p-4">Status</th>
@@ -396,7 +398,7 @@ export default function AdminStoriesPage() {
                   Array.from({ length: 8 }).map((_, i) => <SkeletonRow key={i} />)
                 ) : stories.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="p-16 text-center text-muted-foreground font-sans italic">
+                    <td colSpan={9} className="p-16 text-center text-muted-foreground font-sans italic">
                       No story dispatches found matching current filters.
                     </td>
                   </tr>
@@ -425,6 +427,9 @@ export default function AdminStoriesPage() {
                               {story.title}
                             </span>
                           </div>
+                        </td>
+                        <td className="p-4 text-muted-foreground font-medium whitespace-nowrap">
+                          {story.authorName || "India Story Project"}
                         </td>
                         <td className="p-4 text-muted-foreground">
                           {Array.isArray(story.themes)

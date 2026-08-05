@@ -246,7 +246,7 @@ export const Route = createFileRoute("/api/comments")({
 
             // @MENTIONS — notify each mentioned user
             const mentionIds = await extractMentionRecipients(content, user.id);
-            const story2 = story ?? await prisma.story.findUnique({ where: { id: storyId }, select: { slug: true, title: true } });
+            const story2 = await prisma.story.findUnique({ where: { id: storyId }, select: { slug: true, title: true } });
             for (const mentionId of mentionIds) {
               await createNotification({
                 recipientId: mentionId,
