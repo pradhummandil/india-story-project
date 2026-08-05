@@ -1,16 +1,5 @@
 import React from "react";
-import { X, Minimize2, Maximize2, Sparkles, AlertCircle } from "lucide-react";
-
-// Premium Custom SVG Logo: Book + Sparkle
-export function CompanionLogo({ className = "size-5" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
-      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M13 7l1 2 2 .5-1.5 1.5.5 2-2-1-2 1 .5-2-1.5-1.5 2-.5z" fill="currentColor" stroke="none" className="text-red-500 animate-pulse" />
-    </svg>
-  );
-}
+import { X, Minimize2, Maximize2, Trash2 } from "lucide-react";
 
 interface ChatHeaderProps {
   onClose?: () => void;
@@ -19,6 +8,7 @@ interface ChatHeaderProps {
   onClearHistory?: () => void;
   isCompact?: boolean;
   isHindi: boolean;
+  sessionTitle?: string;
 }
 
 export function ChatHeader({
@@ -28,61 +18,76 @@ export function ChatHeader({
   onClearHistory,
   isCompact = false,
   isHindi,
+  sessionTitle,
 }: ChatHeaderProps) {
   return (
-    <div className="bg-neutral-900 border-b border-neutral-800 px-4 py-3 flex items-center justify-between shrink-0">
-      <div className="flex items-center gap-2.5">
-        <div className="size-8 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/20">
-          <CompanionLogo className="size-4.5 text-red-500" />
+    <header className={`bg-white/95 dark:bg-[#181715]/95 backdrop-blur-md border-b border-[#ECE7DF] dark:border-[#2A2722] ${isCompact ? "px-4 py-3" : "px-6 py-4"} flex items-center justify-between shrink-0 transition-colors duration-300 gap-3`}>
+      {/* Left: Assistant Logo & Title */}
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        <div className="size-9 rounded-xl bg-[#121110] border border-[#C9A227]/50 flex items-center justify-center shrink-0 shadow-xs overflow-hidden">
+          <img
+            src="/Logo-ISP.jpg"
+            alt="ISP AI Logo"
+            className="size-full object-cover"
+          />
         </div>
-        <div>
-          <h3 className="text-xs font-bold uppercase tracking-wider text-white">
-            {isHindi ? "कहानी सहायक" : "India Story Assistant"}
-          </h3>
-          <span className="text-[9px] text-neutral-400 flex items-center gap-1 font-semibold">
-            <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
-            {isHindi ? "ऑनलाइन" : "Online"}
-          </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 min-w-0">
+            <h2 className="font-display font-bold text-sm sm:text-base text-[#1D1D1D] dark:text-[#FBF8F3] truncate whitespace-nowrap">
+              {isHindi ? "भारत स्टोरी सहायक" : "India Story Assistant"}
+            </h2>
+            {sessionTitle && sessionTitle !== "New Chat" && sessionTitle !== "नई बातचीत" && (
+              <span className="hidden sm:inline-block text-xs text-[#666666] dark:text-[#A09D96] font-medium truncate max-w-[120px]">
+                — {sessionTitle}
+              </span>
+            )}
+          </div>
+          <p className="text-[10px] uppercase font-bold tracking-wider text-[#666666] dark:text-[#A09D96] flex items-center gap-1.5 mt-0.5 font-sans leading-none">
+            <span className="size-2 rounded-full bg-emerald-500 animate-pulse inline-block" />
+            <span>{isHindi ? "ऑनलाइन" : "Online"}</span>
+          </p>
         </div>
       </div>
-      <div className="flex items-center gap-1">
+
+      {/* Right: Action Controls */}
+      <div className="flex items-center gap-1 text-[#666666] dark:text-[#A09D96] shrink-0">
         {onClearHistory && (
           <button
             onClick={onClearHistory}
-            title={isHindi ? "इतिहास मिटाएं" : "Clear Chat"}
-            className="text-neutral-400 hover:text-white p-1 rounded-lg hover:bg-neutral-800 transition-colors"
+            title={isHindi ? "चैट इतिहास साफ़ करें" : "Clear Active Chat"}
+            className="p-1.5 sm:p-2 rounded-xl hover:bg-[#FBF8F3] dark:hover:bg-[#2A2722] hover:text-[#9E1C20] transition-colors cursor-pointer"
           >
-            <AlertCircle className="size-4" />
+            <Trash2 className="size-4" />
           </button>
         )}
         {onExpand && (
           <button
             onClick={onExpand}
-            title={isHindi ? "बड़ा करें" : "Expand to Page"}
-            className="text-neutral-400 hover:text-white p-1 rounded-lg hover:bg-neutral-800 transition-colors"
+            title={isHindi ? "बड़ा करें" : "Expand to Full Workspace"}
+            className="p-1.5 sm:p-2 rounded-xl hover:bg-[#FBF8F3] dark:hover:bg-[#2A2722] hover:text-[#1D1D1D] dark:hover:text-white transition-colors cursor-pointer"
           >
-            <Maximize2 className="size-3.5" />
+            <Maximize2 className="size-4" />
           </button>
         )}
         {onMinimize && (
           <button
             onClick={onMinimize}
             title={isHindi ? "छोटा करें" : "Minimize"}
-            className="text-neutral-400 hover:text-white p-1 rounded-lg hover:bg-neutral-800 transition-colors"
+            className="p-1.5 sm:p-2 rounded-xl hover:bg-[#FBF8F3] dark:hover:bg-[#2A2722] hover:text-[#1D1D1D] dark:hover:text-white transition-colors cursor-pointer"
           >
-            <Minimize2 className="size-3.5" />
+            <Minimize2 className="size-4" />
           </button>
         )}
         {onClose && (
           <button
             onClick={onClose}
             title={isHindi ? "बंद करें" : "Close"}
-            className="text-neutral-400 hover:text-white p-1 rounded-lg hover:bg-neutral-800 transition-colors"
+            className="p-1.5 sm:p-2 rounded-xl hover:bg-[#FBF8F3] dark:hover:bg-[#2A2722] hover:text-[#9E1C20] transition-colors cursor-pointer"
           >
-            <X className="size-3.5" />
+            <X className="size-4" />
           </button>
         )}
       </div>
-    </div>
+    </header>
   );
 }

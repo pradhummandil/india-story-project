@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useAudioStore, type Episode } from "@/lib/audio-store";
+import { lockScroll, unlockScroll } from "@/lib/scroll-lock";
 import {
   Play,
   Pause,
@@ -137,6 +138,17 @@ export default function PodcastPlayer() {
     audio.muted = nextMute;
     setMuted(nextMute);
   };
+
+  useEffect(() => {
+    if (playerOpen) {
+      lockScroll();
+    } else {
+      unlockScroll();
+    }
+    return () => {
+      if (playerOpen) unlockScroll();
+    };
+  }, [playerOpen]);
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = parseFloat(e.target.value);

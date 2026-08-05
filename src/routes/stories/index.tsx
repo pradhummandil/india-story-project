@@ -12,6 +12,7 @@ import { StoryDNA } from "@/components/site/StoryDNA";
 import type { Story } from "@/components/site/StoryCard";
 import { useStoriesData } from "@/lib/stories-data";
 import { useI18nStore, getCommonText, translateStory, translateThemeName, translateStateName } from "@/lib/i18n";
+import { lockScroll, unlockScroll } from "@/lib/scroll-lock";
 
 type StoriesSearch = {
   category?: string;
@@ -53,6 +54,18 @@ function StoriesPage() {
 
   const [visibleCount, setVisibleCount] = useState<number>(12);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+
+  // Manage scroll lock when mobile filter drawer opens/closes
+  useEffect(() => {
+    if (mobileFilterOpen) {
+      lockScroll();
+    } else {
+      unlockScroll();
+    }
+    return () => {
+      if (mobileFilterOpen) unlockScroll();
+    };
+  }, [mobileFilterOpen]);
 
   // Sync state with URL search params when they change externally
   useEffect(() => {

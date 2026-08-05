@@ -93,7 +93,7 @@ export function Navbar() {
         </Link>
 
         {/* Desktop Navigation Links */}
-        <nav className={`hidden md:flex items-center gap-6 font-sans text-[12px] font-medium leading-normal ${lang === "en" ? "uppercase tracking-[0.12em]" : ""}`}>
+        <nav className={`hidden lg:flex items-center gap-4 xl:gap-6 font-sans text-[11px] xl:text-[12px] font-medium leading-normal whitespace-nowrap ${lang === "en" ? "uppercase tracking-[0.12em]" : ""}`}>
           {links.map((l) => {
             const active =
               l.to === "/" ? location.pathname === "/" : location.pathname.startsWith(l.to);
@@ -132,7 +132,7 @@ export function Navbar() {
         </nav>
 
         {/* Right side elements: Search + Language Switch + Notifications + Auth */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden lg:flex items-center gap-3">
           <button
             onClick={openGlobalSearch}
             className={`p-2 rounded-full hover:bg-muted/80 transition-colors duration-300 relative focus:outline-none cursor-pointer ${
@@ -257,7 +257,7 @@ export function Navbar() {
         </div>
 
         {/* Mobile controls */}
-        <div className="flex md:hidden items-center gap-2 sm:gap-3">
+        <div className="flex lg:hidden items-center gap-2 sm:gap-3">
           <button
             type="button"
             onClick={openGlobalSearch}

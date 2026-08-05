@@ -1,24 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Maximize2, X } from "lucide-react";
+import { Maximize2, X, Sparkles } from "lucide-react";
 import { useI18nStore } from "@/lib/i18n";
 import { useAuthStore } from "@/lib/auth-store";
-import { ChatHeader, CompanionLogo } from "./chatbot/ChatHeader";
+import { ChatHeader } from "./chatbot/ChatHeader";
 import { ChatMessages } from "./chatbot/ChatMessages";
 import { ChatInput } from "./chatbot/ChatInput";
 import { SuggestionChips } from "./chatbot/SuggestionChips";
-
-type StoryPayload = {
-  id: string;
-  slug: string;
-  title: string;
-  excerpt: string;
-  themes: string[];
-  region: string;
-  readTime: string;
-  image: string;
-};
+import { StoryPayload } from "./chatbot/StoryCards";
 
 type Message = {
   id: string;
@@ -26,6 +16,7 @@ type Message = {
   text: string;
   timestamp: Date;
   stories?: StoryPayload[];
+  exactMatch?: StoryPayload | null;
 };
 
 export function StoryCompanion() {
@@ -35,6 +26,7 @@ export function StoryCompanion() {
 
   const [isOpen, setIsOpen] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [hasUnread, setHasUnread] = useState(true);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(false);
@@ -43,8 +35,10 @@ export function StoryCompanion() {
   const [lastQuery, setLastQuery] = useState("");
 
   const abortControllerRef = useRef<AbortController | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
+  const userScrolledUpRef = useRef(false);
 
   const isHindi = lang === "hi";
 
@@ -81,14 +75,16 @@ export function StoryCompanion() {
 
   const defaultSuggestions = isHindi
     ? [
-        "कहानी कैसे सबमिट करें?",
         "राजस्थान की कहानियाँ",
-        "5 मिनट से कम समय की कहानियाँ",
+        "कहानी कैसे प्रकाशित करें?",
+        "पोचमपल्ली की बुनकर कहानी",
+        "गुमनाम नायकों की गाथा",
       ]
     : [
-        "How do I submit a story?",
-        "Explore Rajasthan stories",
-        "Stories under 5 minutes",
+        "Stories from Rajasthan",
+        "How to publish my story?",
+        "The Weaver of Pochampally",
+        "Unsung Freedom Fighters",
       ];
 
   // Load chat history from localStorage or set default greeting
@@ -115,8 +111,8 @@ export function StoryCompanion() {
 
   const setDefaultGreeting = () => {
     const greetText = isHindi
-      ? "नमस्ते! मैं आपका भारत स्टोरी सहायक हूँ। मैं आपको कहानियाँ खोजने या अपनी कहानी सबमिट करने में मार्गदर्शन कर सकता हूँ।"
-      : "Namaste! I am your India Story Assistant. I can help you find stories, guide you on how to write, or help you submit one.";
+      ? "नमस्ते! मैं आपका भारत स्टोरी एआई सहायक हूँ। मैं आपको कहानियाँ खोजने, भारत के सांस्कृतिक इतिहास को जानने, या अपनी खुद की कहानी लिखकर सबमिट करने में मदद कर सकता हूँ।"
+      : "Namaste! I am your official India Story AI Assistant. I can help you discover heritage stories, explore Indian history, or guide you step-by-step to write and publish your own story.";
     setMessages([
       {
         id: "greet",
@@ -132,19 +128,32 @@ export function StoryCompanion() {
     localStorage.setItem(key, JSON.stringify(msgs));
   };
 
+  // Smart Auto-scroll without locking user scroll
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 80;
+    userScrolledUpRef.current = !isNearBottom;
+  };
+
   useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-      }, 100);
+    if (isOpen && !userScrolledUpRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, loading, isOpen]);
+
+  const handleToggleOpen = () => {
+    setIsOpen((prev) => {
+      if (!prev) setHasUnread(false);
+      return !prev;
+    });
+  };
 
   const handleSend = async (text: string) => {
     const trimmed = text.trim();
     if (!trimmed || loading) return;
 
     setLastQuery(trimmed);
+    userScrolledUpRef.current = false; // Reset on send
 
     const userMsg: Message = {
       id: Math.random().toString(36).substring(2, 9),
@@ -171,10 +180,15 @@ export function StoryCompanion() {
         headers["Authorization"] = `Bearer ${session.access_token}`;
       }
 
+      const chatHistory = messages.slice(-6).map((m) => ({
+        sender: m.sender,
+        text: m.text,
+      }));
+
       const res = await fetch("/api/chat", {
         method: "POST",
         headers,
-        body: JSON.stringify({ message: trimmed, lang }),
+        body: JSON.stringify({ message: trimmed, lang, history: chatHistory }),
         signal: controller.signal,
       });
 
@@ -183,29 +197,39 @@ export function StoryCompanion() {
         const botMsg: Message = {
           id: Math.random().toString(36).substring(2, 9),
           sender: "bot",
-          text: data.reply,
+          text: data.reply || "",
           timestamp: new Date(),
           stories: data.stories || [],
+          exactMatch: data.exactMatch || null,
         };
         const finalMsgs = [...updatedMsgs, botMsg];
         setMessages(finalMsgs);
         saveChatHistory(finalMsgs);
         if (data.suggestions && data.suggestions.length > 0) {
-          setSuggestions(data.suggestions.slice(0, 3));
+          setSuggestions(data.suggestions.slice(0, 4));
         } else {
           setSuggestions(defaultSuggestions);
         }
       } else {
-        throw new Error();
+        const errData = await res.json().catch(() => ({}));
+        const errDetailText = errData.error || res.statusText || "HTTP Error";
+        const botErrMsg: Message = {
+          id: "err-" + Math.random().toString(36).substring(2, 9),
+          sender: "bot",
+          text: `[API Error ${res.status}]: ${errDetailText}`,
+          timestamp: new Date(),
+        };
+        const finalMsgs = [...updatedMsgs, botErrMsg];
+        setMessages(finalMsgs);
+        saveChatHistory(finalMsgs);
+        setSuggestions(defaultSuggestions);
       }
     } catch (err: any) {
       if (err.name === "AbortError") return;
       const errorMsg: Message = {
         id: "err-" + Math.random().toString(36).substring(2, 9),
         sender: "bot",
-        text: isHindi
-          ? "माफ़ कीजिये, अभी संपर्क स्थापित नहीं हो पाया। कृपया पुनः प्रयास करें।"
-          : "Sorry, I am facing connectivity issues. Please try again in a moment.",
+        text: `[Connection Exception]: ${err.message || "Failed to reach server"}`,
         timestamp: new Date(),
       };
       const finalMsgs = [...updatedMsgs, errorMsg];
@@ -234,11 +258,11 @@ export function StoryCompanion() {
 
   const handleExpand = () => {
     setIsOpen(false);
-    navigate({ to: "/chatbot" });
+    void navigate({ to: "/chatbot" });
   };
 
   return (
-    <div className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-[60] font-sans mb-safe">
+    <>
       {/* Tooltip */}
       <AnimatePresence>
         {showTooltip && !isOpen && (
@@ -246,49 +270,71 @@ export function StoryCompanion() {
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute bottom-16 right-0 bg-neutral-900 border border-neutral-800 text-white text-[10px] uppercase font-bold tracking-wider px-3 py-1.5 rounded-lg whitespace-nowrap shadow-md pointer-events-none"
+            className="fixed bottom-22 right-6 z-[999] bg-[#121110] text-[#FBF8F3] border border-[#ECE7DF]/20 text-[10px] uppercase font-bold tracking-wider px-3.5 py-2 rounded-xl whitespace-nowrap shadow-2xl pointer-events-none"
           >
-            {isHindi ? "कहानी सहायक" : "India Story Assistant"}
+            {isHindi ? "भारत स्टोरी एआई सहायक" : "India Story AI Assistant"}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── Trigger FAB Button (Red + White Branding) ── */}
-      <motion.button
-        id="chatbot-trigger"
-        onClick={() => setIsOpen(!isOpen)}
-        onMouseEnter={() => setShowTooltip(true)}
-        onMouseLeave={() => setShowTooltip(false)}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        aria-label="Open AI Story Companion"
-        className="size-13 sm:size-14 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg hover:shadow-red-500/20 border border-red-500/30 cursor-pointer relative min-h-[44px] min-w-[44px]"
-      >
-        <span className="absolute inset-0 rounded-full bg-red-500/30 animate-ping opacity-75" />
-        <AnimatePresence mode="wait">
-          {isOpen ? (
-            <motion.div
-              key="close"
-              initial={{ rotate: -90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: 90, opacity: 0 }}
-            >
-              <X className="size-6 text-white" />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="chat"
-              initial={{ scale: 0.3, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.3, opacity: 0 }}
-            >
-              <CompanionLogo className="size-6 text-white" />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.button>
+      {/* ── Circular Black FAB Trigger Button ── */}
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[999] font-sans mb-safe">
+        <motion.button
+          id="chatbot-trigger"
+          onClick={handleToggleOpen}
+          onMouseEnter={() => setShowTooltip(true)}
+          onMouseLeave={() => setShowTooltip(false)}
+          animate={{
+            y: isOpen ? 0 : [0, -3, 0],
+          }}
+          transition={{
+            y: { repeat: Infinity, duration: 4, ease: "easeInOut" },
+          }}
+          whileHover={{ scale: 1.08 }}
+          whileTap={{ scale: 0.92 }}
+          aria-label="Open India Story AI Assistant"
+          className="size-14 sm:size-15 rounded-full bg-[#121110] text-white flex items-center justify-center shadow-[0_10px_35px_rgba(0,0,0,0.4)] border-2 border-[#C9A227]/60 cursor-pointer relative min-h-[44px] min-w-[44px] overflow-hidden group"
+        >
+          {/* Glow Ring & Pulse */}
+          <span className="absolute inset-0 rounded-full bg-[#C9A227]/20 animate-ping opacity-75 pointer-events-none" />
+          <span className="absolute -inset-1 rounded-full bg-gradient-to-r from-[#9E1C20] via-[#C9A227] to-[#9E1C20] opacity-30 blur-md group-hover:opacity-75 transition-opacity" />
 
-      {/* ── Compact Chat Window (Glassmorphic Neutral Dark) ── */}
+          {/* Unread indicator */}
+          {hasUnread && !isOpen && (
+            <span className="absolute top-1 right-1 size-3 rounded-full bg-[#9E1C20] border-2 border-black z-20 shadow-sm animate-pulse" />
+          )}
+
+          <AnimatePresence mode="wait">
+            {isOpen ? (
+              <motion.div
+                key="close"
+                initial={{ rotate: -90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 90, opacity: 0 }}
+                className="z-10"
+              >
+                <X className="size-6 text-white" />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="logo"
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.5, opacity: 0 }}
+                className="z-10 flex items-center justify-center p-1"
+              >
+                <img
+                  src="/Logo-ISP.jpg"
+                  alt="India Story Project Logo"
+                  className="size-11 sm:size-12 rounded-full object-cover shadow-inner"
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.button>
+      </div>
+
+      {/* ── Fixed Position Floating Drawer Container (Never cut off at top!) ── */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -296,7 +342,10 @@ export function StoryCompanion() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute bottom-18 right-0 w-[92vw] sm:w-[380px] h-[480px] bg-neutral-950/90 backdrop-blur-md border border-neutral-800 rounded-2xl shadow-xl flex flex-col overflow-hidden"
+            data-lenis-prevent="true"
+            data-lenis-prevent-wheel="true"
+            data-lenis-prevent-touch="true"
+            className="fixed bottom-20 right-3 sm:bottom-24 sm:right-6 z-[998] w-[calc(100vw-1.5rem)] sm:w-[410px] h-[min(560px,calc(100vh-6.5rem))] bg-[#FCFAF6]/98 dark:bg-[#121110]/98 backdrop-blur-2xl border border-[#ECE7DF] dark:border-[#2A2722] rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.35)] flex flex-col overflow-hidden"
           >
             {/* Header */}
             <ChatHeader
@@ -308,56 +357,57 @@ export function StoryCompanion() {
               isHindi={isHindi}
             />
 
-            {/* Messages */}
-            <div className="flex-1 overflow-hidden flex flex-col justify-between">
-              <ChatMessages
-                messages={messages}
-                loading={loading}
+            {/* Scrollable Messages Area */}
+            <ChatMessages
+              messages={messages}
+              loading={loading}
+              isHindi={isHindi}
+              lastQuery={lastQuery}
+              onRetry={handleSend}
+              onCopy={(text) => navigator.clipboard.writeText(text)}
+              onStoryClick={() => setIsOpen(false)}
+              messagesEndRef={messagesEndRef}
+              onCancelGeneration={handleCancelGeneration}
+              scrollRef={scrollContainerRef}
+              onScroll={handleScroll}
+            />
+
+            {/* Suggestions Panel */}
+            {suggestions.length > 0 && !loading && (
+              <div className="px-3.5 py-1.5 border-t border-[#ECE7DF]/60 dark:border-[#2A2722]/60 bg-white/40 dark:bg-[#181715]/40 shrink-0">
+                <SuggestionChips suggestions={suggestions} onSelect={handleSend} />
+              </div>
+            )}
+
+            {/* Input Bar */}
+            <div className="p-2.5 sm:p-3 border-t border-[#ECE7DF] dark:border-[#2A2722] bg-[#FCFAF6] dark:bg-[#121110] shrink-0">
+              <ChatInput
+                value={inputValue}
+                onChange={setInputValue}
+                onSend={() => handleSend(inputValue)}
+                disabled={loading}
+                isListening={isListening}
+                hasSpeechSupport={!!recognitionRef.current}
+                toggleListening={toggleListening}
                 isHindi={isHindi}
-                lastQuery={lastQuery}
-                onRetry={handleSend}
-                onCopy={(text) => navigator.clipboard.writeText(text)}
-                onStoryClick={() => setIsOpen(false)}
-                messagesEndRef={messagesEndRef}
                 onCancelGeneration={handleCancelGeneration}
               />
+            </div>
 
-              {/* Suggestions Panel */}
-              {suggestions.length > 0 && !loading && (
-                <div className="px-4 py-1.5 border-t border-neutral-800 bg-neutral-900/30">
-                  <SuggestionChips suggestions={suggestions} onSelect={handleSend} />
-                </div>
-              )}
-
-              {/* Input Area */}
-              <div className="p-3 border-t border-neutral-800 bg-neutral-950">
-                <ChatInput
-                  value={inputValue}
-                  onChange={setInputValue}
-                  onSend={() => handleSend(inputValue)}
-                  disabled={loading}
-                  isListening={isListening}
-                  hasSpeechSupport={!!recognitionRef.current}
-                  toggleListening={toggleListening}
-                  isHindi={isHindi}
-                />
-              </div>
-
-              {/* Footer link to full view */}
-              <div className="bg-neutral-900/80 border-t border-neutral-800 py-2 text-center text-[10px] uppercase font-bold tracking-wider">
-                <Link
-                  to="/chatbot"
-                  onClick={() => setIsOpen(false)}
-                  className="text-red-500 hover:text-red-400 transition-colors inline-flex items-center gap-1"
-                >
-                  {isHindi ? "पूर्ण चैट खोलें" : "Open Full Chat"}
-                  <Maximize2 className="size-2.5" />
-                </Link>
-              </div>
+            {/* Full workspace shortcut */}
+            <div className="bg-white/90 dark:bg-[#181715]/90 border-t border-[#ECE7DF] dark:border-[#2A2722] py-2 text-center text-[10px] uppercase font-bold tracking-wider shrink-0">
+              <Link
+                to="/chatbot"
+                onClick={() => setIsOpen(false)}
+                className="text-[#9E1C20] dark:text-[#C9A227] hover:underline inline-flex items-center gap-1.5"
+              >
+                <span>{isHindi ? "पूर्ण एआई वर्कस्पेस खोलें" : "Open Full AI Workspace"}</span>
+                <Maximize2 className="size-3" />
+              </Link>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </>
   );
 }

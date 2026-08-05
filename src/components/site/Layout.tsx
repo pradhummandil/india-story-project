@@ -4,20 +4,37 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
 import { ScrollProgress } from "./ScrollProgress";
-import { AmbientBackground } from "./AmbientBackground";
-import { CursorGlow } from "./CursorGlow";
+import { RouteLoadingBar } from "./RouteLoadingBar";
 import { StoryCompanion } from "./StoryCompanion";
+import { WelcomePopup } from "./WelcomePopup";
 import { useI18nStore } from "@/lib/i18n";
 
-const pageVariants = {
-  initial: { opacity: 0, y: 8, filter: "blur(4px)" },
-  animate: { opacity: 1, y: 0, filter: "blur(0px)" },
-  exit: { opacity: 0, y: -4, filter: "blur(2px)" },
-};
+const cubicEase = [0.22, 1, 0.36, 1] as const;
 
-const pageTransition = {
-  duration: 0.32,
-  ease: [0.16, 1, 0.3, 1] as const,
+const pageVariants = {
+  initial: {
+    opacity: 0,
+    y: 12,
+    filter: "blur(4px)",
+  },
+  animate: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: {
+      duration: 0.32,
+      ease: cubicEase,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: -8,
+    filter: "blur(3px)",
+    transition: {
+      duration: 0.18,
+      ease: cubicEase,
+    },
+  },
 };
 
 export function SiteLayout({ children }: { children: ReactNode }) {
@@ -25,13 +42,12 @@ export function SiteLayout({ children }: { children: ReactNode }) {
   const { location } = useRouterState();
 
   return (
-    <div lang={lang} className="relative min-h-dvh flex flex-col bg-background text-foreground">
-      <AmbientBackground />
+    <div lang={lang} className="relative min-h-dvh flex flex-col bg-background text-foreground w-full overflow-x-clip">
+      <RouteLoadingBar />
       <ScrollProgress />
-      <CursorGlow />
       <Navbar />
 
-      {/* Framer Motion page transitions on route change */}
+      {/* Premium page transitions on route change */}
       <AnimatePresence mode="wait" initial={false}>
         <motion.main
           key={location.pathname}
@@ -39,7 +55,6 @@ export function SiteLayout({ children }: { children: ReactNode }) {
           initial="initial"
           animate="animate"
           exit="exit"
-          transition={pageTransition}
           className={`flex-1 ${location.pathname === "/" ? "pt-0" : "pt-24"}`}
         >
           {children}
@@ -47,7 +62,9 @@ export function SiteLayout({ children }: { children: ReactNode }) {
       </AnimatePresence>
 
       <Footer />
+      <WelcomePopup />
       <StoryCompanion />
     </div>
   );
 }
+

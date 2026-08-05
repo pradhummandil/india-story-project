@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
+import { lockScroll, unlockScroll } from "@/lib/scroll-lock";
 import {
   X,
   Film,
@@ -47,13 +48,13 @@ export function MegaMenuDrawer({ isOpen, onClose }: MegaMenuDrawerProps) {
     };
     if (isOpen) {
       window.addEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "hidden";
+      lockScroll();
     } else {
-      document.body.style.overflow = "unset";
+      unlockScroll();
     }
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "unset";
+      unlockScroll();
     };
   }, [isOpen, onClose]);
 

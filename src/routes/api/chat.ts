@@ -1,44 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { prisma } from "@/lib/repositories/prisma.server";
 import { json, sanitizeInput, checkRateLimit, getClientIp, authenticate } from "@/routes/api/-_utils";
-import { StoryStatus } from "@prisma/client";
-
-const storyCardSelect = {
-  id: true,
-  slug: true,
-  title: true,
-  excerpt: true,
-  titleHi: true,
-  excerptHi: true,
-  viewCount: true,
-  readingTime: true,
-  publishedAt: true,
-  createdAt: true,
-  featured: true,
-  state: { select: { id: true, name: true, slug: true } },
-  author: { select: { id: true, name: true, bio: true, avatar: true } },
-  images: {
-    orderBy: [{ heroImage: "desc" as any }, { sortOrder: "asc" as any }],
-    select: { id: true, imageUrl: true, caption: true },
-    take: 1,
-  },
-  themes: {
-    select: {
-      theme: { select: { name: true } },
-    },
-  },
-};
-
-function formatReadTime(readingTime: number | null) {
-  return readingTime != null && readingTime > 0 ? `${readingTime} min read` : "4 min read";
-}
+import { searchStoriesForAssistant, FormattedStoryPayload } from "@/lib/services/ai-assistant-indexer.server";
+import { findMatchingFAQ, PLATFORM_INFO } from "@/lib/services/website-knowledge";
 
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
         const ip = getClientIp(request);
-        const { allowed } = checkRateLimit(ip, 40, 60 * 1000); // 40 requests per minute limit
+        const { allowed } = checkRateLimit(ip, 60, 60 * 1000); // 60 requests per minute
         if (!allowed) {
           return json({ error: "Too many requests. Please try again later." }, { status: 429 });
         }
@@ -50,262 +20,188 @@ export const Route = createFileRoute("/api/chat")({
           const isHindi = lang === "hi";
           const history = body.history || [];
 
-          const historyContext = history.length > 0
-            ? history.map((m: any) => `${m.sender.toUpperCase()}: ${m.text}`).join("\n")
-            : "No previous messages in this session.";
-
           if (!message.trim()) {
             return json({ error: "Message is required" }, { status: 400 });
           }
 
-          // 1. Fetch User Context for Personalization
+          // 1. Authenticated User Profile Context
           const user = await authenticate(request);
           let userContext = "";
           if (user) {
-            const [bookmarks, likes, progress] = await Promise.all([
-              prisma.bookmark.findMany({
-                where: { userId: user.id },
-                take: 3,
-                include: { story: { select: { title: true } } },
-              }),
-              prisma.storyLike.findMany({
-                where: { userId: user.id },
-                take: 3,
-                include: { story: { select: { title: true } } },
-              }),
-              prisma.readingProgress.findMany({
-                where: { userId: user.id, completed: false },
-                take: 3,
-                include: { story: { select: { title: true } } },
-              }),
-            ]);
-
-            const bookmarkedTitles = bookmarks.map((b) => b.story.title).join(", ");
-            const likedTitles = likes.map((l) => l.story.title).join(", ");
-            const readingTitles = progress.map((p) => p.story.title).join(", ");
-
-            userContext = `
-Authenticated User Profile:
-- User is logged in as: ${user.email}
-- Bookmarked Stories: ${bookmarkedTitles || "None yet"}
-- Liked Stories: ${likedTitles || "None yet"}
-- Current Reading Progress: ${readingTitles || "None active"}`;
+            userContext = `\nAuthenticated User: ${user.email}\n`;
           }
 
-          // 2. Keyword & Intent Extraction (RAG database search)
-          const cleanQuery = message.toLowerCase();
-          const where: any = { status: StoryStatus.Published };
-          const andConditions: any[] = [];
+          // 2. Perform RAG Search across India Story Project Repository
+          const searchResult = await searchStoriesForAssistant(message, 5);
+          const { exactMatch, stories, matchedEntityType } = searchResult;
 
-          const matchedStates = await prisma.state.findMany({
-            where: { name: { contains: cleanQuery, mode: "insensitive" } },
-            select: { name: true },
-          });
+          // 3. Platform FAQ Knowledge Check
+          const faqAnswer = findMatchingFAQ(message, isHindi);
 
-          const matchedThemes = await prisma.theme.findMany({
-            where: { name: { contains: cleanQuery, mode: "insensitive" } },
-            select: { name: true },
-          });
-
-          if (matchedStates.length > 0) {
-            andConditions.push({
-              state: {
-                name: { in: matchedStates.map((s) => s.name), mode: "insensitive" },
-              },
-            });
+          // 4. Construct RAG Context for Gemini System Prompt
+          let storiesRAGContext = "";
+          if (exactMatch) {
+            storiesRAGContext = `
+EXACT STORY MATCH FOUND:
+- Title: ${exactMatch.title} (${exactMatch.titleHi || ""})
+- Slug: ${exactMatch.slug}
+- State/District: ${exactMatch.stateName} ${exactMatch.cityName ? `/ ${exactMatch.cityName}` : ""}
+- Author: ${exactMatch.authorName} (${exactMatch.authorBio || "Editorial Author"})
+- Category/Themes: ${exactMatch.themes.join(", ") || "Heritage"}
+- Reading Time: ${exactMatch.readTime}
+- Excerpt: ${exactMatch.excerpt}
+- Historical Significance: ${exactMatch.historicalSignificance}
+- Cultural Significance: ${exactMatch.culturalSignificance}
+- Story Cover Image: ${exactMatch.image}
+- View Count: ${exactMatch.viewCount}
+`;
+          } else if (stories.length > 0) {
+            storiesRAGContext = `
+MATCHING REPOSITORY STORIES (${matchedEntityType}):
+` + stories.map((s, idx) => `
+${idx + 1}. "${s.title}" (Slug: ${s.slug})
+   State: ${s.stateName} | Author: ${s.authorName} | Read Time: ${s.readTime}
+   Themes: ${s.themes.join(", ")}
+   Excerpt: ${s.excerpt}
+`).join("\n");
+          } else {
+            storiesRAGContext = "No direct matching stories found in the repository index.";
           }
 
-          if (matchedThemes.length > 0) {
-            andConditions.push({
-              themes: {
-                some: {
-                  theme: {
-                    name: { in: matchedThemes.map((t) => t.name), mode: "insensitive" },
-                  },
-                },
-              },
-            });
-          }
+          const historyContext = history.length > 0
+            ? history.map((m: any) => `${m.sender.toUpperCase()}: ${m.text}`).join("\n")
+            : "First message in this conversation session.";
 
-          if (cleanQuery.includes("under 5") || cleanQuery.includes("short story") || cleanQuery.includes("कम समय")) {
-            andConditions.push({ readingTime: { lte: 5 } });
-          }
-
-          if (cleanQuery.includes("hindi") || cleanQuery.includes("हिंदी") || cleanQuery.includes("हिन्दी")) {
-            andConditions.push({ titleHi: { not: null } });
-          }
-
-          if (cleanQuery.includes("hidden gem") || cleanQuery.includes("unexplored") || cleanQuery.includes("अनोखी")) {
-            andConditions.push({ viewCount: { lte: 100 } });
-          }
-
-          if (andConditions.length === 0) {
-            // General text match fallback if no specific keywords matched
-            andConditions.push({
-              OR: [
-                { title: { contains: cleanQuery, mode: "insensitive" } },
-                { excerpt: { contains: cleanQuery, mode: "insensitive" } },
-                { content: { contains: cleanQuery, mode: "insensitive" } },
-                { seoKeywords: { contains: cleanQuery, mode: "insensitive" } },
-              ],
-            });
-          }
-
-          where.AND = andConditions;
-
-          // Search Prisma
-          const storiesRaw = await prisma.story.findMany({
-            where,
-            take: 4,
-            select: storyCardSelect,
-          });
-
-          // Format context to feed Gemini
-          const databaseContext = storiesRaw
-            .map(
-              (story) => `
-Story Title: ${story.title}
-Hindi Title: ${story.titleHi ?? ""}
-State: ${story.state?.name ?? "India"}
-Themes: ${story.themes?.map((t: any) => t.theme?.name).filter(Boolean).join(", ") ?? ""}
-Excerpt: ${story.excerpt}
-Slug: ${story.slug}
-`
-            )
-            .join("\n---------------------\n");
-
-          // System Prompt with complete platform context, submission steps, motivational support and website FAQs
-          const prompt = `
-You are the "India Story AI Companion", the official AI guide for the India Story Project.
+          // System Prompt as mandated by Phase 19 & Phase 2/3/4/5/6/7 requirements
+          const systemPrompt = `
+You are the official AI Story Assistant of India Story Project (Production 3.0).
+You know every published story. You know every author. You know every category. You know every state and district.
+You help users discover stories, guide contributors step-by-step, answer website questions, and combine India Story Project knowledge with Gemini knowledge.
+Always prioritize India Story Project content before external information. Whenever possible recommend stories and highlight clicking the interactive Story Cards rendered below your message.
 
 === CONVERSATION HISTORY ===
 ${historyContext}
 
-USER'S CURRENT QUESTION: "${message}"
+USER QUESTION: "${message}"
 LANGUAGE: ${isHindi ? "Hindi (हिन्दी)" : "English"}
-
 ${userContext}
+=== RAG KNOWLEDGE BASE CONTEXT ===
+${storiesRAGContext}
 
-=== DATABASE STORIES ===
-${databaseContext || "No exact matching stories found in the database."}
+${faqAnswer ? `=== INDEXED WEBSITE FAQ ANSWER ===\n${faqAnswer}\n` : ""}
 
-=== WEBSITE & PLATFORM KNOWLEDGE ===
-- **About the Platform**: India Story Project is a digital repository celebrating local heritage, unsung heroes, cultural traditions, history, art, and local innovations.
-- **Key Routes**:
-  - Homepage: \`/\`
-  - Explore Portal: \`/explore\` (State filters, theme cards, universal search, timeline navigation).
-  - Share Story Guide: \`/share-story\` (For submitting new stories).
-  - Contributor Signup: \`/join\`
-  - User Dashboard: \`/dashboard\` (Bookmarks, liked stories, reading history).
-  - Settings/Profile: \`/profile\` (Avatar uploads, account preferences).
-- **Core Functions**:
-  - Bookmarking: Save articles to read later. Shown in User Dashboard.
-  - Avatar Uploads: Handled in Profile page, syncs globally.
-  - Submissions: Content contributors can submit articles. These undergo editorial reviews.
+=== RESPONSE GUIDELINES ===
+1. **EXACT TITLE QUERY**: If the user asks about a specific story title (e.g., "${exactMatch ? exactMatch.title : "The Weaver of Pochampally"}"):
+   - Provide a rich, inspiring response introducing the story.
+   - Mention the Title, Author, State/District, Reading Time, and Category.
+   - Highlight why it is important (Historical Significance & Cultural Significance).
+   - Inform the user to click the **READ STORY** card rendered below to open \`/stories/${exactMatch ? exactMatch.slug : "slug"}\`.
 
-=== STORY SUBMISSION ASSISTANT FLOW ===
-If the user indicates they want to submit/write a story:
-- You must act as an encouraging submission guide.
-- Ask for details one-by-one to avoid overwhelming them:
-  1. Story Title
-  2. Associated State/District
-  3. Theme / Short Summary
-  4. Full Story & References/Sources
-- Once you gather their details, direct them to submit it at the official page: "/share-story".
+2. **CATEGORY / STATE / SEARCH QUERY**: If the user asks for a region (e.g., Rajasthan) or topic (e.g., Water, Education, Freedom Fighter):
+   - Summarize the significance of that region or topic in Indian heritage.
+   - Introduce the top matching stories provided in the RAG Context.
+   - Tell them to browse the rich story cards right below.
 
-=== MOTIVATIONAL & EMOTIONAL SUPPORT ===
-If the user feels stuck, lacks confidence, or says they don't know how to write:
-- Respond with warm, empathetic, and encouraging language.
-- Suggest a basic narrative template:
-  1. Introduction (The setting/hero)
-  2. The Conflict / Action (What did they do?)
-  3. The Impact / Lesson (What changed?)
-- Reassure them that every voice matters in documentating India's heritage.
+3. **OUTSIDE / GENERAL KNOWLEDGE QUERY**: If the user asks about general topics (e.g., "What is Rajasthan?", "What is UNESCO?", "What is a stepwell / baori?", "What is Pochampally?"):
+   - Answer with rich historical/cultural facts from your Gemini knowledge.
+   - Seamlessly connect it with India Story Project repository: "We also have relevant stories about this on India Story Project. Check out the recommended stories below!"
 
-=== GENERAL INSTRUCTIONS ===
-1. Answer in a warm, narrative, and engaging human tone.
-2. If matching database stories are provided, refer to them naturally and guide the user to click the interactive story cards rendered directly below the chat bubble.
-3. NEVER fabricate stories that do not exist.
-4. If there are no relevant database stories, use your general knowledge to answer, keeping it focused strictly on Indian history, heritage, culture, or tourism.
-5. Format your reply with clean Markdown (bold text, bullet points). Keep response under 250 words.
+4. **STORY WRITING & SUBMISSION ASSISTANT**: If the user wants to submit or draft a story:
+   - Act like an encouraging writing mentor (like ChatGPT).
+   - Never ask everything at once! Guide them step-by-step:
+     * Step 1: Suggest a catchy Title & Subtitle.
+     * Step 2: Ask for State/District & Location context.
+     * Step 3: Help format the narrative body with structure (Intro, Conflict/Action, Impact).
+     * Step 4: Remind them to add photos & references, and direct them to submit at \`/share-story\`.
+
+5. Keep formatting clean with GitHub Markdown (headers \`###\`, bullet points, bold terms). Keep tone warm, respectful, and narrative-driven.
 `;
 
-          let replyText = "";
-          const hasApiKey = !!process.env.GEMINI_API_KEY;
-
-          const getFallbackReply = (stories: any[], isHindiLanguage: boolean) => {
-            if (stories.length > 0) {
-              const storyList = stories
-                .map(
-                  (s) =>
-                    `* [${isHindiLanguage && s.titleHi ? s.titleHi : s.title}](/stories/${s.slug}) (${s.state?.name ?? "India"})`
-                )
-                .join("\n");
-              return isHindiLanguage
-                ? `नमस्ते! वर्तमान में हमारी एआई सेवा व्यस्त है, लेकिन मैंने डेटाबेस में आपकी खोज से संबंधित ये कहानियाँ पाई हैं:\n\n${storyList}\n\nकृपया इन्हें पढ़ें और प्रेरणा लें!`
-                : `Hello! While our advanced AI companion is currently experiencing high demand, I successfully retrieved these relevant stories from our database:\n\n${storyList}\n\nFeel free to explore these articles!`;
-            } else {
-              return isHindiLanguage
-                ? `नमस्ते! एआई सेवा व्यस्त है और डेटाबेस में कोई कहानी नहीं मिली। कृपया राजस्थान, केरल या स्वतंत्रता सेनानियों के बारे में पूछें!`
-                : `Hello! Our advanced AI services are currently heavily loaded. I couldn't find matching stories directly, but you can try asking about specific states like Kerala, Rajasthan, or search themes like sustainable farming!`;
-            }
-          };
-
-          if (hasApiKey) {
-            try {
-              const { GoogleGenAI } = await import("@google/genai");
-              const ai = new GoogleGenAI({
-                apiKey: process.env.GEMINI_API_KEY!,
-              });
-              const result = await ai.models.generateContent({
-                model: "gemini-2.0-flash",
-                contents: prompt,
-              });
-              replyText = result.text || "";
-            } catch (geminiError: any) {
-              console.error("[Gemini API Error] failed inside chat.ts:", geminiError);
-              replyText = getFallbackReply(storiesRaw, isHindi);
-            }
-          } else {
-            replyText = getFallbackReply(storiesRaw, isHindi);
+          const apiKey = process.env.GEMINI_API_KEY || "";
+          if (!apiKey) {
+            return json(
+              {
+                error: "GEMINI_API_KEY is not configured",
+                details: "Missing environment variable GEMINI_API_KEY",
+              },
+              { status: 500 }
+            );
           }
 
-          const formattedStories = storiesRaw.map((s: any) => {
-            const image = s.images?.[0] ?? null;
-            return {
-              id: s.id,
-              slug: s.slug,
-              title: isHindi && s.titleHi ? s.titleHi : s.title,
-              excerpt: isHindi && s.excerptHi ? s.excerptHi : s.excerpt,
-              themes: s.themes?.map((t: any) => t.theme?.name).filter(Boolean) ?? [],
-              region: s.state?.name ?? "India",
-              readTime: formatReadTime(s.readingTime),
-              image: image?.imageUrl || "/Logo-ISP.jpg",
-            };
-          });
+          const modelsToTry = [
+            "gemini-flash-latest",
+            "gemini-flash-lite-latest",
+            "gemini-2.0-flash",
+          ];
 
+          let replyText = "";
+          let lastError: any = null;
+
+          for (const model of modelsToTry) {
+            try {
+              const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+              const res = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  contents: [{ parts: [{ text: systemPrompt }] }],
+                }),
+              });
+
+              const data = await res.json();
+              if (res.ok) {
+                replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                if (replyText) break;
+              } else {
+                lastError = data.error || { message: res.statusText };
+              }
+            } catch (err: any) {
+              lastError = { message: err.message || "Fetch failed" };
+            }
+          }
+
+          if (!replyText && lastError) {
+            return json(
+              { error: lastError.message || "Failed to generate AI response" },
+              { status: 500 }
+            );
+          }
+
+          // Combine exactMatch payload with list of stories
+          const finalStoriesPayload: FormattedStoryPayload[] = [];
+          if (exactMatch) {
+            finalStoriesPayload.push(exactMatch);
+          }
+          for (const s of stories) {
+            if (!finalStoriesPayload.some((existing) => existing.id === s.id)) {
+              finalStoriesPayload.push(s);
+            }
+          }
+
+          // Smart Suggestions generation (Phase 14)
           const suggestions = isHindi
             ? [
-                "कहानी कैसे सबमिट करें?",
-                "राजस्थान की लोक कला",
-                "प्रसिद्ध स्वतंत्रता सेनानी",
-                "डैशबोर्ड कैसे काम करता है?",
+                "राजस्थान की कहानियाँ",
+                "कहानी कैसे प्रकाशित करें?",
+                "लोक कला और संस्कृति",
+                "प्रसिद्ध बावडियाँ (Stepwells)",
               ]
             : [
-                "How to submit a story?",
-                "Rajasthan local heritage",
-                "Unsung freedom fighters",
-                "How does the dashboard work?",
+                "Stories from Rajasthan",
+                "How to publish my story?",
+                "Folk Art & Heritage",
+                "Discover Stepwells of India",
               ];
 
           return json({
             reply: replyText,
-            stories: formattedStories,
+            exactMatch,
+            stories: finalStoriesPayload.slice(0, 4),
             suggestions,
           });
         } catch (error: any) {
           console.error("Chat API Error:", error);
-          return json({ error: error.message || "Failed to process chat" }, { status: 500 });
+          return json({ error: error.message || "Failed to process request" }, { status: 500 });
         }
       },
     },

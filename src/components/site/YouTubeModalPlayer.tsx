@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Youtube, MapPin, Eye, Share2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { type YouTubeVideoItem, extractYouTubeId } from "./YouTubeStoryCard";
+import { lockScroll, unlockScroll } from "@/lib/scroll-lock";
 
 interface YouTubeModalPlayerProps {
   video: YouTubeVideoItem | null;
@@ -16,13 +17,13 @@ export function YouTubeModalPlayer({ video, onClose }: YouTubeModalPlayerProps) 
     };
     if (video) {
       window.addEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "hidden";
+      lockScroll();
     } else {
-      document.body.style.overflow = "unset";
+      unlockScroll();
     }
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "unset";
+      unlockScroll();
     };
   }, [video, onClose]);
 

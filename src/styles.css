@@ -89,13 +89,6 @@
 }
 
 @layer base {
-  html,
-  body {
-    overflow-x: hidden;
-    width: 100%;
-    max-width: 100vw;
-  }
-
   :root {
     --radius: 0.25rem;
 
@@ -184,9 +177,6 @@
     border-color: var(--color-border);
   }
 
-  html {
-    scroll-behavior: smooth;
-  }
 
   body {
     background-color: var(--color-background);
@@ -453,13 +443,13 @@
      Added reactively by RootComponent via useI18nStore
      ════════════════════════════════════════════════════ */
 
-  /* All body text, paragraphs, spans, nav, UI labels → AMS Kashi */
+  /* All body text, paragraphs, spans, nav, UI labels → Noto Sans Devanagari */
   .lang-hi body,
   .lang-hi *:not(h1):not(h2):not(h3):not(h4):not(h5):not(.font-display):not([class*="font-display"]) {
-    font-family: "AMS Kashi", "Noto Sans Devanagari", "Mangal", sans-serif;
+    font-family: "Noto Sans Devanagari", "AMS Kashi", system-ui, -apple-system, sans-serif;
   }
 
-  /* Headings + display font elements → AMS Shloka */
+  /* Headings + display font elements → Noto Sans Devanagari */
   .lang-hi h1,
   .lang-hi h2,
   .lang-hi h3,
@@ -467,23 +457,23 @@
   .lang-hi h5,
   .lang-hi .font-display,
   .lang-hi [class*="font-display"] {
-    font-family: "AMS Shloka", "AMS Kashi", "Noto Sans Devanagari", serif;
+    font-family: "Noto Sans Devanagari", "AMS Shloka", "AMS Kashi", serif;
   }
 
-  /* Story article reading content → AMS Kashi with comfortable reading line-height */
+  /* Story article reading content → Noto Sans Devanagari */
   .lang-hi article p,
   .lang-hi article li,
   .lang-hi .prose p,
   .lang-hi .prose li,
   .lang-hi .story-body {
-    font-family: "AMS Kashi", "Noto Sans Devanagari", "Mangal", sans-serif;
+    font-family: "Noto Sans Devanagari", "AMS Kashi", sans-serif;
     line-height: 1.85;
     letter-spacing: 0.01em;
   }
 
-  /* Hero headline in Hindi → AMS Shloka */
+  /* Hero headline in Hindi → Noto Sans Devanagari */
   .lang-hi [class*="font-display"],
   .lang-hi .text-gradient-gold {
-    font-family: "AMS Shloka", "AMS Kashi", "Noto Sans Devanagari", serif;
+    font-family: "Noto Sans Devanagari", "AMS Shloka", "AMS Kashi", serif;
   }
 }

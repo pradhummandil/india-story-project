@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 import { useI18nStore } from "@/lib/i18n";
+import { lockScroll, unlockScroll } from "@/lib/scroll-lock";
 import { toast } from "sonner";
 import {
   CommandDialog,
@@ -79,16 +80,21 @@ export function GlobalSearch() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // ── Load history when overlay opens ──────────────────────
+  // ── Load history & manage scroll lock when overlay opens ────
   useEffect(() => {
     if (open) {
+      lockScroll();
       loadHistory();
       fetchSuggestions(""); // pre-warm with popular stories
     } else {
+      unlockScroll();
       setQuery("");
       setResults(null);
     }
-  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+    return () => {
+      if (open) unlockScroll();
+    };
+  }, [open]);
 
   // ── Close on route change ─────────────────────────────────
   useEffect(() => {

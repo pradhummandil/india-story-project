@@ -19,20 +19,20 @@ export function LanguageToggle() {
         <button
           type="button"
           onClick={() => setLang("en")}
-          className={`relative transition-colors pb-0.5 cursor-pointer ${
+          className={`relative transition-colors py-1 cursor-pointer ${
             lang === "en"
               ? "text-primary border-b-2 border-primary"
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          <span className="relative overflow-hidden inline-block h-[1.1em]">
+          <span className="relative inline-flex items-center min-h-[22px]">
             <AnimatePresence mode="wait" initial={false}>
               <motion.span
                 key={`en-${lang === "en" ? "active" : "inactive"}`}
                 className="inline-block"
-                initial={{ opacity: 0, y: 4 }}
+                initial={{ opacity: 0, y: 3 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
+                exit={{ opacity: 0, y: -3 }}
                 transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
               >
                 ENGLISH
@@ -44,20 +44,20 @@ export function LanguageToggle() {
         <button
           type="button"
           onClick={() => setLang("hi")}
-          className={`relative transition-colors pb-0.5 cursor-pointer ${
+          className={`relative transition-colors py-1 cursor-pointer ${
             lang === "hi"
-              ? "text-primary border-b-2 border-primary"
-              : "text-muted-foreground hover:text-foreground"
+              ? "text-primary border-b-2 border-primary font-bold"
+              : "text-muted-foreground hover:text-foreground font-semibold"
           }`}
         >
-          <span className="relative overflow-hidden inline-block h-[1.1em]">
+          <span className="relative inline-flex items-center min-h-[22px]">
             <AnimatePresence mode="wait" initial={false}>
               <motion.span
                 key={`hi-${lang === "hi" ? "active" : "inactive"}`}
                 className="inline-block"
-                initial={{ opacity: 0, y: 4 }}
+                initial={{ opacity: 0, y: 3 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
+                exit={{ opacity: 0, y: -3 }}
                 transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
               >
                 हिन्दी

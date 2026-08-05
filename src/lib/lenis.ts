@@ -10,7 +10,6 @@
 
 import { useEffect, useRef } from "react";
 import Lenis from "lenis";
-import { useAnimationFrame } from "framer-motion";
 
 // Singleton instance shared across the app
 let lenisInstance: Lenis | null = null;
@@ -49,18 +48,20 @@ export function useLenisSetup() {
     lenisRef.current = lenis;
     lenisInstance = lenis;
 
+    let frameId: number;
+    function raf(time: number) {
+      lenis.raf(time);
+      frameId = requestAnimationFrame(raf);
+    }
+    frameId = requestAnimationFrame(raf);
+
     return () => {
+      cancelAnimationFrame(frameId);
       lenis.destroy();
       lenisRef.current = null;
       lenisInstance = null;
     };
   }, []);
-
-  // Drive Lenis RAF via Framer Motion's unified animation frame — eliminates
-  // double-rAF stuttering when both libraries are active simultaneously.
-  useAnimationFrame((time) => {
-    lenisRef.current?.raf(time);
-  });
 
   return lenisRef;
 }

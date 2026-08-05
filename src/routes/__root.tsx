@@ -13,6 +13,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 import { useLenisSetup } from "../lib/lenis";
 import { useI18nStore } from "../lib/i18n";
+import { lockScroll, unlockScroll, forceUnlockScroll } from "../lib/scroll-lock";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -211,10 +212,10 @@ function RootComponent() {
 
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
-  // Scroll restoration + release body overflow on route navigation
+  // Scroll restoration + release body overflow & Lenis lock on route navigation
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-    document.body.style.overflow = "";
+    forceUnlockScroll();
   }, [pathname]);
 
   // Sync language to document for CSS selectors and font switching

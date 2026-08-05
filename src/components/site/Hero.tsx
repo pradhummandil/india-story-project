@@ -82,14 +82,14 @@ function WordReveal({
   return (
     <>
       {words.map((word, i) => (
-        <span key={i} className="inline-block overflow-hidden mr-[0.25em] last:mr-0">
+        <span key={i} className="inline-block overflow-visible mr-[0.25em] last:mr-0 py-0.5">
           <motion.span
             className="inline-block"
-            initial={{ y: "110%", opacity: 0 }}
-            animate={{ y: "0%", opacity: 1 }}
+            initial={{ y: 12, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
             transition={{
-              duration: 0.7,
-              delay: delay + i * 0.06,
+              duration: 0.6,
+              delay: delay + i * 0.05,
               ease: [0.16, 1, 0.3, 1],
             }}
           >
@@ -321,52 +321,11 @@ export function CinematicHero({
             />
           </motion.div>
 
-          {/* Cinematic gradients */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/15 to-black/85 z-10" />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/20 to-transparent z-10" />
+          {/* Clear cinematic image gradient — protects text readability without washing out photo clarity */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/40 z-10 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/30 to-transparent z-10 pointer-events-none" />
         </motion.div>
       </AnimatePresence>
-
-      {/* ── Ambient gradient orbs (brand colors, very slow drift) ── */}
-      <div aria-hidden className="absolute inset-0 z-5 pointer-events-none overflow-hidden max-w-full">
-        <motion.div
-          className="absolute -top-40 -left-40 size-[500px] sm:size-[700px] rounded-full blur-3xl"
-          style={{ background: "radial-gradient(circle, rgba(200,169,106,0.14) 0%, transparent 70%)" }}
-          animate={reducedMotion ? {} : { x: [0, 60, -30, 0], y: [0, 80, 40, 0] }}
-          transition={{ duration: 38, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute top-1/2 -right-60 size-[450px] sm:size-[600px] rounded-full blur-3xl"
-          style={{ background: "radial-gradient(circle, rgba(255,153,51,0.10) 0%, transparent 70%)" }}
-          animate={reducedMotion ? {} : { x: [0, -80, 20, 0], y: [0, 60, -40, 0] }}
-          transition={{ duration: 42, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute -bottom-20 left-1/3 size-[400px] sm:size-[500px] rounded-full blur-3xl"
-          style={{ background: "radial-gradient(circle, rgba(139,0,0,0.16) 0%, transparent 70%)" }}
-          animate={reducedMotion ? {} : { x: [0, 40, -50, 0], y: [0, -30, 20, 0] }}
-          transition={{ duration: 35, repeat: Infinity, ease: "easeInOut" }}
-        />
-      </div>
-
-      {/* ── Floating Ambient Particles ── */}
-      <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden opacity-25 max-w-full">
-        {!reducedMotion && [...Array(12)].map((_, i) => {
-          const size = Math.random() * 5 + 2;
-          const delay = Math.random() * 6;
-          const duration = Math.random() * 10 + 10;
-          const left = Math.random() * 100;
-          return (
-            <motion.div
-              key={i}
-              className="absolute bottom-[-10px] rounded-full bg-gold/30 blur-[1px]"
-              style={{ width: size, height: size, left: `${left}%` }}
-              animate={{ y: ["0vh", "-110vh"], x: ["0px", `${Math.random() * 30 - 15}px`, "0px"], opacity: [0, 0.8, 0.8, 0] }}
-              transition={{ duration, repeat: Infinity, delay, ease: "linear" }}
-            />
-          );
-        })}
-      </div>
 
       {/* ── Slide progress bar ── */}
       <div className="absolute bottom-0 left-0 right-0 z-30 h-[2px] bg-white/10">
@@ -406,8 +365,8 @@ export function CinematicHero({
             </span>
           </div>
 
-          {/* Title — staggered word reveal */}
-          <h1 className="font-display text-2xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.06] text-white tracking-tight max-w-4xl font-bold drop-shadow-lg text-pretty">
+          {/* Title — staggered word reveal with roomy line height and no text clipping */}
+          <h1 className="font-display text-2xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.2] text-white tracking-tight max-w-3xl font-bold drop-shadow-xl py-0.5">
             <WordReveal key={`${current}-${title}`} text={title} delay={0.1} reducedMotion={reducedMotion} />
           </h1>
 
