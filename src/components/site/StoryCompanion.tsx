@@ -238,7 +238,7 @@ export function StoryCompanion() {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[60] font-sans">
+    <div className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-[60] font-sans mb-safe">
       {/* Tooltip */}
       <AnimatePresence>
         {showTooltip && !isOpen && (
@@ -246,7 +246,7 @@ export function StoryCompanion() {
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute bottom-16 right-0 bg-neutral-900 border border-neutral-800 text-white text-[10px] uppercase font-bold tracking-wider px-3 py-1.5 rounded-lg whitespace-nowrap shadow-md"
+            className="absolute bottom-16 right-0 bg-neutral-900 border border-neutral-800 text-white text-[10px] uppercase font-bold tracking-wider px-3 py-1.5 rounded-lg whitespace-nowrap shadow-md pointer-events-none"
           >
             {isHindi ? "कहानी सहायक" : "India Story Assistant"}
           </motion.div>
@@ -262,7 +262,7 @@ export function StoryCompanion() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         aria-label="Open AI Story Companion"
-        className="size-14 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg hover:shadow-red-500/20 border border-red-500/30 cursor-pointer relative"
+        className="size-13 sm:size-14 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg hover:shadow-red-500/20 border border-red-500/30 cursor-pointer relative min-h-[44px] min-w-[44px]"
       >
         <span className="absolute inset-0 rounded-full bg-red-500/30 animate-ping opacity-75" />
         <AnimatePresence mode="wait">

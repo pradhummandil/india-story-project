@@ -1,20 +1,17 @@
 import { createLazyFileRoute, Link } from "@tanstack/react-router";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useId } from "react";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   Sparkles,
   UploadCloud,
   FileText,
   User,
   Mail,
-  Lock,
   Globe,
-  Chrome,
   MapPin,
   Image as ImageIcon,
   Video,
-  Link2,
   Check,
   Loader2,
   ArrowRight,
@@ -30,26 +27,29 @@ import {
   Eye,
   Award,
   Feather,
-  Smartphone,
   Trash2,
   Info,
   Calendar,
   Send,
-  Sparkle,
-  HelpCircle,
   X,
   AlertCircle,
-  FileCheck,
+  Phone,
+  Compass,
+  Palette,
+  Leaf,
+  Flame,
+  Music,
+  Landmark,
+  Share2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { SiteLayout } from "@/components/site/Layout";
 import { useAuthStore } from "@/lib/auth-store";
 import { supabase } from "@/lib/supabase-client";
 import { themes as defaultThemes } from "@/lib/stories-data";
 import { useI18nStore, uiText } from "@/lib/i18n";
+import { StoryCard, type Story } from "@/components/site/StoryCard";
+import { TiltCard } from "@/components/site/TiltCard";
 
 export const Route = createLazyFileRoute("/share-story")({
   component: ShareStoryPage,
@@ -92,6 +92,17 @@ const STATES = [
   "Ladakh",
   "Lakshadweep",
   "Puducherry",
+];
+
+const CATEGORY_ITEMS = [
+  { name: "Heritage", icon: Landmark, desc: "Ancient lore, monuments, architecture & oral histories" },
+  { name: "Innovation", icon: Zap, desc: "Grassroots tech, rural inventions & smart solutions" },
+  { name: "Culture", icon: Palette, desc: "Folk arts, festivals, rituals & traditional wisdom" },
+  { name: "Social Change", icon: Users, desc: "Community leaders, education & reform initiatives" },
+  { name: "Environment", icon: Leaf, desc: "Water harvesting, afforestation & eco-conservation" },
+  { name: "Arts & Crafts", icon: Music, desc: "Master artisans, handlooms & endangered crafts" },
+  { name: "Courage & Resilience", icon: Shield, desc: "Overcoming hardship, bravery & inspirational spirit" },
+  { name: "Wildlife & Nature", icon: Compass, desc: "Biodiversity preservation, flora, fauna & guardians" },
 ];
 
 const whyShareReasonsEn = [
@@ -226,24 +237,6 @@ const processStepsHi = [
   },
 ];
 
-const guidelinesEn = [
-  "Stories must be about real people, places, or events in India.",
-  "Content should be original and not published elsewhere.",
-  "Minimum 500 words for full stories; 150 words for summaries.",
-  "Cite all sources and provide verifiable facts.",
-  "Avoid defamatory language, political bias, or unverified claims.",
-  "Images must be royalty-free or your own photography.",
-];
-
-const guidelinesHi = [
-  "कहानियाँ भारत के वास्तविक लोगों, स्थानों या घटनाओं के बारे में होनी चाहिए।",
-  "सामग्री मूल होनी चाहिए और कहीं और प्रकाशित नहीं होनी चाहिए।",
-  "पूर्ण कहानियों के लिए न्यूनतम 500 शब्द; सारांश के लिए 150 शब्द।",
-  "सभी स्रोतों का हवाला दें और सत्यापित तथ्य प्रदान करें।",
-  "मानहानिकारक भाषा, राजनीतिक पूर्वाग्रह या असत्यापित दावों से बचें।",
-  "छवियां कॉपीराइट-मुक्त या आपकी अपनी फोटोग्राफी होनी चाहिए।",
-];
-
 const faqs = [
   {
     q: "How long does the review process take?",
@@ -272,14 +265,15 @@ function FaqItem({ q, a }: { q: string; a: string }) {
   return (
     <div className="border-b border-neutral-800 last:border-0">
       <button
+        type="button"
         className="w-full flex items-center justify-between py-5 text-left gap-4 group"
         onClick={() => setOpen(!open)}
       >
-        <span className="font-sans font-semibold text-sm text-white group-hover:text-red-500 transition-colors">
+        <span className="font-sans font-semibold text-sm text-white group-hover:text-[#8B0000] transition-colors">
           {q}
         </span>
         <ChevronDown
-          className={`size-4 text-neutral-400 shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
+          className={`size-4 text-neutral-400 shrink-0 transition-transform duration-300 ${open ? "rotate-180 text-[#8B0000]" : ""}`}
         />
       </button>
       <AnimatePresence initial={false}>
@@ -299,62 +293,254 @@ function FaqItem({ q, a }: { q: string; a: string }) {
   );
 }
 
+/* ─── Reusable Floating Label Input ─── */
+interface FloatingInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label: string;
+  error?: string | null;
+  isValid?: boolean;
+  isRequired?: boolean;
+  helperText?: string;
+}
+
+function FloatingInput({
+  label,
+  value,
+  onChange,
+  error,
+  isValid,
+  isRequired,
+  helperText,
+  id,
+  type = "text",
+  className = "",
+  ...props
+}: FloatingInputProps) {
+  const generatedId = useId();
+  const inputId = id || generatedId;
+  const [isFocused, setIsFocused] = useState(false);
+  const hasValue = value !== undefined && value !== null && String(value).trim() !== "";
+  const isFloating = isFocused || hasValue;
+
+  return (
+    <div className="relative group w-full">
+      <motion.div
+        animate={error ? { x: [0, -4, 4, -4, 4, 0] } : { x: 0 }}
+        transition={{ duration: 0.3 }}
+        className="relative"
+      >
+        <input
+          id={inputId}
+          type={type}
+          value={value}
+          onChange={onChange}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          className={`peer w-full bg-neutral-900/90 border text-white text-xs sm:text-sm rounded-xl px-4 pt-5 pb-2 outline-none transition-all duration-300 ${
+            error
+              ? "border-red-500/80 focus:ring-2 focus:ring-red-500/30"
+              : isFocused
+              ? "border-[#8B0000] ring-2 ring-[#8B0000]/40 scale-[1.008]"
+              : "border-neutral-800 hover:border-neutral-700"
+          } ${className}`}
+          {...props}
+        />
+        <label
+          htmlFor={inputId}
+          className={`absolute left-4 pointer-events-none font-sans transition-all duration-200 ${
+            isFloating
+              ? "top-1.5 text-[9px] uppercase tracking-wider font-bold text-[#C8A96A]"
+              : "top-3.5 text-xs text-neutral-400"
+          }`}
+        >
+          {label} {isRequired && <span className="text-[#8B0000] font-bold">*</span>}
+        </label>
+        
+        <AnimatePresence>
+          {isValid && !error && hasValue && (
+            <motion.span
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: [0, 1.25, 1], opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 400, damping: 15 }}
+              className="absolute right-3.5 top-3.5 size-4 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center text-emerald-400 pointer-events-none"
+            >
+              <Check className="size-2.5" />
+            </motion.span>
+          )}
+        </AnimatePresence>
+      </motion.div>
+
+      <AnimatePresence>
+        {error ? (
+          <motion.p
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            className="text-[10px] text-red-400 font-sans font-medium mt-1 pl-1 flex items-center gap-1"
+          >
+            <AlertCircle className="size-3 shrink-0" />
+            {error}
+          </motion.p>
+        ) : helperText ? (
+          <p className="text-[10px] text-neutral-400 font-sans mt-1 pl-1">{helperText}</p>
+        ) : null}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* ─── Reusable Floating Label Textarea ─── */
+interface FloatingTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  label: string;
+  error?: string | null;
+  isValid?: boolean;
+  isRequired?: boolean;
+  helperText?: string;
+  wordCount?: number;
+}
+
+function FloatingTextarea({
+  label,
+  value,
+  onChange,
+  error,
+  isValid,
+  isRequired,
+  helperText,
+  wordCount,
+  id,
+  rows = 5,
+  className = "",
+  ...props
+}: FloatingTextareaProps) {
+  const generatedId = useId();
+  const textareaId = id || generatedId;
+  const [isFocused, setIsFocused] = useState(false);
+  const hasValue = value !== undefined && value !== null && String(value).trim() !== "";
+  const isFloating = isFocused || hasValue;
+
+  return (
+    <div className="relative group w-full">
+      <motion.div
+        animate={error ? { x: [0, -4, 4, -4, 4, 0] } : { x: 0 }}
+        transition={{ duration: 0.3 }}
+        className="relative"
+      >
+        <textarea
+          id={textareaId}
+          rows={rows}
+          value={value}
+          onChange={onChange}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          className={`peer w-full bg-neutral-900/90 border text-white text-xs sm:text-sm rounded-xl px-4 pt-6 pb-3 outline-none transition-all duration-300 resize-none ${
+            error
+              ? "border-red-500/80 focus:ring-2 focus:ring-red-500/30"
+              : isFocused
+              ? "border-[#8B0000] ring-2 ring-[#8B0000]/40 scale-[1.005]"
+              : "border-neutral-800 hover:border-neutral-700"
+          } ${className}`}
+          {...props}
+        />
+        <label
+          htmlFor={textareaId}
+          className={`absolute left-4 pointer-events-none font-sans transition-all duration-200 ${
+            isFloating
+              ? "top-2 text-[9px] uppercase tracking-wider font-bold text-[#C8A96A]"
+              : "top-4 text-xs text-neutral-400"
+          }`}
+        >
+          {label} {isRequired && <span className="text-[#8B0000] font-bold">*</span>}
+        </label>
+
+        {wordCount !== undefined && (
+          <span className="absolute right-3 top-2 text-[9px] font-sans font-bold text-neutral-400 uppercase tracking-wider pointer-events-none">
+            {wordCount} words
+          </span>
+        )}
+
+        <AnimatePresence>
+          {isValid && !error && hasValue && (
+            <motion.span
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: [0, 1.25, 1], opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 400, damping: 15 }}
+              className="absolute right-3.5 bottom-3.5 size-4 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center text-emerald-400 pointer-events-none"
+            >
+              <Check className="size-2.5" />
+            </motion.span>
+          )}
+        </AnimatePresence>
+      </motion.div>
+
+      <AnimatePresence>
+        {error ? (
+          <motion.p
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            className="text-[10px] text-red-400 font-sans font-medium mt-1 pl-1 flex items-center gap-1"
+          >
+            <AlertCircle className="size-3 shrink-0" />
+            {error}
+          </motion.p>
+        ) : helperText ? (
+          <p className="text-[10px] text-neutral-400 font-sans mt-1 pl-1">{helperText}</p>
+        ) : null}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 function ShareStoryPage() {
   const { user, session, profile, loading: authLoading } = useAuthStore();
   const lang = useI18nStore((s) => s.lang);
+  const shouldReduceMotion = useReducedMotion();
 
-  // Login states
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loginLoading, setLoginLoading] = useState(false);
-  const [loginError, setLoginError] = useState<string | null>(null);
-
-  // Wizard active step
+  // Active step state (5 steps)
   const [activeStep, setActiveStep] = useState(0);
 
-  // Form states
+  // Form input states
   const [title, setTitle] = useState("");
   const [heroName, setHeroName] = useState("");
-  const [story, setStory] = useState("");
   const [summary, setSummary] = useState("");
+  const [story, setStory] = useState("");
   const [selectedThemes, setSelectedThemes] = useState<string[]>(["Heritage"]);
-  const [allThemes, setAllThemes] = useState<string[]>(defaultThemes.filter((t) => t !== "All"));
-  const [themeSearch, setThemeSearch] = useState("");
-  const [showThemeDropdown, setShowThemeDropdown] = useState(false);
-  const themeDropdownRef = useRef<HTMLDivElement>(null);
-
   const [stateName, setStateName] = useState("Delhi");
   const [district, setDistrict] = useState("");
   const [language, setLanguage] = useState("en");
+  
+  // Author & Contact
   const [authorName, setAuthorName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [authorBio, setAuthorBio] = useState("");
+
+  // Visual Media & Extras
   const [coverImage, setCoverImage] = useState("");
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [videoUrl, setVideoUrl] = useState("");
   const [externalLinks, setExternalLinks] = useState("");
-  const [phone, setPhone] = useState("");
   const [tags, setTags] = useState("");
+
+  // SEO options
   const [seoTitle, setSeoTitle] = useState("");
   const [seoDescription, setSeoDescription] = useState("");
   const [seoKeywords, setSeoKeywords] = useState("");
-  const [isPreview, setIsPreview] = useState(false);
-  const [draftSaved, setDraftSaved] = useState(false);
   const [showSEO, setShowSEO] = useState(false);
 
-  // Upload states
+  // UI state
+  const [draftSaved, setDraftSaved] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  
-  const [coverUploadError, setCoverUploadError] = useState<string | null>(null);
-  const [coverUploadSuccess, setCoverUploadSuccess] = useState<boolean>(false);
-  const [galleryUploadError, setGalleryUploadError] = useState<string | null>(null);
-  const [galleryUploadSuccess, setGalleryUploadSuccess] = useState<boolean>(false);
-  const [videoUploadError, setVideoUploadError] = useState<string | null>(null);
-  const [videoUploadSuccess, setVideoUploadSuccess] = useState<boolean>(false);
+
+  // Validation errors map
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // Drag and drop states
   const [isDragOverCover, setIsDragOverCover] = useState(false);
@@ -368,19 +554,20 @@ function ShareStoryPage() {
         const parsed = JSON.parse(saved);
         if (parsed.title) setTitle(parsed.title);
         if (parsed.heroName) setHeroName(parsed.heroName);
-        if (parsed.story) setStory(parsed.story);
         if (parsed.summary) setSummary(parsed.summary);
+        if (parsed.story) setStory(parsed.story);
         if (parsed.selectedThemes) setSelectedThemes(parsed.selectedThemes);
         if (parsed.stateName) setStateName(parsed.stateName);
         if (parsed.district) setDistrict(parsed.district);
         if (parsed.language) setLanguage(parsed.language);
         if (parsed.authorName) setAuthorName(parsed.authorName);
         if (parsed.contactEmail) setContactEmail(parsed.contactEmail);
+        if (parsed.phone) setPhone(parsed.phone);
+        if (parsed.authorBio) setAuthorBio(parsed.authorBio);
         if (parsed.coverImage) setCoverImage(parsed.coverImage);
         if (parsed.galleryImages) setGalleryImages(parsed.galleryImages);
         if (parsed.videoUrl) setVideoUrl(parsed.videoUrl);
         if (parsed.externalLinks) setExternalLinks(parsed.externalLinks);
-        if (parsed.phone) setPhone(parsed.phone);
         if (parsed.tags) setTags(parsed.tags);
         if (parsed.seoTitle) setSeoTitle(parsed.seoTitle);
         if (parsed.seoDescription) setSeoDescription(parsed.seoDescription);
@@ -397,19 +584,20 @@ function ShareStoryPage() {
       const draft = {
         title,
         heroName,
-        story,
         summary,
+        story,
         selectedThemes,
         stateName,
         district,
         language,
         authorName,
         contactEmail,
+        phone,
+        authorBio,
         coverImage,
         galleryImages,
         videoUrl,
         externalLinks,
-        phone,
         tags,
         seoTitle,
         seoDescription,
@@ -421,55 +609,25 @@ function ShareStoryPage() {
   }, [
     title,
     heroName,
-    story,
     summary,
+    story,
     selectedThemes,
     stateName,
     district,
     language,
     authorName,
     contactEmail,
+    phone,
+    authorBio,
     coverImage,
     galleryImages,
     videoUrl,
     externalLinks,
-    phone,
     tags,
     seoTitle,
     seoDescription,
     seoKeywords,
   ]);
-
-  useEffect(() => {
-    fetch("/api/themes")
-      .then((res) => res.json())
-      .then((data) => {
-        const list = Array.isArray(data) ? data : data.themes || [];
-        if (list.length > 0) {
-          setAllThemes(list.map((t: any) => t.name));
-        }
-      })
-      .catch((err) => console.error("Failed to fetch themes:", err));
-  }, []);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (themeDropdownRef.current && !themeDropdownRef.current.contains(event.target as Node)) {
-        setShowThemeDropdown(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const toggleTheme = (themeName: string) => {
-    if (selectedThemes.includes(themeName)) {
-      setSelectedThemes(selectedThemes.filter((t) => t !== themeName));
-    } else {
-      setSelectedThemes([...selectedThemes, themeName]);
-    }
-    setThemeSearch("");
-  };
 
   // Pre-populate user details
   useEffect(() => {
@@ -483,32 +641,15 @@ function ShareStoryPage() {
     }
   }, [user, profile]);
 
-  const handleGoogleLogin = async () => {
-    setLoginLoading(true);
-    setLoginError(null);
-    const { error: authError } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/share-story`,
-      },
-    });
-    if (authError) {
-      setLoginError(authError.message);
-      setLoginLoading(false);
-    }
-  };
-
-  const handleEmailLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginLoading(true);
-    setLoginError(null);
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (authError) {
-      setLoginError(authError.message);
-      setLoginLoading(false);
+  const toggleTheme = (themeName: string) => {
+    if (selectedThemes.includes(themeName)) {
+      if (selectedThemes.length > 1) {
+        setSelectedThemes(selectedThemes.filter((t) => t !== themeName));
+      } else {
+        toast.info("Please keep at least one category selected.");
+      }
+    } else {
+      setSelectedThemes([...selectedThemes, themeName]);
     }
   };
 
@@ -518,37 +659,34 @@ function ShareStoryPage() {
     const validExtensions = ["jpg", "jpeg", "png", "webp", "avif"];
 
     if (!validTypes.includes(file.type) && !validExtensions.includes(fileExtension || "")) {
-      return `Invalid file type for "${file.name}". Allowed types are: JPG, JPEG, PNG, WEBP, AVIF.`;
+      return `Invalid file type for "${file.name}". Allowed: JPG, PNG, WEBP, AVIF.`;
     }
 
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
-      return `File "${file.name}" exceeds the maximum size limit of 10MB (actual: ${(file.size / (1024 * 1024)).toFixed(2)}MB).`;
+      return `File "${file.name}" exceeds maximum limit of 10MB.`;
     }
 
     return null;
   };
 
   const uploadFile = async (file: File): Promise<string> => {
-    if (!session) throw new Error("No session found. Please sign in.");
-
     const formData = new FormData();
     formData.append("files", file);
 
-    console.log(
-      `[Upload Client] Requesting upload for file: ${file.name}, type: ${file.type}, size: ${file.size} bytes`,
-    );
+    const headers: Record<string, string> = {};
+    if (session?.access_token) {
+      headers.Authorization = `Bearer ${session.access_token}`;
+    }
 
     const res = await fetch("/api/admin/media", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${session.access_token}`,
-      },
+      headers,
       body: formData,
     });
 
     if (!res.ok) {
-      let errMsg = `Upload failed with status code ${res.status}`;
+      let errMsg = `Upload failed with status ${res.status}`;
       try {
         const errData = await res.json();
         errMsg = errData.error || errMsg;
@@ -559,33 +697,13 @@ function ShareStoryPage() {
     const data = await res.json();
     const uploadedUrl = data.files?.[0]?.url;
     if (!uploadedUrl) {
-      throw new Error("Server succeeded but did not return any media URL.");
+      throw new Error("Server did not return media URL.");
     }
 
     return uploadedUrl;
   };
 
-  const uploadFileWithRetry = async (file: File): Promise<string> => {
-    let attempts = 0;
-    while (attempts < 2) {
-      try {
-        const url = await uploadFile(file);
-        return url;
-      } catch (err: any) {
-        attempts++;
-        if (attempts >= 2) {
-          throw err;
-        }
-        console.warn(
-          `[Upload Client] Attempt 1 failed for ${file.name}. Retrying once. Error:`,
-          err,
-        );
-      }
-    }
-    throw new Error("Upload failed after retry");
-  };
-
-  const performCoverImageUpload = async (file: File) => {
+  const performCoverUpload = async (file: File) => {
     const validationError = validateImageFile(file);
     if (validationError) {
       toast.warning(validationError);
@@ -593,110 +711,71 @@ function ShareStoryPage() {
     }
 
     setUploadingCover(true);
-    setCoverUploadError(null);
-    setCoverUploadSuccess(false);
-
     try {
-      console.log(`[Upload Cover] Uploading: ${file.name}`);
-      const url = await uploadFileWithRetry(file);
+      const url = await uploadFile(file);
       setCoverImage(url);
-      setCoverUploadSuccess(true);
-      console.log(`[Upload Cover] Successfully uploaded: ${url}`);
+      toast.success("Cover image uploaded successfully!");
     } catch (err: any) {
-      console.error(`[Upload Cover] Failed to upload ${file.name}:`, err);
-      setCoverUploadError(err.message || "Failed to upload cover image.");
-      toast.error(`Cover upload failed: ${err.message}`);
+      toast.error(`Upload failed: ${err.message}`);
     } finally {
       setUploadingCover(false);
     }
   };
 
-  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) await performCoverImageUpload(file);
-  };
-
   const performGalleryUpload = async (fileList: File[]) => {
-    for (const file of fileList) {
-      const validationError = validateImageFile(file);
-      if (validationError) {
-        toast.warning(validationError);
-        return;
-      }
-    }
-
     setUploadingGallery(true);
-    setGalleryUploadError(null);
-    setGalleryUploadSuccess(false);
-
     try {
-      console.log(`[Upload Gallery] Uploading ${fileList.length} files in parallel`);
-      const uploadPromises = fileList.map((file) => uploadFileWithRetry(file));
+      const uploadPromises = fileList.map((file) => uploadFile(file));
       const urls = await Promise.all(uploadPromises);
-
       setGalleryImages((prev) => [...prev, ...urls]);
-      setGalleryUploadSuccess(true);
-      console.log(`[Upload Gallery] Successfully uploaded:`, urls);
+      toast.success(`Uploaded ${urls.length} gallery images.`);
     } catch (err: any) {
-      console.error(`[Upload Gallery] Failed to upload gallery:`, err);
-      setGalleryUploadError(err.message || "Failed to upload gallery images.");
       toast.error(`Gallery upload failed: ${err.message}`);
     } finally {
       setUploadingGallery(false);
     }
   };
 
-  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      await performGalleryUpload(Array.from(files));
+  const handleNextStep = () => {
+    const errors: Record<string, string> = {};
+
+    if (activeStep === 0) {
+      if (!title.trim()) errors.title = "Story title is required to begin.";
+      if (!summary.trim()) errors.summary = "A 1-line teaser summary is required.";
+    } else if (activeStep === 1) {
+      if (!story.trim()) errors.story = "Full story body is required.";
+      if (!district.trim()) errors.district = "District or city is required.";
+      if (selectedThemes.length === 0) errors.themes = "Select at least one category.";
+    } else if (activeStep === 2) {
+      if (!authorName.trim()) errors.authorName = "Author name is required.";
+      if (!contactEmail.trim() || !contactEmail.includes("@"))
+        errors.contactEmail = "Valid contact email is required.";
     }
-  };
 
-  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const maxSize = 20 * 1024 * 1024; // 20MB for video
-    if (file.size > maxSize) {
-      toast.warning("Video file size cannot exceed 20MB.");
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setErrorMessage("Please complete the required fields to continue.");
       return;
     }
 
-    setUploadingVideo(true);
-    setVideoUploadError(null);
-    setVideoUploadSuccess(false);
-
-    try {
-      console.log(`[Upload Video] Uploading: ${file.name}`);
-      const url = await uploadFileWithRetry(file);
-      setVideoUrl(url);
-      setVideoUploadSuccess(true);
-      console.log(`[Upload Video] Successfully uploaded: ${url}`);
-    } catch (err: any) {
-      console.error(`[Upload Video] Failed to upload ${file.name}:`, err);
-      setVideoUploadError(err.message || "Failed to upload video file.");
-      toast.error(`Video upload failed: ${err.message}`);
-    } finally {
-      setUploadingVideo(false);
-    }
+    setFieldErrors({});
+    setErrorMessage(null);
+    setActiveStep((prev) => Math.min(prev + 1, 4));
   };
 
-  const handleSubmit = async (e: React.FormEvent | null, isDraft = false) => {
-    if (e) e.preventDefault();
-    if (!session) return;
+  const handlePrevStep = () => {
+    setErrorMessage(null);
+    setActiveStep((prev) => Math.max(prev - 1, 0));
+  };
+
+  const handleSubmit = async (isDraft = false) => {
     if (uploadingCover || uploadingGallery || uploadingVideo) {
-      setErrorMessage("Please wait for all image and video uploads to complete before submitting.");
+      setErrorMessage("Please wait for all media uploads to finish before submitting.");
       return;
     }
 
     if (!title.trim()) {
-      setErrorMessage("Please fill in Title.");
-      return;
-    }
-
-    if (!isDraft && (!story.trim() || !summary.trim())) {
-      setErrorMessage("Please fill in Title, Story, and Summary.");
+      setErrorMessage("Please provide a story title.");
       return;
     }
 
@@ -704,12 +783,16 @@ function ShareStoryPage() {
     setErrorMessage(null);
 
     try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (session?.access_token) {
+        headers.Authorization = `Bearer ${session.access_token}`;
+      }
+
       const res = await fetch("/api/submissions", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-        },
+        headers,
         body: JSON.stringify({
           title,
           heroName,
@@ -737,9 +820,9 @@ function ShareStoryPage() {
       if (res.ok) {
         if (isDraft) {
           setDraftSaved(true);
+          toast.success("Draft saved successfully!");
           setTimeout(() => setDraftSaved(false), 3000);
         } else {
-          // Clear local autosave draft
           localStorage.removeItem("isp_autosave_story_draft");
           setDone(true);
         }
@@ -748,7 +831,7 @@ function ShareStoryPage() {
         setErrorMessage(data.error || "Submission failed.");
       }
     } catch {
-      setErrorMessage("An unexpected error occurred.");
+      setErrorMessage("An unexpected error occurred while submitting your story.");
     } finally {
       setSubmitLoading(false);
     }
@@ -757,84 +840,71 @@ function ShareStoryPage() {
   const handleReset = () => {
     setTitle("");
     setHeroName("");
-    setStory("");
     setSummary("");
+    setStory("");
     setSelectedThemes(["Heritage"]);
     setStateName("Delhi");
     setDistrict("");
     setLanguage("en");
+    setAuthorName("");
+    setContactEmail("");
+    setPhone("");
+    setAuthorBio("");
     setCoverImage("");
     setGalleryImages([]);
     setVideoUrl("");
     setExternalLinks("");
-    setPhone("");
     setTags("");
     setSeoTitle("");
     setSeoDescription("");
     setSeoKeywords("");
     setDone(false);
     setErrorMessage(null);
-    setIsPreview(false);
     setActiveStep(0);
   };
 
   const autoSlug = title
-    ? "/stories/" +
-      title
+    ? title
         .toLowerCase()
         .replace(/[^a-z0-9\s-]/g, "")
         .trim()
         .replace(/\s+/g, "-")
-    : "";
+    : "untitled-story";
 
   const stepsList = [
-    { label: lang === "hi" ? "मुख्य विवरण" : "Core details", icon: Sparkles },
-    { label: lang === "hi" ? "सामग्री" : "Content", icon: FileText },
-    { label: lang === "hi" ? "दृश्य मीडिया" : "Visual Media", icon: ImageIcon },
-    { label: lang === "hi" ? "सत्यापन एवं SEO" : "Verification & SEO", icon: Shield },
+    { label: "1. The Hook", icon: Sparkles },
+    { label: "2. The Details", icon: FileText },
+    { label: "3. Storyteller", icon: User },
+    { label: "4. Visual Media", icon: ImageIcon },
+    { label: "5. Review & Submit", icon: Send },
   ];
 
-  const handleNextStep = () => {
-    if (activeStep === 0) {
-      if (!title.trim()) {
-        setErrorMessage("Please enter a story title to proceed.");
-        return;
-      }
-      if (!district.trim()) {
-        setErrorMessage("Please specify the district or city.");
-        return;
-      }
-      if (selectedThemes.length === 0) {
-        setErrorMessage("Please select at least one theme.");
-        return;
-      }
-    }
-    if (activeStep === 1) {
-      if (!summary.trim()) {
-        setErrorMessage("Please write a story summary.");
-        return;
-      }
-      if (!story.trim()) {
-        setErrorMessage("Please write the full story text.");
-        return;
-      }
-    }
-    setErrorMessage(null);
-    setActiveStep((prev) => Math.min(prev + 1, stepsList.length - 1));
-  };
-
-  const handlePrevStep = () => {
-    setErrorMessage(null);
-    setActiveStep((prev) => Math.max(prev - 1, 0));
+  // Construct mock story object for live StoryCard preview in Step 5
+  const previewStory: Story = {
+    id: "preview-story-id",
+    slug: autoSlug,
+    title: title || "Your Story Title Here",
+    excerpt: summary || "Your story teaser summary will appear here once entered.",
+    content: story || "Full story text narrative...",
+    themes: selectedThemes,
+    region: stateName + (district ? `, ${district}` : ""),
+    readTime: `${Math.max(1, Math.ceil((story.trim().split(/\s+/).length || 1) / 200))} min read`,
+    image: coverImage || "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&auto=format&fit=crop&q=80",
+    url: `/stories/${autoSlug}`,
+    authorName: authorName || "Verified Storyteller",
+    publishedAt: new Date().toISOString(),
+    viewCount: 1,
+    likesCount: 0,
+    commentsCount: 0,
   };
 
   if (authLoading) {
     return (
       <SiteLayout>
-        <div className="min-h-[70vh] flex items-center justify-center bg-neutral-950">
+        <div className="min-h-[70vh] flex items-center justify-center bg-[#0a0a0a]">
           <div className="text-center space-y-4">
-            <Loader2 className="size-8 animate-spin text-red-500 mx-auto" />
-            <p className="text-neutral-450 font-sans text-sm">Loading…</p>
+            <Loader2 className="size-8 animate-spin text-[#8B0000] mx-auto" />
+            <p className="text-neutral-400 font-sans text-sm">Loading India Story Project...</p>
           </div>
         </div>
       </SiteLayout>
@@ -843,77 +913,64 @@ function ShareStoryPage() {
 
   return (
     <SiteLayout>
-      <div className="bg-neutral-950 text-white min-h-screen relative overflow-hidden font-sans">
+      <div className="bg-[#0a0a0a] text-white min-h-screen relative overflow-hidden font-sans">
         
-        {/* ─── Parallax Animated Heritage Elements (Branding CSS) ─── */}
-        <div className="absolute inset-0 pointer-events-none z-0">
-          {/* Saffron and Gold ambient blur blobs */}
-          <div className="absolute top-1/4 left-10 size-72 rounded-full bg-red-900/10 blur-[80px]" />
-          <div className="absolute bottom-1/3 right-10 size-[320px] rounded-full bg-amber-900/10 blur-[100px]" />
+        {/* ─── Parallax Drifting Ambient Gradient Background Blobs ─── */}
+        <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+          <div className="absolute top-1/6 left-1/4 size-[400px] rounded-full bg-[#8B0000]/15 blur-[120px] animate-pulse duration-10000" />
+          <div className="absolute bottom-1/4 right-1/4 size-[450px] rounded-full bg-[#C8A96A]/10 blur-[140px]" />
+          <div className="absolute top-2/3 left-10 size-[300px] rounded-full bg-[#D97706]/10 blur-[100px]" />
           
-          {/* Floating Line Art / Feathers or Clouds outline elements */}
           <motion.div
-            animate={{
-              y: [0, -18, 0],
-              rotate: [0, 4, 0],
-            }}
-            transition={{
-              duration: 8,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-            className="absolute top-24 right-20 size-24 opacity-15 text-red-500"
+            animate={shouldReduceMotion ? {} : { y: [0, -16, 0], rotate: [0, 5, 0] }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-28 right-16 size-24 opacity-10 text-[#C8A96A]"
           >
             <Feather className="size-full" />
           </motion.div>
 
           <motion.div
-            animate={{
-              y: [0, 15, 0],
-              rotate: [0, -6, 0],
-            }}
-            transition={{
-              duration: 9,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 1,
-            }}
-            className="absolute bottom-32 left-16 size-20 opacity-10 text-amber-500"
+            animate={shouldReduceMotion ? {} : { y: [0, 14, 0], rotate: [0, -4, 0] }}
+            transition={{ duration: 11, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            className="absolute bottom-36 left-12 size-20 opacity-10 text-[#D97706]"
           >
             <Globe className="size-full" />
           </motion.div>
         </div>
 
-        {/* ─── Hero Section (Cinematic Feel) ─── */}
-        <section className="relative overflow-hidden pt-28 pb-16 md:pt-36 md:pb-28 border-b border-neutral-900 z-10">
+        {/* ─── Hero Section with Staggered Word Reveal ─── */}
+        <section className="relative overflow-hidden pt-28 pb-14 md:pt-36 md:pb-24 border-b border-neutral-900 z-10">
           <div className="container mx-auto px-6 relative text-center max-w-4xl space-y-6">
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-red-950/40 border border-red-500/20 text-[10px] uppercase tracking-widest text-red-400 font-sans font-bold shadow-md"
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-[#8B0000]/20 border border-[#8B0000]/40 text-[10px] uppercase tracking-widest text-[#C8A96A] font-sans font-bold shadow-md"
             >
-              <Feather className="size-3.5" />
+              <Feather className="size-3.5 text-[#8B0000]" />
               {lang === "hi" ? "इंडिया स्टोरी प्रोजेक्ट — खुली प्रविष्टियाँ" : "India Story Project — Open Submissions"}
             </motion.div>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
-              className="font-display text-4xl sm:text-6xl md:text-7xl font-bold leading-[1.05] tracking-tight"
-            >
-              {lang === "hi" ? "भारत की कहानी" : "Tell the Story of"}
-              <br />
-              <span className="bg-gradient-to-r from-amber-200 via-gold to-amber-500 bg-clip-text text-transparent italic">
-                {lang === "hi" ? "साझा करें" : "Bharat"}
-              </span>
-            </motion.h1>
+            <div className="overflow-hidden">
+              <motion.h1
+                initial={{ opacity: 0, y: 25 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+                className="font-display text-4xl sm:text-6xl md:text-7xl font-bold leading-[1.08] tracking-tight"
+              >
+                {lang === "hi" ? "भारत की कहानी" : "Tell the Story of"}
+                <br />
+                <span className="bg-gradient-to-r from-[#C8A96A] via-amber-200 to-[#D97706] bg-clip-text text-transparent italic font-serif">
+                  {lang === "hi" ? "साझा करें" : "Bharat"}
+                </span>
+              </motion.h1>
+            </div>
 
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-              className="mt-4 text-base sm:text-lg text-neutral-350 leading-relaxed font-sans max-w-2xl mx-auto"
+              transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              className="text-base sm:text-lg text-neutral-350 leading-relaxed font-sans max-w-2xl mx-auto"
             >
               {uiText[lang].shareStoryPage.subtitle}
             </motion.p>
@@ -921,19 +978,19 @@ function ShareStoryPage() {
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.25 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-4"
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2"
             >
               <a
                 href="#submission-form"
-                className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-sans font-bold text-xs uppercase tracking-widest h-12 px-8 rounded-full shadow-lg hover:shadow-red-500/20 transition-all duration-300"
+                className="inline-flex items-center gap-2.5 bg-[#8B0000] hover:bg-[#a00000] text-white font-sans font-bold text-xs uppercase tracking-widest h-12 px-8 rounded-full shadow-lg shadow-[#8B0000]/25 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
               >
                 <PenLine className="size-4" />
-                {lang === "hi" ? "अपनी कहानी जमा करें" : "Submit Your Story"}
+                {lang === "hi" ? "अपनी कहानी जमा करें" : "Share Your Story"}
               </a>
               <a
                 href="#how-it-works"
-                className="inline-flex items-center gap-2 border border-neutral-800 hover:border-red-500/40 text-neutral-300 hover:text-white font-sans font-semibold text-xs h-12 px-8 rounded-full transition-all duration-300 bg-neutral-900/30"
+                className="inline-flex items-center gap-2 border border-neutral-800 hover:border-[#C8A96A]/40 text-neutral-300 hover:text-white font-sans font-semibold text-xs h-12 px-8 rounded-full transition-all duration-300 bg-neutral-900/40"
               >
                 <BookOpen className="size-4" />
                 {lang === "hi" ? "यह कैसे काम करता है" : "How It Works"}
@@ -942,10 +999,10 @@ function ShareStoryPage() {
           </div>
         </section>
 
-        {/* ─── Why Share Your Story ─── */}
+        {/* ─── Why Share Section ─── */}
         <section className="py-20 border-b border-neutral-900 relative z-10 max-w-6xl mx-auto px-6">
           <div className="text-center mb-14 space-y-2">
-            <span className="text-[10px] uppercase tracking-widest font-sans font-bold text-red-500">
+            <span className="text-[10px] uppercase tracking-widest font-sans font-bold text-[#8B0000]">
               {lang === "hi" ? "योगदान क्यों दें" : "Why Contribute"}
             </span>
             <h2 className="font-display text-2xl md:text-4xl font-bold">
@@ -966,26 +1023,31 @@ function ShareStoryPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.08 }}
-                className="bg-neutral-900/80 rounded-2xl p-6.5 border border-neutral-850 hover:border-red-500/40 hover:shadow-md transition-all duration-350 group"
               >
-                <div className="size-11 rounded-xl bg-red-950/30 border border-red-500/15 flex items-center justify-center text-red-500 mb-5 group-hover:bg-red-950/60 transition-colors">
-                  <reason.icon className="size-4.5" />
-                </div>
-                <h3 className="font-display font-bold text-sm text-white mb-2">
-                  {reason.title}
-                </h3>
-                <p className="text-xs text-neutral-300 font-sans leading-relaxed">
-                  {reason.desc}
-                </p>
+                <TiltCard className="h-full" intensity={6}>
+                  <div className="bg-neutral-900/80 rounded-2xl p-6 border border-neutral-850 hover:border-[#8B0000]/50 transition-all duration-300 group h-full flex flex-col justify-between">
+                    <div>
+                      <div className="size-11 rounded-xl bg-[#8B0000]/20 border border-[#8B0000]/30 flex items-center justify-center text-[#C8A96A] mb-5 group-hover:bg-[#8B0000]/40 transition-colors">
+                        <reason.icon className="size-5" />
+                      </div>
+                      <h3 className="font-display font-bold text-sm text-white mb-2">
+                        {reason.title}
+                      </h3>
+                      <p className="text-xs text-neutral-350 font-sans leading-relaxed">
+                        {reason.desc}
+                      </p>
+                    </div>
+                  </div>
+                </TiltCard>
               </motion.div>
             ))}
           </div>
         </section>
 
-        {/* ─── How It Works ─── */}
+        {/* ─── Process Steps ─── */}
         <section id="how-it-works" className="py-20 border-b border-neutral-900 relative z-10 max-w-6xl mx-auto px-6">
           <div className="text-center mb-14 space-y-2">
-            <span className="text-[10px] uppercase tracking-widest font-sans font-bold text-red-500">
+            <span className="text-[10px] uppercase tracking-widest font-sans font-bold text-[#8B0000]">
               {lang === "hi" ? "संपादकीय प्रक्रिया" : "Editorial Process"}
             </span>
             <h2 className="font-display text-2xl md:text-4xl font-bold">
@@ -1006,13 +1068,13 @@ function ShareStoryPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: idx * 0.06 }}
-                className="relative rounded-2xl bg-neutral-900/60 border border-neutral-850 p-5.5 hover:border-red-500/40 transition-all duration-300 group"
+                className="relative rounded-2xl bg-neutral-900/60 border border-neutral-850 p-5.5 hover:border-[#8B0000]/40 transition-all duration-300 group"
               >
                 <span className="font-display text-4xl font-black text-white/5 group-hover:text-white/10 transition-colors absolute top-4 right-4 leading-none select-none">
                   {step.num}
                 </span>
 
-                <div className={`size-9 rounded-lg bg-neutral-800 flex items-center justify-center mb-4 ${step.accent}`}>
+                <div className="size-9 rounded-lg bg-[#8B0000]/20 text-[#C8A96A] border border-[#8B0000]/30 flex items-center justify-center mb-4">
                   <step.icon className="size-4.5" />
                 </div>
                 <h4 className="font-sans font-bold text-xs text-white mb-2">{step.name}</h4>
@@ -1024,252 +1086,93 @@ function ShareStoryPage() {
           </div>
         </section>
 
-        {/* ─── Submission Guidelines & Rewards ─── */}
-        <section className="py-20 border-b border-neutral-900 relative z-10 max-w-5xl mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-4">
-              <span className="text-[10px] uppercase tracking-widest font-sans font-bold text-red-500">
-                {lang === "hi" ? "मानक" : "Standards"}
-              </span>
-              <h2 className="font-display text-2xl md:text-3xl font-bold leading-tight">
-                {lang === "hi" ? "प्रस्तुति दिशानिर्देश" : "Submission Guidelines"}
-              </h2>
-              <p className="text-neutral-400 font-sans text-xs leading-relaxed">
-                {lang === "hi"
-                  ? "हम उच्च संपादकीय मानकों को बनाए रखते हैं ताकि यह सुनिश्चित हो सके कि हमारे द्वारा प्रकाशित हर कहानी सटीक हो।"
-                  : "We maintain high editorial standards to ensure every story we publish is accurate, impactful, and honors the subject."}
-              </p>
-              <ul className="space-y-2.5">
-                {(lang === "hi" ? guidelinesHi : guidelinesEn).map((g, i) => (
-                  <motion.li
-                    key={i}
-                    initial={{ opacity: 0, x: -5 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.05 }}
-                    className="flex items-start gap-3 text-xs font-sans text-neutral-300"
-                  >
-                    <span className="mt-0.5 size-4 rounded-full bg-red-950/40 border border-red-500/20 flex items-center justify-center shrink-0">
-                      <Check className="size-2 text-red-500" />
-                    </span>
-                    {g}
-                  </motion.li>
-                ))}
-              </ul>
-            </div>
-
-            {/* What you earn rewards block */}
-            <div className="bg-neutral-900/90 rounded-2xl p-7 border border-neutral-850 shadow-md">
-              <h3 className="font-display text-base font-bold text-white mb-6 flex items-center gap-2">
-                <Star className="size-4.5 text-red-500" />
-                {lang === "hi" ? "आपको क्या मिलता है" : "What You Earn"}
-              </h3>
-              <div className="space-y-4">
-                {[
-                  { icon: Award, label: lang === "hi" ? "+20 XP अंक" : "+20 XP Points", desc: lang === "hi" ? "प्रत्येक स्वीकृत प्रस्तुति पर" : "For every accepted submission" },
-                  { icon: Star, label: lang === "hi" ? "योगदानकर्ता बैज" : "Contributor Badge", desc: lang === "hi" ? "आपकी प्रोफ़ाइल पर प्रदर्शित" : "Displayed on your profile" },
-                  { icon: BookOpen, label: lang === "hi" ? "लेखक क्रेडिट" : "Author Byline", desc: lang === "hi" ? "हर प्रकाशित कहानी पर" : "Credit on every published story" },
-                  { icon: Users, label: lang === "hi" ? "समुदाय पहुँच" : "Community Access", desc: lang === "hi" ? "हमारे कहानीकारों के आंतरिक चक्र में शामिल हों" : "Join our inner circle of storytellers" },
-                ].map((b, i) => (
-                  <div key={i} className="flex items-start gap-4">
-                    <div className="size-9 rounded-lg bg-red-950/40 border border-red-500/15 flex items-center justify-center text-red-500 shrink-0">
-                      <b.icon className="size-4" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-sans font-semibold text-white">
-                        {b.label}
-                      </div>
-                      <div className="text-[10px] text-neutral-400 font-sans">{b.desc}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ─── Submission Form Wizard (Red + White Styling) ─── */}
-        <section id="submission-form" className="py-20 relative z-10 max-w-3xl mx-auto px-6">
+        {/* ─── 5-Step Multi-Step Form Wizard Section ─── */}
+        <section id="submission-form" className="py-20 relative z-10 max-w-4xl mx-auto px-6">
           
           <div className="text-center mb-10 space-y-2">
-            <span className="text-[10px] uppercase tracking-widest font-sans font-bold text-red-500">
-              {lang === "hi" ? "कार्य जमा करें" : "Submit Your Work"}
+            <span className="text-[10px] uppercase tracking-widest font-sans font-bold text-[#8B0000]">
+              {lang === "hi" ? "कार्य जमा करें" : "Guided Story Submission"}
             </span>
-            <h2 className="font-display text-2xl md:text-4xl font-bold">
-              {lang === "hi" ? "अपनी कहानी बताएं" : "Tell Your Story"}
+            <h2 className="font-display text-3xl md:text-5xl font-bold">
+              {lang === "hi" ? "अपनी कहानी बताएं" : "Share Your Story"}
             </h2>
             <p className="text-neutral-400 font-sans max-w-md mx-auto text-xs leading-relaxed">
               {user
-                ? (lang === "hi" ? `स्वागत है, ${profile?.fullName || user.email?.split("@")[0] || "योगदानकर्ता"}। नीचे अपना कार्य प्रस्तुत करें।` : `Welcome, ${profile?.fullName || user.email?.split("@")[0] || "Contributor"}. Submit your work below.`)
-                : (lang === "hi" ? "फ़ॉर्म तक पहुँचने के लिए साइन इन करें। केवल सत्यापित योगदानकर्ता कहानियाँ जमा कर सकते हैं।" : "Sign in to access the submission form. Only authenticated contributors can submit stories.")}
+                ? `Welcome back, ${profile?.fullName || user.email?.split("@")[0] || "Contributor"}. Complete the 5 guided steps below.`
+                : "Submit your story in 5 simple steps. No account required to draft!"}
             </p>
           </div>
 
           <AnimatePresence mode="wait">
-            {!user ? (
-              /* ─── Auth Wall ─── */
-              <motion.div
-                key="auth-required"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                className="bg-neutral-900 rounded-2xl border border-neutral-850 overflow-hidden shadow-xl"
-              >
-                <div className="h-1 bg-red-600" />
-                <div className="p-8 md:p-12 text-center space-y-6">
-                  <div className="size-14 rounded-full bg-red-950/40 border border-red-500/20 flex items-center justify-center mx-auto">
-                    <Lock className="size-5 text-red-500" />
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="font-display text-xl font-bold text-white">
-                      {lang === "hi" ? "जारी रखने के लिए साइन इन करें" : "Sign in to Continue"}
-                    </h3>
-                    <p className="text-xs text-neutral-450 font-sans max-w-xs mx-auto leading-relaxed">
-                      {lang === "hi"
-                        ? "केवल प्रमाणित योगदानकर्ता ही हमारे जीवंत संग्रह में कहानियां जमा कर सकते हैं।"
-                        : "Only authenticated contributors can submit stories to our living archive."}
-                    </p>
-                  </div>
-
-                  {loginError && (
-                    <div className="p-3.5 rounded-xl text-xs bg-red-500/10 border border-red-500/20 text-red-400 font-sans">
-                      {loginError}
-                    </div>
-                  )}
-
-                  <div className="max-w-xs mx-auto space-y-4 pt-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full h-11 rounded-xl border-neutral-800 bg-neutral-950 hover:bg-neutral-900 font-sans text-xs font-semibold gap-3 text-white transition-all"
-                      onClick={handleGoogleLogin}
-                      disabled={loginLoading}
-                    >
-                      {loginLoading ? (
-                        <Loader2 className="size-4 animate-spin text-red-500" />
-                      ) : (
-                        <Chrome className="size-4" />
-                      )}
-                      {lang === "hi" ? "गूगल के साथ जारी रखें" : "Continue with Google"}
-                    </Button>
-
-                    <div className="relative flex items-center gap-3">
-                      <div className="flex-grow border-t border-neutral-850" />
-                      <span className="text-[9px] text-neutral-500 uppercase tracking-widest font-sans font-bold">
-                        {lang === "hi" ? "या ईमेल द्वारा" : "or email"}
-                      </span>
-                      <div className="flex-grow border-t border-neutral-850" />
-                    </div>
-
-                    <form onSubmit={handleEmailLogin} className="space-y-3.5">
-                      <div className="space-y-1.5 text-left">
-                        <Label htmlFor="email" className="text-[10px] uppercase font-bold tracking-wider text-neutral-400">
-                          {lang === "hi" ? "ईमेल पता" : "Email Address"}
-                        </Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          required
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          className="bg-neutral-950 border-neutral-800 focus:border-red-500/50 h-10 font-sans text-xs rounded-xl"
-                        />
-                      </div>
-                      <div className="space-y-1.5 text-left">
-                        <Label htmlFor="password" className="text-[10px] uppercase font-bold tracking-wider text-neutral-400">
-                          {lang === "hi" ? "पासवर्ड" : "Password"}
-                        </Label>
-                        <Input
-                          id="password"
-                          type="password"
-                          required
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          className="bg-neutral-950 border-neutral-800 focus:border-red-500/50 h-10 font-sans text-xs rounded-xl"
-                        />
-                      </div>
-                      <Button
-                        type="submit"
-                        className="w-full bg-red-600 hover:bg-red-700 text-white h-10 font-sans text-xs uppercase tracking-widest font-bold rounded-xl"
-                        disabled={loginLoading}
-                      >
-                        {loginLoading && <Loader2 className="size-4 animate-spin mr-2" />}
-                        {lang === "hi" ? "साइन इन करें" : "Sign In"}
-                      </Button>
-                    </form>
-
-                    <p className="text-xs text-neutral-450 font-sans">
-                      {lang === "hi" ? "खाता नहीं है?" : "Don't have an account?"}{" "}
-                      <Link to="/login" className="text-red-500 hover:underline">
-                        {lang === "hi" ? "नया बनाएं" : "Create one"}
-                      </Link>
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            ) : done ? (
-              /* ─── Success State ─── */
+            {done ? (
+              /* ─── Celebratory Success State ─── */
               <motion.div
                 key="success"
                 initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0 }}
-                className="bg-neutral-900 rounded-2xl border border-neutral-850 overflow-hidden shadow-xl"
+                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                className="bg-neutral-900/90 rounded-3xl border border-neutral-800 overflow-hidden shadow-2xl relative"
               >
-                <div className="h-1 bg-gradient-to-r from-red-600 via-red-500 to-red-600" />
-                <div className="p-10 md:p-14 text-center space-y-5">
+                <div className="h-1.5 bg-gradient-to-r from-[#8B0000] via-[#C8A96A] to-[#8B0000]" />
+                <div className="p-10 md:p-16 text-center space-y-6">
+                  
+                  {/* Spring checkmark burst */}
                   <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 200, delay: 0.15 }}
-                    className="size-16 rounded-full bg-red-600 flex items-center justify-center mx-auto shadow-md"
+                    initial={{ scale: 0, rotate: -45 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ type: "spring", stiffness: 220, damping: 14, delay: 0.1 }}
+                    className="size-20 rounded-full bg-gradient-to-tr from-[#8B0000] to-[#a00000] border-2 border-[#C8A96A] flex items-center justify-center mx-auto shadow-xl shadow-[#8B0000]/40"
                   >
-                    <Check className="size-7 text-white" />
+                    <Check className="size-10 text-white stroke-[3]" />
                   </motion.div>
-                  <div className="space-y-2">
-                    <h3 className="font-display text-2xl font-bold text-white">
-                      Story Submitted!
+
+                  <div className="space-y-3">
+                    <h3 className="font-display text-3xl md:text-4xl font-bold text-white">
+                      Story Submitted Successfully!
                     </h3>
-                    <p className="text-neutral-300 font-sans max-w-sm mx-auto text-xs leading-relaxed">
-                      Namaste! Your story has entered our editorial queue. Our team will review it within 5–7 working days.
+                    <p className="text-neutral-300 font-sans max-w-md mx-auto text-xs sm:text-sm leading-relaxed">
+                      Namaste! Your story is now safely in our editorial queue. Our team will review and contact you within 5–7 working days.
                     </p>
                   </div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 font-sans text-[10px] font-bold uppercase tracking-wider">
-                    <Star className="size-3" />
-                    +20 XP Earned
+
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#8B0000]/20 border border-[#C8A96A]/40 text-[#C8A96A] font-sans text-xs font-bold uppercase tracking-wider">
+                    <Star className="size-4 text-[#C8A96A]" />
+                    +20 XP Points Earned
                   </div>
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
+
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
                     <Button
                       onClick={handleReset}
-                      className="bg-red-600 hover:bg-red-700 text-white font-sans text-xs uppercase tracking-widest font-bold h-11 px-6 rounded-xl"
+                      className="bg-[#8B0000] hover:bg-[#a00000] text-white font-sans text-xs uppercase tracking-widest font-bold h-12 px-8 rounded-xl shadow-lg"
                     >
                       <PenLine className="size-4 mr-2" />
-                      Share Another Story
+                      Submit Another Story
                     </Button>
                     <Link to="/">
                       <Button
                         variant="outline"
-                        className="h-11 px-6 rounded-xl border-neutral-800 bg-neutral-950 text-white font-sans text-xs uppercase tracking-widest hover:bg-neutral-900"
+                        className="h-12 px-8 rounded-xl border-neutral-800 bg-neutral-950 text-white font-sans text-xs uppercase tracking-widest hover:bg-neutral-900"
                       >
-                        Back to Home
+                        Return to Homepage
                       </Button>
                     </Link>
                   </div>
                 </div>
               </motion.div>
             ) : (
-              /* ─── Submission Form Wizard ─── */
+              /* ─── 5-Step Guided Form Card ─── */
               <motion.div
-                key="submission-wizard"
+                key="submission-wizard-card"
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-neutral-900 rounded-2xl border border-neutral-850 overflow-hidden shadow-xl"
+                className="bg-neutral-900/90 rounded-3xl border border-neutral-850 overflow-hidden shadow-2xl"
               >
-                <div className="h-1 bg-red-600" />
+                <div className="h-1 bg-gradient-to-r from-[#8B0000] via-[#C8A96A] to-[#8B0000]" />
                 
-                {/* Stepper Wizard Indicator */}
-                <div className="px-6 pt-6 pb-4 border-b border-neutral-850 bg-neutral-950/20">
-                  <div className="flex items-center justify-between gap-2.5">
+                {/* ─── Stepper Progress Header ─── */}
+                <div className="px-6 pt-6 pb-5 border-b border-neutral-850 bg-neutral-950/40">
+                  <div className="flex items-center justify-between gap-1 sm:gap-2">
                     {stepsList.map((st, idx) => {
                       const isActive = idx === activeStep;
                       const isComplete = idx < activeStep;
@@ -1280,387 +1183,413 @@ function ShareStoryPage() {
                             onClick={() => {
                               if (isComplete) setActiveStep(idx);
                             }}
-                            className={`flex items-center gap-1.5 focus:outline-none text-[10px] uppercase font-bold tracking-wider ${
-                              isActive ? "text-red-500" : isComplete ? "text-neutral-200" : "text-neutral-500"
+                            className={`flex items-center gap-1.5 focus:outline-none text-[10px] uppercase font-bold tracking-wider transition-colors ${
+                              isActive
+                                ? "text-[#C8A96A]"
+                                : isComplete
+                                ? "text-white"
+                                : "text-neutral-500"
                             }`}
                           >
-                            <span className={`size-6 rounded-full border flex items-center justify-center shrink-0 text-[10px] ${
-                              isComplete ? "bg-red-600 border-red-600 text-white" : isActive ? "border-red-500/50 bg-red-500/10 text-red-500" : "border-neutral-800 text-neutral-500"
-                            }`}>
-                              {isComplete ? <Check className="size-3.5" /> : idx + 1}
+                            <span
+                              className={`size-7 sm:size-8 rounded-full border flex items-center justify-center shrink-0 text-[10px] sm:text-xs transition-all duration-300 ${
+                                isComplete
+                                  ? "bg-[#8B0000] border-[#8B0000] text-white shadow-md shadow-[#8B0000]/40"
+                                  : isActive
+                                  ? "border-[#C8A96A] bg-[#8B0000]/20 text-[#C8A96A] ring-2 ring-[#C8A96A]/30 scale-105"
+                                  : "border-neutral-800 text-neutral-500 bg-neutral-950"
+                              }`}
+                            >
+                              {isComplete ? <Check className="size-4" /> : idx + 1}
                             </span>
-                            <span className="hidden sm:inline">{st.label}</span>
+                            <span className="hidden md:inline">{st.label}</span>
                           </button>
                           {idx < stepsList.length - 1 && (
-                            <div className={`flex-1 h-px ml-2.5 mr-1 ${idx < activeStep ? "bg-red-600" : "bg-neutral-850"}`} />
+                            <div className="flex-1 h-0.5 mx-1.5 sm:mx-2 rounded-full overflow-hidden bg-neutral-800">
+                              <motion.div
+                                className="h-full bg-gradient-to-r from-[#8B0000] to-[#C8A96A]"
+                                animate={{ width: idx < activeStep ? "100%" : "0%" }}
+                                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                              />
+                            </div>
                           )}
                         </div>
                       );
                     })}
                   </div>
                   
-                  {/* Slim progress bar */}
+                  {/* Spring-animated overall progress line */}
                   <div className="w-full h-1 bg-neutral-850 rounded-full overflow-hidden mt-4">
                     <motion.div
-                      className="h-full bg-red-600"
+                      className="h-full bg-gradient-to-r from-[#8B0000] via-[#C8A96A] to-[#D97706]"
                       animate={{ width: `${((activeStep + 1) / stepsList.length) * 100}%` }}
-                      transition={{ duration: 0.3 }}
+                      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                     />
                   </div>
                 </div>
 
                 <div className="p-6 md:p-10 space-y-6">
                   
-                  {/* Status Banner messages */}
+                  {/* Status Banner Messages */}
                   {errorMessage && (
-                    <div className="p-3.5 rounded-xl text-xs bg-red-500/10 border border-red-500/20 text-red-400 font-sans">
-                      {errorMessage}
-                    </div>
+                    <motion.div
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-4 rounded-xl text-xs bg-red-500/10 border border-red-500/30 text-red-400 font-sans flex items-center gap-2"
+                    >
+                      <AlertCircle className="size-4 shrink-0" />
+                      <span>{errorMessage}</span>
+                    </motion.div>
                   )}
 
                   {draftSaved && (
-                    <div className="p-3.5 rounded-xl text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-sans flex items-center gap-2">
-                      <Check className="size-4" />
-                      <span>Draft saved successfully! You can continue editing.</span>
-                    </div>
+                    <motion.div
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-4 rounded-xl text-xs bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-sans flex items-center gap-2"
+                    >
+                      <Check className="size-4 shrink-0" />
+                      <span>Draft saved to local storage!</span>
+                    </motion.div>
                   )}
 
-                  {/* Wizard content */}
-                  {isPreview ? (
-                    <div className="space-y-6">
-                      <div className="flex items-center justify-between border-b border-neutral-850 pb-4">
-                        <h3 className="font-display text-base font-bold text-white flex items-center gap-2">
-                          <Sparkles className="size-4 text-red-500" />
-                          Story Preview
-                        </h3>
-                        <Button
-                          type="button"
-                          onClick={() => setIsPreview(false)}
-                          variant="outline"
-                          className="h-8 px-3 rounded-lg border-neutral-800 bg-neutral-950 text-xs font-sans text-white hover:bg-neutral-900"
+                  {/* ─── 3D Depth-Slide Card Container ─── */}
+                  <div className="relative [perspective:1000px] min-h-[380px]">
+                    <AnimatePresence mode="wait">
+                      
+                      {/* Step 1: The Hook */}
+                      {activeStep === 0 && (
+                        <motion.div
+                          key="step-0-hook"
+                          initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, rotateY: 6 }}
+                          animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, scale: 1, rotateY: 0 }}
+                          exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, rotateY: -6 }}
+                          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                          className="space-y-6"
                         >
-                          Back to Editor
-                        </Button>
-                      </div>
-
-                      <div className="space-y-4 max-w-2xl mx-auto py-2">
-                        {coverImage && (
-                          <div className="aspect-[16/9] w-full overflow-hidden rounded-xl border border-neutral-800 bg-neutral-950">
-                            <img src={coverImage} className="w-full h-full object-cover" alt="Cover Preview" />
-                          </div>
-                        )}
-
-                        <div className="space-y-2">
-                          <div className="flex flex-wrap items-center gap-2 text-[9px] tracking-wider uppercase font-bold text-red-400 font-sans">
-                            {selectedThemes.map((t, idx) => (
-                              <span key={idx} className="bg-red-500/10 border border-red-500/20 px-2 py-0.5 rounded">
-                                {t}
-                              </span>
-                            ))}
-                            <span>•</span>
-                            <span>{stateName}{district ? `, ${district}` : ""}</span>
-                            <span>•</span>
-                            <span>{language === "hi" ? "हिन्दी" : "English"}</span>
-                          </div>
-                          <h1 className="font-display text-2xl sm:text-4xl font-bold text-white leading-tight">
-                            {title || "Untitled Story"}
-                          </h1>
-                          {heroName && (
-                            <p className="text-xs font-sans text-neutral-400 italic">
-                              Subject: <span className="text-red-500 font-bold not-italic">{heroName}</span>
-                            </p>
-                          )}
-                          <p className="text-[10px] text-neutral-400">
-                            By {authorName || "Anonymous Contributor"}
-                          </p>
-                        </div>
-
-                        <div className="border-l-2 border-red-600 pl-4 py-0.5">
-                          <p className="text-xs text-neutral-350 italic font-sans leading-relaxed">
-                            {summary || "No summary excerpt provided."}
-                          </p>
-                        </div>
-
-                        <div className="text-xs sm:text-sm text-neutral-200 font-sans leading-relaxed whitespace-pre-wrap pt-4 border-t border-neutral-850">
-                          {story || "Write your story of change..."}
-                        </div>
-
-                        {videoUrl && (
-                          <div className="pt-3 border-t border-neutral-850">
-                            <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-sans font-bold mb-1">
-                              Video Link
-                            </p>
-                            <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-red-500 underline break-all font-semibold">
-                              {videoUrl}
-                            </a>
-                          </div>
-                        )}
-
-                        {externalLinks && (
-                          <div className="pt-3 border-t border-neutral-850">
-                            <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-sans font-bold mb-1">
-                              References
-                            </p>
-                            <div className="flex flex-wrap gap-1.5">
-                              {externalLinks.split(",").map((link, idx) => (
-                                <a
-                                  key={idx}
-                                  href={link.trim()}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-[9px] bg-neutral-950 border border-neutral-800 px-2 py-1 rounded text-neutral-300 hover:text-red-500"
-                                >
-                                  {link.trim()}
-                                </a>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="pt-4 border-t border-neutral-850 flex gap-3 justify-end">
-                        <Button
-                          type="button"
-                          onClick={() => setIsPreview(false)}
-                          variant="outline"
-                          className="h-10 px-4 rounded-xl border-neutral-800 text-white hover:bg-neutral-900 text-xs uppercase tracking-widest"
-                        >
-                          Keep Editing
-                        </Button>
-                        <Button
-                          type="button"
-                          onClick={() => void handleSubmit(null, false)}
-                          className="h-10 px-6 bg-red-600 hover:bg-red-700 text-white font-sans uppercase tracking-widest text-xs font-bold rounded-xl"
-                          disabled={submitLoading}
-                        >
-                          {submitLoading ? "Submitting..." : "Submit Story"}
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div>
-                      {/* Step Forms */}
-                      <AnimatePresence mode="wait">
-                        {activeStep === 0 && (
-                          <motion.div
-                            key="step0"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            transition={{ duration: 0.2 }}
-                            className="space-y-5"
-                          >
-                            <h3 className="text-sm font-bold text-white uppercase tracking-wider border-b border-neutral-850 pb-2">
-                              Step 1: Core Details
+                          <div className="border-b border-neutral-850 pb-3 space-y-1">
+                            <span className="text-[10px] uppercase font-bold tracking-widest text-[#C8A96A]">
+                              Step 1 of 5
+                            </span>
+                            <h3 className="font-display text-2xl font-bold text-white">
+                              The Hook — What's your story about?
                             </h3>
-                            
-                            <div className="grid sm:grid-cols-2 gap-5">
-                              <div className="space-y-2">
-                                <Label htmlFor="title" className="text-[10px] uppercase font-bold tracking-wider text-neutral-350">
-                                  Story Title *
-                                </Label>
-                                <Input
-                                  id="title"
-                                  value={title}
-                                  onChange={(e) => setTitle(e.target.value)}
-                                  placeholder="e.g. The Tree-Man of Jodhpur"
-                                  className="bg-neutral-950 border-neutral-800 focus:border-red-500/50 h-11 rounded-xl text-xs"
-                                />
-                                {title && (
-                                  <p className="text-[9px] text-neutral-400 truncate">
-                                    Slug preview: <span className="text-red-500 font-semibold">{autoSlug}</span>
-                                  </p>
-                                )}
-                              </div>
-                              <div className="space-y-2">
-                                <Label htmlFor="heroName" className="text-[10px] uppercase font-bold tracking-wider text-neutral-350">
-                                  Hero / Subject Name
-                                </Label>
-                                <Input
-                                  id="heroName"
-                                  value={heroName}
-                                  onChange={(e) => setHeroName(e.target.value)}
-                                  placeholder="e.g. Ranaram Bishnoi"
-                                  className="bg-neutral-950 border-neutral-800 focus:border-red-500/50 h-11 rounded-xl text-xs"
-                                />
-                              </div>
-                            </div>
+                            <p className="text-xs text-neutral-400">
+                              Start with a strong headline and a brief teaser.
+                            </p>
+                          </div>
 
-                            <div className="grid sm:grid-cols-3 gap-5">
-                              <div className="space-y-2 relative" ref={themeDropdownRef}>
-                                <Label className="text-[10px] uppercase font-bold tracking-wider text-neutral-350 block">
-                                  Themes *
-                                </Label>
-                                <div className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-2 flex flex-wrap gap-1.5 min-h-[44px] items-center">
-                                  {selectedThemes.map((t) => (
-                                    <span
-                                      key={t}
-                                      className="bg-red-500/10 border border-red-500/20 text-red-400 px-2 py-0.5 rounded-lg text-[10px] flex items-center gap-1 font-sans"
+                          <div className="space-y-5">
+                            <FloatingInput
+                              id="story-title"
+                              label="Story Title"
+                              value={title}
+                              onChange={(e) => {
+                                setTitle(e.target.value);
+                                if (fieldErrors.title) setFieldErrors((prev) => ({ ...prev, title: "" }));
+                              }}
+                              placeholder="e.g. The Water Guardian of Jodhpur"
+                              isRequired
+                              isValid={title.trim().length >= 4}
+                              error={fieldErrors.title}
+                              helperText={title ? `Slug preview: /stories/${autoSlug}` : "Give your story a clear, captivating title."}
+                            />
+
+                            <FloatingInput
+                              id="hero-name"
+                              label="Hero / Subject Name (Optional)"
+                              value={heroName}
+                              onChange={(e) => setHeroName(e.target.value)}
+                              placeholder="e.g. Ranaram Bishnoi"
+                              isValid={heroName.trim().length >= 2}
+                              helperText="The unsung hero, community innovator, or subject of your piece."
+                            />
+
+                            <FloatingTextarea
+                              id="summary-teaser"
+                              label="One-Line Story Teaser"
+                              value={summary}
+                              onChange={(e) => {
+                                setSummary(e.target.value.slice(0, 300));
+                                if (fieldErrors.summary) setFieldErrors((prev) => ({ ...prev, summary: "" }));
+                              }}
+                              placeholder="Write a brief 1-2 sentence hook describing what makes this story remarkable..."
+                              rows={3}
+                              isRequired
+                              isValid={summary.trim().length >= 15}
+                              error={fieldErrors.summary}
+                              helperText={`${summary.length} / 300 characters`}
+                            />
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {/* Step 2: The Details */}
+                      {activeStep === 1 && (
+                        <motion.div
+                          key="step-1-details"
+                          initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, rotateY: 6 }}
+                          animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, scale: 1, rotateY: 0 }}
+                          exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, rotateY: -6 }}
+                          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                          className="space-y-6"
+                        >
+                          <div className="border-b border-neutral-850 pb-3 space-y-1">
+                            <span className="text-[10px] uppercase font-bold tracking-widest text-[#C8A96A]">
+                              Step 2 of 5
+                            </span>
+                            <h3 className="font-display text-2xl font-bold text-white">
+                              The Details — Category, Location & Full Narrative
+                            </h3>
+                            <p className="text-xs text-neutral-400">
+                              Choose matching categories and describe the full narrative of change.
+                            </p>
+                          </div>
+
+                          {/* Category Selectable Cards */}
+                          <div className="space-y-2">
+                            <label className="text-[10px] uppercase font-bold tracking-wider text-[#C8A96A] block">
+                              Select Themes / Categories <span className="text-[#8B0000]">*</span>
+                            </label>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                              {CATEGORY_ITEMS.map((cat) => {
+                                const isSelected = selectedThemes.includes(cat.name);
+                                return (
+                                  <TiltCard key={cat.name} intensity={5}>
+                                    <button
+                                      type="button"
+                                      onClick={() => toggleTheme(cat.name)}
+                                      className={`w-full text-left p-3 rounded-2xl border transition-all duration-300 relative flex flex-col justify-between h-24 ${
+                                        isSelected
+                                          ? "bg-[#8B0000]/25 border-[#8B0000] shadow-lg shadow-[#8B0000]/20 ring-1 ring-[#C8A96A]/40"
+                                          : "bg-neutral-900/70 border-neutral-800 hover:border-neutral-700 hover:bg-neutral-900"
+                                      }`}
                                     >
-                                      {t}
-                                      <button
-                                        type="button"
-                                        onClick={() => toggleTheme(t)}
-                                        className="hover:text-red-400 font-bold ml-0.5 text-[9px]"
-                                      >
-                                        ✕
-                                      </button>
-                                    </span>
-                                  ))}
-                                  <input
-                                    type="text"
-                                    placeholder={selectedThemes.length === 0 ? "Select themes..." : "Add theme..."}
-                                    value={themeSearch}
-                                    onChange={(e) => {
-                                      setThemeSearch(e.target.value);
-                                      setShowThemeDropdown(true);
-                                    }}
-                                    onFocus={() => setShowThemeDropdown(true)}
-                                    className="bg-transparent border-none outline-none flex-1 min-w-[70px] text-white text-xs p-0"
-                                  />
-                                </div>
-                                {showThemeDropdown && (
-                                  <div className="absolute z-50 w-full mt-1 bg-neutral-900 border border-neutral-800 rounded-xl shadow-xl max-h-40 overflow-y-auto">
-                                    {allThemes
-                                      .filter(
-                                        (t) =>
-                                          t.toLowerCase().includes(themeSearch.toLowerCase()) &&
-                                          !selectedThemes.includes(t),
-                                      )
-                                      .map((t) => (
-                                        <button
-                                          key={t}
-                                          type="button"
-                                          onClick={() => {
-                                            toggleTheme(t);
-                                            setShowThemeDropdown(false);
-                                          }}
-                                          className="w-full text-left px-3 py-2 text-xs hover:bg-neutral-850 text-white transition-colors"
+                                      <div className="flex items-center justify-between">
+                                        <div
+                                          className={`size-7 rounded-lg flex items-center justify-center ${
+                                            isSelected ? "bg-[#8B0000] text-white" : "bg-neutral-800 text-neutral-400"
+                                          }`}
                                         >
-                                          {t}
-                                        </button>
-                                      ))}
-                                  </div>
-                                )}
-                              </div>
-                              <div className="space-y-2">
-                                <Label htmlFor="stateName" className="text-[10px] uppercase font-bold tracking-wider text-neutral-350">
-                                  State *
-                                </Label>
-                                <select
-                                  id="stateName"
-                                  value={stateName}
-                                  onChange={(e) => setStateName(e.target.value)}
-                                  className="w-full bg-neutral-950 border border-neutral-800 text-white h-11 px-3 rounded-xl text-xs outline-none focus:border-red-500/50"
-                                >
-                                  {STATES.map((s) => (
-                                    <option key={s} value={s}>{s}</option>
-                                  ))}
-                                </select>
-                              </div>
-                              <div className="space-y-2">
-                                <Label htmlFor="district" className="text-[10px] uppercase font-bold tracking-wider text-neutral-350">
-                                  District / City *
-                                </Label>
-                                <Input
-                                  id="district"
-                                  value={district}
-                                  onChange={(e) => setDistrict(e.target.value)}
-                                  placeholder="e.g. Jodhpur"
-                                  className="bg-neutral-950 border-neutral-800 focus:border-red-500/50 h-11 rounded-xl text-xs"
-                                />
-                              </div>
+                                          <cat.icon className="size-3.5" />
+                                        </div>
+                                        {isSelected && (
+                                          <span className="size-4 rounded-full bg-[#8B0000] text-white flex items-center justify-center">
+                                            <Check className="size-2.5" />
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div>
+                                        <h4 className="text-xs font-bold text-white leading-snug">
+                                          {cat.name}
+                                        </h4>
+                                        <p className="text-[9px] text-neutral-400 line-clamp-1">
+                                          {cat.desc}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  </TiltCard>
+                                );
+                              })}
+                            </div>
+                            {fieldErrors.themes && (
+                              <p className="text-[10px] text-red-400 font-sans mt-1">{fieldErrors.themes}</p>
+                            )}
+                          </div>
+
+                          <div className="grid sm:grid-cols-3 gap-4 pt-2">
+                            <div className="space-y-1.5">
+                              <label htmlFor="stateName-select" className="text-[10px] uppercase font-bold tracking-wider text-neutral-400 block">
+                                State / Region <span className="text-[#8B0000]">*</span>
+                              </label>
+                              <select
+                                id="stateName-select"
+                                value={stateName}
+                                onChange={(e) => setStateName(e.target.value)}
+                                className="w-full bg-neutral-900 border border-neutral-800 text-white h-11 px-3 rounded-xl text-xs outline-none focus:border-[#8B0000] focus:ring-2 focus:ring-[#8B0000]/40"
+                              >
+                                {STATES.map((s) => (
+                                  <option key={s} value={s}>{s}</option>
+                                ))}
+                              </select>
                             </div>
 
-                            <div className="space-y-2">
-                              <Label htmlFor="language" className="text-[10px] uppercase font-bold tracking-wider text-neutral-350">
-                                Language *
-                              </Label>
+                            <FloatingInput
+                              id="district-input"
+                              label="District / City"
+                              value={district}
+                              onChange={(e) => {
+                                setDistrict(e.target.value);
+                                if (fieldErrors.district) setFieldErrors((prev) => ({ ...prev, district: "" }));
+                              }}
+                              placeholder="e.g. Jodhpur"
+                              isRequired
+                              isValid={district.trim().length >= 2}
+                              error={fieldErrors.district}
+                            />
+
+                            <div className="space-y-1.5">
+                              <label htmlFor="language-select" className="text-[10px] uppercase font-bold tracking-wider text-neutral-400 block">
+                                Story Language <span className="text-[#8B0000]">*</span>
+                              </label>
                               <select
-                                id="language"
+                                id="language-select"
                                 value={language}
                                 onChange={(e) => setLanguage(e.target.value)}
-                                className="w-full bg-neutral-950 border border-neutral-800 text-white h-11 px-3 rounded-xl text-xs outline-none focus:border-red-500/50"
+                                className="w-full bg-neutral-900 border border-neutral-800 text-white h-11 px-3 rounded-xl text-xs outline-none focus:border-[#8B0000] focus:ring-2 focus:ring-[#8B0000]/40"
                               >
                                 <option value="en">English</option>
                                 <option value="hi">Hindi (हिन्दी)</option>
                               </select>
                             </div>
-                          </motion.div>
-                        )}
+                          </div>
 
-                        {activeStep === 1 && (
-                          <motion.div
-                            key="step1"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            transition={{ duration: 0.2 }}
-                            className="space-y-5"
-                          >
-                            <h3 className="text-sm font-bold text-white uppercase tracking-wider border-b border-neutral-850 pb-2">
-                              Step 2: Story Content
+                          <FloatingTextarea
+                            id="full-story-content"
+                            label="Full Story Narrative (Markdown Supported)"
+                            value={story}
+                            onChange={(e) => {
+                              setStory(e.target.value);
+                              if (fieldErrors.story) setFieldErrors((prev) => ({ ...prev, story: "" }));
+                            }}
+                            placeholder="Tell the full narrative of the hero, tradition, or impact in detail..."
+                            rows={8}
+                            isRequired
+                            wordCount={story.trim() ? story.trim().split(/\s+/).length : 0}
+                            isValid={story.trim().length >= 50}
+                            error={fieldErrors.story}
+                            helperText="Describe background, challenges overcome, and positive results."
+                          />
+                        </motion.div>
+                      )}
+
+                      {/* Step 3: The Storyteller */}
+                      {activeStep === 2 && (
+                        <motion.div
+                          key="step-2-storyteller"
+                          initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, rotateY: 6 }}
+                          animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, scale: 1, rotateY: 0 }}
+                          exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, rotateY: -6 }}
+                          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                          className="space-y-6"
+                        >
+                          <div className="border-b border-neutral-850 pb-3 space-y-1">
+                            <span className="text-[10px] uppercase font-bold tracking-widest text-[#C8A96A]">
+                              Step 3 of 5
+                            </span>
+                            <h3 className="font-display text-2xl font-bold text-white">
+                              The Storyteller — Author Details
                             </h3>
+                            <p className="text-xs text-neutral-400">
+                              Tell us who you are so we can credit your work on the published story card.
+                            </p>
+                          </div>
 
-                            <div className="space-y-2">
-                              <div className="flex justify-between items-center">
-                                <Label htmlFor="summary" className="text-[10px] uppercase font-bold tracking-wider text-neutral-350">
-                                  Story Summary *
-                                </Label>
-                                <span className={`text-[9px] font-bold ${summary.length > 250 ? "text-red-500" : "text-neutral-550"}`}>
-                                  {summary.length} / 250 chars
-                                </span>
-                              </div>
-                              <Textarea
-                                id="summary"
-                                value={summary}
-                                onChange={(e) => setSummary(e.target.value.slice(0, 300))}
-                                placeholder="Write a brief 1-2 sentence preview summary of the story..."
-                                rows={3}
-                                className="bg-neutral-950 border-neutral-800 focus:border-red-500/50 rounded-xl text-xs resize-none"
-                              />
-                            </div>
+                          <div className="grid sm:grid-cols-2 gap-5">
+                            <FloatingInput
+                              id="author-name"
+                              label="Your Name / Byline"
+                              value={authorName}
+                              onChange={(e) => {
+                                setAuthorName(e.target.value);
+                                if (fieldErrors.authorName) setFieldErrors((prev) => ({ ...prev, authorName: "" }));
+                              }}
+                              placeholder="e.g. Priyanshu Sharma"
+                              isRequired
+                              isValid={authorName.trim().length >= 2}
+                              error={fieldErrors.authorName}
+                              helperText="This name will appear on the published story byline."
+                            />
 
-                            <div className="space-y-2">
-                              <div className="flex justify-between items-center">
-                                <Label htmlFor="story" className="text-[10px] uppercase font-bold tracking-wider text-neutral-350">
-                                  Full Story * (Markdown supported)
-                                </Label>
-                                <span className="text-[9px] text-neutral-450 uppercase font-bold">
-                                  Words: {story.trim() ? story.trim().split(/\s+/).length : 0}
-                                </span>
-                              </div>
-                              <Textarea
-                                id="story"
-                                value={story}
-                                onChange={(e) => setStory(e.target.value)}
-                                placeholder="Describe the change, the innovator, or the tradition in full detail here..."
-                                rows={10}
-                                className="bg-neutral-950 border-neutral-800 focus:border-red-500/50 rounded-xl text-xs leading-relaxed resize-none"
-                              />
-                            </div>
-                          </motion.div>
-                        )}
+                            <FloatingInput
+                              id="contact-email"
+                              type="email"
+                              label="Contact Email"
+                              value={contactEmail}
+                              onChange={(e) => {
+                                setContactEmail(e.target.value);
+                                if (fieldErrors.contactEmail) setFieldErrors((prev) => ({ ...prev, contactEmail: "" }));
+                              }}
+                              placeholder="your@email.com"
+                              isRequired
+                              isValid={contactEmail.includes("@")}
+                              error={fieldErrors.contactEmail}
+                              helperText="For editorial updates and verification (kept confidential)."
+                            />
+                          </div>
 
-                        {activeStep === 2 && (
-                          <motion.div
-                            key="step2"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            transition={{ duration: 0.2 }}
-                            className="space-y-6"
-                          >
-                            <h3 className="text-sm font-bold text-white uppercase tracking-wider border-b border-neutral-850 pb-2">
-                              Step 3: Visual Media
+                          <div className="grid sm:grid-cols-2 gap-5">
+                            <FloatingInput
+                              id="phone-number"
+                              type="tel"
+                              label="Phone Number (Optional)"
+                              value={phone}
+                              onChange={(e) => setPhone(e.target.value)}
+                              placeholder="+91 98765 43210"
+                              helperText="Optional phone for fast editorial review sync."
+                            />
+
+                            <FloatingInput
+                              id="author-bio"
+                              label="Short Bio / Role (Optional)"
+                              value={authorBio}
+                              onChange={(e) => setAuthorBio(e.target.value)}
+                              placeholder="e.g. Independent Journalist from Jaipur"
+                              helperText="Appears in contributor credentials."
+                            />
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {/* Step 4: Visual Media */}
+                      {activeStep === 3 && (
+                        <motion.div
+                          key="step-3-media"
+                          initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, rotateY: 6 }}
+                          animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, scale: 1, rotateY: 0 }}
+                          exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, rotateY: -6 }}
+                          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                          className="space-y-6"
+                        >
+                          <div className="border-b border-neutral-850 pb-3 space-y-1">
+                            <span className="text-[10px] uppercase font-bold tracking-widest text-[#C8A96A]">
+                              Step 4 of 5
+                            </span>
+                            <h3 className="font-display text-2xl font-bold text-white">
+                              Visual Media & References
                             </h3>
+                            <p className="text-xs text-neutral-400">
+                              Upload high-resolution photography and reference links to elevate your story.
+                            </p>
+                          </div>
 
-                            <div className="grid sm:grid-cols-2 gap-6">
-                              {/* Drag and Drop Cover Image */}
-                              <div className="space-y-2">
-                                <Label className="text-[10px] uppercase font-bold tracking-wider text-neutral-350 block">
-                                  Cover Image
-                                </Label>
+                          <div className="grid sm:grid-cols-2 gap-6">
+                            {/* Drag and Drop Cover Image Zone with 3D Tilt Preview */}
+                            <div className="space-y-2">
+                              <label className="text-[10px] uppercase font-bold tracking-wider text-[#C8A96A] block">
+                                Cover Image (16:9 Aspect Ratio)
+                              </label>
+                              
+                              {coverImage ? (
+                                <TiltCard intensity={6}>
+                                  <div className="relative group rounded-2xl overflow-hidden border border-neutral-800 aspect-[16/10] bg-neutral-950">
+                                    <img src={coverImage} alt="Cover Preview" className="w-full h-full object-cover" />
+                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                      <button
+                                        type="button"
+                                        onClick={() => setCoverImage("")}
+                                        className="bg-[#8B0000] hover:bg-red-700 text-white p-2.5 rounded-full shadow-lg"
+                                        title="Remove Cover Photo"
+                                      >
+                                        <Trash2 className="size-4" />
+                                      </button>
+                                    </div>
+                                    <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 text-[9px] text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                                      <Check className="size-3" /> Ready
+                                    </div>
+                                  </div>
+                                </TiltCard>
+                              ) : (
                                 <div
                                   onDragOver={(e) => { e.preventDefault(); setIsDragOverCover(true); }}
                                   onDragLeave={() => setIsDragOverCover(false)}
@@ -1668,364 +1597,274 @@ function ShareStoryPage() {
                                     e.preventDefault();
                                     setIsDragOverCover(false);
                                     const file = e.dataTransfer.files?.[0];
-                                    if (file) await performCoverImageUpload(file);
+                                    if (file) await performCoverUpload(file);
                                   }}
-                                  className={`border-2 border-dashed rounded-2xl min-h-[150px] flex flex-col items-center justify-center transition-all overflow-hidden relative ${
-                                    isDragOverCover ? "border-red-500 bg-red-950/10" : "border-neutral-800 hover:border-red-500/30"
+                                  className={`border-2 border-dashed rounded-2xl min-h-[170px] flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden ${
+                                    isDragOverCover
+                                      ? "border-[#8B0000] bg-[#8B0000]/10 scale-[1.01]"
+                                      : "border-neutral-800 hover:border-[#8B0000]/40 bg-neutral-900/60"
                                   }`}
                                 >
-                                  {coverImage ? (
-                                    <div className="relative group w-full h-full aspect-[16/10]">
-                                      <img src={coverImage} alt="Cover Preview" className="w-full h-full object-cover" />
-                                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
-                                        <button
-                                          type="button"
-                                          onClick={() => setCoverImage("")}
-                                          className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-full shadow-md"
-                                          title="Remove Cover Image"
-                                        >
-                                          <Trash2 className="size-4" />
-                                        </button>
-                                      </div>
-                                    </div>
-                                  ) : uploadingCover ? (
-                                    <div className="text-center text-xs text-neutral-400 space-y-1.5">
-                                      <Loader2 className="size-6 animate-spin text-red-500 mx-auto" />
-                                      <span>Uploading to Cloudinary...</span>
+                                  {uploadingCover ? (
+                                    <div className="text-center text-xs text-neutral-400 space-y-2">
+                                      <Loader2 className="size-7 animate-spin text-[#8B0000] mx-auto" />
+                                      <span>Uploading cover photo...</span>
                                     </div>
                                   ) : (
-                                    <label className="cursor-pointer p-4 text-center flex flex-col items-center text-neutral-400 hover:text-white transition-colors w-full h-full justify-center">
-                                      <UploadCloud className="size-7 text-neutral-500 mb-2" />
-                                      <span className="text-xs font-semibold">Drag & drop cover photo here</span>
-                                      <span className="text-[9px] text-neutral-550 mt-0.5">or click to browse from files</span>
-                                      <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
+                                    <label className="cursor-pointer p-5 text-center flex flex-col items-center text-neutral-400 hover:text-white transition-colors w-full h-full justify-center">
+                                      <UploadCloud className="size-8 text-[#C8A96A] mb-2" />
+                                      <span className="text-xs font-semibold">Drag & drop cover photo</span>
+                                      <span className="text-[9px] text-neutral-500 mt-1">Supports JPG, PNG, WEBP up to 10MB</span>
+                                      <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                                        const f = e.target.files?.[0];
+                                        if (f) void performCoverUpload(f);
+                                      }} />
                                     </label>
                                   )}
-                                </div>
-                                {coverUploadError && <p className="text-[10px] text-red-500 mt-1 font-semibold">{coverUploadError}</p>}
-                                {coverImage && coverUploadSuccess && (
-                                  <p className="text-[10px] text-emerald-400 mt-1 flex items-center gap-1 font-medium">
-                                    <span className="size-1.5 rounded-full bg-emerald-400" /> ✓ Cover image ready
-                                  </p>
-                                )}
-                              </div>
-
-                              {/* Drag and drop gallery images */}
-                              <div className="space-y-2">
-                                <Label className="text-[10px] uppercase font-bold tracking-wider text-neutral-350 block">
-                                  Gallery Photos (Optional)
-                                </Label>
-                                <div
-                                  onDragOver={(e) => { e.preventDefault(); setIsDragOverGallery(true); }}
-                                  onDragLeave={() => setIsDragOverGallery(false)}
-                                  onDrop={async (e) => {
-                                    e.preventDefault();
-                                    setIsDragOverGallery(false);
-                                    const files = e.dataTransfer.files;
-                                    if (files && files.length > 0) {
-                                      await performGalleryUpload(Array.from(files));
-                                    }
-                                  }}
-                                  className={`border-2 border-dashed rounded-2xl min-h-[150px] flex flex-col items-center justify-center transition-all ${
-                                    isDragOverGallery ? "border-red-500 bg-red-950/10" : "border-neutral-800 hover:border-red-500/30"
-                                  }`}
-                                >
-                                  {uploadingGallery ? (
-                                    <div className="text-center text-xs text-neutral-400 space-y-1.5">
-                                      <Loader2 className="size-6 animate-spin text-red-500 mx-auto" />
-                                      <span>Uploading gallery...</span>
-                                    </div>
-                                  ) : (
-                                    <label className="cursor-pointer p-4 text-center flex flex-col items-center text-neutral-400 hover:text-white transition-colors w-full h-full justify-center">
-                                      <ImageIcon className="size-7 text-neutral-500 mb-2" />
-                                      <span className="text-xs font-semibold">Drag & drop multiple photos</span>
-                                      <span className="text-[9px] text-neutral-550 mt-0.5">or click to browse files</span>
-                                      <input type="file" accept="image/*" multiple className="hidden" onChange={handleGalleryUpload} />
-                                    </label>
-                                  )}
-                                </div>
-                                {galleryImages.length > 0 && (
-                                  <div className="flex flex-wrap gap-2 mt-3">
-                                    {galleryImages.map((img, i) => (
-                                      <div key={i} className="relative group size-10 rounded-lg overflow-hidden border border-neutral-800">
-                                        <img src={img} className="size-full object-cover" />
-                                        <button
-                                          type="button"
-                                          onClick={() => setGalleryImages(galleryImages.filter((_, idx) => idx !== i))}
-                                          className="absolute inset-0 bg-red-600/90 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                                        >
-                                          <Trash2 className="size-3" />
-                                        </button>
-                                      </div>
-                                    ))}
-                                    <span className="text-[9px] uppercase font-bold text-red-400 self-center ml-1">{galleryImages.length} uploaded</span>
-                                  </div>
-                                )}
-                                {galleryUploadError && <p className="text-[10px] text-red-500 mt-1 font-semibold">{galleryUploadError}</p>}
-                              </div>
-                            </div>
-
-                            <div className="grid sm:grid-cols-2 gap-5 pt-2">
-                              <div className="space-y-2">
-                                <Label htmlFor="video" className="text-[10px] uppercase font-bold tracking-wider text-neutral-350 block">
-                                  Video Attachment (Optional Youtube/Vimeo or File)
-                                </Label>
-                                <div className="flex gap-2">
-                                  <Input
-                                    id="video"
-                                    value={videoUrl}
-                                    onChange={(e) => setVideoUrl(e.target.value)}
-                                    placeholder="Link (e.g. Youtube URL)"
-                                    className="bg-neutral-950 border-neutral-800 focus:border-red-500/50 h-10 text-xs"
-                                  />
-                                  <label className="h-10 bg-neutral-800 hover:bg-neutral-750 border border-neutral-800 px-4 rounded-xl flex items-center justify-center cursor-pointer text-white shrink-0">
-                                    {uploadingVideo ? (
-                                      <Loader2 className="size-4 animate-spin text-red-500" />
-                                    ) : (
-                                      <Video className="size-4 text-red-500" />
-                                    )}
-                                    <input type="file" accept="video/*" className="hidden" onChange={handleVideoUpload} />
-                                  </label>
-                                </div>
-                              </div>
-                              <div className="space-y-2">
-                                <Label htmlFor="tags" className="text-[10px] uppercase font-bold tracking-wider text-neutral-350">
-                                  Tags / Keywords <span className="normal-case text-neutral-500 font-semibold">(comma-separated)</span>
-                                </Label>
-                                <Input
-                                  id="tags"
-                                  value={tags}
-                                  onChange={(e) => setTags(e.target.value)}
-                                  placeholder="e.g. solar, water harvesting, rajasthan"
-                                  className="bg-neutral-950 border-neutral-800 focus:border-red-500/50 h-10 text-xs"
-                                />
-                              </div>
-                            </div>
-                          </motion.div>
-                        )}
-
-                        {activeStep === 3 && (
-                          <motion.div
-                            key="step3"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            transition={{ duration: 0.2 }}
-                            className="space-y-6"
-                          >
-                            <h3 className="text-sm font-bold text-white uppercase tracking-wider border-b border-neutral-850 pb-2">
-                              Step 4: Verification & SEO settings
-                            </h3>
-
-                            <div className="grid sm:grid-cols-3 gap-5">
-                              <div className="space-y-2">
-                                <Label htmlFor="authorName" className="text-[10px] uppercase font-bold tracking-wider text-neutral-350">
-                                  Your Name
-                                </Label>
-                                <Input
-                                  id="authorName"
-                                  value={authorName}
-                                  onChange={(e) => setAuthorName(e.target.value)}
-                                  placeholder="Author Name"
-                                  className="bg-neutral-950 border-neutral-800 focus:border-red-500/50 h-11 rounded-xl text-xs"
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label htmlFor="contactEmail" className="text-[10px] uppercase font-bold tracking-wider text-neutral-350">
-                                  Contact Email *
-                                </Label>
-                                <Input
-                                  id="contactEmail"
-                                  type="email"
-                                  value={contactEmail}
-                                  onChange={(e) => setContactEmail(e.target.value)}
-                                  placeholder="your@email.com"
-                                  className="bg-neutral-950 border-neutral-800 focus:border-red-500/50 h-11 rounded-xl text-xs"
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label htmlFor="phone" className="text-[10px] uppercase font-bold tracking-wider text-neutral-350">
-                                  Phone Number (Optional)
-                                </Label>
-                                <Input
-                                  id="phone"
-                                  type="tel"
-                                  value={phone}
-                                  onChange={(e) => setPhone(e.target.value)}
-                                  placeholder="e.g. +91 98765 43210"
-                                  className="bg-neutral-950 border-neutral-800 focus:border-red-500/50 h-11 rounded-xl text-xs"
-                                />
-                              </div>
-                            </div>
-
-                            <div className="space-y-2">
-                              <Label htmlFor="externalLinks" className="text-[10px] uppercase font-bold tracking-wider text-neutral-350">
-                                Reference Links / Sources
-                              </Label>
-                              <Input
-                                id="externalLinks"
-                                value={externalLinks}
-                                onChange={(e) => setExternalLinks(e.target.value)}
-                                placeholder="Separated by comma (e.g. wikipedia link, news article)"
-                                className="bg-neutral-950 border-neutral-800 focus:border-red-500/50 h-10 text-xs"
-                              />
-                            </div>
-
-                            {/* SEO settings card container */}
-                            <div className="border border-neutral-800 rounded-xl p-4 bg-neutral-950/40 space-y-4">
-                              <button
-                                type="button"
-                                onClick={() => setShowSEO(!showSEO)}
-                                className="w-full flex items-center justify-between text-left text-[10px] uppercase tracking-wider text-neutral-300 font-sans font-bold hover:text-white transition-colors"
-                              >
-                                <span className="flex items-center gap-1.5">
-                                  <Info className="size-4 text-red-500" />
-                                  Google SEO Metadata Options
-                                </span>
-                                <span className="text-[10px] text-red-500 font-bold uppercase">
-                                  {showSEO ? "Hide [-]" : "Configure [+]"}
-                                </span>
-                              </button>
-                              
-                              {showSEO && (
-                                <div className="space-y-4 pt-3 border-t border-neutral-800">
-                                  <div className="space-y-1.5">
-                                    <Label htmlFor="seoTitle" className="text-[10px] uppercase font-bold tracking-wider text-neutral-400">
-                                      SEO Page Title
-                                    </Label>
-                                    <Input
-                                      id="seoTitle"
-                                      value={seoTitle}
-                                      onChange={(e) => setSeoTitle(e.target.value)}
-                                      placeholder="Custom title showing on search engine page"
-                                      className="bg-neutral-950 border-neutral-800 focus:border-red-500/50 h-10 text-xs"
-                                    />
-                                  </div>
-                                  <div className="space-y-1.5">
-                                    <Label htmlFor="seoDescription" className="text-[10px] uppercase font-bold tracking-wider text-neutral-400">
-                                      SEO Description Excerpt
-                                    </Label>
-                                    <Textarea
-                                      id="seoDescription"
-                                      value={seoDescription}
-                                      onChange={(e) => setSeoDescription(e.target.value.slice(0, 160))}
-                                      placeholder="Meta description (ideally under 160 characters)"
-                                      rows={2}
-                                      className="bg-neutral-950 border-neutral-800 focus:border-red-500/50 text-xs resize-none"
-                                    />
-                                    <span className="text-[8px] text-neutral-500 float-right font-bold mt-0.5">
-                                      {seoDescription.length} / 160 chars
-                                    </span>
-                                  </div>
-                                  <div className="space-y-1.5 pt-2">
-                                    <Label htmlFor="seoKeywords" className="text-[10px] uppercase font-bold tracking-wider text-neutral-400">
-                                      SEO Meta Keywords
-                                    </Label>
-                                    <Input
-                                      id="seoKeywords"
-                                      value={seoKeywords}
-                                      onChange={(e) => setSeoKeywords(e.target.value)}
-                                      placeholder="e.g. water project, jodhpur, bishnoi community"
-                                      className="bg-neutral-950 border-neutral-800 focus:border-red-500/50 h-10 text-xs"
-                                    />
-                                  </div>
-
-                                  {/* Dynamic Google Search preview mockup */}
-                                  <div className="bg-[#1a1a1a] border border-neutral-800 rounded-xl p-4 text-left space-y-1.5">
-                                    <span className="text-[9px] uppercase tracking-wider text-neutral-500 font-bold flex items-center gap-1">
-                                      <Info className="size-3" />
-                                      Google Search Snippet Preview
-                                    </span>
-                                    <div className="space-y-0.5">
-                                      <span className="text-[10px] text-neutral-400 block truncate">
-                                        https://www.indiastoryproject.com{autoSlug}
-                                      </span>
-                                      <span className="text-sm font-semibold text-[#8ab4f8] hover:underline cursor-pointer block leading-tight truncate">
-                                        {seoTitle || title || "India Story Project — Experience India's Stories"}
-                                      </span>
-                                      <p className="text-xs text-[#bdc1c6] font-sans leading-relaxed line-clamp-2">
-                                        {seoDescription || summary || "A premium storytelling platform celebrating the changemakers, innovators, and unsung heroes shaping modern India."}
-                                      </p>
-                                    </div>
-                                  </div>
                                 </div>
                               )}
                             </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
 
-                      {/* Footer Actions (Next / Prev / Submit) */}
-                      <div className="pt-6 border-t border-neutral-850 flex flex-col sm:flex-row gap-3">
+                            {/* Drag and Drop Gallery Upload */}
+                            <div className="space-y-2">
+                              <label className="text-[10px] uppercase font-bold tracking-wider text-neutral-400 block">
+                                Gallery Photos (Optional)
+                              </label>
+                              <div
+                                onDragOver={(e) => { e.preventDefault(); setIsDragOverGallery(true); }}
+                                onDragLeave={() => setIsDragOverGallery(false)}
+                                onDrop={async (e) => {
+                                  e.preventDefault();
+                                  setIsDragOverGallery(false);
+                                  const files = e.dataTransfer.files;
+                                  if (files && files.length > 0) await performGalleryUpload(Array.from(files));
+                                }}
+                                className={`border-2 border-dashed rounded-2xl min-h-[170px] flex flex-col items-center justify-center transition-all duration-300 ${
+                                  isDragOverGallery
+                                    ? "border-[#8B0000] bg-[#8B0000]/10 scale-[1.01]"
+                                    : "border-neutral-800 hover:border-[#8B0000]/40 bg-neutral-900/60"
+                                }`}
+                              >
+                                {uploadingGallery ? (
+                                  <div className="text-center text-xs text-neutral-400 space-y-2">
+                                    <Loader2 className="size-7 animate-spin text-[#8B0000] mx-auto" />
+                                    <span>Uploading gallery photos...</span>
+                                  </div>
+                                ) : (
+                                  <label className="cursor-pointer p-5 text-center flex flex-col items-center text-neutral-400 hover:text-white transition-colors w-full h-full justify-center">
+                                    <ImageIcon className="size-8 text-neutral-500 mb-2" />
+                                    <span className="text-xs font-semibold">Drag & drop multiple photos</span>
+                                    <span className="text-[9px] text-neutral-500 mt-1">Upload additional context photos</span>
+                                    <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => {
+                                      const files = e.target.files;
+                                      if (files && files.length > 0) void performGalleryUpload(Array.from(files));
+                                    }} />
+                                  </label>
+                                )}
+                              </div>
+                              {galleryImages.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mt-3">
+                                  {galleryImages.map((img, i) => (
+                                    <div key={i} className="relative group size-10 rounded-lg overflow-hidden border border-neutral-800">
+                                      <img src={img} className="size-full object-cover" alt="Gallery thumbnail" />
+                                      <button
+                                        type="button"
+                                        onClick={() => setGalleryImages(galleryImages.filter((_, idx) => idx !== i))}
+                                        className="absolute inset-0 bg-[#8B0000]/90 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                      >
+                                        <Trash2 className="size-3" />
+                                      </button>
+                                    </div>
+                                  ))}
+                                  <span className="text-[9px] uppercase font-bold text-[#C8A96A] self-center ml-1">{galleryImages.length} uploaded</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="grid sm:grid-cols-2 gap-5 pt-2">
+                            <FloatingInput
+                              id="video-url"
+                              label="Video Link (YouTube / Vimeo / File URL)"
+                              value={videoUrl}
+                              onChange={(e) => setVideoUrl(e.target.value)}
+                              placeholder="https://youtube.com/watch?v=..."
+                              helperText="Optional documentary or interview link."
+                            />
+
+                            <FloatingInput
+                              id="tags-input"
+                              label="Tags / Keywords"
+                              value={tags}
+                              onChange={(e) => setTags(e.target.value)}
+                              placeholder="e.g. water harvesting, rajasthan, conservation"
+                              helperText="Comma-separated topics for discoverability."
+                            />
+                          </div>
+
+                          {/* SEO Options Collapsible */}
+                          <div className="border border-neutral-800 rounded-2xl p-4 bg-neutral-950/40 space-y-4">
+                            <button
+                              type="button"
+                              onClick={() => setShowSEO(!showSEO)}
+                              className="w-full flex items-center justify-between text-left text-[10px] uppercase tracking-wider text-neutral-300 font-sans font-bold hover:text-white transition-colors"
+                            >
+                              <span className="flex items-center gap-2 text-[#C8A96A]">
+                                <Info className="size-4 text-[#8B0000]" />
+                                Search Engine Optimization (SEO) Options
+                              </span>
+                              <span className="text-[10px] text-[#8B0000] font-bold">
+                                {showSEO ? "Hide [-]" : "Configure [+]"}
+                              </span>
+                            </button>
+
+                            {showSEO && (
+                              <div className="space-y-4 pt-3 border-t border-neutral-800">
+                                <FloatingInput
+                                  id="seo-title"
+                                  label="SEO Page Title"
+                                  value={seoTitle}
+                                  onChange={(e) => setSeoTitle(e.target.value)}
+                                  placeholder="Custom title for Google search results"
+                                />
+
+                                <FloatingTextarea
+                                  id="seo-desc"
+                                  label="SEO Meta Description"
+                                  value={seoDescription}
+                                  onChange={(e) => setSeoDescription(e.target.value.slice(0, 160))}
+                                  placeholder="Custom meta description snippet..."
+                                  rows={2}
+                                  helperText={`${seoDescription.length} / 160 characters`}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {/* Step 5: Review & Submit */}
+                      {activeStep === 4 && (
+                        <motion.div
+                          key="step-4-review"
+                          initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, rotateY: 6 }}
+                          animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, scale: 1, rotateY: 0 }}
+                          exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, rotateY: -6 }}
+                          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                          className="space-y-6"
+                        >
+                          <div className="border-b border-neutral-850 pb-3 space-y-1">
+                            <span className="text-[10px] uppercase font-bold tracking-widest text-[#C8A96A]">
+                              Step 5 of 5
+                            </span>
+                            <h3 className="font-display text-2xl font-bold text-white flex items-center gap-2">
+                              <Eye className="size-5 text-[#8B0000]" />
+                              Review & Publish Preview
+                            </h3>
+                            <p className="text-xs text-neutral-400">
+                              This is exactly how your story will look once published live on India Story Project.
+                            </p>
+                          </div>
+
+                          {/* Live Story Card Component Preview */}
+                          <div className="max-w-xl mx-auto py-2">
+                            <StoryCard story={previewStory} index={0} />
+                          </div>
+
+                          <div className="bg-neutral-950/60 border border-neutral-850 rounded-2xl p-5 space-y-3">
+                            <h4 className="text-xs uppercase tracking-wider font-bold text-[#C8A96A]">
+                              Submission Details Summary
+                            </h4>
+                            <div className="grid grid-cols-2 gap-4 text-xs font-sans">
+                              <div>
+                                <span className="text-neutral-500 block text-[10px] uppercase font-bold">Byline</span>
+                                <span className="text-white font-semibold">{authorName || "Not set"}</span>
+                              </div>
+                              <div>
+                                <span className="text-neutral-500 block text-[10px] uppercase font-bold">Contact Email</span>
+                                <span className="text-white font-semibold">{contactEmail || "Not set"}</span>
+                              </div>
+                              <div>
+                                <span className="text-neutral-500 block text-[10px] uppercase font-bold">Location</span>
+                                <span className="text-white font-semibold">{stateName}{district ? `, ${district}` : ""}</span>
+                              </div>
+                              <div>
+                                <span className="text-neutral-500 block text-[10px] uppercase font-bold">Categories</span>
+                                <span className="text-white font-semibold">{selectedThemes.join(", ")}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+
+                    </AnimatePresence>
+                  </div>
+
+                  {/* ─── Stepper Action Controls Footer ─── */}
+                  <div className="pt-6 border-t border-neutral-850 flex flex-col sm:flex-row gap-3 items-center justify-between">
+                    
+                    {/* Draft Save Button */}
+                    <Button
+                      type="button"
+                      onClick={() => void handleSubmit(true)}
+                      variant="outline"
+                      className="w-full sm:w-auto h-11 border-neutral-800 bg-neutral-950 text-white hover:bg-neutral-900 uppercase tracking-widest text-xs font-bold rounded-xl flex items-center justify-center gap-2"
+                      disabled={submitLoading || uploadingCover || uploadingGallery || uploadingVideo}
+                    >
+                      <FileText className="size-4 text-[#C8A96A]" />
+                      Save Draft
+                    </Button>
+
+                    <div className="w-full sm:w-auto flex gap-3 justify-end">
+                      {activeStep > 0 && (
                         <Button
                           type="button"
-                          onClick={() => void handleSubmit(null, true)}
+                          onClick={handlePrevStep}
                           variant="outline"
-                          className="w-full sm:w-auto h-11 border-neutral-800 bg-neutral-950 text-white hover:bg-neutral-900 uppercase tracking-widest text-xs font-bold rounded-xl flex items-center justify-center gap-2"
-                          disabled={submitLoading || uploadingCover || uploadingGallery || uploadingVideo}
+                          className="w-1/2 sm:w-auto h-11 border-neutral-800 bg-neutral-950 text-white hover:bg-neutral-900 uppercase tracking-widest text-xs font-bold rounded-xl flex items-center justify-center gap-2"
                         >
-                          <FileText className="size-4 text-red-500" />
-                          Save Draft
+                          <ArrowLeft className="size-4" />
+                          Previous
                         </Button>
+                      )}
 
-                        <div className="flex-1 flex gap-3 sm:justify-end">
-                          {activeStep > 0 && (
-                            <Button
-                              type="button"
-                              onClick={handlePrevStep}
-                              variant="outline"
-                              className="w-1/2 sm:w-auto h-11 border-neutral-800 bg-neutral-950 text-white hover:bg-neutral-900 uppercase tracking-widest text-xs font-bold rounded-xl flex items-center justify-center gap-1.5"
-                            >
-                              <ArrowLeft className="size-4" />
-                              Back
-                            </Button>
-                          )}
-                          
-                          {activeStep < stepsList.length - 1 ? (
-                            <Button
-                              type="button"
-                              onClick={handleNextStep}
-                              className="w-1/2 sm:flex-1 md:max-w-[200px] h-11 bg-red-600 hover:bg-red-700 text-white uppercase tracking-widest text-xs font-bold rounded-xl flex items-center justify-center gap-1.5"
-                            >
-                              Next
-                              <ArrowRight className="size-4" />
-                            </Button>
-                          ) : (
-                            <>
-                              <Button
-                                type="button"
-                                onClick={() => setIsPreview(true)}
-                                variant="outline"
-                                className="w-1/2 sm:w-auto h-11 border-neutral-800 bg-neutral-950 text-white hover:bg-neutral-900 uppercase tracking-widest text-xs font-bold rounded-xl flex items-center justify-center gap-1.5"
-                              >
-                                <Eye className="size-4 text-red-500" />
-                                Preview
-                              </Button>
-                              <Button
-                                type="button"
-                                onClick={() => void handleSubmit(null, false)}
-                                className="w-1/2 sm:flex-1 md:max-w-[200px] h-11 bg-red-600 hover:bg-red-700 text-white uppercase tracking-widest text-xs font-bold rounded-xl flex items-center justify-center gap-1.5"
-                                disabled={submitLoading || uploadingCover || uploadingGallery || uploadingVideo}
-                              >
-                                {submitLoading ? (
-                                  <Loader2 className="size-4 animate-spin" />
-                                ) : (
-                                  <>
-                                    Submit
-                                    <Check className="size-4" />
-                                  </>
-                                )}
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      </div>
+                      {activeStep < 4 ? (
+                        <Button
+                          type="button"
+                          onClick={handleNextStep}
+                          className="w-1/2 sm:w-auto min-w-[150px] h-11 bg-[#8B0000] hover:bg-[#a00000] text-white uppercase tracking-widest text-xs font-bold rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-[#8B0000]/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                        >
+                          Next Step
+                          <ArrowRight className="size-4" />
+                        </Button>
+                      ) : (
+                        /* Magnetic Submit Button with tactile press animation */
+                        <motion.div
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.97 }}
+                          className="w-1/2 sm:w-auto min-w-[180px]"
+                        >
+                          <Button
+                            type="button"
+                            onClick={() => void handleSubmit(false)}
+                            className="w-full h-11 bg-[#8B0000] hover:bg-[#a00000] text-white uppercase tracking-widest text-xs font-bold rounded-xl flex items-center justify-center gap-2 shadow-xl shadow-[#8B0000]/30"
+                            disabled={submitLoading || uploadingCover || uploadingGallery || uploadingVideo}
+                          >
+                            {submitLoading ? (
+                              <Loader2 className="size-4 animate-spin" />
+                            ) : (
+                              <>
+                                Submit Story
+                                <Check className="size-4" />
+                              </>
+                            )}
+                          </Button>
+                        </motion.div>
+                      )}
                     </div>
-                  )}
 
-                  <p className="text-center text-[10px] text-neutral-450 font-sans mt-4">
-                    By submitting, you agree to our editorial guidelines and confirm this content is original.
-                  </p>
+                  </div>
+
                 </div>
               </motion.div>
             )}
@@ -2033,76 +1872,20 @@ function ShareStoryPage() {
         </section>
 
         {/* ─── FAQ Section ─── */}
-        <section className="py-20 border-t border-neutral-900 relative z-10 max-w-3xl mx-auto px-6">
+        <section className="py-20 border-t border-neutral-900 relative z-10 max-w-4xl mx-auto px-6">
           <div className="text-center mb-10 space-y-2">
-            <span className="text-[10px] uppercase tracking-widest font-sans font-bold text-red-500">
+            <span className="text-[10px] uppercase tracking-widest font-sans font-bold text-[#8B0000]">
               {lang === "hi" ? "प्रश्न" : "Questions"}
             </span>
             <h2 className="font-display text-2xl md:text-4xl font-bold">
-              {lang === "hi" ? "अक्सर पूछे जाने वाले प्रश्न" : "Frequently Asked"}
+              {lang === "hi" ? "अक्सर पूछे जाने वाले प्रश्न" : "Frequently Asked Questions"}
             </h2>
           </div>
-          <div className="bg-neutral-900/90 rounded-2xl border border-neutral-850 px-6 py-2 shadow-lg">
-            {(lang === "hi"
-              ? [
-                  {
-                    q: "समीक्षा प्रक्रिया में कितना समय लगता है?",
-                    a: "हमारी संपादकीय टीम 5-7 कार्य दिवसों के भीतर प्रविष्टियों की समीक्षा करती है। कहानी की स्थिति बदलने पर आपको ईमेल अधिसूचना प्राप्त होगी।",
-                  },
-                  {
-                    q: "क्या मैं हिंदी या अन्य क्षेत्रीय भाषाओं में कहानियां प्रस्तुत कर सकता हूं?",
-                    a: "हां! हम अंग्रेजी और हिंदी में कहानियां स्वीकार करते हैं। जल्द ही और अधिक भारतीय भाषाओं का समर्थन करने के लिए हमारे मंच का विस्तार किया जा रहा है।",
-                  },
-                  {
-                    q: "क्या मुझे लेखक के रूप में श्रेय दिया जाएगा?",
-                    a: "बिल्कुल। आपके द्वारा योगदान की गई प्रत्येक कहानी पर आपका नाम दिखाई देता है। आपको योगदानकर्ता XP अंक और बैज भी प्राप्त होंगे।",
-                  },
-                  {
-                    q: "आप किस प्रकार की कहानियों की तलाश में हैं?",
-                    a: "हम पूरे भारत में अनसुने नायकों, जमीनी स्तर के नवाचारों, सांस्कृतिक विरासत, टिकाऊ प्रथाओं और सामुदायिक परिवर्तनों का जश्न मनाते हैं।",
-                  },
-                  {
-                    q: "क्या मैं अपनी कहानी के साथ फोटो और वीडियो जमा कर सकता हूं?",
-                    a: "हां। आप कवर छवि, गैलरी तस्वीरें, और एक वीडियो लिंक या फ़ाइल अपलोड कर सकते हैं। उच्च गुणवत्ता वाले दृश्य प्रकाशन की संभावनाओं को बढ़ाते हैं।",
-                  },
-                ]
-              : faqs
-            ).map((faq, i) => (
+          <div className="bg-neutral-900/80 rounded-2xl border border-neutral-850 px-6 py-2 shadow-lg">
+            {faqs.map((faq, i) => (
               <FaqItem key={i} q={faq.q} a={faq.a} />
             ))}
           </div>
-        </section>
-
-        {/* ─── Final CTA ─── */}
-        <section className="py-24 relative z-10 max-w-3xl mx-auto px-6 text-center space-y-6">
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="space-y-6"
-          >
-            <Feather className="size-8 text-red-500 mx-auto" />
-            <h2 className="font-display text-3xl md:text-5xl font-bold leading-tight">
-              {lang === "hi" ? "हर कहानी मायने रखती है।" : "Every Story Matters."}
-              <br />
-              <span className="text-gradient-gold italic font-serif">
-                {lang === "hi" ? "आपकी भी।" : "Yours Does Too."}
-              </span>
-            </h2>
-            <p className="text-neutral-350 font-sans text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
-              {lang === "hi"
-                ? "वास्तविक भारत की कहानियों को अनकहा न रहने दें। भारत का सबसे प्रामाणिक डिजिटल संग्रह बनाने वाले सैकड़ों योगदानकर्ताओं से जुड़ें।"
-                : "Don't let the stories of real India go untold. Join hundreds of contributors who are building the most authentic digital archive of Bharat."}
-            </p>
-            <a
-              href="#submission-form"
-              className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-sans font-bold text-xs uppercase tracking-widest h-12 px-8 rounded-full shadow-lg transition-all duration-300"
-            >
-              <PenLine className="size-4" />
-              {lang === "hi" ? "अभी लिखना शुरू करें" : "Start Writing Now"}
-            </a>
-          </motion.div>
         </section>
 
       </div>

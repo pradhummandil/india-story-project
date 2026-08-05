@@ -6,6 +6,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -207,6 +208,14 @@ function RootComponent() {
 
   // Subscribe to stories-data updates
   useStoriesData();
+
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  // Scroll restoration + release body overflow on route navigation
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    document.body.style.overflow = "";
+  }, [pathname]);
 
   // Sync language to document for CSS selectors and font switching
   useEffect(() => {

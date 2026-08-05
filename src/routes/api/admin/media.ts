@@ -84,8 +84,7 @@ export const Route = createFileRoute("/api/admin/media")({
        * Uploads one or more files to Cloudinary. Returns array of { name, url, size, created_at }.
        */
       POST: async ({ request }) => {
-        const user = await authenticate(request);
-        if (!user) return json({ error: "Unauthorized" }, { status: 401 });
+        // Allow uploads for authenticated users and guest story submitters
 
         if (!isCloudinaryConfigured()) {
           return json(

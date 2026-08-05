@@ -288,7 +288,7 @@ export function CinematicHero({
   return (
     <section
       ref={sectionRef}
-      className="relative w-full h-[100vh] flex items-center justify-center overflow-hidden bg-black text-white"
+      className="relative w-full min-h-[580px] h-[85dvh] sm:h-[100vh] flex items-center justify-center overflow-hidden bg-black text-white max-w-[100vw]"
       aria-label="Featured Stories"
     >
       {/* ── Background slides with parallax ── */}
@@ -303,7 +303,7 @@ export function CinematicHero({
         >
           {/* Parallax wrapper — only when motion is OK */}
           <motion.div
-            className="absolute inset-0 will-change-transform"
+            className="absolute inset-0 will-change-transform overflow-hidden"
             style={reducedMotion ? {} : { y: bgY }}
           >
             <img
@@ -328,21 +328,21 @@ export function CinematicHero({
       </AnimatePresence>
 
       {/* ── Ambient gradient orbs (brand colors, very slow drift) ── */}
-      <div aria-hidden className="absolute inset-0 z-5 pointer-events-none overflow-hidden">
+      <div aria-hidden className="absolute inset-0 z-5 pointer-events-none overflow-hidden max-w-full">
         <motion.div
-          className="absolute -top-40 -left-40 size-[700px] rounded-full blur-3xl"
+          className="absolute -top-40 -left-40 size-[500px] sm:size-[700px] rounded-full blur-3xl"
           style={{ background: "radial-gradient(circle, rgba(200,169,106,0.14) 0%, transparent 70%)" }}
           animate={reducedMotion ? {} : { x: [0, 60, -30, 0], y: [0, 80, 40, 0] }}
           transition={{ duration: 38, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
-          className="absolute top-1/2 -right-60 size-[600px] rounded-full blur-3xl"
+          className="absolute top-1/2 -right-60 size-[450px] sm:size-[600px] rounded-full blur-3xl"
           style={{ background: "radial-gradient(circle, rgba(255,153,51,0.10) 0%, transparent 70%)" }}
           animate={reducedMotion ? {} : { x: [0, -80, 20, 0], y: [0, 60, -40, 0] }}
           transition={{ duration: 42, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
-          className="absolute -bottom-20 left-1/3 size-[500px] rounded-full blur-3xl"
+          className="absolute -bottom-20 left-1/3 size-[400px] sm:size-[500px] rounded-full blur-3xl"
           style={{ background: "radial-gradient(circle, rgba(139,0,0,0.16) 0%, transparent 70%)" }}
           animate={reducedMotion ? {} : { x: [0, 40, -50, 0], y: [0, -30, 20, 0] }}
           transition={{ duration: 35, repeat: Infinity, ease: "easeInOut" }}
@@ -350,7 +350,7 @@ export function CinematicHero({
       </div>
 
       {/* ── Floating Ambient Particles ── */}
-      <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden opacity-25">
+      <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden opacity-25 max-w-full">
         {!reducedMotion && [...Array(12)].map((_, i) => {
           const size = Math.random() * 5 + 2;
           const delay = Math.random() * 6;
@@ -385,16 +385,16 @@ export function CinematicHero({
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={`content-${current}`}
-          className="relative z-20 w-full max-w-6xl mx-auto px-6 md:px-12 flex flex-col items-start text-left space-y-5 mt-16 md:mt-20"
+          className="relative z-20 w-full max-w-6xl mx-auto px-5 sm:px-6 md:px-12 flex flex-col items-start text-left space-y-4 sm:space-y-5 mt-8 sm:mt-16 md:mt-20 pb-16 sm:pb-0"
           initial={{ opacity: 0, y: 30, x: direction > 0 ? 20 : -20 }}
           animate={{ opacity: 1, y: 0, x: 0 }}
           exit={{ opacity: 0, y: -20, x: direction > 0 ? -20 : 20 }}
           transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
         >
           {/* Metadata */}
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[10px] sm:text-xs uppercase tracking-[0.22em] font-sans font-bold text-gold">
+          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-[9px] sm:text-xs uppercase tracking-[0.2em] font-sans font-bold text-gold">
             {(slide.themes || []).map((t, idx) => (
-              <span key={idx} className="bg-primary/25 backdrop-blur-sm px-3 py-1 border border-primary/20">{t}</span>
+              <span key={idx} className="bg-primary/25 backdrop-blur-sm px-2.5 py-0.5 border border-primary/20">{t}</span>
             ))}
             {slide.state && (
               <span className="flex items-center gap-1 text-white/70">
@@ -407,7 +407,7 @@ export function CinematicHero({
           </div>
 
           {/* Title — staggered word reveal */}
-          <h1 className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.04] text-white tracking-tight max-w-4xl font-bold drop-shadow-lg text-pretty">
+          <h1 className="font-display text-2xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.06] text-white tracking-tight max-w-4xl font-bold drop-shadow-lg text-pretty">
             <WordReveal key={`${current}-${title}`} text={title} delay={0.1} reducedMotion={reducedMotion} />
           </h1>
 
@@ -425,7 +425,7 @@ export function CinematicHero({
             const authorName = isRealAuthor ? rawAuthor : "India Story Project";
             return (
               <motion.p
-                className="text-[10px] sm:text-xs uppercase tracking-[0.28em] text-white/75 font-sans font-semibold"
+                className="text-[9px] sm:text-xs uppercase tracking-[0.24em] text-white/75 font-sans font-semibold"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.55 }}
@@ -448,7 +448,7 @@ export function CinematicHero({
           {/* Excerpt */}
           {excerpt && (
             <motion.p
-              className="text-sm sm:text-base text-white/80 max-w-xl leading-relaxed font-sans font-normal drop-shadow hidden sm:block italic"
+              className="text-xs sm:text-base text-white/80 max-w-xl leading-relaxed font-sans font-normal drop-shadow hidden sm:block italic"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.65 }}
@@ -459,7 +459,7 @@ export function CinematicHero({
 
           {/* CTA — magnetic buttons */}
           <motion.div
-            className="flex flex-wrap items-center gap-4 pt-2"
+            className="flex flex-wrap items-center gap-3 sm:gap-4 pt-1 sm:pt-2"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, delay: 0.75 }}
@@ -468,11 +468,11 @@ export function CinematicHero({
               <Button
                 asChild
                 size="lg"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-sans uppercase tracking-[0.18em] text-xs h-12 px-8 rounded-full border border-primary/50 shadow-glow btn-premium transition-all duration-300"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-sans uppercase tracking-[0.16em] text-[11px] sm:text-xs h-10 sm:h-12 px-6 sm:px-8 rounded-full border border-primary/50 shadow-glow btn-premium transition-all duration-300 min-h-[44px] min-w-[44px]"
               >
                 <Link to="/stories/$slug" params={{ slug: slide.slug }}>
                   {lang === "en" ? "Read Story" : "कहानी पढ़ें"}
-                  <ArrowRight className="size-4 ml-2" />
+                  <ArrowRight className="size-4 ml-1.5" />
                 </Link>
               </Button>
             </MagneticButton>
@@ -482,7 +482,7 @@ export function CinematicHero({
                 asChild
                 variant="outline"
                 size="lg"
-                className="bg-white/10 hover:bg-white/20 border-white/20 text-white font-sans uppercase tracking-[0.18em] text-xs h-12 px-8 rounded-full hover:-translate-y-0.5 transition-transform duration-300 flex items-center gap-2"
+                className="bg-white/10 hover:bg-white/20 border-white/20 text-white font-sans uppercase tracking-[0.16em] text-[11px] sm:text-xs h-10 sm:h-12 px-6 sm:px-8 rounded-full hover:-translate-y-0.5 transition-transform duration-300 flex items-center gap-2 min-h-[44px] min-w-[44px]"
               >
                 <Link to="/share-story">
                   <Sparkles className="size-3.5 text-gold" />
@@ -494,43 +494,47 @@ export function CinematicHero({
         </motion.div>
       </AnimatePresence>
 
-      {/* ── Controls (bottom-right) ── */}
-      <div className="absolute bottom-10 right-6 md:right-12 z-30 flex items-center gap-3">
+      {/* ── Desktop Controls (bottom-right) ── */}
+      <div className="hidden sm:flex absolute bottom-8 right-6 md:right-12 z-30 items-center gap-3">
         <span className="text-[10px] font-sans tracking-widest text-white/50 uppercase tabular-nums">
           {String(current + 1).padStart(2, "0")} / {String(slides.length).padStart(2, "0")}
         </span>
 
         <button
+          type="button"
           onClick={togglePlay}
-          className="size-8 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors"
+          className="size-8 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors cursor-pointer"
           aria-label={isPlaying ? "Pause slideshow" : "Play slideshow"}
         >
           {isPlaying ? <Pause className="size-3 text-white" /> : <Play className="size-3 text-white" />}
         </button>
 
         <button
+          type="button"
           onClick={prev}
-          className="size-8 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors"
+          className="size-8 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors cursor-pointer"
           aria-label="Previous slide"
         >
           <ChevronLeft className="size-4 text-white" />
         </button>
         <button
+          type="button"
           onClick={next}
-          className="size-8 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors"
+          className="size-8 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors cursor-pointer"
           aria-label="Next slide"
         >
           <ChevronRight className="size-4 text-white" />
         </button>
       </div>
 
-      {/* ── Dot indicators (bottom-center) ── */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2">
+      {/* ── Desktop Dot indicators (bottom-center) ── */}
+      <div className="hidden sm:flex absolute bottom-8 left-1/2 -translate-x-1/2 z-30 items-center gap-2">
         {slides.map((_, i) => (
           <button
             key={i}
+            type="button"
             onClick={() => goTo(i, i > current ? 1 : -1)}
-            className={`transition-all duration-300 rounded-full ${
+            className={`transition-all duration-300 rounded-full cursor-pointer ${
               i === current ? "w-6 h-1.5 bg-gold" : "w-1.5 h-1.5 bg-white/30 hover:bg-white/60"
             }`}
             aria-label={`Go to slide ${i + 1}`}
@@ -538,8 +542,47 @@ export function CinematicHero({
         ))}
       </div>
 
-      {/* ── Scroll indicator ── */}
-      <div className="absolute bottom-10 left-6 md:left-12 z-30 flex flex-col items-center gap-2 pointer-events-none">
+      {/* ── Mobile Unified Controls Bar (bottom-4 left-4) ── */}
+      <div className="flex sm:hidden absolute bottom-4 left-4 right-20 z-30 items-center justify-between bg-black/50 backdrop-blur-md border border-white/15 px-3 py-1.5 rounded-full">
+        <div className="flex items-center gap-1.5">
+          {slides.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => goTo(i, i > current ? 1 : -1)}
+              className={`transition-all duration-300 rounded-full ${
+                i === current ? "w-4 h-1.5 bg-gold" : "w-1.5 h-1.5 bg-white/40"
+              }`}
+              aria-label={`Go to slide ${i + 1}`}
+            />
+          ))}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-[9px] font-sans tracking-widest text-white/70 uppercase tabular-nums font-bold">
+            {current + 1}/{slides.length}
+          </span>
+          <button
+            type="button"
+            onClick={prev}
+            className="size-7 rounded-full bg-white/15 flex items-center justify-center text-white"
+            aria-label="Previous slide"
+          >
+            <ChevronLeft className="size-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={next}
+            className="size-7 rounded-full bg-white/15 flex items-center justify-center text-white"
+            aria-label="Next slide"
+          >
+            <ChevronRight className="size-3.5" />
+          </button>
+        </div>
+      </div>
+
+      {/* ── Scroll indicator (desktop only) ── */}
+      <div className="hidden md:flex absolute bottom-8 left-12 z-30 flex-col items-center gap-2 pointer-events-none">
         <span className="text-[9px] uppercase tracking-[0.4em] text-white/50 font-sans font-bold">
           {lang === "en" ? "Scroll" : "स्क्रॉल"}
         </span>

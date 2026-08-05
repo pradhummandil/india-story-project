@@ -31,7 +31,7 @@ export const Route = createFileRoute("/api/submissions")({
 
       POST: async ({ request }) => {
         const user = await authenticate(request);
-        if (!user) return json({ error: "Unauthorized" }, { status: 401 });
+        const GUEST_USER_ID = "00000000-0000-0000-0000-000000000000";
 
         const ip = getClientIp(request);
         const { allowed } = checkRateLimit(ip, 5, 60 * 1000); // 5 submissions per minute limit
@@ -88,17 +88,18 @@ export const Route = createFileRoute("/api/submissions")({
           }
 
           // Create UserProfile record if missing
-          let userProfile = await prisma.userProfile.findUnique({ where: { id: user.id } });
+          const targetUserId = user ? user.id : GUEST_USER_ID;
+          let userProfile = await prisma.userProfile.findUnique({ where: { id: targetUserId } });
           if (!userProfile) {
-            const existingProfile = await prisma.profile.findUnique({
+            const existingProfile = user ? await prisma.profile.findUnique({
               where: { id: user.id },
-            });
+            }) : null;
             userProfile = await prisma.userProfile.create({
               data: {
-                id: user.id,
-                email: user.email ?? "",
-                name: existingProfile?.fullName || user.user_metadata?.name || user.email?.split("@")[0] || "Contributor",
-                avatarUrl: existingProfile?.avatarUrl || user.user_metadata?.avatar_url || null,
+                id: targetUserId,
+                email: email?.trim() || user?.email || "guest@indiastoryproject.org",
+                name: authorName?.trim() || existingProfile?.fullName || user?.user_metadata?.name || user?.email?.split("@")[0] || "Guest Contributor",
+                avatarUrl: existingProfile?.avatarUrl || user?.user_metadata?.avatar_url || null,
               },
             });
           }
@@ -142,7 +143,7 @@ export const Route = createFileRoute("/api/submissions")({
             if (!existingSub) {
               return json({ error: "Submission not found" }, { status: 404 });
             }
-            if (existingSub.userId !== user.id) {
+            if (existingSub.userId !== targetUserId) {
               return json({ error: "Unauthorized" }, { status: 403 });
             }
             if (existingSub.status !== "Draft") {
@@ -150,13 +151,13 @@ export const Route = createFileRoute("/api/submissions")({
             }
 
             submission = await (prisma.submittedStory as any).update({
-              where: { id, userId: user.id },
+              where: { id, userId: targetUserId },
               data: dataPayload,
             });
           } else {
             submission = await (prisma.submittedStory as any).create({
               data: {
-                userId: user.id,
+                userId: targetUserId,
                 ...dataPayload,
               },
             });
@@ -176,7 +177,7 @@ export const Route = createFileRoute("/api/submissions")({
                   await prisma.notification.create({
                     data: {
                       recipientId: member.id,
-                      senderId: user.id,
+                      senderId: targetUserId,
                       submissionId: submission.id,
                       type: "NEW_SUBMISSION",
                       title: "New Story Submission",
@@ -189,7 +190,7 @@ export const Route = createFileRoute("/api/submissions")({
 
                 await prisma.auditLog.create({
                   data: {
-                    userId: user.id,
+                    userId: targetUserId,
                     action: "USER_SUBMITTED",
                     details: JSON.stringify({
                       submissionId: submission.id,
@@ -201,7 +202,7 @@ export const Route = createFileRoute("/api/submissions")({
                   },
                 });
 
-                const emailAddress = dataPayload.email || user.email;
+                const emailAddress = dataPayload.email || user?.email;
                 if (emailAddress) {
                   await sendSubmissionReceiptEmail(
                     emailAddress,
@@ -215,8 +216,8 @@ export const Route = createFileRoute("/api/submissions")({
             }, 0);
           }
 
-          // Award +20 XP only for non-draft submissions
-          if (status !== "Draft") {
+          // Award +20 XP only for authenticated non-draft submissions
+          if (user && status !== "Draft") {
             try {
               await prisma.userStat.upsert({
                 where: { userId: user.id },

@@ -207,7 +207,7 @@ export function LinkedInVideoCard({ video, className = "", showTitle = false }: 
 
         {/* LinkedIn Badge */}
         <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 bg-blue-600/90 text-white px-2.5 py-1 rounded-full text-[10px] font-sans font-bold uppercase tracking-wider shadow-md backdrop-blur-sm">
-          <Linkedin className="size-3 fill-current" />
+          <Linkedin className="size-3" />
           <span>{video.isPodcast ? (lang === "hi" ? "लिंक्डइन पॉडकास्ट" : "LinkedIn Podcast") : (lang === "hi" ? "लिंक्डइन वीडियो" : "LinkedIn Video")}</span>
         </div>
 

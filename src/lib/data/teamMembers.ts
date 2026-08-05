@@ -57,6 +57,17 @@ export const teamMembers: TeamMember[] = [
     linkedin: "https://www.linkedin.com/in/sushant-kumar-singh-b5b59631/",
   },
   {
+    id: "ankita-maheshwari",
+    name: "Ankita Maheshwari",
+    role: "Editor",
+    roleHi: "यूआई/यूएक्स डिजाइनर",
+    photo: ankitaPhoto,
+    bio: "Creative designer focused on user experience, interface design, visual storytelling and building intuitive digital experiences.",
+    bioHi: "उपयोगकर्ता अनुभव, इंटरफ़ेस डिज़ाइन और दृश्य कहानी कहने पर केंद्रित रचनात्मक डिज़ाइनर।",
+    location: "India",
+    linkedin: "https://www.linkedin.com/in/ankita-mp/",
+  },
+  {
     id: "pradhum-mandil",
     name: "Pradhum Mandil",
     role: "Full Stack Developer, DevOps Engineer, AI/ML Engineer",
@@ -78,17 +89,7 @@ export const teamMembers: TeamMember[] = [
     location: "India",
     linkedin: "https://www.linkedin.com/in/mayank-sahu-77653324a/",
   },
-  {
-    id: "ankita-maheshwari",
-    name: "Ankita Maheshwari",
-    role: "UI/UX Designer",
-    roleHi: "यूआई/यूएक्स डिजाइनर",
-    photo: ankitaPhoto,
-    bio: "Creative designer focused on user experience, interface design, visual storytelling and building intuitive digital experiences.",
-    bioHi: "उपयोगकर्ता अनुभव, इंटरफ़ेस डिज़ाइन और दृश्य कहानी कहने पर केंद्रित रचनात्मक डिज़ाइनर।",
-    location: "India",
-    linkedin: "https://www.linkedin.com/in/ankita-mp/",
-  },
+  
   {
     id: "vedika-saxena",
     name: "Vedika Saxena",

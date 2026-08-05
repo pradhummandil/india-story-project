@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { openGlobalSearch } from "@/components/common/GlobalSearch";
-import { Search, ArrowUpDown, MapPin, User, Compass } from "lucide-react";
+import { Search, ArrowUpDown, MapPin, User, Compass, SlidersHorizontal, X, Filter, Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { SiteLayout } from "@/components/site/Layout";
 import { StoryCard } from "@/components/site/StoryCard";
 import { Button } from "@/components/ui/button";
@@ -32,131 +33,124 @@ export const Route = createFileRoute("/stories/")({
       sortBy: (search.sortBy as string) || undefined,
     };
   },
-  head: () => ({
-    meta: [
-      { title: "Stories — India Story Project" },
-      {
-        name: "description",
-        content: "Browse stories of innovators, changemakers, and unsung heroes across India.",
-      },
-      { property: "og:title", content: "Stories — India Story Project" },
-      {
-        property: "og:description",
-        content: "Browse stories of innovators, changemakers, and unsung heroes across India.",
-      },
-    ],
-  }),
-  component: StoriesList,
+  component: StoriesPage,
 });
 
-function StoriesList() {
-  const {
-    category: queryCategory,
-    state: queryState,
-    search: querySearch,
-    author: queryAuthor,
-    tag: queryTag,
-    sortBy: querySortBy,
-  } = Route.useSearch();
-  const { stories: dbStories } = useStoriesData();
-  const navigate = useNavigate({ from: Route.fullPath });
-
-  const [query, setQuery] = useState(querySearch || "");
-  const [activeCategory, setActiveCategory] = useState("All");
-  const [activeState, setActiveState] = useState("All");
-  const [activeAuthor, setActiveAuthor] = useState("All");
-  const [activeTag, setActiveTag] = useState("All");
-  const [sortBy, setSortBy] = useState("newest");
-  const [visibleCount, setVisibleCount] = useState(12);
-
+function StoriesPage() {
+  const { category, state, search, author, tag, sortBy: initialSort } = Route.useSearch();
+  const navigate = useNavigate({ from: Route.id });
   const lang = useI18nStore((s) => s.lang);
   const commonText = getCommonText(lang);
 
-  const { categories: liveCategories } = useStoriesData();
-  const categories = liveCategories as readonly string[];
+  const { stories: dbStories, themes } = useStoriesData();
+
+  const [activeCategory, setActiveCategory] = useState<string>(category || "All");
+  const [activeState, setActiveState] = useState<string>(state || "All");
+  const [activeAuthor, setActiveAuthor] = useState<string>(author || "All");
+  const [activeTag, setActiveTag] = useState<string>(tag || "All");
+  const [sortBy, setSortBy] = useState<string>(initialSort || "newest");
+  const [query, setQuery] = useState<string>(search || "");
+
+  const [visibleCount, setVisibleCount] = useState<number>(12);
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+
+  // Sync state with URL search params when they change externally
+  useEffect(() => {
+    if (category !== undefined) setActiveCategory(category);
+    if (state !== undefined) setActiveState(state);
+    if (search !== undefined) setQuery(search);
+    if (author !== undefined) setActiveAuthor(author);
+    if (tag !== undefined) setActiveTag(tag);
+    if (initialSort !== undefined) setSortBy(initialSort);
+  }, [category, state, search, author, tag, initialSort]);
+
+  // Derived unique lists for dropdowns
   const states = useMemo(() => {
-    return Array.from(new Set(dbStories.map((s) => s.region).filter(Boolean)))
-      .filter((s) => s.toLowerCase() !== "india" && s.toLowerCase() !== "all")
-      .sort();
+    const set = new Set<string>();
+    dbStories.forEach((s) => {
+      if (s.region && s.region.toLowerCase() !== "india") set.add(s.region);
+    });
+    return Array.from(set).sort();
   }, [dbStories]);
 
   const authorsList = useMemo(() => {
-    const list = new Set<string>();
+    const set = new Set<string>();
     dbStories.forEach((s) => {
-      if (s.authorName) list.add(s.authorName);
+      if (
+        s.authorName &&
+        s.authorName.trim() !== "" &&
+        s.authorName.toLowerCase() !== "india story project" &&
+        s.authorName.toLowerCase() !== "unknown"
+      ) {
+        set.add(s.authorName);
+      }
     });
-    return Array.from(list).sort();
+    return Array.from(set).sort();
   }, [dbStories]);
 
   const tagsList = useMemo(() => {
-    const list = new Set<string>();
+    const set = new Set<string>();
     dbStories.forEach((s) => {
-      if (s.tags && Array.isArray(s.tags)) {
-        s.tags.forEach((t) => list.add(t));
+      if (Array.isArray(s.tags)) {
+        s.tags.forEach((t) => set.add(t));
       }
     });
-    return Array.from(list).sort();
+    return Array.from(set).sort();
   }, [dbStories]);
 
-  // Sync route parameters with local state on parameter change
-  useEffect(() => {
-    setActiveCategory(queryCategory || "All");
-    setActiveState(queryState || "All");
-    setActiveAuthor(queryAuthor || "All");
-    setActiveTag(queryTag || "All");
-    setQuery(querySearch || "");
-    setSortBy(querySortBy || "newest");
-  }, [queryCategory, queryState, querySearch, queryAuthor, queryTag, querySortBy]);
-
   const localizedCategories = useMemo(() => {
-    const list = [{ value: "All", label: lang === "en" ? "All Themes" : "सभी विषय" }];
-    categories.forEach((c) => {
-      if (c && c !== "All") {
-        list.push({ value: c, label: translateThemeName(c, lang) });
-      }
-    });
-    return list;
-  }, [categories, lang]);
+    const list = ["All", ...themes];
+    return list.map((cat) => ({
+      value: cat,
+      label: cat === "All" ? (lang === "en" ? "All Stories" : "सभी कहानियाँ") : translateThemeName(cat, lang),
+    }));
+  }, [themes, lang]);
 
+  // Filter & Sort Pipeline
   const filteredAndSorted = useMemo(() => {
-    const q = query.toLowerCase().trim();
+    let filtered = [...dbStories];
 
-    // Filter on raw database values first to avoid translation tag mismatches
-    let filtered = dbStories;
-
-    // Theme Filter (previously Category)
+    // Filter by Category
     if (activeCategory !== "All") {
       filtered = filtered.filter((s) => {
-        const storyThemes = Array.isArray(s.themes) ? s.themes : [];
-        return storyThemes.some((t) => t.toLowerCase() === activeCategory.toLowerCase());
+        const themeList = Array.isArray(s.themes)
+          ? s.themes
+          : typeof s.themes === "string"
+            ? [s.themes]
+            : [];
+        return themeList.some((t) => t.toLowerCase() === activeCategory.toLowerCase());
       });
     }
 
-    // State Filter
+    // Filter by State
     if (activeState !== "All") {
-      filtered = filtered.filter((s) => {
-        const reg = s.region || "";
-        return reg.toLowerCase() === activeState.toLowerCase();
-      });
+      filtered = filtered.filter(
+        (s) => s.region && s.region.toLowerCase() === activeState.toLowerCase(),
+      );
     }
 
-    // Author Filter
+    // Filter by Author
     if (activeAuthor !== "All") {
-      filtered = filtered.filter((s) => s.authorName === activeAuthor);
+      filtered = filtered.filter(
+        (s) => s.authorName && s.authorName.toLowerCase() === activeAuthor.toLowerCase(),
+      );
     }
 
-    // Tag Filter
+    // Filter by Tag
     if (activeTag !== "All") {
-      filtered = filtered.filter((s) => s.tags && s.tags.includes(activeTag));
+      filtered = filtered.filter(
+        (s) => Array.isArray(s.tags) && s.tags.some((t) => t.toLowerCase() === activeTag.toLowerCase()),
+      );
     }
 
     // Search Query Filter
-    if (q) {
+    if (query.trim() !== "") {
+      const q = query.toLowerCase();
       filtered = filtered.filter((s) => {
-        const themeStr = Array.isArray(s.themes) ? s.themes.join(" ") : "";
+        const themeStr = Array.isArray(s.themes) ? s.themes.join(" ") : s.themes || "";
         const tagsStr = Array.isArray(s.tags) ? s.tags.join(" ") : "";
         const districtStr = (s as any).district || "";
-        const keywordsStr = s.seoKeywords || "";
+        const keywordsStr = (s as any).seoKeywords || "";
 
         return (
           (s.title?.toLowerCase().includes(q) ?? false) ||
@@ -230,7 +224,7 @@ function StoriesList() {
 
   const handleCategoryChange = (val: string) => {
     setActiveCategory(val);
-    setVisibleCount(12); // Reset pagination
+    setVisibleCount(12);
     void navigate({
       search: (prev) => ({
         ...prev,
@@ -241,7 +235,7 @@ function StoriesList() {
 
   const handleStateChange = (val: string) => {
     setActiveState(val);
-    setVisibleCount(12); // Reset pagination
+    setVisibleCount(12);
     void navigate({
       search: (prev) => ({
         ...prev,
@@ -283,41 +277,82 @@ function StoriesList() {
     });
   };
 
-  const handleSearchChange = (val: string) => {
-    setQuery(val);
-    setVisibleCount(12); // Reset pagination
-    void navigate({
-      search: (prev) => ({
-        ...prev,
-        search: val.trim() === "" ? undefined : val,
-      }),
-    });
-  };
+  const activeFilterCount =
+    (activeState !== "All" ? 1 : 0) +
+    (activeAuthor !== "All" ? 1 : 0) +
+    (activeTag !== "All" ? 1 : 0) +
+    (sortBy !== "newest" ? 1 : 0);
 
   return (
     <SiteLayout>
-      <section className="container mx-auto px-6 py-28 md:py-36">
+      <section className="container mx-auto px-6 pt-20 pb-12 md:py-36">
         {/* Header Block */}
-        <div className="max-w-3xl border-b border-border/70 pb-8 mb-12">
-          <p className="text-xs uppercase tracking-[0.25em] text-gold font-sans font-bold mb-3">
+        <div className="max-w-3xl border-b border-border/70 pb-6 mb-8 md:mb-12">
+          <p className="text-xs uppercase tracking-[0.25em] text-gold font-sans font-bold mb-2 md:mb-3">
             {lang === "en" ? "The Archive" : "अभिलेखागार"}
           </p>
-          <h1 className="font-display text-5xl md:text-7xl font-bold leading-tight tracking-tight">
+          <h1 className="font-display text-4xl sm:text-5xl md:text-7xl font-bold leading-tight tracking-tight">
             {lang === "en" ? "Every story, " : "हर कहानी, "}
             <span className="text-primary italic">
               {lang === "en" ? "every corner " : "हर कोना "}
             </span>
             {lang === "en" ? "of India." : "भारत का।"}
           </h1>
-          <p className="mt-4 text-sm md:text-base text-muted-foreground leading-relaxed font-sans font-medium">
+          <p className="mt-3 md:mt-4 text-xs md:text-base text-muted-foreground leading-relaxed font-sans font-medium">
             {lang === "en"
               ? "A living archive of deep-dives, profiles, and editorial dispatches from the changemakers reshaping the subcontinental landscape."
               : "उपमहाद्वीप के परिदृश्य को नया आकार देने वाले बदलावों की कहानियों, प्रोफाइलों और प्रेषणों का एक जीवित संग्रह।"}
           </p>
         </div>
 
-        {/* Toolbar: Search, Filters, Sort, Language */}
-        <div className="flex flex-col lg:flex-row flex-wrap items-stretch gap-4 mb-12 bg-card/45 border border-border/50 p-6">
+        {/* ── Mobile Filter Trigger Bar (lg:hidden) ── */}
+        <div className="flex lg:hidden items-center gap-2 mb-4">
+          <div onClick={openGlobalSearch} className="flex-1 relative cursor-pointer">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
+              readOnly
+              placeholder={commonText.searchPlaceholder}
+              className="pl-10 h-11 bg-background border-border rounded-xl text-xs cursor-pointer"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => setMobileFilterOpen(true)}
+            className="h-11 px-4 rounded-xl border border-primary/40 bg-primary/10 text-primary text-xs font-sans font-bold uppercase tracking-wider flex items-center gap-2 shrink-0 cursor-pointer min-h-[44px]"
+          >
+            <SlidersHorizontal className="size-4" />
+            <span>{lang === "en" ? "Filter" : "फ़िल्टर"}</span>
+            {activeFilterCount > 0 && (
+              <span className="size-5 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center font-bold">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* ── Mobile Category Chips (lg:hidden) ── */}
+        <div className="flex lg:hidden overflow-x-auto gap-2 mb-8 pb-2 -mx-6 px-6">
+          {localizedCategories.map((c) => {
+            const isActive = c.value === activeCategory;
+            return (
+              <button
+                key={c.value}
+                type="button"
+                onClick={() => handleCategoryChange(c.value)}
+                className={`px-3.5 py-2 border text-xs font-semibold font-sans whitespace-nowrap rounded-full shrink-0 transition-all cursor-pointer ${
+                  isActive
+                    ? "bg-primary border-primary text-primary-foreground shadow-sm"
+                    : "border-border bg-card text-muted-foreground"
+                }`}
+              >
+                {c.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ── Desktop Toolbar: Search, Filters, Sort (hidden lg:flex) ── */}
+        <div className="hidden lg:flex flex-row flex-wrap items-stretch gap-4 mb-12 bg-card/45 border border-border/50 p-6">
           {/* Search Box */}
           <div
             onClick={openGlobalSearch}
@@ -410,15 +445,16 @@ function StoriesList() {
           </div>
         </div>
 
-        {/* Category chips */}
-        <div className="flex flex-wrap gap-2 mb-12 pb-4 border-b border-border/40">
+        {/* Desktop Category chips */}
+        <div className="hidden lg:flex flex-wrap gap-2 mb-12 pb-4 border-b border-border/40">
           {localizedCategories.map((c) => {
             const isActive = c.value === activeCategory;
             return (
               <button
                 key={c.value}
+                type="button"
                 onClick={() => handleCategoryChange(c.value)}
-                className={`px-4 py-2 border text-xs font-semibold font-sans transition-all rounded-none ${
+                className={`px-4 py-2 border text-xs font-semibold font-sans transition-all rounded-none cursor-pointer ${
                   lang === "en" ? "uppercase tracking-wider" : ""
                 } ${
                   isActive
@@ -450,13 +486,140 @@ function StoriesList() {
           <div className="text-center mt-16 pt-8 border-t border-border/40">
             <Button
               onClick={() => setVisibleCount((prev) => prev + 12)}
-              className="bg-background hover:bg-card text-foreground hover:text-primary border border-border hover:border-gold/50 font-sans uppercase tracking-[0.2em] text-xs h-12 px-8 rounded-none shadow-sm transition-all duration-300"
+              className="bg-background hover:bg-card text-foreground hover:text-primary border border-border hover:border-gold/50 font-sans uppercase tracking-[0.2em] text-xs h-12 px-8 rounded-none shadow-sm transition-all duration-300 min-h-[44px]"
             >
               {lang === "en" ? "Load More Stories" : "अधिक कहानियाँ लोड करें"}
             </Button>
           </div>
         )}
       </section>
+
+      {/* ── Mobile Filter Bottom Sheet Modal ── */}
+      <AnimatePresence>
+        {mobileFilterOpen && (
+          <div className="fixed inset-0 z-[99999] flex items-end justify-center lg:hidden">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileFilterOpen(false)}
+              className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", stiffness: 320, damping: 32 }}
+              className="relative z-10 w-full max-h-[85vh] bg-[#141414] border-t border-neutral-800 rounded-t-3xl p-6 overflow-y-auto space-y-5 text-white shadow-2xl"
+            >
+              <div className="flex items-center justify-between border-b border-neutral-800 pb-4">
+                <h3 className="font-display text-lg font-bold flex items-center gap-2">
+                  <SlidersHorizontal className="size-4 text-gold" />
+                  {lang === "en" ? "Filter & Sort Stories" : "फ़िल्टर एवं क्रमबद्ध करें"}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setMobileFilterOpen(false)}
+                  className="p-2 text-neutral-400 hover:text-white rounded-full bg-white/5 min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+                >
+                  <X className="size-5" />
+                </button>
+              </div>
+
+              {/* Filter Options inside Drawer */}
+              <div className="space-y-4 pt-2 font-sans">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase font-bold tracking-wider text-gold block">
+                    {lang === "en" ? "State / Region" : "राज्य / क्षेत्र"}
+                  </label>
+                  <select
+                    value={activeState}
+                    onChange={(e) => handleStateChange(e.target.value)}
+                    className="w-full h-12 px-4 bg-neutral-900 border border-neutral-800 text-white rounded-xl text-xs font-semibold outline-none"
+                  >
+                    <option value="All">{lang === "en" ? "All States" : "सभी राज्य"}</option>
+                    {states.map((st) => (
+                      <option key={st} value={st}>{translateStateName(st, lang)}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase font-bold tracking-wider text-gold block">
+                    {lang === "en" ? "Author" : "लेखक"}
+                  </label>
+                  <select
+                    value={activeAuthor}
+                    onChange={(e) => handleAuthorChange(e.target.value)}
+                    className="w-full h-12 px-4 bg-neutral-900 border border-neutral-800 text-white rounded-xl text-xs font-semibold outline-none"
+                  >
+                    <option value="All">{lang === "en" ? "All Authors" : "सभी लेखक"}</option>
+                    {authorsList.map((auth) => (
+                      <option key={auth} value={auth}>{auth}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase font-bold tracking-wider text-gold block">
+                    {lang === "en" ? "Tag / Topic" : "टैग"}
+                  </label>
+                  <select
+                    value={activeTag}
+                    onChange={(e) => handleTagChange(e.target.value)}
+                    className="w-full h-12 px-4 bg-neutral-900 border border-neutral-800 text-white rounded-xl text-xs font-semibold outline-none"
+                  >
+                    <option value="All">{lang === "en" ? "All Tags" : "सभी टैग"}</option>
+                    {tagsList.map((tag) => (
+                      <option key={tag} value={tag}>{tag}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase font-bold tracking-wider text-gold block">
+                    {lang === "en" ? "Sort Order" : "क्रम प्रकार"}
+                  </label>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => handleSortChange(e.target.value)}
+                    className="w-full h-12 px-4 bg-neutral-900 border border-neutral-800 text-white rounded-xl text-xs font-semibold outline-none"
+                  >
+                    <option value="newest">{lang === "en" ? "Sort: Newest" : "क्रम: नवीनतम"}</option>
+                    <option value="oldest">{lang === "en" ? "Sort: Oldest" : "क्रम: सबसे पुराना"}</option>
+                    <option value="views">{lang === "en" ? "Sort: Most Viewed" : "क्रम: सबसे लोकप्रिय"}</option>
+                    <option value="readTime">{lang === "en" ? "Sort: Reading Time" : "क्रम: पठन समय"}</option>
+                    <option value="alpha">{lang === "en" ? "Sort: Alphabetical" : "क्रम: वर्णमाला"}</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-neutral-800 flex gap-3">
+                <Button
+                  type="button"
+                  onClick={() => {
+                    handleStateChange("All");
+                    handleAuthorChange("All");
+                    handleTagChange("All");
+                    handleSortChange("newest");
+                  }}
+                  variant="outline"
+                  className="w-1/3 h-12 border-neutral-800 bg-neutral-950 text-neutral-400 hover:text-white text-xs font-bold uppercase rounded-xl"
+                >
+                  Reset
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => setMobileFilterOpen(false)}
+                  className="w-2/3 h-12 bg-primary text-primary-foreground font-bold text-xs uppercase rounded-xl"
+                >
+                  {lang === "en" ? `Apply (${filteredAndSorted.length})` : `लागू करें (${filteredAndSorted.length})`}
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       <StoryDNA />
       <YouMayAlsoLike />

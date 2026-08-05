@@ -345,7 +345,6 @@ function Contact() {
               {[
                 { icon: Mail, text: "indiastoryprojectmanager21@gmail.com" },
                 { icon: MapPin, text: "Bengaluru · Mumbai · Delhi" },
-                { icon: Phone, text: "+91 80 4567 8901" },
               ].map((item, i) => (
                 <span key={i} className="flex items-center gap-2">
                   <item.icon className="size-3.5 text-gold" />
@@ -547,12 +546,6 @@ function Contact() {
                       label: lang === "hi" ? "राष्ट्रीय कार्यालय" : "National Offices",
                       value: lang === "hi" ? "बेंगलुरु · मुंबई · नई दिल्ली" : "Bengaluru · Mumbai · New Delhi",
                       href: undefined,
-                    },
-                    {
-                      icon: Phone,
-                      label: lang === "hi" ? "फ़ोन हेल्पलाइन" : "Phone Helpline",
-                      value: "+91 80 4567 8901",
-                      href: "tel:+918045678901",
                     },
                   ].map((item, i) => (
                     <div

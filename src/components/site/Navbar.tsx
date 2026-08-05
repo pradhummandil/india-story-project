@@ -257,10 +257,11 @@ export function Navbar() {
         </div>
 
         {/* Mobile controls */}
-        <div className="flex md:hidden items-center gap-4">
+        <div className="flex md:hidden items-center gap-2 sm:gap-3">
           <button
+            type="button"
             onClick={openGlobalSearch}
-            className={`p-2 transition-colors duration-300 relative focus:outline-none cursor-pointer ${
+            className={`min-h-[44px] min-w-[44px] p-2 flex items-center justify-center transition-colors duration-300 relative focus:outline-none cursor-pointer ${
               isTransparent ? "text-white" : "text-foreground"
             }`}
             title="Search"
@@ -269,7 +270,8 @@ export function Navbar() {
           </button>
           <LanguageToggle />
           <button
-            className={`p-2 transition-colors duration-300 relative focus:outline-none ${
+            type="button"
+            className={`min-h-[44px] min-w-[44px] p-2 flex items-center justify-center transition-colors duration-300 relative focus:outline-none cursor-pointer ${
               isTransparent ? "text-white" : "text-foreground"
             }`}
             onClick={() => setOpen((v) => !v)}
