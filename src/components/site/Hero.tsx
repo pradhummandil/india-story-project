@@ -157,7 +157,25 @@ export function CinematicHero({
 
   const slide = slides[current];
   const title = lang === "hi" && slide.titleHi ? slide.titleHi : slide.title;
-  const excerpt = lang === "hi" && slide.excerptHi ? slide.excerptHi : slide.excerpt;
+  const rawExcerpt = lang === "hi" && slide.excerptHi ? slide.excerptHi : slide.excerpt;
+
+  // Strip CMS bureau prefixes and truncate to a clean teaser
+  const cleanExcerpt = (text: string | undefined, maxLen = 120): string => {
+    if (!text) return "";
+    // Remove bureau prefixes like "ISP Ahmedabad Bureau", "ISP Delhi Bureau", etc.
+    const cleaned = text
+      .replace(/^ISP\s+\w+\s+Bureau\s+/i, "")
+      .replace(/^ISP\s+Bureau\s+/i, "")
+      .replace(/\s*\[…\]\s*$/, "")
+      .replace(/\s*\[\.\.\.\]\s*$/, "")
+      .trim();
+    if (cleaned.length <= maxLen) return cleaned;
+    // Cut at last word boundary before maxLen
+    const cut = cleaned.slice(0, maxLen);
+    return cut.slice(0, cut.lastIndexOf(" ")) + "…";
+  };
+
+  const excerpt = cleanExcerpt(rawExcerpt);
   const readTime =
     typeof slide.readingTime === "number"
       ? `${slide.readingTime} min read`
@@ -191,9 +209,9 @@ export function CinematicHero({
             width="1920"
             height="1080"
           />
-          {/* Cinematic gradients */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/20 to-black/90 z-10" />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/15 to-transparent z-10" />
+          {/* Cinematic gradients — left-heavy so image on right stays visible */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/15 to-black/85 z-10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/20 to-transparent z-10" />
         </motion.div>
       </AnimatePresence>
 
@@ -288,10 +306,12 @@ export function CinematicHero({
               : `लेखक: ${slide.author || "आईएसपी एडिटोरियल"}`}
           </p>
 
-          {/* Excerpt */}
-          <p className="text-sm sm:text-base md:text-lg text-white/88 max-w-2xl leading-relaxed font-sans font-medium text-balance drop-shadow hidden sm:block">
-            {excerpt}
-          </p>
+          {/* Excerpt — clean teaser, max 2 lines */}
+          {excerpt && (
+            <p className="text-sm sm:text-base text-white/80 max-w-xl leading-relaxed font-sans font-normal drop-shadow hidden sm:block italic">
+              {excerpt}
+            </p>
+          )}
 
           {/* CTA */}
           <div className="flex flex-wrap items-center gap-4 pt-2">
