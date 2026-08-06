@@ -89,11 +89,33 @@ export function StoryCompanion() {
 
   // Load chat history from localStorage or set default greeting
   useEffect(() => {
-    const key = session ? `isp_chat_history_${session.user.id}` : "isp_chat_history_guest";
-    const saved = localStorage.getItem(key);
-    if (saved) {
+    const historyKey = session ? `isp_chat_history_${session.user.id}` : "isp_chat_history_guest";
+    const sessionsKey = session ? `isp_chatbot_sessions_${session.user.id}` : "isp_chatbot_sessions_guest";
+
+    const savedSessions = localStorage.getItem(sessionsKey);
+    const savedHistory = localStorage.getItem(historyKey);
+
+    if (savedSessions) {
       try {
-        const parsed = JSON.parse(saved);
+        const parsed = JSON.parse(savedSessions);
+        if (parsed.length > 0 && parsed[0].messages?.length > 0) {
+          setMessages(
+            parsed[0].messages.map((m: any) => ({
+              ...m,
+              timestamp: new Date(m.timestamp),
+            }))
+          );
+          setSuggestions(defaultSuggestions);
+          return;
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+
+    if (savedHistory) {
+      try {
+        const parsed = JSON.parse(savedHistory);
         setMessages(
           parsed.map((m: any) => ({
             ...m,
@@ -124,8 +146,46 @@ export function StoryCompanion() {
   };
 
   const saveChatHistory = (msgs: Message[]) => {
-    const key = session ? `isp_chat_history_${session.user.id}` : "isp_chat_history_guest";
-    localStorage.setItem(key, JSON.stringify(msgs));
+    const historyKey = session ? `isp_chat_history_${session.user.id}` : "isp_chat_history_guest";
+    const sessionsKey = session ? `isp_chatbot_sessions_${session.user.id}` : "isp_chatbot_sessions_guest";
+
+    localStorage.setItem(historyKey, JSON.stringify(msgs));
+
+    try {
+      const existing = localStorage.getItem(sessionsKey);
+      let sessionList: any[] = existing ? JSON.parse(existing) : [];
+
+      const firstUserMsg = msgs.find((m) => m.sender === "user");
+      const title = firstUserMsg
+        ? firstUserMsg.text.slice(0, 30) + "..."
+        : isHindi
+          ? "नई बातचीत"
+          : "New Chat";
+
+      if (sessionList.length === 0) {
+        sessionList = [
+          {
+            id: "session_widget",
+            title,
+            timestamp: new Date().toISOString(),
+            messages: msgs,
+          },
+        ];
+      } else {
+        sessionList[0] = {
+          ...sessionList[0],
+          title:
+            sessionList[0].title === "New Chat" || sessionList[0].title === "नई बातचीत"
+              ? title
+              : sessionList[0].title,
+          timestamp: new Date().toISOString(),
+          messages: msgs,
+        };
+      }
+      localStorage.setItem(sessionsKey, JSON.stringify(sessionList));
+    } catch {
+      /* ignore */
+    }
   };
 
   // Smart Auto-scroll without locking user scroll
@@ -293,11 +353,11 @@ export function StoryCompanion() {
           whileHover={{ scale: 1.08 }}
           whileTap={{ scale: 0.92 }}
           aria-label="Open India Story AI Assistant"
-          className="size-14 sm:size-15 rounded-full bg-[#121110] text-white flex items-center justify-center shadow-[0_10px_35px_rgba(0,0,0,0.4)] border-2 border-[#C9A227]/60 cursor-pointer relative min-h-[44px] min-w-[44px] overflow-hidden group"
+          className="size-14 sm:size-15 rounded-full bg-[#121110] text-white flex items-center justify-center shadow-[0_10px_35px_rgba(0,0,0,0.5)] border-2 border-white/60 cursor-pointer relative min-h-[44px] min-w-[44px] overflow-hidden group"
         >
-          {/* Glow Ring & Pulse */}
-          <span className="absolute inset-0 rounded-full bg-[#C9A227]/20 animate-ping opacity-75 pointer-events-none" />
-          <span className="absolute -inset-1 rounded-full bg-gradient-to-r from-[#9E1C20] via-[#C9A227] to-[#9E1C20] opacity-30 blur-md group-hover:opacity-75 transition-opacity" />
+          {/* Soft White Glow Ring & Pulse */}
+          <span className="absolute inset-0 rounded-full bg-white/30 animate-ping opacity-75 pointer-events-none" />
+          <span className="absolute -inset-1 rounded-full bg-gradient-to-r from-white/40 via-white/70 to-white/40 opacity-50 blur-lg group-hover:opacity-100 transition-opacity" />
 
           {/* Unread indicator */}
           {hasUnread && !isOpen && (

@@ -1,5 +1,6 @@
 import React from "react";
 import { Sparkles } from "lucide-react";
+import { useHorizontalScroll } from "@/lib/use-horizontal-scroll";
 
 interface SuggestionChipsProps {
   suggestions: string[];
@@ -7,10 +8,15 @@ interface SuggestionChipsProps {
 }
 
 export function SuggestionChips({ suggestions, onSelect }: SuggestionChipsProps) {
+  const scrollRef = useHorizontalScroll<HTMLDivElement>();
+
   if (!suggestions || suggestions.length === 0) return null;
 
   return (
-    <div className="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none whitespace-nowrap shrink-0 font-sans snap-x max-w-full">
+    <div
+      ref={scrollRef}
+      className="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none whitespace-nowrap shrink-0 font-sans snap-x max-w-full"
+    >
       {suggestions.map((s, idx) => (
         <button
           key={idx}

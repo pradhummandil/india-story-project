@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import type { Story } from "@/components/site/StoryCard";
 import { StoryDetail } from "@/components/site/StoryDetail";
 import { PremiumLoader } from "@/components/common/PremiumLoader";
+import { stories } from "@/lib/stories-data";
+import { ErrorExperience } from "@/components/common/error/ErrorExperience";
 
 const SITE_URL = "https://indiastoryproject.com";
 
@@ -37,17 +39,7 @@ function removeJsonLd() {
 
 export const Route = createFileRoute("/stories/$slug")({
   component: StoryDetailPage,
-  notFoundComponent: () => (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Story Not Found</h1>
-        <p className="text-muted-foreground mb-8">The story you're looking for doesn't exist.</p>
-        <a href="/stories" className="text-gold hover:text-saffron transition-colors">
-          Back to Stories
-        </a>
-      </div>
-    </div>
-  ),
+  notFoundComponent: () => <ErrorExperience type="404" />,
 });
 
 function StoryDetailPage() {
@@ -138,44 +130,58 @@ function StoryDetailPage() {
   }, [story]);
 
   useEffect(() => {
-    const loadStory = () => {
-      fetch(`/api/stories/${slug}`)
-        .then((r) => {
-          if (!r.ok) {
-            throw new Error("Story not found");
+    const loadStory = async () => {
+      const decodedSlug = decodeURIComponent(slug).trim();
+      const normalizedSlug = decodedSlug.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+
+      // 1. Attempt API fetch from server database
+      try {
+        const res = await fetch(`/api/stories/${encodeURIComponent(slug)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && (data.id || data.title)) {
+            setStory(data);
+            setError(null);
+            setLoading(false);
+            return;
           }
-          return r.json();
-        })
-        .then((data) => {
-          setStory(data);
-        })
-        .catch((err) => {
-          setError(err.message || "Failed to load story");
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+        }
+      } catch (err) {
+        /* ignore API network errors, fallback to client stories catalogue */
+      }
+
+      // 2. Fallback to client stories catalogue matching slug, id, normalized title, or raw decoded title
+      const localMatch = stories.find(
+        (s) =>
+          s.slug === slug ||
+          s.id === slug ||
+          s.slug === decodedSlug ||
+          s.slug === normalizedSlug ||
+          s.title.toLowerCase().replace(/[^a-z0-9]+/g, "-") === normalizedSlug ||
+          s.title.toLowerCase().trim() === decodedSlug.toLowerCase().trim()
+      );
+
+      if (localMatch) {
+        setStory(localMatch);
+        setError(null);
+      } else {
+        setError("Story not found");
+      }
+      setLoading(false);
     };
 
     setLoading(true);
     setError(null);
-    loadStory();
+    void loadStory();
 
     // Listen for live updates from admin
     const channel = new BroadcastChannel("isp-stories-updates");
     channel.onmessage = () => {
-      fetch(`/api/stories/${slug}`)
-        .then((r) => {
-          if (r.ok) return r.json();
-          throw new Error();
-        })
-        .then((data) => setStory(data))
-        .catch(console.error);
+      void loadStory();
     };
 
     return () => channel.close();
   }, [slug]);
-
 
   if (loading) {
     return <PremiumLoader />;

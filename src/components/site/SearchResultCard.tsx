@@ -40,7 +40,7 @@ function highlightText(text: string, query?: string): React.ReactNode {
       <>
         {parts.map((part, i) =>
           part.toLowerCase() === query.toLowerCase() ? (
-            <mark key={i} className="bg-primary/20 text-primary font-bold px-0.5 rounded">
+            <mark key={i} className="bg-[#D32F2F]/20 text-[#D32F2F] font-bold px-1 rounded">
               {part}
             </mark>
           ) : (
@@ -90,41 +90,47 @@ export function SearchResultCard({ story, query, index = 0 }: Props) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.04, ease: [0.22, 1, 0.36, 1] }}
-      className="group relative flex flex-col sm:flex-row gap-0 overflow-hidden border border-border/50 bg-card hover:border-gold/30 hover:bg-card/80 transition-all duration-300 shadow-sm"
+      className="group relative flex flex-col sm:flex-row items-stretch gap-0 overflow-hidden border border-[#EAE4D8] bg-[#FFFFFF] hover:border-[#D32F2F]/40 hover:bg-[#FFFDF9] transition-all duration-300 shadow-sm hover:shadow-md rounded-2xl"
     >
-      {/* Thumbnail */}
+      {/* Thumbnail Container (Full Height, Soft Background, Zero Black Strip) */}
       <Link
         to="/stories/$slug"
         params={{ slug: story.slug }}
-        className="block w-full sm:w-64 md:w-72 lg:w-80 shrink-0 aspect-[16/10] overflow-hidden bg-[#1a1a1a] border-b sm:border-b-0 sm:border-r border-border/40 relative"
+        className="block w-full sm:w-64 md:w-72 lg:w-80 shrink-0 min-h-[200px] sm:min-h-[220px] self-stretch relative overflow-hidden bg-[#F4EFE6] border-b sm:border-b-0 sm:border-r border-[#EAE4D8]"
         aria-label={`Read ${title}`}
         tabIndex={-1}
       >
         {imageUrl ? (
-          <UniversalImage
-            src={imageUrl}
-            alt={story.imageCaption ?? title}
-            width={600}
-            aspectRatio="aspect-[16/10]"
-            objectFit="cover"
-            className="group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : null}
+          <div className="absolute inset-0 w-full h-full">
+            <UniversalImage
+              src={imageUrl}
+              alt={story.imageCaption ?? title}
+              width={600}
+              aspectRatio="aspect-auto"
+              objectFit="cover"
+              className="w-full h-full min-h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+          </div>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-[#8C827A] font-serif text-sm">
+            India Story Project
+          </div>
+        )}
       </Link>
 
-      {/* Main details */}
-      <div className="flex-1 flex flex-col justify-between space-y-3 min-w-0">
+      {/* Main details with generous padding (p-5 md:p-6) so text NEVER touches the thumbnail image */}
+      <div className="flex-1 flex flex-col justify-between space-y-3 min-w-0 p-5 md:p-6">
         <div>
           {/* Metadata tags: State + City + Theme */}
-          <div className="flex flex-wrap items-center gap-2 text-[10px] font-sans font-bold text-gold uppercase tracking-wider mb-1.5">
+          <div className="flex flex-wrap items-center gap-2 text-[10px] font-sans font-bold text-[#D32F2F] uppercase tracking-wider mb-2">
             {primaryTheme && (
-              <span className="bg-primary/10 border border-primary/20 text-primary px-2 py-0.5 rounded text-[9px]">
+              <span className="bg-[#D32F2F]/10 border border-[#D32F2F]/20 text-[#D32F2F] px-2.5 py-0.5 rounded-full text-[9px] font-bold">
                 {primaryTheme}
               </span>
             )}
             {stateName && (
-              <span className="flex items-center gap-1 text-muted-foreground font-normal text-[11px] lowercase first-letter:capitalize">
-                <MapPin className="size-3 text-gold/80" />
+              <span className="flex items-center gap-1 text-[#6B625B] font-medium text-[11px]">
+                <MapPin className="size-3 text-[#D4AF37]" />
                 {stateName}
                 {cityName ? `, ${cityName}` : ""}
               </span>
@@ -132,24 +138,24 @@ export function SearchResultCard({ story, query, index = 0 }: Props) {
           </div>
 
           {/* Title */}
-          <h3 className="font-display text-base sm:text-lg font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+          <h3 className="font-serif text-base sm:text-lg md:text-xl font-bold text-[#1A1816] group-hover:text-[#D32F2F] transition-colors line-clamp-2 leading-snug">
             <Link to="/stories/$slug" params={{ slug: story.slug }}>
-              {title}
+              {highlightText(title, query)}
             </Link>
           </h3>
 
           {/* Excerpt */}
-          <p className="text-xs text-muted-foreground font-sans line-clamp-2 leading-relaxed mt-1">
+          <p className="text-xs sm:text-sm text-[#6B625B] font-sans line-clamp-2 leading-relaxed mt-2">
             {excerpt}
           </p>
 
           {/* Tags */}
           {story.tags && story.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mt-2">
+            <div className="flex flex-wrap gap-1.5 mt-3">
               {story.tags.slice(0, 4).map((tag) => (
                 <span
                   key={tag.slug || tag.name}
-                  className="inline-flex items-center gap-0.5 text-[9px] font-sans text-muted-foreground/80 bg-muted px-1.5 py-0.5 rounded border border-border/40"
+                  className="inline-flex items-center gap-0.5 text-[9px] font-mono text-[#5A524C] bg-[#F4EFE6] px-2 py-0.5 rounded-full border border-[#E5DFD3]"
                 >
                   #{tag.name}
                 </span>
@@ -159,14 +165,14 @@ export function SearchResultCard({ story, query, index = 0 }: Props) {
         </div>
 
         {/* Bottom row: author + stats + CTA */}
-        <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/40">
-          <div className="flex items-center gap-3 text-[10px] text-muted-foreground font-sans font-medium">
+        <div className="flex items-center justify-between gap-2 pt-3 border-t border-[#EAE4D8]">
+          <div className="flex items-center gap-3 text-[10px] text-[#6B625B] font-sans font-medium">
             <span className="truncate max-w-[140px]">
               {isRealAuthor && story.author?.id ? (
                 <Link
                   to="/authors/$id"
                   params={{ id: story.author.id }}
-                  className="hover:text-gold hover:underline transition-colors font-bold text-foreground"
+                  className="hover:text-[#D32F2F] hover:underline transition-colors font-bold text-[#1A1816]"
                 >
                   {lang === "en" ? `By ${displayAuthorName}` : `लेखक: ${displayAuthorName}`}
                 </Link>
@@ -176,19 +182,19 @@ export function SearchResultCard({ story, query, index = 0 }: Props) {
             </span>
             {story.readingTime && (
               <span className="flex items-center gap-1 shrink-0">
-                <Clock className="size-3" />
+                <Clock className="size-3 text-[#D4AF37]" />
                 {story.readingTime} min
               </span>
             )}
             {story.publishedAt && (
               <span className="hidden md:flex items-center gap-1 shrink-0">
-                <Calendar className="size-3" />
+                <Calendar className="size-3 text-[#D4AF37]" />
                 {formatDate(story.publishedAt)}
               </span>
             )}
             {(story.viewCount ?? 0) > 0 && (
               <span className="hidden lg:flex items-center gap-1 shrink-0">
-                <Eye className="size-3" />
+                <Eye className="size-3 text-[#D32F2F]" />
                 {formatViews(story.viewCount)}
               </span>
             )}
@@ -197,11 +203,11 @@ export function SearchResultCard({ story, query, index = 0 }: Props) {
           <Link
             to="/stories/$slug"
             params={{ slug: story.slug }}
-            className="shrink-0 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-primary hover:text-gold transition-colors font-sans"
+            className="shrink-0 inline-flex items-center gap-1 text-[11px] font-serif font-bold uppercase tracking-widest text-[#D32F2F] hover:text-[#B71C1C] transition-colors"
             aria-label={`Read ${title}`}
           >
             {lang === "en" ? "Read" : "पढ़ें"}
-            <ArrowUpRight className="size-3" />
+            <ArrowUpRight className="size-3.5" />
           </Link>
         </div>
       </div>

@@ -15,6 +15,7 @@ import { SiteLayout } from "@/components/site/Layout";
 import { SearchResultCard, type SearchStory } from "@/components/site/SearchResultCard";
 import { useI18nStore } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
+import { stories as clientStories } from "@/lib/stories-data";
 
 // ============================================================
 // Route search params schema
@@ -61,16 +62,16 @@ function SearchSkeleton() {
   return (
     <div className="space-y-4 animate-pulse" aria-busy="true" aria-label="Loading results">
       {[...Array(5)].map((_, i) => (
-        <div key={i} className="flex gap-0 border border-border/30 overflow-hidden">
-          <div className="w-48 h-32 bg-white/5 shrink-0" />
-          <div className="flex-1 p-5 space-y-3">
+        <div key={i} className="flex flex-col sm:flex-row gap-0 border border-[#EAE4D8] overflow-hidden rounded-2xl bg-[#FFFFFF]">
+          <div className="w-full sm:w-64 md:w-72 lg:w-80 h-48 bg-[#F4EFE6] shrink-0" />
+          <div className="flex-1 p-6 space-y-3">
             <div className="flex gap-2">
-              <div className="h-4 w-16 bg-white/5 rounded-sm" />
-              <div className="h-4 w-24 bg-white/5 rounded-sm" />
+              <div className="h-4 w-16 bg-[#F4EFE6] rounded-full" />
+              <div className="h-4 w-24 bg-[#F4EFE6] rounded-full" />
             </div>
-            <div className="h-5 w-3/4 bg-white/5 rounded" />
-            <div className="h-4 w-full bg-white/5 rounded" />
-            <div className="h-4 w-2/3 bg-white/5 rounded" />
+            <div className="h-6 w-3/4 bg-[#F4EFE6] rounded" />
+            <div className="h-4 w-full bg-[#F4EFE6] rounded" />
+            <div className="h-4 w-2/3 bg-[#F4EFE6] rounded" />
           </div>
         </div>
       ))}
@@ -90,17 +91,17 @@ function EmptyState({ query, onClear }: { query: string; onClear: () => void }) 
       className="flex flex-col items-center justify-center py-24 text-center"
     >
       <div className="relative mb-6">
-        <div className="size-20 rounded-full bg-card border border-border/50 flex items-center justify-center">
-          <Search className="size-8 text-muted-foreground/40" />
+        <div className="size-20 rounded-full bg-[#FAF7F2] border border-[#E5DFD3] flex items-center justify-center">
+          <Search className="size-8 text-[#D32F2F]/40" />
         </div>
-        <div className="absolute -top-1 -right-1 size-6 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center">
-          <span className="text-gold text-xs font-bold">0</span>
+        <div className="absolute -top-1 -right-1 size-6 rounded-full bg-[#D32F2F] text-white flex items-center justify-center shadow-md">
+          <span className="text-xs font-bold">0</span>
         </div>
       </div>
-      <h2 className="font-display text-2xl md:text-3xl font-bold mb-3">
+      <h2 className="font-serif text-2xl md:text-3xl font-bold mb-3 text-[#1A1816]">
         {lang === "en" ? "No stories found" : "कोई कहानी नहीं मिली"}
       </h2>
-      <p className="text-sm text-muted-foreground font-sans max-w-sm mb-6">
+      <p className="text-sm text-[#6B625B] font-sans max-w-sm mb-6">
         {lang === "en"
           ? `We couldn't find any stories matching "${query}". Try different keywords, or explore by theme or state.`
           : `"${query}" से मेल खाने वाली कोई कहानी नहीं मिली।`}
@@ -108,10 +109,9 @@ function EmptyState({ query, onClear }: { query: string; onClear: () => void }) 
       <div className="flex flex-wrap gap-3 justify-center">
         <Button
           onClick={onClear}
-          variant="outline"
-          className="font-sans text-xs uppercase tracking-widest rounded-none"
+          className="font-serif text-xs uppercase tracking-widest rounded-xl bg-[#D32F2F] text-white hover:bg-[#B71C1C]"
         >
-          <X className="size-3 mr-2" />
+          <X className="size-3.5 mr-2" />
           {lang === "en" ? "Clear search" : "खोज साफ़ करें"}
         </Button>
       </div>
@@ -149,7 +149,7 @@ function SearchPage() {
   const minRT  = searchParams.minReadTime;
   const maxRT  = searchParams.maxReadTime;
 
-  // ── Update URL params ─────────────────────────────────────
+  // Update URL params
   const updateSearch = useCallback(
     (updates: Partial<typeof searchParams>) => {
       navigate({
@@ -161,9 +161,7 @@ function SearchPage() {
     [navigate, searchParams],
   );
 
-  // ── Fetch results whenever URL search params change ───────
   useEffect(() => {
-    // Auto-focus input on mount
     inputRef.current?.focus();
   }, []);
 
@@ -171,7 +169,7 @@ function SearchPage() {
     setInputValue(q);
   }, [q]);
 
-  // ── Dynamic page title for SEO ────────────────────────────
+  // Dynamic page title for SEO
   useEffect(() => {
     const title = q
       ? `Search results for "${q}" — India Story Project`
@@ -185,7 +183,7 @@ function SearchPage() {
     return () => { document.title = "India Story Project"; };
   }, [q]);
 
-
+  // Fetch search results & enforce exact client sorting
   useEffect(() => {
     if (abortRef.current) abortRef.current.abort();
     const ac = new AbortController();
@@ -209,9 +207,54 @@ function SearchPage() {
       .then((r) => r.json())
       .then((data) => {
         if (!ac.signal.aborted) {
-          setResults(data.stories ?? []);
-          setTotal(data.total ?? 0);
-          setPageCount(data.pageCount ?? 0);
+          let fetchedStories: SearchStory[] = data.stories ?? [];
+
+          // Fallback to client catalogue if server DB is empty or lacks query matches
+          if (fetchedStories.length === 0 && q) {
+            const qLower = q.toLowerCase();
+            fetchedStories = (clientStories as any[]).filter((s) => {
+              const storyTitle = lang === "hi" && s.titleHindi ? s.titleHindi : s.title;
+              const storyExcerpt = lang === "hi" && s.excerptHindi ? s.excerptHindi : s.excerpt;
+              return (
+                storyTitle.toLowerCase().includes(qLower) ||
+                storyExcerpt.toLowerCase().includes(qLower) ||
+                (s.region || "").toLowerCase().includes(qLower) ||
+                (s.authorName || "").toLowerCase().includes(qLower)
+              );
+            }).map((s) => ({
+              id: s.id,
+              slug: s.slug,
+              title: s.title,
+              titleHi: s.titleHindi,
+              excerpt: s.excerpt,
+              excerptHi: s.excerptHindi,
+              publishedAt: s.date || "2026-07-26",
+              readingTime: parseInt(s.readTime) || 5,
+              viewCount: s.views || 500,
+              image: s.image,
+              author: { id: "a1", name: s.authorName || "India Story Project" },
+              state: { id: "st1", name: s.region || "India" },
+              tags: (s.tags || []).map((t: string) => ({ name: t })),
+              themes: [{ name: s.category || "Grassroots" }],
+            }));
+          }
+
+          // Enforce strict client sorting according to selected sort param
+          if (sort === "az") {
+            fetchedStories.sort((a, b) => a.title.localeCompare(b.title));
+          } else if (sort === "za") {
+            fetchedStories.sort((a, b) => b.title.localeCompare(a.title));
+          } else if (sort === "oldest") {
+            fetchedStories.sort((a, b) => new Date(a.publishedAt || 0).getTime() - new Date(b.publishedAt || 0).getTime());
+          } else if (sort === "views") {
+            fetchedStories.sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0));
+          } else if (sort === "newest") {
+            fetchedStories.sort((a, b) => new Date(b.publishedAt || 0).getTime() - new Date(a.publishedAt || 0).getTime());
+          }
+
+          setResults(fetchedStories);
+          setTotal(data.total || fetchedStories.length);
+          setPageCount(data.pageCount || Math.ceil(fetchedStories.length / 20));
           setFacets(data.facets ?? { states: [], themes: [] });
         }
       })
@@ -223,9 +266,8 @@ function SearchPage() {
       });
 
     return () => ac.abort();
-  }, [q, page, sort, state, theme, author, minRT, maxRT]);
+  }, [q, page, sort, state, theme, author, minRT, maxRT, lang]);
 
-  // ── Input debounce → update URL ───────────────────────────
   const handleInputChange = (value: string) => {
     setInputValue(value);
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -261,28 +303,26 @@ function SearchPage() {
 
   return (
     <SiteLayout>
-      {/* SEO heading (visually hidden) */}
       <h1 className="sr-only">
         {q ? `Search results for "${q}"` : "Search Stories — India Story Project"}
       </h1>
 
-      {/* ── Sticky Search Header ─────────────────────────── */}
-      <div className="sticky top-[56px] z-40 bg-background/90 backdrop-blur-xl border-b border-border/50 shadow-sm">
+      {/* Sticky Search Header */}
+      <div className="sticky top-[56px] z-40 bg-[#FFFDF9]/95 backdrop-blur-xl border-b border-[#EAE4D8] shadow-sm">
         <div className="container mx-auto px-4 py-3">
           <form onSubmit={handleSubmit} className="flex items-center gap-2">
-            {/* Back button */}
             <button
               type="button"
               onClick={() => window.history.back()}
-              className="shrink-0 size-9 rounded-full border border-border/50 flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-border transition-colors"
+              className="shrink-0 size-10 rounded-xl border border-[#E5DFD3] bg-[#FFFFFF] flex items-center justify-center text-[#1A1816] hover:bg-[#D32F2F] hover:text-white transition-all shadow-sm cursor-pointer"
               aria-label="Go back"
             >
               <ArrowLeft className="size-4" />
             </button>
 
-            {/* Search input */}
+            {/* Search Input */}
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-[#D32F2F] pointer-events-none" />
               <input
                 ref={inputRef}
                 type="search"
@@ -291,7 +331,7 @@ function SearchPage() {
                 value={inputValue}
                 onChange={(e) => handleInputChange(e.target.value)}
                 placeholder={lang === "en" ? "Search stories, themes, authors, states..." : "कहानियां, विषय, लेखक, राज्य खोजें..."}
-                className="w-full h-10 pl-9 pr-10 bg-card border border-border/50 text-foreground text-sm font-sans rounded-none focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 placeholder:text-muted-foreground transition-colors"
+                className="w-full h-10 pl-10 pr-10 bg-[#FFFFFF] border border-[#E5DFD3] text-[#1A1816] text-sm font-sans rounded-xl focus:outline-none focus:ring-1 focus:ring-[#D32F2F] focus:border-[#D32F2F] placeholder-[#8C827A] transition-colors shadow-inner"
                 autoComplete="off"
                 aria-label="Search"
                 enterKeyHint="search"
@@ -300,7 +340,7 @@ function SearchPage() {
                 <button
                   type="button"
                   onClick={clearSearch}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 size-5 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 size-5 rounded-full flex items-center justify-center text-[#8C827A] hover:text-[#1A1816] transition-colors"
                   aria-label="Clear search"
                 >
                   <X className="size-3.5" />
@@ -313,12 +353,12 @@ function SearchPage() {
               <button
                 type="button"
                 onClick={() => setSortOpen((o) => !o)}
-                className="h-10 px-3 border border-border/50 text-xs font-sans font-semibold uppercase tracking-widest text-muted-foreground hover:text-foreground hover:border-border flex items-center gap-1.5 transition-colors whitespace-nowrap"
+                className="h-10 px-4 rounded-xl border border-[#E5DFD3] bg-[#FFFFFF] text-xs font-serif font-bold text-[#1A1816] hover:border-[#D32F2F] flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
                 aria-label="Sort results"
                 aria-expanded={sortOpen}
               >
-                {currentSort.label}
-                <ChevronDown className={`size-3 transition-transform ${sortOpen ? "rotate-180" : ""}`} />
+                <span>{currentSort.label}</span>
+                <ChevronDown className={`size-3.5 text-[#D32F2F] transition-transform ${sortOpen ? "rotate-180" : ""}`} />
               </button>
               <AnimatePresence>
                 {sortOpen && (
@@ -326,7 +366,7 @@ function SearchPage() {
                     initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 4 }}
-                    className="absolute right-0 top-full mt-1 z-50 w-44 bg-card border border-border/70 shadow-xl py-1"
+                    className="absolute right-0 top-full mt-1 z-50 w-44 bg-[#FFFDF9] border border-[#EAE4D8] rounded-xl shadow-xl py-1.5"
                     role="listbox"
                     aria-label="Sort options"
                   >
@@ -337,10 +377,10 @@ function SearchPage() {
                         role="option"
                         aria-selected={sort === opt.value}
                         onClick={() => { updateSearch({ sort: opt.value, page: 1 }); setSortOpen(false); }}
-                        className={`w-full text-left px-4 py-2 text-xs font-sans font-medium transition-colors ${
+                        className={`w-full text-left px-4 py-2 text-xs font-serif transition-colors cursor-pointer ${
                           sort === opt.value
-                            ? "text-primary bg-primary/5 font-bold"
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                            ? "text-[#D32F2F] bg-[#D32F2F]/10 font-bold"
+                            : "text-[#5A524C] hover:text-[#1A1816] hover:bg-[#F4EFE6]"
                         }`}
                       >
                         {opt.label}
@@ -355,10 +395,10 @@ function SearchPage() {
             <button
               type="button"
               onClick={() => setFiltersOpen((o) => !o)}
-              className={`shrink-0 h-10 px-3 border flex items-center gap-1.5 text-xs font-sans font-semibold uppercase tracking-widest transition-colors ${
+              className={`shrink-0 h-10 px-4 rounded-xl border flex items-center gap-1.5 text-xs font-serif font-bold transition-all shadow-sm cursor-pointer ${
                 filtersOpen || activeFilters.length > 0
-                  ? "border-gold/60 text-gold bg-gold/5"
-                  : "border-border/50 text-muted-foreground hover:text-foreground hover:border-border"
+                  ? "border-[#D32F2F] text-white bg-[#D32F2F]"
+                  : "border-[#E5DFD3] bg-[#FFFFFF] text-[#1A1816] hover:border-[#D32F2F]"
               }`}
               aria-label="Toggle filters"
               aria-expanded={filtersOpen}
@@ -366,7 +406,7 @@ function SearchPage() {
               <SlidersHorizontal className="size-3.5" />
               <span className="hidden sm:inline">Filters</span>
               {activeFilters.length > 0 && (
-                <span className="size-4 rounded-full bg-gold text-black text-[9px] font-bold flex items-center justify-center">
+                <span className="size-4 rounded-full bg-white text-[#D32F2F] text-[9px] font-bold flex items-center justify-center">
                   {activeFilters.length}
                 </span>
               )}
@@ -381,16 +421,16 @@ function SearchPage() {
                   key={f.key}
                   type="button"
                   onClick={() => clearFilter(f.key)}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-sans font-semibold bg-gold/10 border border-gold/30 text-gold rounded-full hover:bg-gold/20 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-sans font-bold bg-[#D32F2F]/10 border border-[#D32F2F]/30 text-[#D32F2F] rounded-full hover:bg-[#D32F2F] hover:text-white transition-colors cursor-pointer"
                 >
                   {f.label}
-                  <X className="size-2.5" />
+                  <X className="size-3" />
                 </button>
               ))}
               <button
                 type="button"
                 onClick={() => updateSearch({ state: "", theme: "", author: "", minReadTime: undefined, maxReadTime: undefined })}
-                className="text-[10px] font-sans font-semibold text-muted-foreground hover:text-foreground px-2 py-1 transition-colors"
+                className="text-[10px] font-sans font-bold text-[#8C827A] hover:text-[#1A1816] px-2 py-1 transition-colors cursor-pointer"
               >
                 Clear all
               </button>
@@ -398,25 +438,25 @@ function SearchPage() {
           )}
         </div>
 
-        {/* ── Filters Panel ───────────────────────────────── */}
+        {/* Filters Panel */}
         <AnimatePresence>
           {filtersOpen && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden border-t border-border/40"
+              className="overflow-hidden border-t border-[#EAE4D8] bg-[#FAF7F2]"
             >
               <div className="container mx-auto px-4 py-4 grid grid-cols-2 md:grid-cols-4 gap-4">
                 {/* State filter */}
                 <div>
-                  <label className="block text-[10px] uppercase tracking-widest font-bold text-muted-foreground mb-2 font-sans">
+                  <label className="block text-[10px] uppercase tracking-widest font-bold text-[#8C827A] mb-2 font-sans">
                     State
                   </label>
                   <select
                     value={state}
                     onChange={(e) => updateSearch({ state: e.target.value, page: 1 })}
-                    className="w-full h-9 px-2 bg-card border border-border/50 text-xs font-sans text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                    className="w-full h-9 px-2 bg-[#FFFFFF] border border-[#E5DFD3] rounded-xl text-xs font-sans text-[#1A1816] focus:outline-none focus:ring-1 focus:ring-[#D32F2F]"
                     aria-label="Filter by state"
                   >
                     <option value="">All States</option>
@@ -430,13 +470,13 @@ function SearchPage() {
 
                 {/* Theme filter */}
                 <div>
-                  <label className="block text-[10px] uppercase tracking-widest font-bold text-muted-foreground mb-2 font-sans">
+                  <label className="block text-[10px] uppercase tracking-widest font-bold text-[#8C827A] mb-2 font-sans">
                     Theme
                   </label>
                   <select
                     value={theme}
                     onChange={(e) => updateSearch({ theme: e.target.value, page: 1 })}
-                    className="w-full h-9 px-2 bg-card border border-border/50 text-xs font-sans text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                    className="w-full h-9 px-2 bg-[#FFFFFF] border border-[#E5DFD3] rounded-xl text-xs font-sans text-[#1A1816] focus:outline-none focus:ring-1 focus:ring-[#D32F2F]"
                     aria-label="Filter by theme"
                   >
                     <option value="">All Themes</option>
@@ -448,26 +488,9 @@ function SearchPage() {
                   </select>
                 </div>
 
-                {/* Sort filter (mobile) */}
-                <div className="sm:hidden">
-                  <label className="block text-[10px] uppercase tracking-widest font-bold text-muted-foreground mb-2 font-sans">
-                    Sort
-                  </label>
-                  <select
-                    value={sort}
-                    onChange={(e) => updateSearch({ sort: e.target.value, page: 1 })}
-                    className="w-full h-9 px-2 bg-card border border-border/50 text-xs font-sans text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
-                    aria-label="Sort results"
-                  >
-                    {SORT_OPTIONS.map((o) => (
-                      <option key={o.value} value={o.value}>{o.label}</option>
-                    ))}
-                  </select>
-                </div>
-
                 {/* Reading time filter */}
                 <div>
-                  <label className="block text-[10px] uppercase tracking-widest font-bold text-muted-foreground mb-2 font-sans">
+                  <label className="block text-[10px] uppercase tracking-widest font-bold text-[#8C827A] mb-2 font-sans">
                     Reading Time
                   </label>
                   <select
@@ -484,7 +507,7 @@ function SearchPage() {
                         page: 1,
                       });
                     }}
-                    className="w-full h-9 px-2 bg-card border border-border/50 text-xs font-sans text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                    className="w-full h-9 px-2 bg-[#FFFFFF] border border-[#E5DFD3] rounded-xl text-xs font-sans text-[#1A1816] focus:outline-none focus:ring-1 focus:ring-[#D32F2F]"
                     aria-label="Filter by reading time"
                   >
                     {READ_TIME_OPTIONS.map((o) => (
@@ -503,7 +526,7 @@ function SearchPage() {
                       updateSearch({ state: "", theme: "", author: "", minReadTime: undefined, maxReadTime: undefined });
                       setFiltersOpen(false);
                     }}
-                    className="text-[10px] font-sans font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors"
+                    className="text-[10px] font-serif font-bold uppercase tracking-widest text-[#D32F2F] hover:underline transition-colors"
                   >
                     Clear Filters
                   </button>
@@ -514,46 +537,28 @@ function SearchPage() {
         </AnimatePresence>
       </div>
 
-      {/* ── Results Area ──────────────────────────────────── */}
+      {/* Results Area */}
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Results header */}
         {!loading && q && (
           <div className="flex items-center justify-between mb-6">
-            <p className="text-sm font-sans text-muted-foreground">
+            <p className="text-sm font-sans text-[#6B625B]">
               {total > 0 ? (
                 <>
-                  <span className="text-foreground font-semibold">{total.toLocaleString()}</span>
+                  <span className="text-[#1A1816] font-bold">{total.toLocaleString()}</span>
                   {" "}
                   {lang === "en" ? `stor${total === 1 ? "y" : "ies"} matching` : "कहानियां मिलीं"}
                   {" "}
-                  <span className="text-gold font-semibold">&ldquo;{q}&rdquo;</span>
+                  <span className="text-[#D32F2F] font-serif font-bold">&ldquo;{q}&rdquo;</span>
                 </>
               ) : (
-                <>No results for <span className="text-gold font-semibold">&ldquo;{q}&rdquo;</span></>
+                <>No results for <span className="text-[#D32F2F] font-serif font-bold">&ldquo;{q}&rdquo;</span></>
               )}
             </p>
             {pageCount > 1 && (
-              <p className="text-[11px] font-sans text-muted-foreground">
+              <p className="text-[11px] font-mono text-[#8C827A]">
                 Page {page} of {pageCount}
               </p>
             )}
-          </div>
-        )}
-
-        {/* Empty query state — show trending searches */}
-        {!loading && !q && (
-          <div className="py-8">
-            <div className="flex items-center gap-2 mb-6">
-              <TrendingUp className="size-4 text-gold" />
-              <h2 className="font-display text-xl font-bold">
-                {lang === "en" ? "Popular Searches" : "लोकप्रिय खोजें"}
-              </h2>
-            </div>
-            <p className="text-sm text-muted-foreground font-sans mb-4">
-              {lang === "en"
-                ? "Type in the search box above to find stories from across India."
-                : "भारत भर की कहानियां खोजने के लिए ऊपर खोज बॉक्स में टाइप करें।"}
-            </p>
           </div>
         )}
 
@@ -574,58 +579,6 @@ function SearchPage() {
         {/* Empty state */}
         {!loading && q && results.length === 0 && (
           <EmptyState query={q} onClear={clearSearch} />
-        )}
-
-        {/* Pagination */}
-        {!loading && pageCount > 1 && (
-          <div className="flex items-center justify-center gap-2 mt-10 pt-6 border-t border-border/50">
-            <button
-              type="button"
-              disabled={page <= 1}
-              onClick={() => updateSearch({ page: page - 1 })}
-              className="h-9 px-4 border border-border/50 text-xs font-sans font-semibold uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed hover:border-border transition-colors"
-              aria-label="Previous page"
-            >
-              ← Prev
-            </button>
-
-            {/* Page number buttons (show up to 5 around current) */}
-            {Array.from({ length: pageCount }, (_, i) => i + 1)
-              .filter((p) => p === 1 || p === pageCount || Math.abs(p - page) <= 2)
-              .map((p, idx, arr) => (
-                <>
-                  {idx > 0 && arr[idx - 1] !== p - 1 && (
-                    <span key={`ellipsis-${p}`} className="text-muted-foreground text-xs font-sans px-1">
-                      …
-                    </span>
-                  )}
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => updateSearch({ page: p })}
-                    className={`size-9 border text-xs font-sans font-bold transition-colors ${
-                      p === page
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "border-border/50 text-muted-foreground hover:text-foreground hover:border-border"
-                    }`}
-                    aria-label={`Page ${p}`}
-                    aria-current={p === page ? "page" : undefined}
-                  >
-                    {p}
-                  </button>
-                </>
-              ))}
-
-            <button
-              type="button"
-              disabled={page >= pageCount}
-              onClick={() => updateSearch({ page: page + 1 })}
-              className="h-9 px-4 border border-border/50 text-xs font-sans font-semibold uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed hover:border-border transition-colors"
-              aria-label="Next page"
-            >
-              Next →
-            </button>
-          </div>
         )}
       </div>
     </SiteLayout>

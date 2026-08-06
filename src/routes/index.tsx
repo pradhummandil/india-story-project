@@ -13,7 +13,10 @@ import {
   AlertCircle,
   Youtube,
   Play,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
+import { useHorizontalScroll } from "@/lib/use-horizontal-scroll";
 import { SiteLayout } from "@/components/site/Layout";
 import { StoryCard } from "@/components/site/StoryCard";
 import { YouTubeStoryCard, type YouTubeVideoItem } from "@/components/site/YouTubeStoryCard";
@@ -166,6 +169,134 @@ const CATEGORY_DEFS = [
 
 // Newsletter subscribe state
 type NewsletterStatus = "idle" | "loading" | "success" | "error";
+
+function ThematicExplorerContainer({ lang, commonText }: { lang: string; commonText: any }) {
+  const scrollRef = useHorizontalScroll<HTMLDivElement>();
+
+  const scrollLeft = () => {
+    scrollRef.current?.scrollBy({ left: -320, behavior: "smooth" });
+  };
+  const scrollRight = () => {
+    scrollRef.current?.scrollBy({ left: 320, behavior: "smooth" });
+  };
+
+  return (
+    <section className="container mx-auto px-6 py-12 md:py-16 border-b border-border/70">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+        <div>
+          <p className="text-xs uppercase tracking-[0.25em] font-sans font-bold text-gold mb-2">
+            {lang === "en" ? "Thematic Explorer" : "विषय-आधारित अन्वेषक"}
+          </p>
+          <RevealHeading as="h2" className="font-display text-3xl md:text-5xl font-bold">
+            {commonText.exploreByTheme}
+          </RevealHeading>
+        </div>
+
+        {/* Scroll Controls for Desktop */}
+        <div className="hidden md:flex items-center gap-2">
+          <button
+            onClick={scrollLeft}
+            className="p-2.5 rounded-full border border-border bg-card hover:bg-gold/10 hover:border-gold/60 text-foreground transition-colors cursor-pointer"
+            aria-label="Scroll left"
+          >
+            <ChevronLeft className="size-4" />
+          </button>
+          <button
+            onClick={scrollRight}
+            className="p-2.5 rounded-full border border-border bg-card hover:bg-gold/10 hover:border-gold/60 text-foreground transition-colors cursor-pointer"
+            aria-label="Scroll right"
+          >
+            <ChevronRight className="size-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Desktop: horizontal scroll-snap with mouse wheel & drag support. Mobile: 2-column grid */}
+      <div
+        ref={scrollRef}
+        className="hidden md:flex gap-5 overflow-x-auto pb-4 scrollbar-none snap-x snap-mandatory"
+      >
+        {CATEGORY_DEFS.map((cat, i) => {
+          const displayTitle = lang === "hi" ? cat.title.hi : cat.title.en;
+          const displayDesc = lang === "hi" ? cat.desc.hi : cat.desc.en;
+          return (
+            <motion.div
+              key={cat.id}
+              initial={{ opacity: 0, scale: 0.96 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: i * 0.05 }}
+              className="shrink-0 snap-start w-[260px]"
+            >
+              {/* 3D tilt on video cards */}
+              <TiltCard intensity={7} className="group relative aspect-[3/4] overflow-hidden border border-border/40 bg-black cursor-pointer hover:border-gold/60 rounded-2xl shadow-sm">
+                <video
+                  src={cat.video}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="absolute inset-0 w-full h-full object-cover filter saturate-[0.85] brightness-[0.75] group-hover:scale-105 group-hover:brightness-[0.9] transition-all duration-[1s] ease-out pointer-events-none"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent z-10 pointer-events-none" />
+                <div className="absolute inset-0 p-5 flex flex-col justify-end z-20">
+                  <h3 className="font-display text-2xl text-white font-bold tracking-tight mb-1.5 group-hover:text-gold transition-colors duration-300 drop-shadow-md">
+                    {displayTitle}
+                  </h3>
+                  <motion.p
+                    className="text-[10px] sm:text-xs text-white/85 font-sans leading-relaxed line-clamp-2"
+                    initial={{ opacity: 0, y: 4 }}
+                    whileHover={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {displayDesc}
+                  </motion.p>
+                  <Link
+                    to="/stories"
+                    search={{ category: cat.id }}
+                    className="absolute inset-0 z-30"
+                    aria-label={`Explore ${displayTitle} stories`}
+                  />
+                </div>
+              </TiltCard>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Mobile: 2-column grid fallback */}
+      <div className="md:hidden grid grid-cols-2 gap-4">
+        {CATEGORY_DEFS.map((cat, i) => {
+          const displayTitle = lang === "hi" ? cat.title.hi : cat.title.en;
+          return (
+            <motion.div
+              key={cat.id}
+              initial={{ opacity: 0, scale: 0.96 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: i * 0.05 }}
+              className="group relative aspect-[3/4] overflow-hidden border border-border/40 bg-black cursor-pointer shadow-sm hover:border-gold/60 rounded-2xl"
+            >
+              <video
+                src={cat.video}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover filter saturate-[0.85] brightness-[0.75] transition-all duration-[1s] ease-out pointer-events-none"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent z-10 pointer-events-none" />
+              <div className="absolute inset-0 p-4 flex flex-col justify-end z-20">
+                <h3 className="font-display text-xl text-white font-bold tracking-tight mb-1 group-hover:text-gold transition-colors duration-300">{displayTitle}</h3>
+                <Link to="/stories" search={{ category: cat.id }} className="absolute inset-0 z-30" aria-label={`Explore ${displayTitle} stories`} />
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
 
 function Home() {
   const [email, setEmail] = useState("");
@@ -553,98 +684,7 @@ function Home() {
           </section>
 
           {/* ── 11. STORIES BY CATEGORY (Thematic Explorer) ── */}
-          <section className="container mx-auto px-6 py-12 md:py-16 border-b border-border/70">
-            <div className="text-center mb-10 md:mb-12">
-              <p className="text-xs uppercase tracking-[0.25em] font-sans font-bold text-gold mb-3">
-                {lang === "en" ? "Thematic Explorer" : "विषय-आधारित अन्वेषक"}
-              </p>
-              <RevealHeading as="h2" className="font-display text-3xl md:text-5xl font-bold">
-                {commonText.exploreByTheme}
-              </RevealHeading>
-              <div className="w-12 h-[1px] bg-primary mx-auto mt-4" />
-            </div>
-
-            {/* Desktop: horizontal scroll-snap. Mobile: 2-column grid */}
-            <div className="hidden md:flex gap-5 overflow-x-auto pb-4 scrollbar-none snap-x snap-mandatory">
-              {CATEGORY_DEFS.map((cat, i) => {
-                const displayTitle = lang === "hi" ? cat.title.hi : cat.title.en;
-                const displayDesc = lang === "hi" ? cat.desc.hi : cat.desc.en;
-                return (
-                  <motion.div
-                    key={cat.id}
-                    initial={{ opacity: 0, scale: 0.96 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: i * 0.05 }}
-                    className="shrink-0 snap-start w-[260px]"
-                  >
-                    {/* 3D tilt on video cards */}
-                    <TiltCard intensity={7} className="group relative aspect-[3/4] overflow-hidden border border-border/40 bg-black cursor-pointer hover:border-gold/60 rounded-2xl shadow-sm">
-                      <video
-                        src={cat.video}
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                        className="absolute inset-0 w-full h-full object-cover filter saturate-[0.85] brightness-[0.75] group-hover:scale-105 group-hover:brightness-[0.9] transition-all duration-[1s] ease-out pointer-events-none"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent z-10 pointer-events-none" />
-                      <div className="absolute inset-0 p-5 flex flex-col justify-end z-20">
-                        <h3 className="font-display text-2xl text-white font-bold tracking-tight mb-1.5 group-hover:text-gold transition-colors duration-300 drop-shadow-md">
-                          {displayTitle}
-                        </h3>
-                        <motion.p
-                          className="text-[10px] sm:text-xs text-white/85 font-sans leading-relaxed line-clamp-2"
-                          initial={{ opacity: 0, y: 4 }}
-                          whileHover={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          {displayDesc}
-                        </motion.p>
-                        <Link
-                          to="/stories"
-                          search={{ category: cat.id }}
-                          className="absolute inset-0 z-30"
-                          aria-label={`Explore ${displayTitle} stories`}
-                        />
-                      </div>
-                    </TiltCard>
-                  </motion.div>
-                );
-              })}
-            </div>
-
-            {/* Mobile: 2-column grid fallback */}
-            <div className="md:hidden grid grid-cols-2 gap-4">
-              {CATEGORY_DEFS.map((cat, i) => {
-                const displayTitle = lang === "hi" ? cat.title.hi : cat.title.en;
-                return (
-                  <motion.div
-                    key={cat.id}
-                    initial={{ opacity: 0, scale: 0.96 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: i * 0.05 }}
-                    className="group relative aspect-[3/4] overflow-hidden border border-border/40 bg-black cursor-pointer shadow-sm hover:border-gold/60 rounded-2xl"
-                  >
-                    <video
-                      src={cat.video}
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      className="absolute inset-0 w-full h-full object-cover filter saturate-[0.85] brightness-[0.75] transition-all duration-[1s] ease-out pointer-events-none"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent z-10 pointer-events-none" />
-                    <div className="absolute inset-0 p-4 flex flex-col justify-end z-20">
-                      <h3 className="font-display text-xl text-white font-bold tracking-tight mb-1 group-hover:text-gold transition-colors duration-300">{displayTitle}</h3>
-                      <Link to="/stories" search={{ category: cat.id }} className="absolute inset-0 z-30" aria-label={`Explore ${displayTitle} stories`} />
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </section>
+          <ThematicExplorerContainer lang={lang} commonText={commonText} />
 
           {/* ── 12. PLATFORM IMPACT NUMBERS ── */}
           <ImpactNumbers />

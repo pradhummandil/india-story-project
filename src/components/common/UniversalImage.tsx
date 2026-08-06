@@ -33,36 +33,43 @@ export const UniversalImage = React.memo(function UniversalImage({
   const [error, setError] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
-  // Check if image is already cached/complete on mount
+  const hasValidSrc = Boolean(src && typeof src === "string" && src.trim() !== "" && !error);
+
   useEffect(() => {
+    setError(false);
+    setLoaded(false);
     if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
       setLoaded(true);
     }
   }, [src]);
 
-  const primarySrc = src && !error ? getOptimizedImageUrl(src, width) : fallbackSrc;
+  const primarySrc = hasValidSrc && src ? getOptimizedImageUrl(src, width) : fallbackSrc;
 
   const handleError = () => {
     setError(true);
     setLoaded(true);
   };
 
-  const finalSrc = error || !src ? fallbackSrc : primarySrc;
+  const finalSrc = hasValidSrc ? primarySrc : fallbackSrc;
+  const isFallback = !hasValidSrc;
 
-  const fitClass =
-    objectFit === "contain"
-      ? "object-contain object-center bg-black/90"
+  const fitClass = isFallback
+    ? "object-contain object-center p-6 bg-black"
+    : objectFit === "contain"
+      ? "object-contain object-center bg-black"
       : objectFit === "fill"
         ? "object-fill"
         : "object-cover object-center";
 
   return (
     <div
-      className={`relative overflow-hidden bg-muted/40 ${aspectRatio} ${containerClassName}`}
+      className={`relative overflow-hidden ${isFallback ? "bg-black" : "bg-[#14141A]"} ${aspectRatio} ${containerClassName}`}
     >
-      {/* Background placeholder while image is fetching */}
-      {!loaded && (
-        <div className="absolute inset-0 bg-muted/60 animate-pulse pointer-events-none z-0" />
+      {/* Black Background Placeholder while image is loading */}
+      {!loaded && !isFallback && (
+        <div className="absolute inset-0 bg-black/80 animate-pulse pointer-events-none z-0 flex items-center justify-center">
+          <img src={fallbackSrc} alt="ISP Logo" className="w-16 h-16 object-contain opacity-50" />
+        </div>
       )}
 
       <img
@@ -72,8 +79,9 @@ export const UniversalImage = React.memo(function UniversalImage({
         loading={loading}
         decoding="async"
         onLoad={() => setLoaded(true)}
-        className={`w-full h-full ${fitClass} transition-opacity duration-250 ease-out ${
-          loaded ? "opacity-100" : "opacity-0"
+        onError={handleError}
+        className={`w-full h-full ${fitClass} transition-opacity duration-300 ease-out ${
+          loaded || isFallback ? "opacity-100" : "opacity-0"
         } ${className}`}
         {...props}
       />

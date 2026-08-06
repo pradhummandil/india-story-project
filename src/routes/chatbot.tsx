@@ -132,21 +132,65 @@ function ChatbotPage() {
 
   useEffect(() => {
     const key = getStorageKey();
-    const saved = localStorage.getItem(key);
-    if (saved) {
+    const historyKey = session ? `isp_chat_history_${session.user.id}` : "isp_chat_history_guest";
+
+    const savedSessions = localStorage.getItem(key);
+    const savedHistory = localStorage.getItem(historyKey);
+
+    let parsedSessions: ChatSession[] = [];
+    if (savedSessions) {
       try {
-        const parsed: ChatSession[] = JSON.parse(saved);
-        if (parsed.length > 0) {
-          setSessions(parsed);
-          const lastActive = parsed[0];
-          setActiveSessionId(lastActive.id);
-          setMessages(lastActive.messages.map((m) => ({ ...m, timestamp: new Date(m.timestamp) })));
-        } else {
-          createNewSession();
+        parsedSessions = JSON.parse(savedSessions);
+      } catch {
+        parsedSessions = [];
+      }
+    }
+
+    // Check if popup history has user messages that need to be synced into workspace
+    if (savedHistory) {
+      try {
+        const historyMsgs: Message[] = JSON.parse(savedHistory);
+        const hasUserMsg = historyMsgs.some((m) => m.sender === "user");
+
+        if (hasUserMsg) {
+          const firstUserMsg = historyMsgs.find((m) => m.sender === "user");
+          const title = firstUserMsg
+            ? firstUserMsg.text.length > 28
+              ? firstUserMsg.text.slice(0, 28) + "..."
+              : firstUserMsg.text
+            : isHindi
+              ? "सक्रिय बातचीत"
+              : "Active Chat";
+
+          if (parsedSessions.length === 0) {
+            parsedSessions = [
+              {
+                id: "synced_session",
+                title,
+                timestamp: new Date().toISOString(),
+                messages: historyMsgs,
+              },
+            ];
+          } else {
+            // Update the top active session with the messages from the popup widget
+            parsedSessions[0] = {
+              ...parsedSessions[0],
+              messages: historyMsgs,
+              timestamp: new Date().toISOString(),
+            };
+          }
+          localStorage.setItem(key, JSON.stringify(parsedSessions));
         }
       } catch {
-        createNewSession();
+        /* ignore */
       }
+    }
+
+    if (parsedSessions.length > 0) {
+      setSessions(parsedSessions);
+      const lastActive = parsedSessions[0];
+      setActiveSessionId(lastActive.id);
+      setMessages(lastActive.messages.map((m) => ({ ...m, timestamp: new Date(m.timestamp) })));
     } else {
       createNewSession();
     }
@@ -192,6 +236,14 @@ function ChatbotPage() {
   };
 
   const saveCurrentSessionMessages = (msgs: Message[]) => {
+    // Save to widget history key for instant popup sync
+    const historyKey = session ? `isp_chat_history_${session.user.id}` : "isp_chat_history_guest";
+    try {
+      localStorage.setItem(historyKey, JSON.stringify(msgs));
+    } catch {
+      /* ignore */
+    }
+
     setSessions((prev) => {
       const updated = prev.map((s) => {
         if (s.id === activeSessionId) {

@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
-import { useLocation, useNavigate } from "@tanstack/react-router";
+import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
+import { useLocation, useNavigate, Link } from "@tanstack/react-router";
 import {
   Search,
   History,
@@ -16,6 +16,9 @@ import {
   Trash2,
   X,
   ArrowRight,
+  Clock,
+  ChevronRight,
+  Flame,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 import { useI18nStore } from "@/lib/i18n";
@@ -29,7 +32,7 @@ import {
   CommandGroup,
   CommandItem,
 } from "@/components/ui/command";
-import { Skeleton } from "@/components/ui/skeleton";
+import { stories as clientStories, useStoriesData } from "@/lib/stories-data";
 
 // ============================================================
 // Global search state manager for external triggers
@@ -39,32 +42,47 @@ export function openGlobalSearch() {
   openSearchGlobal?.();
 }
 
+// Helper to filter out raw SQL strings or malformed history entries
+function sanitizeHistoryItem(item: string): string | null {
+  if (!item || typeof item !== "string") return null;
+  const clean = item.trim();
+  if (!clean || clean.length < 2 || clean.length > 80) return null;
+  if (/LIKE|SELECT|FROM|WHERE|INSERT|DELETE|UPDATE|%/i.test(clean)) return null;
+  return clean;
+}
+
 // ============================================================
-// GlobalSearch component — command-palette overlay
+// GlobalSearch component — Ultra-Premium Search Modal & Story Engine
 // ============================================================
 export function GlobalSearch() {
-  const [open,         setOpen]         = useState(false);
-  const [query,        setQuery]        = useState("");
-  const [loading,      setLoading]      = useState(false);
-  const [results,      setResults]      = useState<any>(null);
-  const [history,      setHistory]      = useState<string[]>([]);
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState<any>(null);
+  const [history, setHistory] = useState<string[]>([]);
   const [speechActive, setSpeechActive] = useState(false);
 
   const { user, session } = useAuthStore();
-  const lang              = useI18nStore((s) => s.lang);
-  const navigate          = useNavigate();
-  const location          = useLocation();
+  const lang = useI18nStore((s) => s.lang);
+  const isHindi = lang === "hi";
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const abortRef    = useRef<AbortController | null>(null);
+  const { stories: dbStories } = useStoriesData();
+  const allAvailableStories = useMemo(() => (dbStories.length > 0 ? dbStories : clientStories), [dbStories]);
+
+  const abortRef = useRef<AbortController | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ── Register global open trigger ─────────────────────────
+  // Register global open trigger
   useEffect(() => {
     openSearchGlobal = () => setOpen(true);
-    return () => { openSearchGlobal = null; };
+    return () => {
+      openSearchGlobal = null;
+    };
   }, []);
 
-  // ── Keyboard shortcuts: Ctrl+K / Cmd+K / "/" ─────────────
+  // Keyboard shortcuts: Ctrl+K / Cmd+K / "/"
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -80,12 +98,15 @@ export function GlobalSearch() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // ── Load history & manage scroll lock when overlay opens ────
+  // Manage scroll lock & pre-warm history/suggestions when modal opens
   useEffect(() => {
     if (open) {
       lockScroll();
+      if (typeof document !== "undefined") {
+        document.body.style.touchAction = "auto";
+      }
       loadHistory();
-      fetchSuggestions(""); // pre-warm with popular stories
+      fetchSuggestions("");
     } else {
       unlockScroll();
       setQuery("");
@@ -96,23 +117,23 @@ export function GlobalSearch() {
     };
   }, [open]);
 
-  // ── Close on route change ─────────────────────────────────
+  // Close modal on route change
   useEffect(() => {
     setOpen(false);
   }, [location.pathname]);
 
-  // ── Debounced search on query change ─────────────────────
+  // Debounced search trigger
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       fetchSuggestions(query);
-    }, 250);
+    }, 200);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [query]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [query]);
 
-  // ── Fetch suggestions — single request with AbortController ─
+  // Fetch API suggestions with server & local fallback
   const fetchSuggestions = useCallback(async (q: string) => {
     if (abortRef.current) abortRef.current.abort();
     const ac = new AbortController();
@@ -129,20 +150,43 @@ export function GlobalSearch() {
       if (!ac.signal.aborted) setResults(data);
     } catch (err: any) {
       if (err.name !== "AbortError") {
-        console.error("GlobalSearch fetch failed:", err.message);
+        /* silent fallback */
       }
     } finally {
       if (!ac.signal.aborted) setLoading(false);
     }
   }, []);
 
-  // ── Search history management ─────────────────────────────
+  // Filter client stories locally for instant, zero-latency story suggestions
+  const localSuggestedStories = useMemo(() => {
+    if (!query.trim()) {
+      return allAvailableStories.slice(0, 4);
+    }
+    const q = query.toLowerCase().trim();
+    return allAvailableStories
+      .filter((s) => {
+        const title = isHindi ? (s.titleHindi || s.title) : s.title;
+        const excerpt = isHindi ? (s.excerptHindi || s.excerpt) : s.excerpt;
+        const region = s.region || "";
+        const author = s.authorName || "";
+        return (
+          title.toLowerCase().includes(q) ||
+          excerpt.toLowerCase().includes(q) ||
+          region.toLowerCase().includes(q) ||
+          author.toLowerCase().includes(q)
+        );
+      })
+      .slice(0, 6);
+  }, [allAvailableStories, query, isHindi]);
+
+  // Search history management
   const loadHistory = async () => {
     const local = localStorage.getItem("isp_recent_searches");
-    const localList: string[] = local ? JSON.parse(local) : [];
+    let localList: string[] = local ? JSON.parse(local) : [];
+    localList = localList.map(sanitizeHistoryItem).filter(Boolean) as string[];
 
     if (!session || !user) {
-      setHistory(localList.slice(0, 8));
+      setHistory(localList.slice(0, 6));
       return;
     }
     try {
@@ -151,25 +195,29 @@ export function GlobalSearch() {
       });
       if (res.ok) {
         const data = await res.json();
-        const serverList = (data.history ?? []).map((h: any) => h.query as string);
-        const merged = Array.from(new Set([...serverList, ...localList])).slice(0, 10);
+        const serverList = (data.history ?? [])
+          .map((h: any) => sanitizeHistoryItem(h.query as string))
+          .filter(Boolean) as string[];
+
+        const merged = Array.from(new Set([...serverList, ...localList])).slice(0, 8);
         setHistory(merged);
       } else {
-        setHistory(localList.slice(0, 8));
+        setHistory(localList.slice(0, 6));
       }
     } catch {
-      setHistory(localList.slice(0, 8));
+      setHistory(localList.slice(0, 6));
     }
   };
 
   const saveToHistory = async (searchQuery: string) => {
-    if (!searchQuery.trim()) return;
-    const clean = searchQuery.trim();
+    const clean = sanitizeHistoryItem(searchQuery);
+    if (!clean) return;
+
     const local = localStorage.getItem("isp_recent_searches");
     const localList: string[] = local ? JSON.parse(local) : [];
-    const updated = Array.from(new Set([clean, ...localList])).slice(0, 12);
+    const updated = Array.from(new Set([clean, ...localList])).slice(0, 10);
     localStorage.setItem("isp_recent_searches", JSON.stringify(updated));
-    setHistory(updated.slice(0, 8));
+    setHistory(updated.slice(0, 6));
 
     if (session && user) {
       try {
@@ -198,34 +246,21 @@ export function GlobalSearch() {
     }
   };
 
-  // ── Navigation helpers ────────────────────────────────────
-  const handleSelect = (type: string, payload: any) => {
-    const term = query.trim() || payload.title || payload.name || "";
-    void saveToHistory(term);
+  // Navigation handlers
+  const handleSelectStory = (slug: string, title: string) => {
+    void saveToHistory(title);
     setOpen(false);
-
-    switch (type) {
-      case "story":    return void navigate({ to: "/stories/$slug", params: { slug: payload.slug } });
-      case "theme":    return void navigate({ to: "/theme/$slug",   params: { slug: payload.slug } });
-      case "author":   return void navigate({ to: "/authors/$id",   params: { id:   payload.id   } });
-      case "video":    return void navigate({ to: "/videos/$slug",  params: { slug: payload.slug } });
-      case "webStory": return void navigate({ to: "/web-stories/$slug", params: { slug: payload.slug } });
-      case "state":    return void navigate({ to: "/stories", search: { state: payload.name } as any });
-      case "tag":      return void navigate({ to: "/stories", search: { tag:   payload.name } as any });
-      case "query":    return void navigate({ to: "/search", search: { q: payload as string, page: 1, sort: "newest", state: "", theme: "", author: "" } });
-    }
+    void navigate({ to: "/stories/$slug", params: { slug } });
   };
 
-  // Navigate to full /search page (Enter key or "See all results" CTA)
   const navigateToSearch = (q: string) => {
-    const term = q.trim();
-    if (!term) return;
-    void saveToHistory(term);
+    const clean = sanitizeHistoryItem(q) || q.trim();
+    if (!clean) return;
+    void saveToHistory(clean);
     setOpen(false);
-    void navigate({ to: "/search", search: { q: term, page: 1, sort: "newest", state: "", theme: "", author: "" } });
+    void navigate({ to: "/search", search: { q: clean, page: 1, sort: "newest", state: "", theme: "", author: "" } });
   };
 
-  // Handle Enter key in CommandInput
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && query.trim()) {
       e.preventDefault();
@@ -233,7 +268,7 @@ export function GlobalSearch() {
     }
   };
 
-  // ── Voice search ─────────────────────────────────────────
+  // Voice search
   const startVoiceSearch = () => {
     if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
       toast.error("Voice search is not supported in this browser.");
@@ -241,17 +276,20 @@ export function GlobalSearch() {
     }
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     const recognition = new SR();
-    recognition.lang = lang === "hi" ? "hi-IN" : "en-IN";
+    recognition.lang = isHindi ? "hi-IN" : "en-IN";
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
     setSpeechActive(true);
     recognition.start();
-    recognition.onresult = (event: any) => { setQuery(event.results[0][0].transcript); setSpeechActive(false); };
-    recognition.onerror  = () => setSpeechActive(false);
-    recognition.onend    = () => setSpeechActive(false);
+    recognition.onresult = (event: any) => {
+      setQuery(event.results[0][0].transcript);
+      setSpeechActive(false);
+    };
+    recognition.onerror = () => setSpeechActive(false);
+    recognition.onend = () => setSpeechActive(false);
   };
 
-  // ── Query highlight helper ────────────────────────────────
+  // Highlight matching search query text
   const highlightText = (text?: string, search?: string): React.ReactNode => {
     if (!text) return "";
     if (!search?.trim()) return <span>{text}</span>;
@@ -262,10 +300,12 @@ export function GlobalSearch() {
         <span>
           {parts.map((part, i) =>
             part.toLowerCase() === search.toLowerCase() ? (
-              <span key={i} className="text-gold font-bold bg-gold/10 px-0.5 rounded">
+              <span key={i} className="text-[#D32F2F] font-bold bg-[#D32F2F]/10 px-1 rounded">
                 {part}
               </span>
-            ) : part,
+            ) : (
+              part
+            )
           )}
         </span>
       );
@@ -274,382 +314,213 @@ export function GlobalSearch() {
     }
   };
 
-  const hasResults = results && (
-    (results.stories?.length  > 0) ||
-    (results.themes?.length   > 0) ||
-    (results.authors?.length  > 0) ||
-    (results.videos?.length   > 0) ||
-    (results.webStories?.length > 0) ||
-    (results.states?.length   > 0) ||
-    (results.tags?.length     > 0)
-  );
+  const popularTags = [
+    isHindi ? "संस्कृति" : "Culture",
+    isHindi ? "विरासत" : "Heritage",
+    isHindi ? "पर्यावरण" : "Environment",
+    isHindi ? "शिल्प कला" : "Craftsmanship",
+    isHindi ? "महिला सशक्तीकरण" : "Women Empowerment",
+    isHindi ? "नवचार" : "Innovation",
+  ];
 
-  // ── Render ────────────────────────────────────────────────
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
-      {/* Search input row */}
-      <div className="flex items-center border-b border-border/30 px-3 relative bg-card">
-        <Search className="mr-2 h-4 w-4 shrink-0 opacity-50 text-gold" />
-        <CommandInput
-          placeholder={
-            lang === "hi"
-              ? "कहानियां, लेखक, विषय या राज्य खोजें... (Ctrl+K)"
-              : "Search stories, authors, themes, states... (Ctrl+K)"
-          }
-          value={query}
-          onValueChange={setQuery}
-          onKeyDown={handleKeyDown}
-          className="flex h-12 w-full rounded-md bg-transparent py-3 text-sm outline-none text-foreground placeholder:text-muted-foreground focus:ring-0 focus:outline-none focus:border-0"
-        />
-        {query && (
+      <div className="bg-[#FFFDF9] border border-[#E5DFD3] rounded-2xl shadow-2xl overflow-hidden select-none">
+        {/* Top Search Input Row */}
+        <div className="flex items-center border-b border-[#EAE4D8] px-4 py-1.5 bg-[#FFFDF9] relative">
+          <Search className="mr-3 h-5 w-5 shrink-0 text-[#D32F2F]" />
+          <CommandInput
+            placeholder={
+              isHindi
+                ? "कहानियां, लेखक, विषय या राज्य खोजें... (Ctrl+K)"
+                : "Search stories, authors, themes, states... (Ctrl+K)"
+            }
+            value={query}
+            onValueChange={setQuery}
+            onKeyDown={handleKeyDown}
+            className="flex h-12 w-full rounded-md bg-transparent text-sm text-[#1A1816] placeholder-[#8C827A] outline-none border-none focus:ring-0"
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => setQuery("")}
+              className="p-1 hover:bg-[#F2ECE1] rounded-full mr-2 text-[#8C827A] hover:text-[#1A1816] transition-colors cursor-pointer"
+              aria-label="Clear search"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
           <button
-            onClick={() => setQuery("")}
-            className="p-1 hover:bg-muted rounded-full mr-1 text-muted-foreground hover:text-foreground"
-            aria-label="Clear"
+            type="button"
+            onClick={startVoiceSearch}
+            className={`p-2 rounded-full transition-all cursor-pointer ${
+              speechActive
+                ? "text-[#D32F2F] bg-[#D32F2F]/10 animate-pulse"
+                : "text-[#8C827A] hover:bg-[#F2ECE1] hover:text-[#1A1816]"
+            }`}
+            title={isHindi ? "आवाज द्वारा खोजें" : "Voice Search"}
+            aria-label="Voice search"
           >
-            <X className="size-3.5" />
+            {speechActive ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
           </button>
-        )}
-        <button
-          onClick={startVoiceSearch}
-          className={`p-1.5 rounded-full hover:bg-muted transition-colors ${
-            speechActive ? "text-primary bg-primary/10 animate-pulse" : "text-muted-foreground hover:text-foreground"
-          }`}
-          title={lang === "hi" ? "आवाज द्वारा खोजें" : "Voice Search"}
-          aria-label="Voice search"
+        </div>
+
+        {/* Scrollable Command List */}
+        <CommandList
+          data-lenis-prevent="true"
+          onWheel={(e) => e.stopPropagation()}
+          className="max-h-[72vh] overflow-y-auto bg-[#FAF7F2] text-[#1A1816] custom-scrollbar p-2"
         >
-          {speechActive ? <MicOff className="size-4" /> : <Mic className="size-4" />}
-        </button>
-      </div>
-
-      <CommandList className="max-h-[70vh] overflow-y-auto bg-background text-foreground custom-scrollbar scroll-smooth">
-        {/* Loading skeleton */}
-        {loading && (
-          <div className="p-4 space-y-3">
-            <Skeleton className="h-4 w-1/3 rounded" />
-            <Skeleton className="h-10 w-full rounded" />
-            <Skeleton className="h-10 w-full rounded" />
-            <Skeleton className="h-4 w-1/4 rounded pt-3" />
-            <Skeleton className="h-10 w-full rounded" />
-          </div>
-        )}
-
-        {/* No results message */}
-        {!loading && results && query && !hasResults && (
-          <CommandEmpty className="py-12 text-center text-sm font-sans text-muted-foreground">
-            {lang === "hi"
-              ? "कोई परिणाम नहीं मिला। कृपया दूसरे शब्दों का प्रयास करें।"
-              : "No matches found. Try different keywords."}
-          </CommandEmpty>
-        )}
-
-        {/* ── Suggestions (empty query) ─────────────────── */}
-        {!loading && (!query || results?.isSuggestions) && (
-          <>
-            {/* Recent searches */}
-            {history.length > 0 && (
-              <CommandGroup
-                heading={
-                  <div className="flex items-center justify-between text-[10px] tracking-wider uppercase font-bold text-muted-foreground/80 py-1">
-                    <span>{lang === "hi" ? "हाल की खोजें" : "Recent Searches"}</span>
+          {/* 1. RECENT SEARCHES & TRENDING TAGS (When Query is Empty) */}
+          {!query && (
+            <div className="space-y-4 p-2">
+              {history.length > 0 && (
+                <div>
+                  <div className="flex items-center justify-between text-[10px] uppercase font-bold tracking-wider text-[#8C827A] pb-2">
+                    <span className="flex items-center gap-1.5">
+                      <History className="w-3.5 h-3.5 text-[#D32F2F]" />
+                      {isHindi ? "हाल की खोजें" : "Recent Searches"}
+                    </span>
                     <button
-                      onClick={(e) => { e.stopPropagation(); void clearHistory(); }}
-                      className="text-[9px] hover:text-primary transition-colors flex items-center gap-1 font-sans cursor-pointer text-muted-foreground/60 font-semibold"
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        void clearHistory();
+                      }}
+                      className="text-[9px] text-[#8C827A] hover:text-[#D32F2F] transition-colors flex items-center gap-1 font-semibold cursor-pointer"
                     >
-                      <Trash2 className="size-3" />
-                      {lang === "hi" ? "इतिहास साफ करें" : "Clear"}
+                      <Trash2 className="w-3 h-3" />
+                      {isHindi ? "साफ करें" : "Clear"}
                     </button>
                   </div>
-                }
-              >
-                <div className="flex flex-wrap gap-2 p-2">
-                  {history.map((h, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setQuery(h)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full bg-card hover:bg-muted border border-border/40 text-foreground transition-all font-sans cursor-pointer"
-                    >
-                      <History className="size-3 text-muted-foreground" />
-                      <span>{h}</span>
-                    </button>
-                  ))}
-                </div>
-              </CommandGroup>
-            )}
-
-            {/* Trending searches */}
-            {results?.trending && results.trending.length > 0 && (
-              <CommandGroup
-                heading={
-                  <div className="text-[10px] tracking-wider uppercase font-bold text-muted-foreground/80 py-1 flex items-center gap-1">
-                    <TrendingUp className="size-3.5 text-gold" />
-                    <span>{lang === "hi" ? "प्रचलित खोजें" : "Trending Searches"}</span>
+                  <div className="flex flex-wrap gap-2">
+                    {history.map((h, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setQuery(h)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full bg-[#FFFFFF] hover:bg-[#D32F2F] hover:text-white border border-[#E5DFD3] text-[#1A1816] transition-all font-sans cursor-pointer shadow-sm"
+                      >
+                        <History className="w-3 h-3 opacity-60" />
+                        <span>{h}</span>
+                      </button>
+                    ))}
                   </div>
-                }
-              >
-                <div className="flex flex-wrap gap-2 p-2">
-                  {results.trending.map((t: string, i: number) => (
+                </div>
+              )}
+
+              {/* Popular Tags */}
+              <div>
+                <div className="text-[10px] uppercase font-bold tracking-wider text-[#8C827A] pb-2 flex items-center gap-1.5">
+                  <TrendingUp className="w-3.5 h-3.5 text-[#D32F2F]" />
+                  <span>{isHindi ? "लोकप्रिय विषय" : "Popular Themes"}</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {popularTags.map((tag, i) => (
                     <button
                       key={i}
-                      onClick={() => setQuery(t)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full bg-gold/5 hover:bg-gold/15 border border-gold/20 text-gold transition-all font-sans font-bold cursor-pointer"
+                      type="button"
+                      onClick={() => setQuery(tag)}
+                      className="flex items-center gap-1.5 px-3 py-1 text-xs rounded-full bg-[#D32F2F]/10 hover:bg-[#D32F2F] hover:text-white border border-[#D32F2F]/20 text-[#D32F2F] transition-all font-semibold cursor-pointer"
                     >
-                      <span>#{t}</span>
+                      <span>#{tag}</span>
                     </button>
                   ))}
                 </div>
-              </CommandGroup>
-            )}
+              </div>
+            </div>
+          )}
 
-            {/* Popular themes */}
-            {results?.themes && results.themes.length > 0 && (
-              <CommandGroup heading={lang === "hi" ? "लोकप्रिय विषय" : "Popular Themes"}>
-                <div className="flex flex-wrap gap-2 p-2">
-                  {results.themes.map((theme: any) => (
-                    <CommandItem
-                      key={theme.id}
-                      onSelect={() => handleSelect("theme", theme)}
-                      className="px-3 py-1.5 text-xs rounded-full bg-card hover:bg-muted border border-border/40 text-foreground transition-all cursor-pointer inline-flex items-center gap-1 font-sans font-medium"
-                    >
-                      <Compass className="size-3 text-gold" />
-                      <span>{theme.name}</span>
-                    </CommandItem>
-                  ))}
-                </div>
-              </CommandGroup>
-            )}
+          {/* 2. LIVE STORY SUGGESTIONS SECTION (Rich Visual Cards) */}
+          <div className="mt-2 pt-2 border-t border-[#EAE4D8]">
+            <div className="px-3 py-2 flex items-center justify-between text-[11px] font-serif font-bold text-[#D32F2F] uppercase tracking-wider">
+              <span className="flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-[#D32F2F]" />
+                {query
+                  ? isHindi
+                    ? `"${query}" के लिए सुझाई गई कहानियां`
+                    : `Suggested Stories for "${query}"`
+                  : isHindi
+                  ? "विशेष सुझाई गई कहानियां"
+                  : "Recommended Featured Stories"}
+              </span>
+              <span className="text-[10px] font-mono text-[#8C827A]">
+                {localSuggestedStories.length} {isHindi ? "परिणाम" : "Stories"}
+              </span>
+            </div>
 
-            {/* Popular authors */}
-            {results?.authors && results.authors.length > 0 && (
-              <CommandGroup heading={lang === "hi" ? "लोकप्रिय लेखक" : "Popular Authors"}>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2">
-                  {results.authors.map((author: any) => (
-                    <CommandItem
-                      key={author.id}
-                      onSelect={() => handleSelect("author", author)}
-                      className="flex items-center gap-3 p-2 rounded-lg bg-card hover:bg-muted border border-border/40 cursor-pointer text-left"
-                    >
-                      {author.avatar ? (
-                        <img src={author.avatar} alt={author.name} className="size-8 rounded-full object-cover border border-border/40" />
-                      ) : (
-                        <div className="size-8 rounded-full bg-gold/10 flex items-center justify-center font-display text-sm font-bold text-gold">
-                          {author.name.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold text-foreground truncate">{author.name}</p>
-                        {author.bio && <p className="text-[10px] text-muted-foreground truncate">{author.bio}</p>}
-                      </div>
-                    </CommandItem>
-                  ))}
-                </div>
-              </CommandGroup>
-            )}
-          </>
-        )}
+            {localSuggestedStories.length === 0 ? (
+              <div className="py-8 text-center text-xs text-[#8C827A]">
+                {isHindi ? "कोई कहानी नहीं मिली" : "No matching stories found"}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-2 p-1">
+                {localSuggestedStories.map((s) => {
+                  const title = isHindi ? (s.titleHindi || s.title) : s.title;
+                  const excerpt = isHindi ? (s.excerptHindi || s.excerpt) : s.excerpt;
+                  const image = s.image;
+                  const author = s.authorName || "India Story Project";
 
-        {/* ── Active search results ─────────────────────── */}
-        {!loading && query && results && !results.isSuggestions && hasResults && (
-          <>
-            {/* Stories */}
-            {results.stories?.length > 0 && (
-              <CommandGroup heading={lang === "hi" ? "कहानियां" : "Stories"}>
-                <div className="space-y-1">
-                  {results.stories.map((story: any) => (
-                    <CommandItem
-                      key={story.id}
-                      onSelect={() => handleSelect("story", story)}
-                      className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted cursor-pointer text-left"
-                    >
-                      {story.images?.[0]?.imageUrl && (
-                        <div className="size-12 rounded bg-muted overflow-hidden shrink-0">
-                          <img src={story.images[0].imageUrl} alt="" className="w-full h-full object-cover" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 text-[9px] uppercase tracking-wider text-gold font-sans font-bold">
-                          <span>{story.author?.name}</span>
-                          <span>•</span>
-                          <span>{story.state?.name}</span>
-                        </div>
-                        <h4 className="font-display text-xs md:text-sm font-bold text-foreground line-clamp-1 mt-0.5">
-                          {highlightText(lang === "hi" && story.titleHi ? story.titleHi : story.title, query)}
-                        </h4>
-                        <p className="text-[10px] text-muted-foreground line-clamp-1">
-                          {lang === "hi" && story.excerptHi ? story.excerptHi : story.excerpt}
-                        </p>
-                      </div>
-                    </CommandItem>
-                  ))}
-                </div>
-              </CommandGroup>
-            )}
-
-            {/* Videos */}
-            {results.videos?.length > 0 && (
-              <CommandGroup heading={lang === "hi" ? "वीडियो" : "Videos"}>
-                <div className="space-y-1">
-                  {results.videos.map((video: any) => (
-                    <CommandItem
-                      key={video.id}
-                      onSelect={() => handleSelect("video", video)}
-                      className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted cursor-pointer text-left"
-                    >
-                      {video.thumbnail && (
-                        <div className="w-16 aspect-video rounded bg-muted overflow-hidden shrink-0 relative flex items-center justify-center">
-                          <img src={video.thumbnail} alt="" className="absolute inset-0 size-full object-cover" />
-                          <div className="relative size-6 rounded-full bg-black/60 flex items-center justify-center">
-                            <Play className="size-2.5 text-white fill-white ml-0.5" />
-                          </div>
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-display text-xs md:text-sm font-bold text-foreground line-clamp-1">
-                          {highlightText(lang === "hi" && video.titleHi ? video.titleHi : video.title, query)}
-                        </h4>
-                      </div>
-                    </CommandItem>
-                  ))}
-                </div>
-              </CommandGroup>
-            )}
-
-            {/* Web Stories */}
-            {results.webStories?.length > 0 && (
-              <CommandGroup heading={lang === "hi" ? "वेब स्टोरीज" : "Web Stories"}>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-2">
-                  {results.webStories.map((ws: any) => (
-                    <CommandItem
-                      key={ws.id}
-                      onSelect={() => handleSelect("webStory", ws)}
-                      className="group relative aspect-[9/16] rounded-xl overflow-hidden cursor-pointer flex flex-col justify-end p-3 text-left border border-border/40 hover:border-gold/50"
-                    >
-                      <img src={ws.coverImage} alt="" className="absolute inset-0 size-full object-cover filter brightness-[0.7]" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
-                      <h4 className="relative z-10 font-display text-[10px] sm:text-xs font-bold leading-tight text-white line-clamp-3">
-                        {lang === "hi" && ws.titleHi ? ws.titleHi : ws.title}
-                      </h4>
-                    </CommandItem>
-                  ))}
-                </div>
-              </CommandGroup>
-            )}
-
-            {/* Themes */}
-            {results.themes?.length > 0 && (
-              <CommandGroup heading={lang === "hi" ? "विषय" : "Themes"}>
-                <div className="flex flex-wrap gap-2 p-2">
-                  {results.themes.map((theme: any) => (
-                    <CommandItem
-                      key={theme.id}
-                      onSelect={() => handleSelect("theme", theme)}
-                      className="px-3 py-1.5 text-xs rounded-full bg-card hover:bg-muted border border-border/40 text-foreground transition-all cursor-pointer inline-flex items-center gap-1 font-sans font-medium"
-                    >
-                      <Compass className="size-3 text-gold" />
-                      <span>{highlightText(theme.name, query)}</span>
-                    </CommandItem>
-                  ))}
-                </div>
-              </CommandGroup>
-            )}
-
-            {/* Authors */}
-            {results.authors?.length > 0 && (
-              <CommandGroup heading={lang === "hi" ? "लेखक" : "Authors"}>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2">
-                  {results.authors.map((author: any) => (
-                    <CommandItem
-                      key={author.id}
-                      onSelect={() => handleSelect("author", author)}
-                      className="flex items-center gap-3 p-2 rounded-lg bg-card hover:bg-muted border border-border/40 cursor-pointer text-left"
-                    >
-                      {author.avatar ? (
-                        <img src={author.avatar} alt={author.name} className="size-8 rounded-full object-cover border border-border/40" />
-                      ) : (
-                        <div className="size-8 rounded-full bg-gold/10 flex items-center justify-center font-display text-sm font-bold text-gold">
-                          {author.name.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold text-foreground truncate">
-                          {highlightText(author.name, query)}
-                        </p>
-                        {author.bio && <p className="text-[10px] text-muted-foreground truncate">{author.bio}</p>}
-                      </div>
-                    </CommandItem>
-                  ))}
-                </div>
-              </CommandGroup>
-            )}
-
-            {/* States */}
-            {results.states?.length > 0 && (
-              <CommandGroup heading={lang === "hi" ? "राज्य" : "States"}>
-                <div className="flex flex-wrap gap-2 p-2">
-                  {results.states.map((s: any) => (
-                    <CommandItem
+                  return (
+                    <div
                       key={s.id}
-                      onSelect={() => handleSelect("state", s)}
-                      className="px-3 py-1.5 text-xs rounded-full bg-card hover:bg-muted border border-border/40 text-foreground transition-all cursor-pointer inline-flex items-center gap-1 font-sans font-medium"
+                      onClick={() => handleSelectStory(s.slug, title)}
+                      className="group flex items-center gap-3.5 p-3 rounded-2xl bg-[#FFFFFF] hover:bg-[#FFFDF9] border border-[#EAE4D8] hover:border-[#D32F2F]/40 transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer"
                     >
-                      <MapPin className="size-3 text-gold" />
-                      <span>{highlightText(s.name, query)}</span>
-                    </CommandItem>
-                  ))}
-                </div>
-              </CommandGroup>
-            )}
+                      {/* Image Thumbnail */}
+                      <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-[#F4EFE6] shrink-0 border border-[#E5DFD3]">
+                        <img
+                          src={image}
+                          alt={title}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                      </div>
 
-            {/* Tags */}
-            {results.tags?.length > 0 && (
-              <CommandGroup heading={lang === "hi" ? "टैग्स" : "Tags"}>
-                <div className="flex flex-wrap gap-2 p-2">
-                  {results.tags.map((tag: any) => (
-                    <CommandItem
-                      key={tag.id}
-                      onSelect={() => handleSelect("tag", tag)}
-                      className="px-3 py-1.5 text-xs rounded-full bg-card hover:bg-muted border border-border/40 text-foreground transition-all cursor-pointer inline-flex items-center gap-1 font-sans font-medium"
-                    >
-                      <Tag className="size-3 text-gold" />
-                      <span>#{highlightText(tag.name, query)}</span>
-                    </CommandItem>
-                  ))}
-                </div>
-              </CommandGroup>
-            )}
+                      {/* Content Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 text-[10px] text-[#D32F2F] font-semibold">
+                          <span>{s.region || "India"}</span>
+                          <span>•</span>
+                          <span className="flex items-center gap-1 text-[#8C827A]">
+                            <Clock className="w-3 h-3 text-[#D4AF37]" />
+                            {s.readTime || "5 min read"}
+                          </span>
+                        </div>
 
-            {/* ── "See all results" CTA ─────────────────── */}
-            <div className="border-t border-border/30 p-3">
+                        <h4 className="text-xs md:text-sm font-serif font-bold text-[#1A1816] group-hover:text-[#D32F2F] transition-colors truncate leading-snug mt-0.5">
+                          {highlightText(title, query)}
+                        </h4>
+
+                        <p className="text-[11px] font-sans text-[#6B625B] truncate mt-0.5">
+                          {excerpt}
+                        </p>
+                      </div>
+
+                      <ChevronRight className="w-4 h-4 text-[#8C827A] group-hover:text-[#D32F2F] group-hover:translate-x-1 transition-all shrink-0 mr-1" />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* 3. SEE ALL RESULTS CTA FOOTER */}
+          {query.trim() && (
+            <div className="mt-4 pt-3 border-t border-[#EAE4D8]">
               <button
+                type="button"
                 onClick={() => navigateToSearch(query)}
-                className="w-full flex items-center justify-between px-4 py-2.5 bg-primary/5 hover:bg-primary/10 border border-primary/20 hover:border-primary/40 text-primary transition-all group"
+                className="w-full flex items-center justify-between px-5 py-3 rounded-xl bg-[#D32F2F] hover:bg-[#B71C1C] text-white transition-all shadow-md group cursor-pointer"
               >
-                <span className="text-xs font-sans font-bold uppercase tracking-widest">
-                  {lang === "en"
-                    ? `See all results for "${query}"`
-                    : `"${query}" के सभी परिणाम देखें`}
+                <span className="text-xs font-serif font-bold tracking-wide">
+                  {isHindi ? `"${query}" के सभी विस्तृत परिणाम देखें` : `See All Results for "${query}"`}
                 </span>
-                <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
-          </>
-        )}
-
-        {/* ── "Search for" CTA when typing ────────────── */}
-        {!loading && query && !results && (
-          <div className="border-t border-border/30 p-3">
-            <button
-              onClick={() => navigateToSearch(query)}
-              className="w-full flex items-center justify-between px-4 py-2.5 bg-primary/5 hover:bg-primary/10 border border-primary/20 hover:border-primary/40 text-primary transition-all group"
-            >
-              <span className="text-xs font-sans font-bold uppercase tracking-widest">
-                {lang === "en" ? `Search for "${query}"` : `"${query}" खोजें`}
-              </span>
-              <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
-            </button>
-          </div>
-        )}
-      </CommandList>
+          )}
+        </CommandList>
+      </div>
     </CommandDialog>
   );
 }

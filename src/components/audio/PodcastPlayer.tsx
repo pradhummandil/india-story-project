@@ -98,57 +98,38 @@ export default function PodcastPlayer() {
             });
             if (audio) {
               audio.src = `${latest.story.audioUrl}?lang=${latest.language}&voice=${latest.voiceId}`;
-              audio.currentTime = latest.currentTime;
             }
           }
         })
-        .catch((e) => console.error("Failed to load saved progress:", e));
+        .catch(() => {});
     }
-  }, [session, audio, currentEpisode]);
+  }, [session, currentEpisode, audio]);
 
-  if (!currentEpisode) return null;
-
-  const formatTime = (time: number) => {
-    if (isNaN(time) || time < 0) return "0:00";
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
-  };
-
-  const handleTimelineClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!timelineRef.current || duration <= 0) return;
-    const rect = timelineRef.current.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const width = rect.width;
-    const percentage = Math.max(0, Math.min(1, clickX / width));
-    seek(percentage * duration);
-  };
-
-  const skipForward = () => {
-    seek(Math.min(duration, currentTime + 10));
-  };
-
-  const skipBackward = () => {
-    seek(Math.max(0, currentTime - 10));
-  };
-
-  const toggleMute = () => {
-    if (!audio) return;
-    const nextMute = !muted;
-    audio.muted = nextMute;
-    setMuted(nextMute);
-  };
-
+  // Lock body scroll when player is open in full overlay mode
   useEffect(() => {
     if (playerOpen) {
       lockScroll();
     } else {
       unlockScroll();
     }
-    return () => {
-      if (playerOpen) unlockScroll();
-    };
+    return () => unlockScroll();
   }, [playerOpen]);
+
+  // EARLY GUARD: If no active audio episode, do not render player components
+  if (!currentEpisode) {
+    return null;
+  }
+
+  const skipForward = () => seek(Math.min(duration, currentTime + 10));
+  const skipBackward = () => seek(Math.max(0, currentTime - 10));
+
+  const handleTimelineClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!timelineRef.current || duration <= 0) return;
+    const rect = timelineRef.current.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const newPercent = clickX / rect.width;
+    seek(newPercent * duration);
+  };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = parseFloat(e.target.value);
@@ -158,6 +139,25 @@ export default function PodcastPlayer() {
       audio.muted = val === 0;
       setMuted(val === 0);
     }
+  };
+
+  const toggleMute = () => {
+    if (!audio) return;
+    if (muted) {
+      audio.muted = false;
+      audio.volume = volume > 0 ? volume : 1;
+      setMuted(false);
+    } else {
+      audio.muted = true;
+      setMuted(true);
+    }
+  };
+
+  const formatTime = (secs: number) => {
+    if (isNaN(secs) || secs < 0) return "0:00";
+    const m = Math.floor(secs / 60);
+    const s = Math.floor(secs % 60);
+    return `${m}:${s < 10 ? "0" : ""}${s}`;
   };
 
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
@@ -211,7 +211,11 @@ export default function PodcastPlayer() {
             <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
               <button
                 type="button"
-                onClick={togglePlay}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  togglePlay();
+                }}
                 className="size-9 rounded-full bg-gradient-to-r from-gold to-saffron text-gold-foreground flex items-center justify-center hover:scale-105 transition-transform shadow-lg cursor-pointer"
                 title={isPlaying ? "Pause" : "Play"}
               >
@@ -225,6 +229,7 @@ export default function PodcastPlayer() {
               <button
                 type="button"
                 onClick={(e) => {
+                  e.preventDefault();
                   e.stopPropagation();
                   stopEpisode();
                 }}
@@ -250,53 +255,46 @@ export default function PodcastPlayer() {
       <AnimatePresence>
         {playerOpen && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-0 z-[100000] bg-[#0a0a0c] text-white overflow-y-auto flex flex-col select-none"
+            initial={{ opacity: 0, y: "100%" }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: "100%" }}
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            className="fixed inset-0 z-[99999] bg-[#09090B] text-white flex flex-col justify-between overflow-y-auto selection:bg-gold selection:text-black"
           >
-            {/* Ambient Background Glow */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(200,169,106,0.12),transparent_70%)] pointer-events-none" />
-
-            {/* ── Top Header Bar ── */}
-            <header className="relative z-10 flex items-center justify-between px-6 py-5 border-b border-white/10 bg-black/40 backdrop-blur-xl">
+            {/* Top Navigation Bar */}
+            <header className="relative z-10 flex items-center justify-between p-6 max-w-7xl mx-auto w-full">
               <button
                 type="button"
                 onClick={() => setPlayerOpen(false)}
-                className="flex items-center gap-2 text-xs font-sans font-bold uppercase tracking-wider text-white/70 hover:text-white bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full border border-white/10 transition-all cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-sans font-bold text-white transition-all cursor-pointer"
               >
                 <ChevronDown className="size-4" />
-                <span>Minimize Player</span>
+                <span>MINIMIZE PLAYER</span>
               </button>
 
-              <div className="flex items-center gap-2">
-                <Radio className="size-4 text-gold animate-pulse" />
-                <span className="text-xs font-sans font-bold uppercase tracking-[0.25em] text-gold">
-                  Now Playing • Audio Story
-                </span>
+              <div className="flex items-center gap-2 text-gold text-xs font-mono font-bold tracking-widest uppercase">
+                <Radio className="size-4 animate-pulse" />
+                <span>NOW PLAYING • AUDIO STORY</span>
               </div>
 
               <button
                 type="button"
-                onClick={() => stopEpisode()}
-                className="size-9 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-                title="Close & Stop"
+                onClick={stopEpisode}
+                className="p-2 rounded-full bg-white/5 hover:bg-red-500/20 text-white/70 hover:text-red-400 border border-white/10 transition-all cursor-pointer"
+                title="Close Audio"
               >
-                <X className="size-4" />
+                <X className="size-5" />
               </button>
             </header>
 
-            {/* ── Main Content Grid ── */}
-            <main className="relative z-10 flex-1 max-w-6xl w-full mx-auto px-6 py-8 flex flex-col lg:flex-row items-center gap-10 justify-center">
-              
-              {/* Left Column: Rotating Vinyl / Glowing Album Art */}
-              <div className="flex flex-col items-center gap-6 w-full max-w-sm">
-                <div className="relative group size-64 sm:size-80">
-                  {/* Outer Ambient Glow */}
-                  <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-gold/30 to-saffron/20 blur-2xl opacity-60 group-hover:opacity-100 transition-opacity" />
-                  
-                  {/* Vinyl Disc / Cover Frame */}
+            {/* Main Center Content */}
+            <main className="relative z-10 flex-1 max-w-5xl mx-auto w-full px-6 py-6 flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16">
+              {/* Left Column: Artwork & Visuals */}
+              <div className="flex flex-col items-center space-y-4">
+                <div className="relative size-64 sm:size-72 md:size-80">
+                  {/* Glowing background aura */}
+                  <div className="absolute -inset-4 bg-gradient-to-tr from-gold/30 to-saffron/20 rounded-full blur-2xl opacity-60" />
+
                   <div className="relative size-full rounded-3xl border-2 border-white/15 overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.9)] bg-black">
                     <img
                       src={currentEpisode.imageUrl}
@@ -455,12 +453,12 @@ export default function PodcastPlayer() {
                               : "text-white/60 hover:text-white hover:bg-white/10"
                           }`}
                         >
-                          हिन्दी
+                          हिंदी
                         </button>
                       </div>
                     </div>
 
-                    {/* Voice Switcher */}
+                    {/* Voice Selector */}
                     <div className="flex items-center justify-between bg-white/5 px-3 py-2 rounded-xl border border-white/5">
                       <span className="text-[11px] font-sans font-bold text-white/60 flex items-center gap-1.5">
                         <UserCheck className="size-3.5 text-gold" />
@@ -473,7 +471,7 @@ export default function PodcastPlayer() {
                           className={`px-2.5 py-1 rounded-lg text-[10px] font-sans font-bold transition-all cursor-pointer ${
                             voice === "female"
                               ? "bg-gold text-gold-foreground shadow"
-                              : "text-white/60 hover:text-white hover:bg-white/10"
+                              : "text-[#FAF7F2]/60 hover:text-white hover:bg-white/10"
                           }`}
                         >
                           Female (Priya)
@@ -484,7 +482,7 @@ export default function PodcastPlayer() {
                           className={`px-2.5 py-1 rounded-lg text-[10px] font-sans font-bold transition-all cursor-pointer ${
                             voice === "male"
                               ? "bg-gold text-gold-foreground shadow"
-                              : "text-white/60 hover:text-white hover:bg-white/10"
+                              : "text-[#FAF7F2]/60 hover:text-white hover:bg-white/10"
                           }`}
                         >
                           Male (Aarav)
@@ -492,7 +490,7 @@ export default function PodcastPlayer() {
                       </div>
                     </div>
 
-                    {/* Playback Speed Selector */}
+                    {/* Speed Selector */}
                     <div className="flex items-center justify-between bg-white/5 px-3 py-2 rounded-xl border border-white/5">
                       <span className="text-[11px] font-sans font-bold text-white/60 flex items-center gap-1.5">
                         <Gauge className="size-3.5 text-gold" />
